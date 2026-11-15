@@ -690,23 +690,24 @@ function renderHomeInventoryChanges(){
 }
 function renderSeasonalOpportunities(){
  const root=$('homeseasoncontent');if(!root)return;root.replaceChildren();
- const month=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Zurich',year:'numeric',month:'2-digit'}).format(new Date());
+ const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Europe/Zurich',year:'numeric',month:'2-digit'}).formatToParts(new Date());
+ const dateParts=Object.fromEntries(parts.filter(p=>p.type!=='literal').map(p=>[p.type,p.value]));
+ const isNovember2026=dateParts.year==='2026'&&dateParts.month==='11';
  const createLink=(label,url,desc)=>{
    const item=node('div',undefined,'home-season-event');
    const link=node('a',label);link.href=url;link.target='_blank';link.rel='noopener noreferrer';
    item.append(link,node('small',desc));root.append(item);
  };
- if(month==='11/2026'||month==='2026-11'){
-   root.append(node('p','November 2026 · Highlights from official Design Notes (checked 13 Nov). Availability is not live.','muted tiny'));
-   createLink('🍂 Harvest Fest & Cursed Harvest','https://game5.aq.com/gamedesignnotes/','Seasonal events and rewards · check /eventhub');
-   createLink('⚔️ Harvest Hunter seasonal set','https://www.aq.com/gamedesignnotes/battleon.com','November seasonal gear · official notes');
-   createLink('🦇 Safiria collection · Nov 20','https://game5.aq.com/gamedesignnotes/','Upcoming event mentioned in official Design Notes');
+ if(isNovember2026){
+   root.append(node('p','November 2026 · Official event announcements. Availability is not checked live.','muted tiny'));
+   createLink('🍂 Cursed Harvest: Feast of Miss Fortune','https://www.aq.com/gamedesignnotes/aqw-cursedharvest26-13nov26-10514','Nov 13 release · /join charityfeast · see official notes for rewards');
+   createLink('⚔️ Harvest Hunters seasonal set','https://www.aq.com/gamedesignnotes/battleon.com','Nov 1–30 seasonal set · verify shop availability');
+   createLink('🦇 Safiria collection — Nov 20','https://game5.aq.com/gamedesignnotes/','Announced upcoming collection; date subject to change');
  }else{
-   root.append(node('p','Browse official announcements to check what is currently available. Event dates are not synchronized.','muted tiny'));
+   root.append(node('p','Check official announcements for current events, seasonal items and boosts. Availability is not synchronized.','muted tiny'));
  }
- createLink('📅 Official AQW updates','https://game5.aq.com/gamedesignnotes/','Latest releases, event reminders and boosts');
+ createLink('📅 Official AQW Design Notes','https://www.aq.com/gamedesignnotes/','Official event updates, release notes and reminders');
 }
-
 function renderHomeInsights(){
  const activity=$('homeactivities'),projectList=$('homeprojectslist');if(!activity||!projectList)return;
  activity.replaceChildren();projectList.replaceChildren();
