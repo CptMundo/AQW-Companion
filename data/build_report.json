@@ -1,0 +1,30 @@
+{
+  "generatedAt": "2026-11-15T01:58:50.662Z",
+  "stats": {
+    "WikiItems.json": 46979,
+    "Classes.json": 287,
+    "locations.json": 1295,
+    "merge_shops.json": 12061,
+    "quests.json": 6781
+  },
+  "warnings": [],
+  "items": {
+    "previous": 43217,
+    "current": 43217,
+    "added": 0,
+    "removed": 0
+  },
+  "acquisition": {
+    "previous": 24843,
+    "current": 24843,
+    "added": 0,
+    "removed": 0
+  },
+  "locations": {
+    "previous": 5581,
+    "current": 5581,
+    "added": 0,
+    "removed": 0
+  },
+  "sha256": "dd52f39485af68788fc5195da9307fba56507e20d834fa72a127b00e6a37851e"
+}
