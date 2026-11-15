@@ -265,9 +265,9 @@
 .unlockstep .steprow{row-gap:9px;column-gap:12px;align-items:center;}
 .unlockstep .stepselect{margin-right:12px;}
 /* Farming Goals: stable title/status row and grouped item actions. */
-.unlockstep .farming-step-header{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:start;justify-content:initial;}
-.unlockstep .farming-step-header>.itemlink,.unlockstep .farming-step-header>.steptext{min-width:0;max-width:100%;overflow-wrap:anywhere;}
-.unlockstep .farming-step-header>.status{justify-self:end;white-space:nowrap;margin:0;}
+.unlockstep .farming-step-header{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:10px;row-gap:6px;align-items:start;justify-content:stretch;width:100%;}
+.unlockstep .farming-step-header>.itemlink,.unlockstep .farming-step-header>.steptext{display:block;width:100%;min-width:0;max-width:none;text-align:left!important;justify-self:start;align-self:start;overflow-wrap:anywhere;}
+.unlockstep .farming-step-header>.status{justify-self:end;align-self:start;white-space:nowrap;margin:0;}
 .unlockstep .farming-step-actions{display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:7px;margin-top:7px;}
 .unlockstep .farming-step-actions>.smallbutton{margin:0;}
 
