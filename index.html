@@ -644,6 +644,48 @@ const ultraGuides=[
 // Short class-specific playbooks, with cues and timing from linked community references.
 // Mechanics can change. Read the source before using advanced taunt variants.
 const ultraRolePlaybooks={
+ezrajal:{
+"Legion Revenant":{steps:["Before pull: sustain party buffs and agree on the Counter Attack warning.","As Counter Attack starts, stop attacking/untarget until the reflection window passes.","Resume group support and AoE damage after the counter ends."],warning:"Attacking into Counter Attack reflects damage back onto you."},
+"Lord of Order":{steps:["Buff the team at pull and watch the heavy prism burst window.","Stop offensive skills during the counter; keep survivability ready.","Stabilize the group as soon as lockouts/reflect end."],warning:"Do not accidentally continue offensive attacks through the counter."},
+"ArchPaladin":{steps:["Keep defensive stacks and debuffs ready.","Stop damaging during the reflect window; time heals for the prism multi-hit burst.","Resume damage reduction before the next counter."],warning:"Counter reflection can turn a routine support hit into a fatal mistake."},
+"Void Highlord":{steps:["Focus damage once the group has buffed.","On Counter Attack cue, untarget/stop damage immediately.","Re-engage only after the dangerous reflect ends."],warning:"Bursting through the counter can kill you."}
+},
+warden:{
+"Legion Revenant":{steps:["Maintain group damage and defensive support during the main phase.","If designated taunter, prepare Scroll of Enrage as Warden nears 450k HP.","Absorb the final Enrage while the rest of the party finishes the boss."],warning:"Late Enrage without a planned taunt can wipe the group."},
+"Lord of Order":{steps:["Keep essential buffs running despite stuns.","Watch for the attack that leaves teammates at 1 HP, then recover immediately.","Keep the taunter alive through the finishing burst."],warning:"A 1-HP mechanic can be lethal if healing comes too late."},
+"StoneCrusher":{steps:["Maintain HoT and support buffs throughout.","Keep the group stable through unpredictable stuns and sudden HP loss.","Help protect the designated taunter as Warden approaches low HP."],warning:"Do not rely on stun avoidance as a guarantee."},
+"Void Highlord":{steps:["Attack steadily, but do not rush the team into final Enrage unprepared.","Call out low HP to the taunter.","Finish damage while supports cover the dangerous last phase."],warning:"Pushing too fast without the agreed taunt creates avoidable wipes."}
+},
+engineer:{
+"Legion Revenant":{steps:["Let ranged attackers begin safely; avoid rushing into the room.","Focus the Defense Drone first, then Attack Drone.","Keep party buffs active for the final boss after drones die."],warning:"Wrong target priority prolongs the fight."},
+"Lord of Order":{steps:["Buff from safety before the opening.","Keep the team healed through repeated high-damage attacks.","Switch target only on the team call: Defense Drone → Attack Drone → Engineer."],warning:"Do not approach recklessly before pull."},
+"ArchPaladin":{steps:["Prepare protective debuffs at pull and emergency healing.","Assist with safe target focus and avoid countering Defense Drone.","Maintain damage mitigation during the boss's periodic attack."],warning:"Attacking a countering Defense Drone can backfire."},
+"Void Highlord":{steps:["Wait for a safe opening into the room.","Focus and kill Defense Drone, then Attack Drone.","Only then prioritize Engineer; watch counter windows."],warning:"Attacking Engineer before drones are handled wastes damage."}
+},
+tyndarius:{
+"Chaos Avenger":{steps:["Agree which Orb and boss attacks you will taunt.","Hold threat/taunt during Left Orb → Right Orb targeting.","Stay ready when orbs respawn and the team returns to boss."],warning:"Losing taunt control while two Orbs are up can overwhelm heals."},
+"Legion Revenant":{steps:["Maintain support buffs before first Orb.","Attack the agreed Orb in order, without prematurely killing the wrong one.","Use team DPS on Tyndarius after the Orb window."],warning:"Uncoordinated Orb kills can make the encounter much harder."},
+"Lord of Order":{steps:["Stack support buffs at the pull and coordinate target focus.","Maintain mitigation through Orb transitions.","Use assigned utility on Tyndarius while the tank controls the Orbs."],warning:"If the party desynchronizes Orb deaths, reset targeting immediately."},
+"ArchPaladin":{steps:["Keep defensive mitigation high during the Orb phase.","Time group heals around damage spikes and target switches.","Support the taunter while the party repeats Orb → boss rotation."],warning:"Ignoring Orb pressure to focus boss can lead to a wipe."}
+},
+drago:{
+"Chaos Avenger":{steps:["Confirm whether your taunt assignment is Bowmaster; agree roles with AP.","Focus Bowmaster until the party calls Executioner.","Help control Drago once both guards are down."],warning:"Uncontrolled guard debuffs can quickly overwhelm the party."},
+"Legion Revenant":{steps:["Keep buffs up and focus the called target.","Switch Bowmaster → Executioner → Drago with the party.","Maintain DPS while support covers dangerous guard transitions."],warning:"Split DPS on guards can cause a time-out."},
+"Lord of Order":{steps:["Keep support active while guarding against the Executioner attack.","Prepare Quixotic on Executioner immediately before Bowmaster dies, as arranged.","Sustain buffs into the Drago phase."],warning:"Missing mitigation at the guard transition may wipe the group."},
+"ArchPaladin":{steps:["Coordinate who handles the secondary guard taunt.","Mitigate damage and heal through Bowmaster/Executioner deaths.","Protect the group in the final Drago fight."],warning:"Overlapping taunts without an assigned plan can leave targets uncovered."}
+},
+darkon:{
+"Legion Revenant":{steps:["Before pull: agree alternate Elegy taunters and healer sequence.","Keep group DPS high enough to meet the first timed threshold.","In later phases, do not take consecutive Elegy taunts unless the tactic specifically accounts for debuffs."],warning:"Repeated same-player taunts trigger dangerous mechanics."},
+"Lord of Order":{steps:["Maintain buffs and a precise healing plan.","If assigned an Elegy, take only your turn; avoid double-taunt.","In Phase 2, do not overlap major heals with the other healer."],warning:"Overlapping major heals can turn Phase 2 lethal."},
+"StoneCrusher":{steps:["Keep sustain and HoT uptime while protecting the damage dealer.","Alternate your assigned Elegy taunts with the partner.","Watch haste debuffs and adjust healing between phases."],warning:"Too little party damage fails the encounter's time checks."},
+"LightCaster":{steps:["Equip damage-oriented gear/consumables consistent with team survival.","Deliver DPS steadily through phase transitions and follow taunt calls.","Time heals so they do not coincide with the other healer in Phase 2."],warning:"A weak DPS phase or mistimed heal can wipe the team."}
+},
+gramiel:{
+"StoneCrusher":{steps:["Take your assigned Crystal and alternate taunts on the defense-shattering cue.","Maintain HoT/support during crystal balance.","In Phase 2, taunt only at your assigned position in the four-player rotation."],warning:"Never let the crystal kills drift too far apart."},
+"Legion Revenant":{steps:["Support the assigned Crystal side; avoid skill 2 Decay during Crystal phase.","Help break Gramiel's guard when the call appears.","Taunt in your assigned Phase 2 order; watch Vendetta stacks."],warning:"Decay during the first phase can boost Gramiel's damage."},
+"Lord of Order":{steps:["Keep team buffs and healing available while splitting Crystal teams.","Help break guard, then return to balanced Crystal damage.","Use your assigned Phase 2 taunt turn, not an overlapping scroll."],warning:"Too many Vendetta stacks can kill a player."},
+"Shaman":{steps:["Balance damage across the Crystals rather than bursting one down much earlier.","Follow the Crystal taunt and Gramiel guard-break calls.","In Phase 2, start or follow the agreed four-player taunt order and stop at thresholds."],warning:"The second Crystal must die soon after the first."}
+},
  drakath:{
   'Lord of Order':{steps:['Before the pull: equip Scroll of Enrage if you are the assigned taunter; agree who handles each HP threshold.','Watch Drakath HP: the dangerous blasts trigger at 18M, 16M, 14M, 12M, then 8M, 6M and 4M.','Use Enrage BEFORE the party crosses the next threshold; tell DPS to hold if your taunt is on cooldown.','Keep support buffs up between blasts. At 2M HP, focus the final meteor DPS check.'],warning:'10M is a transformation, not a normal blast; 2M triggers the final meteor phase.'},
   'Void Highlord':{steps:['Before pulling: equip suitable Chaos-target damage gear; identify the team taunter.','Damage steadily. When approaching each 2M HP threshold, avoid pushing past it until the taunter confirms ready.','After the blast, resume DPS; at 2M HP switch to maximum safe damage to beat the meteor cast.'],warning:'Bursting into a threshold before taunt is ready can wipe the party.'},
