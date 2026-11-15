@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>AQW Companion — Character Page Import Lab</title>
+<style>
+:root{font-family:Inter,system-ui,sans-serif;color-scheme:dark;background:#090f1b;color:#edf5ff}
+*{box-sizing:border-box}body{margin:0;padding:25px 16px}
+main{max-width:860px;margin:auto}.panel{background:#142238;border:1px solid #2f4562;border-radius:16px;padding:20px;margin:18px 0}
+h1{margin:0 0 6px;font-size:27px}h2{font-size:19px}p,li{line-height:1.55;color:#b7cbe0}
+a{color:#85d7ff}textarea,input{width:100%;border:1px solid #405772;background:#0c1729;color:#fff;border-radius:9px;padding:12px;font:inherit}textarea{min-height:205px;resize:vertical}
+button{background:#266ec9;color:white;border:1px solid #538bcd;border-radius:9px;padding:11px 15px;cursor:pointer;font-weight:650}
+button:disabled{opacity:.45;cursor:not-allowed}.buttons{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
+.notice{border-left:3px solid #d3ae66;padding:10px 14px;background:#332b1c;color:#f8e3b8;border-radius:6px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.metric{background:#0d192c;border-radius:10px;padding:15px;text-align:center}.metric strong{font-size:26px;display:block;color:#72d3fa}
+#items{width:100%;border-collapse:collapse}#items td,#items th{text-align:left;padding:9px;border-bottom:1px solid #31455f}
+#items input{width:18px;height:18px}small{color:#91a8c6}.hidden{display:none}
+@media(max-width:580px){.stats{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<main>
+<header><h1>⚔️ AQW Companion — Character Page Import Lab</h1><p>Experimental, manual and local-only. No request is made to Artix by this test page.</p></header>
+<div class="notice"><b>Not a complete inventory import.</b> Character Pages omit bank items, may present item names without IDs or quantities, and may not display every type of resource. Results are only candidates until checked against the game.</div>
+<section class="panel">
+<h2>1. Copy your public Character Page</h2>
+<ol><li>Open your <a href="https://account.aq.com/CharPage?id=cptmundo" target="_blank" rel="noopener noreferrer">official Character Page</a> and change the character name in the URL.</li><li>Wait until the <b>Inventory</b> section has fully loaded (not “Loading Inventory…”).</li><li>Highlight the displayed Inventory items, copy them, and paste below. You can also try Ctrl+A / Ctrl+C for the whole page.</li></ol>
+<label for="character">Character name (optional)</label><input id="character" maxlength="40" placeholder="CptMundo" autocomplete="off">
+<label for="source">Copied Character Page text</label><textarea id="source" placeholder="Paste only visible public inventory text here. Do not paste passwords, tokens or private account details."></textarea>
+<div class="buttons"><button id="parse">Analyze pasted text</button><button id="clear">Clear</button></div>
+</section>
+<section id="results" class="panel hidden">
+<h2>2. Review detected names</h2>
+<p id="message"></p><div class="stats"><div class="metric"><strong id="detected">0</strong><small>Candidate lines</small></div><div class="metric"><strong id="selected">0</strong><small>Selected items</small></div><div class="metric"><strong>0</strong><small>Automated requests</small></div></div>
+<p>Tick only confirmed inventory items. The text format is not officially documented; this prototype deliberately avoids guessing quantities and IDs.</p>
+<div class="buttons"><button id="all">Select all</button><button id="none">Select none</button><button id="export">Download reviewed preview JSON</button></div>
+<div style="max-height:370px;overflow:auto"><table id="items"><thead><tr><th>Use</th><th>Candidate item name</th></tr></thead><tbody id="rows"></tbody></table></div>
+<p><small>The preview JSON is <b>not</b> a Companion inventory snapshot and must not overwrite an existing full inventory or bank import.</small></p>
+</section>
+<p><small>Unofficial fan-made experiment · No analytics · Nothing leaves this page · Do not publish account exports.</small></p>
+</main>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+let candidates=[];
+const excluded=/^(inventory|loading inventory|character search|achievements|houses?|house items|save image|close|guild|level|class|weapon|armor|helm|cape|pet|misc|faction|character name|character page|artix|copyright|terms of service|privacy policy|login|logout|search|submit|loading|next|previous|bank|show all|all items|sort|filter|home)$/i;
+function getLines(text){
+ let raw=text.replace(/\r/g,'').split('\n').map(x=>x.replace(/\s+/g,' ').trim()).filter(Boolean);
+ let starts=raw.findIndex(x=>/^inventory\s*:?$/i.test(x));
+ if(starts>=0)raw=raw.slice(starts+1);
+ const ends=raw.findIndex(x=>/^(houses?|house items|copyright|save image|character search)\s*:?$/i.test(x));
+ if(ends>=0)raw=raw.slice(0,ends);
+ return raw.filter(x=>!excluded.test(x)&&!/^loading inventory/i.test(x)&&x.length>=2&&x.length<110&& !/^https?:\/\//i.test(x)&& !/^\d+$/.test(x)&&!/^level\s*:/i.test(x));
+}
+function selected(){return candidates.filter(x=>x.use)}
+function refresh(){ $('detected').textContent=String(candidates.length);$('selected').textContent=String(selected().length);$('export').disabled=!selected().length; }
+$('parse').onclick=()=>{
+ const txt=$('source').value;
+ if(!txt.trim()){alert('Paste visible Character Page inventory text first.');return;}
+ const lines=getLines(txt),unique=[...new Set(lines)];
+ candidates=unique.map(name=>({name,use:false}));
+ $('rows').replaceChildren();
+ for(const item of candidates){
+  const row=document.createElement('tr'),td=document.createElement('td'),check=document.createElement('input');
+  check.type='checkbox';check.setAttribute('aria-label','Include '+item.name);
+  check.onchange=()=>{item.use=check.checked;refresh()};
+  td.append(check);const name=document.createElement('td');name.textContent=item.name;row.append(td,name);$('rows').append(row);
+ }
+ $('results').classList.remove('hidden');
+ $('message').textContent=/loading inventory/i.test(txt)?'Warning: the source contains “Loading Inventory”. Wait for the real inventory to render and copy again.':'Review the names carefully; some page headings may be mistaken for items.';
+ refresh();
+};
+$('all').onclick=()=>{for(const c of candidates)c.use=true;for(const e of $('rows').querySelectorAll('input'))e.checked=true;refresh()};
+$('none').onclick=()=>{for(const c of candidates)c.use=false;for(const e of $('rows').querySelectorAll('input'))e.checked=false;refresh()};
+$('clear').onclick=()=>{$('source').value='';candidates=[];$('results').classList.add('hidden')};
+$('export').onclick=()=>{
+ const payload={format:'AQW Companion Character Page manual review PREVIEW',character:$('character').value.trim(),createdAt:new Date().toISOString(),source:'Public Character Page, copied manually',partial:true,bankIncluded:false,verifiedByUser:true,items:selected().map(x=>({name:x.name}))};
+ const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='AQW_CharacterPage_Preview.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
+</script></body></html>
