@@ -5,13 +5,19 @@ on:
   schedule:
     - cron: '20 8 * * 1' # Monday 08:20 UTC
 
+# Required for GitHub Action to open/update a PR, but not to merge it.
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: aqw-community-database-review
+  cancel-in-progress: false
 
 jobs:
   build-review:
     runs-on: ubuntu-latest
-    timeout-minutes: 18
+    timeout-minutes: 20
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -23,22 +29,59 @@ jobs:
         run: |
           mkdir -p review_output
           python3 scripts/check_updates.py --source-dir source_download --manifest review_output/source_manifest.json --previous-manifest data/source_manifest.json
-      - name: Build proposed database (no publish)
+      - name: Build proposed database
         run: node build_database_v1_1.js source_download review_output/companion_database.json
       - name: Validate database and create detailed review
         run: python3 scripts/make_review.py
       - name: Summarize
-        if: success()
         run: cat review_output/REVIEW.md >> "$GITHUB_STEP_SUMMARY"
-      - name: Upload for manual review
+      - name: Stage proposal if changes are safe
+        id: stage
+        shell: bash
+        run: |
+          python3 scripts/prepare_pr.py
+          echo "status=$(cat review_output/pr_status.txt)" >> "$GITHUB_OUTPUT"
+      - name: Upload review artifacts (always, even if no changes)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: aqw-database-review-v2
+          name: aqw-database-review-v3
           path: |
             review_output/REVIEW.md
             review_output/changes.json
             review_output/source_manifest.json
             review_output/source_manifest_next.json
             review_output/build_report.json
-            review_output/companion_database.json
+            review_output/pr_status.txt
+          if-no-files-found: warn
           retention-days: 14
+      - name: Create or update a review Pull Request (never merge automatically)
+        if: steps.stage.outputs.status == 'DATABASE_CHANGED' || steps.stage.outputs.status == 'SOURCE_ONLY'
+        id: cpr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: automation/aqw-database-review
+          base: main
+          delete-branch: true
+          commit-message: 'Propose AQW community database update'
+          title: 'Review: AQW community database update'
+          body: |
+            ## AQW Companion database review
+            An upstream change was detected. **This is a proposal, not an automatic publication.**
+
+            Review `database_reviews/LATEST_REVIEW.md` and `database_reviews/latest_changes.json`.
+            Check newly changed wiki sources, ingredients, quest gates, and `/join` commands.
+            Confirm redistribution permission and attribution before merging.
+            **Do not merge until reviewed.** No personal inventories or backups are included.
+
+            Once approved and merged, the existing GitHub Pages workflow publishes the updated files.
+          add-paths: |
+            data/companion_database.json
+            data/build_report.json
+            data/source_manifest.json
+            database_reviews/LATEST_REVIEW.md
+            database_reviews/latest_changes.json
+      - name: Show Pull Request link
+        if: steps.cpr.outputs.pull-request-url != ''
+        run: echo "Review PR → ${{ steps.cpr.outputs.pull-request-url }}" >> "$GITHUB_STEP_SUMMARY"
