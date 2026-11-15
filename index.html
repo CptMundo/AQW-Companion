@@ -609,7 +609,7 @@ function upgradeLegacyRecipes(){let changed=false;for(const p of unlocks){
  // Migrate only the untouched, automatically generated 2-step placeholder.
  if(['soul forge hammer','soulforge hammer'].includes(normalizedName(p.name))&&p.steps.length===2&&
  p.steps.some(s=>s.label==='Acquisition route not yet in the catalog')&&
- p.steps.some(s=>s.kind==='owned'&&normalizedName(s.item).replace(/\\s/g,'')==='soulforgehammer')){
+ p.steps.some(s=>s.kind==='owned'&&normalizedName(s.item).replace(/\s/g,'')==='soulforgehammer')){
  const previousOwned=p.steps.find(s=>s.kind==='owned');
  p.name='SoulForge Hammer';p.type='Weapon';
  p.steps=soulForgeRecipe.steps.map(st=>st.kind==='owned'&&st.item==='SoulForge Hammer'&&previousOwned?{...freshStep(st),id:previousOwned.id}:freshStep(st));
