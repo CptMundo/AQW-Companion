@@ -3,7 +3,7 @@ name: AQW Companion - Check database updates
 on:
   workflow_dispatch:
   schedule:
-    - cron: '20 8 * * 1' # Mondays at 08:20 UTC (09:20/10:20 Switzerland depending on DST)
+    - cron: '20 8 * * 1' # Monday 08:20 UTC
 
 permissions:
   contents: read
@@ -11,38 +11,34 @@ permissions:
 jobs:
   build-review:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 18
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-
-      - name: Download and validate upstream community data
+      - name: Fetch upstream and compare source hashes
         run: |
           mkdir -p review_output
           python3 scripts/check_updates.py --source-dir source_download --manifest review_output/source_manifest.json --previous-manifest data/source_manifest.json
-
-      - name: Build proposed database (without changing website)
+      - name: Build proposed database (no publish)
         run: node build_database_v1_1.js source_download review_output/companion_database.json
-
-      - name: Create review and regression checks
+      - name: Validate database and create detailed review
         run: python3 scripts/make_review.py
-
-      - name: Show review summary in workflow
+      - name: Summarize
         if: success()
         run: cat review_output/REVIEW.md >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload proposed update for manual review
+      - name: Upload for manual review
         uses: actions/upload-artifact@v4
         with:
-          name: aqw-database-review
+          name: aqw-database-review-v2
           path: |
             review_output/REVIEW.md
-            review_output/build_report.json
+            review_output/changes.json
             review_output/source_manifest.json
+            review_output/source_manifest_next.json
+            review_output/build_report.json
             review_output/companion_database.json
           retention-days: 14

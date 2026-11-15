@@ -31,6 +31,7 @@ def main():
             previous = json.loads(oldfile.read_text(encoding='utf-8')).get('files', {})
         except (ValueError, OSError) as exc:
             raise SystemExit(f'Previous manifest cannot be read: {exc}')
+    baseline_present = oldfile.exists() and bool(previous)
     meta = {}
     for name in FILES:
         url = BASE + name
@@ -59,7 +60,8 @@ def main():
         meta[name] = {'sha256': digest, 'bytes': len(data), 'topLevelEntries': len(parsed), 'changedSinceSavedManifest': digest != previous.get(name, {}).get('sha256')}
         print(f'{name}: {len(parsed)} entries, {len(data):,} bytes, changed={meta[name]["changedSinceSavedManifest"]}')
     output = {'source': 'R41CY/AQWikiTools', 'branch': 'main', 'files': meta,
-              'changedFiles': [f for f in FILES if meta[f]['changedSinceSavedManifest']]}
+              'changedFiles': [f for f in FILES if meta[f]['changedSinceSavedManifest']],
+              'baselinePresent': baseline_present}
     Path(args.manifest).write_text(json.dumps(output, indent=2) + '\n', encoding='utf-8')
     print('Source files changed:', ', '.join(output['changedFiles']) or 'none')
 

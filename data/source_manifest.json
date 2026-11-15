@@ -1,0 +1,32 @@
+{
+  "source": "R41CY/AQWikiTools",
+  "branch": "main",
+  "baseline": "User-uploaded upstream files, 2026-11-15 (not verified against live upstream commit)",
+  "files": {
+    "WikiItems.json": {
+      "sha256": "5e10735631db4144e1ad4894957e100b4547c21e1a6711da0f74a21f10e9fc17",
+      "bytes": 23601075,
+      "topLevelEntries": 46979
+    },
+    "Classes.json": {
+      "sha256": "508f6c122ebb0c2d1ac941c1705f69f8ad3d2200d86bb4af80db6a018a859a83",
+      "bytes": 267150,
+      "topLevelEntries": 287
+    },
+    "locations.json": {
+      "sha256": "8c1e7ed4dccb5dbdfc944aebd5f927c6d6e4006cedcebe8c1176225cbf11720e",
+      "bytes": 2202620,
+      "topLevelEntries": 1295
+    },
+    "merge_shops.json": {
+      "sha256": "f876ae84817ab2bccf448059eb1a1d12bccc1f3bd434ae40004c1f0b85d2699d",
+      "bytes": 7146209,
+      "topLevelEntries": 685
+    },
+    "quests.json": {
+      "sha256": "297f0ffe00938cd75985257d46b008b5b24fd579f0a47a05759c22b0701a27fc",
+      "bytes": 15659707,
+      "topLevelEntries": 1260
+    }
+  }
+}
