@@ -20,14 +20,14 @@ def main():
   page=get(URL)
   # The public AQWorlds news page is not the full Artix calendar. Import only
   # headlines with explicit dates and label them as NEWS, never as boosts.
-  for m in re.finditer(r'<a\\b[^>]*href=["\\']([^"\\']+)["\\'][^>]*>(.*?)</a>',page,re.I|re.S):
+  for m in re.finditer(r"""<a\b[^>]*href=["\x27]([^"\x27]+)["\x27][^>]*>(.*?)</a>""",page,re.I|re.S):
    href,raw=m.groups()
    if not ('aqworlds' in href.lower() or 'gamedesignnotes' in href.lower()):continue
    parser=Reader();parser.feed(raw);title=html.unescape(' '.join(parser.parts)).strip()
    if not title or len(title)>140:continue
    # Date must be explicit in the anchor's nearby source markup.
    around=page[max(0,m.start()-300):min(len(page),m.end()+300)]
-   dm=re.search(r'(?:20[2-3]\\d)[-/](?:0?[1-9]|1[0-2])[-/](?:[0-2]?[0-9]|3[01])',around)
+   dm=re.search(r'(?:20[2-3]\d)[-/](?:0?[1-9]|1[0-2])[-/](?:[0-2]?[0-9]|3[01])',around)
    if not dm:continue
    try:date=datetime.date.fromisoformat(dm.group().replace('/','-')).isoformat()
    except ValueError:continue
