@@ -1546,13 +1546,13 @@ function renderHomeInventoryChanges(){
 function renderSeasonalOpportunities(){
  const root=$('homeseasoncontent');if(!root)return;root.replaceChildren();
  const now=new Date();let year=now.getFullYear(),month=now.getMonth(),selected=now.getDate();
- const known=[
- {date:'2026-11-13',name:'Cursed Harvest: Feast of Miss Fortune',desc:'Official release announcement; verify availability in-game.',url:'https://www.aq.com/gamedesignnotes/aqw-cursedharvest26-13nov26-10514'},
- {date:'2026-11-13',name:'Double Reputation Boost',desc:'Announced as the weekend server boost in the official November 13 Design Notes. Exact end time not specified.',url:'https://www.aq.com/gamedesignnotes/aqw-cursedharvest26-13nov26-10514'},
- {date:'2026-11-14',name:'DoomKitten daily gift',desc:'Official Saturday drop in /doomkitten.',url:'https://www.aq.com/gamedesignnotes/aqw-cursedharvest26-13nov26-10514'},
- {date:'2026-11-15',name:'Sleep Paralysis daily gift',desc:'Official Sunday drop in /gothicdream.',url:'https://www.aq.com/gamedesignnotes/aqw-cursedharvest26-13nov26-10514'},
- {date:'2026-11-20',name:'Safiria collection',desc:'Announced collection; date and availability may change.',url:'https://www.aq.com/gamedesignnotes/'}
+ const fallback=[
+ {date:'2026-11-13',name:'Cursed Harvest: Feast of Miss Fortune',desc:'Official release; /join charityfeast.',url:'https://www.aq.com/gamedesignnotes/aqw-cursedharvest26-13nov26-10514'},
+ {date:'2026-11-13',name:'Double Reputation Boost',desc:'Weekend boost; end time unconfirmed.',url:'https://www.aq.com/gamedesignnotes/aqw-cursedharvest26-13nov26-10514'}
  ];
+ let known=fallback;
+ const eventsFor=date=>known.filter(e=>e.date<=date&&(!e.endDate||e.endDate>=date)&&(e.endDate||e.date===date));
+
  const shell=node('div',undefined,'aqw-calendar'),nav=node('div',undefined,'aqw-calendar-nav'),prev=node('button','‹','smallbutton'),title=node('strong'),next=node('button','›','smallbutton'),grid=node('div',undefined,'aqw-calendar-grid'),detail=node('div',undefined,'aqw-calendar-detail');
  prev.type=next.type='button';nav.append(prev,title,next);shell.append(nav,grid,detail);root.append(shell);
  function draw(){
@@ -1564,18 +1564,26 @@ function renderSeasonalOpportunities(){
   const days=new Date(year,month+1,0).getDate();
   for(let day=1;day<=days;day++){
    const date=year+'-'+String(month+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
-   const events=known.filter(e=>e.date===date);
+   const events=eventsFor(date);
    const btn=node('button',String(day),'aqw-cal-day'+(day===selected?' selected':'')+(events.length?' has-event':''));btn.type='button';btn.setAttribute('aria-label',date+(events.length?' - event announced':''));btn.onclick=()=>{selected=day;draw()};grid.append(btn);
   }
   detail.replaceChildren();const date=year+'-'+String(month+1).padStart(2,'0')+'-'+String(selected).padStart(2,'0');
   detail.append(node('strong',new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'long',year:'numeric'}).format(new Date(year,month,selected))));
-  const events=known.filter(e=>e.date===date);
+  const events=eventsFor(date);
   if(events.length){for(const e of events){const line=node('div',undefined,'aqw-cal-event'),a=node('a',e.name);a.href=e.url;a.target='_blank';a.rel='noopener noreferrer';line.append(a,node('small',e.desc));detail.append(line)}}
   else detail.append(node('p','No verified event or boost information recorded for this date.','muted tiny'));
  }
  prev.onclick=()=>{month--;if(month<0){month=11;year--}selected=1;draw()};
  next.onclick=()=>{month++;if(month>11){month=0;year++}selected=1;draw()};
- draw();root.append(node('p','Only dated announcements are shown. Boosts are not synchronized live; an empty day does not mean there is no boost.','muted tiny'));
+ draw();
+ fetch('./data/aqw-calendar.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Calendar feed unavailable');return r.json()}).then(feed=>{
+  if(!Array.isArray(feed.events))return;
+  known=feed.events.filter(e=>/^\\d{4}-\\d{2}-\\d{2}$/.test(e.date)&&e.name&&e.url);
+  draw();
+  const status=node('small','Official feed checked: '+(feed.updatedAt||'unknown')+' · '+(feed.status||'Verified dated entries only'),'muted');
+  root.append(status);
+ }).catch(()=>root.append(node('small','Showing offline fallback; official feed unavailable.','muted')));
+ root.append(node('p','Only dated announcements are shown. Boosts are not synchronized live; an empty day does not mean there is no boost.','muted tiny'));
  const official=node('a','Official Artix Calendar ↗');official.href='https://www.artix.com/calendar/';official.target='_blank';official.rel='noopener noreferrer';root.append(official);
 }
 function renderHomeInsights(){
