@@ -1393,4 +1393,66 @@ activateTab('overview');$('opencommunityadvanced').onclick=()=>activateTab('data
 </script><script id="aqw-v7-navigation-fixes">document.addEventListener('DOMContentLoaded',()=>{
 const nav=document.querySelector('#companion-sidebar');if(nav){const labels={'overview':['⌂','Home'],'unlocks':['◇','Wishlist'],'planner':['▣','Daily / Weekly'],'ultras':['⚔','Ultras'],'story':['▤','Story'],'inventory':['▦','Inventory'],'discover':['✧','Explore'],'compare':['⇄','Compare'],'history':['◷','History']};nav.querySelectorAll('[data-go]').forEach(b=>{const d=labels[b.dataset.go];if(d)b.innerHTML='<span>'+d[0]+'</span> '+d[1]})}
 const h=document.querySelector('#companion-page-heading');if(h){const obs=new MutationObserver(()=>{if(document.querySelector('#overview.view.active')){const title=h.querySelector('h2');if(title)title.textContent='Home · Your AQW dashboard'}});obs.observe(h,{childList:true,subtree:true})}
-});</script></body></html>
+});</script><style id="aqw-v8-final-layout">
+/* Use existing group navigation as the functional router; hide the old nav visually only. */
+.primarynav,.subnav{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important}
+#companion-sidebar{box-shadow:8px 0 40px #030a1226}
+#companion-sidebar button{font-size:14px!important}
+#companion-sidebar button span{font-size:19px!important}
+#companion-sidebar .side-foot{border-top:1px solid #304356}
+#companion-page-heading{margin-top:26px}
+#unlocks .unlockcard{display:block!important}
+#unlocks .unlocksteps{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#unlocks .unlockstep .farming-step-actions button{min-height:32px}
+#unlocks .unlockstep .wishlist-material-info{font-size:12px}
+#unlocks .unlockhead{align-items:flex-start}
+#unlocks .unlockhead .smallbutton{opacity:.8}
+#unlocks .unlockhead h3{color:#f2f7ff}
+#unlocks .itemlink{color:#8bd1ff}
+#unlocks .unlockstep .status.done{background:#103e35;color:#72e0ad}
+#unlocks .unlockstep .status.todo{background:#463014;color:#ffd27b}
+#unlocks .unlockstep .status.unknown{background:#29394b;color:#c1d1e1}
+#unlocks .wishlist-material-fill{background:linear-gradient(90deg,#378fe2,#52c9ba)}
+#unlocks .unlockstep .stepselect{width:100%;max-width:220px}
+#unlocks .newunlock{margin:16px 0 10px}
+#unlocks .toolbar{margin-top:14px}
+#ultras .ultracards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+#ultras .ultradetail{margin-top:20px}
+#companion-calendar .cal-day{position:relative}
+#companion-calendar .cal-day.today:after{content:'Today';position:absolute;bottom:7px;right:7px;font-size:10px;color:#9dd7ff}
+.top .actions{margin-left:auto}
+#companion-footer{margin-top:55px}
+@media(max-width:850px){#unlocks .unlocksteps{grid-template-columns:1fr!important}}
+@media(max-width:620px){#companion-sidebar button{font-size:0!important}#companion-sidebar button span{font-size:20px!important}.top .actions{width:100%;justify-content:flex-start;flex-wrap:wrap}}
+</style>
+<script id="aqw-v8-functional-navigation">
+document.addEventListener('DOMContentLoaded',()=>{
+const map={overview:'home',unlocks:'projects',planner:'planner',ultras:'ultras',story:'story',inventory:'inventory',discover:'explore',compare:'inventory',history:'inventory'};
+const side=document.getElementById('companion-sidebar');
+if(!side)return;
+side.querySelectorAll('button[data-go]').forEach(btn=>{
+btn.onclick=()=>{
+const id=btn.dataset.go;
+const tab=document.querySelector('.subnav [data-tab="'+id+'"]');
+const group=document.querySelector('.primarynav [data-group="'+map[id]+'"]');
+if(group)group.click();
+if(tab)tab.click();
+else if(id==='inventory'){const t=document.querySelector('.subnav [data-tab="inventory"]');if(t)t.click()}
+else if(id==='discover'){const t=document.querySelector('.subnav [data-tab="discover"]');if(t)t.click()}
+window.scrollTo({top:0,behavior:'smooth'});
+};
+});
+const page=document.getElementById('companion-page-heading'),calendar=document.getElementById('companion-calendar');
+const names={overview:['Home','Calendar, Wishlist progress and Daily / Weekly overview'],unlocks:['Wishlist','Your goals, materials and crafting dependencies'],planner:['Daily / Weekly','One checklist for your tracked activities'],ultras:['Ultras','Select a boss for mechanics, classes, taunts and rewards'],story:['Story','Saga and adventure progress'],inventory:['Inventory','Search your imported inventory and bank'],discover:['Explore','Find your next objective'],compare:['Compare','Changes between inventory imports'],history:['History','Previous inventory snapshots'],database:['Community Database','Item sources and acquisition data']};
+function refresh(){
+const active=document.querySelector('.view.active');if(!active)return;
+const id=active.id;
+side.querySelectorAll('button[data-go]').forEach(b=>b.classList.toggle('selected',b.dataset.go===id||(id==='database'&&b.dataset.go==='discover')));
+const n=names[id]||['AQW Companion','Your account tools'];
+if(page){const h=page.querySelector('h2'),p=page.querySelector('p');if(h&&h.textContent!==n[0])h.textContent=n[0];if(p&&p.textContent!==n[1])p.textContent=n[1]}
+if(calendar)calendar.style.display=id==='overview'?'':'none';
+}
+const obs=new MutationObserver(refresh);document.querySelectorAll('.view').forEach(v=>obs.observe(v,{attributes:true,attributeFilter:['class']}));
+refresh();
+});
+</script></body></html>
