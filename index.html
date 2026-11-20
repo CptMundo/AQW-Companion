@@ -1592,7 +1592,7 @@ function renderSeasonalOpportunities(){
  draw();
  fetch('./data/aqw-calendar.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Calendar feed unavailable');return r.json()}).then(feed=>{
   if(!Array.isArray(feed.events))return;
-  known=feed.events.filter(e=>/^\\d{4}-\\d{2}-\\d{2}$/.test(e.date)&&e.name&&e.url);
+  known=feed.events.filter(e=>/^\d{4}-\d{2}-\d{2}$/.test(e.date)&&e.name&&e.url);
   draw();
   const status=node('small','Official feed checked: '+(feed.updatedAt||'unknown')+' · '+(feed.status||'Verified dated entries only'),'muted');
   root.append(status);
