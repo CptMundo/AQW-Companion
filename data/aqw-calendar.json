@@ -1,11 +1,21 @@
 {
-  "updatedAt": "2026-11-20T00:00:00Z",
-  "status": "Initial verified entries; automated news updates are best-effort, not a complete official event feed.",
+  "updatedAt": "2026-11-21T16:50:03+00:00",
+  "status": "Official AQWorlds news page checked; calendar boosts require explicit confirmation",
   "sources": [
     "https://www.artix.com/calendar/",
+    "https://www.artix.com/games/aqworlds/",
     "https://www.aq.com/gamedesignnotes/"
   ],
   "events": [
+    {
+      "date": "2026-11-01",
+      "endDate": "2026-11-30",
+      "name": "Harvest Hunters seasonal set",
+      "desc": "November seasonal set; availability subject to in-game confirmation.",
+      "url": "https://game4.aq.com/gamedesignnotes/tag/seasonal-set",
+      "category": "seasonal",
+      "source": "curated"
+    },
     {
       "date": "2026-11-13",
       "name": "Cursed Harvest: Feast of Miss Fortune",
@@ -45,15 +55,6 @@
       "url": "https://www.aq.com/gamedesignnotes/",
       "category": "release",
       "source": "curated"
-    },
-    {
-      "date": "2026-11-01",
-      "endDate": "2026-11-30",
-      "name": "Harvest Hunters seasonal set",
-      "desc": "November seasonal set; availability subject to in-game confirmation.",
-      "url": "https://game4.aq.com/gamedesignnotes/tag/seasonal-set",
-      "category": "seasonal",
-      "source": "curated"
     }
   ]
-}
+}\n
