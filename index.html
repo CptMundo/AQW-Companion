@@ -1113,6 +1113,21 @@ body{background:#0a1420!important}
  #damage .damage-gear-grid{grid-template-columns:minmax(0,1fr)!important}
 }
 </style>
+<style id="aqw-damage-hero-range-side-by-side-v1">
+/* Two result panels side by side; supporting breakdown spans the full row. */
+@media(min-width:1050px){
+ #damage .damage-results{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:14px!important;align-items:stretch}
+ #damage .damage-results>.damage-showcase,#damage .damage-results>.damage-range-panel{min-width:0;margin:0;min-height:265px;height:100%;box-sizing:border-box}
+ #damage .damage-results>.damage-showcase{padding:24px}
+ #damage .damage-results>.damage-showcase .damage-showcase-number{font-size:clamp(39px,4vw,64px)}
+ #damage .damage-results>.damage-showcase .damage-showcase-multiplier strong{font-size:clamp(24px,2.6vw,36px)}
+ #damage .damage-results>.damage-range-panel{display:flex;flex-direction:column;justify-content:center;padding:20px}
+ #damage .damage-results>.damage-factor-grid,#damage .damage-results>.damage-calculation-details{grid-column:1/-1;min-width:0}
+}
+@media(max-width:1049px){
+ #damage .damage-results{display:flex!important;flex-direction:column!important}
+}
+</style>
 <style id="aqw-damage-showcase-v2">
 .subnav:has(button.group-visible[data-parent="damage"]){display:none!important}
 .subnav button[data-parent="damage"]{display:none!important}
