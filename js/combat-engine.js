@@ -56,8 +56,25 @@
   }
   function simulate(input) {
     if(!input||typeof input!=="object")throw new TypeError("input required");
-    const seconds=input.seconds;
-    if(seconds!==15&&seconds!==20)throw new RangeError("only 15 or 20 second windows are supported in this prototype");
+    const seconds=input.seconds??20;
+    if(seconds!==20)throw new RangeError("prototype has one fixed 20-second window");
+    if(input.observedEvents!==undefined) {
+      if(!Array.isArray(input.observedEvents))throw new TypeError("observedEvents must be an array");
+      const events=input.observedEvents.map((e,i)=>{
+        if(!e||typeof e!=="object")throw new TypeError("invalid observed event "+i);
+        const time=finitePositive(e.time,"observed event time",true);
+        if(time>=seconds)throw new RangeError("observed event outside 20-second window");
+        const damage=finitePositive(e.damage,"observed event damage",true);
+        if(typeof e.id!=="string"||!e.id.trim())throw new TypeError("observed event must name its skill");
+        return {time,kind:"observed",id:e.id.trim(),damage};
+      }).sort((a,b)=>a.time-b.time);
+      if(!events.length)return {seconds,events,fullDamage:null,dps:null,resultStatus:"no-observations",
+        knownHitSubtotal:0,missingHitCount:null,limitations:["No combat observations supplied."]};
+      const fullDamage=events.reduce((sum,e)=>sum+e.damage,0);
+      return {seconds,events,fullDamage,dps:fullDamage/seconds,resultStatus:"observed-window",
+        knownHitSubtotal:fullDamage,missingHitCount:0,
+        limitations:["Observed DPS represents only the manually supplied events; verify that ALL hits, DoTs and procs within 20s are included.","No damage is predicted from class/enhancement formulas."]};
+    }
     const model=input.model||VHL;
     const rotation=normalizeSkillIds(input.rotation||["unshackle","gaze","armageddon"],model.skills);
     const gap=finitePositive(input.actionGapSeconds??0.5,"actionGapSeconds");
@@ -122,5 +139,5 @@
       knownHitSubtotal:measuredTotal,missingHitCount:missing.length,
       limitations:[...model.notes,"Measured hits are assumed constant despite changing buffs and target debuffs; this is NOT calibrated true fight DPS.","Proc/DoT/HoT, evasion, skill animation/cast locks, mana and target defenses are not yet modeled."]};
   }
-  root.AQWCombatEngine=Object.freeze({version:"0.1.0-research",VHL,simulate});
+  root.AQWCombatEngine=Object.freeze({version:"0.2.0-20s-preview",VHL,simulate});
 })(typeof window!=="undefined"?window:globalThis);
