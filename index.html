@@ -868,6 +868,18 @@ body{background:#0a1420!important}
  #builds .build-character-armor{right:8px;left:auto;top:auto;bottom:11%}
 }
 </style>
+<style id="aqw-build-effects-compact-v1">
+#builds .build-detail-stack{grid-template-rows:minmax(0,1fr) auto}
+#builds .build-effects-panel{display:flex;flex-direction:column}
+#builds .build-effect-row{padding:10px 0;border-bottom:1px solid #2b4055}
+#builds .build-effect-row:last-of-type{border-bottom:0}
+#builds .build-effect-heading{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:13px}
+#builds .build-effect-heading>strong{min-width:55px}
+#builds .build-effect-combo{font-weight:700;color:#9fe0ff}
+#builds .build-effect-description{margin:5px 0 0;font-size:12px;line-height:1.55;color:#b9d2e6}
+#builds .build-effect-row:last-of-type{margin-bottom:8px}
+@media(max-width:900px){#builds .build-detail-stack{grid-template-rows:auto}}
+</style>
 <style id="aqw-build-connector-pixel-fix">
 /* SVG geometry is calculated in rendered pixels, not a scaled static viewBox. */
 #builds svg.build-body-connectors{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;transform:none!important;pointer-events:none;overflow:visible}
@@ -899,7 +911,7 @@ body{background:#0a1420!important}
 <section id="ultras" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle">⚡ Ultra Boss Strategy Guides</h3><p class="muted tiny">Choose a boss and your class to see a suggested team, a role-specific plan, fight phases and common wipe causes. Strategies are community-sourced and may change. Guides are community references, not live combat instructions.</p></div><span class="pill">11 strategy guides · Community references</span></div><div class="toolbar"><input id="ultrasearch" type="search" placeholder="Search bosses, mechanics or classes…"><select id="ultrafilter"><option value="all">All guides</option><option value="ready">All suggested classes owned</option></select></div><div class="ultra-reset-tools"><span class="muted tiny">Ultra checklist · Resets at 00:00 EST (AQW server time), weekly on Friday.</span><div class="ultra-reset-actions"><button type="button" id="resetultradaily" class="smallbutton">Reset Daily Ultra checks</button><button type="button" id="resetultraweekly" class="smallbutton">Reset Weekly Ultra checks</button></div></div><div class="ultra-master-detail"><div id="ultracards" class="ultracards"></div><div id="ultradetail" class="ultradetail hidden"></div></div>
 <div class="ultra-catalog-wrapper"><div class="homehead"><h3 class="sectiontitle">⚔️ Other Ultra Encounters</h3><span class="pill">Catalog · not all have guides</span></div>
 <p class="muted tiny">Legacy and seasonal encounters without a reviewed strategy. Main farming ultras now appear above with team comps and fight guides. Verify maps and availability.</p>
-<div id="ultracatalog" class="ultra-catalog"></div></div></div></section><section id="builds" class="view"><div class="card build-planner-card"><div class="unlocktop"><div><h3 class="sectiontitle">🛡️ Class Build Planner</h3><p class="muted tiny">2026 class loadouts for Solo, Farming and Group / Ultras. Includes base enhancements and situational Forge choices; verify each boss strategy.</p></div><span class="pill">Alpha · Starter builds</span></div><div class="build-controls"><label>Class<select id="build-class"></select></label><label>Activity<select id="build-role"><option value="solo">Solo / Boss</option><option value="farm">Farming</option><option value="group">Group / Ultras</option></select></label></div><div id="build-results" aria-live="polite"></div><p class="muted tiny">Forge unlock detection and verified source links will be added in a future PR. Nothing here changes your character or inventory.</p></div></section>
+<div id="ultracatalog" class="ultra-catalog"></div></div></div></section><section id="builds" class="view"><div class="card build-planner-card"><div class="unlocktop"><div><h3 class="sectiontitle">🛡️ Class Build Planner</h3><p class="muted tiny">2026 class loadouts for Solo, Farming and Group / Ultras. Includes base enhancements and situational Forge choices; verify each boss strategy.</p></div><span class="pill">Alpha · Starter builds</span></div><div class="build-controls"><label>Class<select id="build-class"></select></label><label>Activity<select id="build-role"><option value="solo">Solo / Boss</option><option value="farm">Farming</option><option value="group">Group / Ultras</option></select></label></div><div id="build-results" aria-live="polite"></div></div></section>
 <section id="planner" class="view"><div class="card"><div class="goalhead"><h3 class="sectiontitle" style="margin:0">My Pinned Tasks</h3><span class="pill">Changes saved automatically</span></div><div id="planner-my-tasks" class="task-grid"></div><p class="muted tiny">Checks refresh at 00:00 EST (AQW server reset), and weekly on Friday. Saved locally; previous periods remain in backup.</p></div><div class="card" style="margin-bottom:15px"><div class="unlocktop"><div><h3 class="sectiontitle">📅 Daily / Weekly Tracker</h3><p class="muted tiny">Pin only what you want to track. Check off a task for the current local day or tracking week. Nothing is marked complete from your item inventory.</p></div><span class="pill">Local · Optional · Manual</span></div>
 <div class="planner-controls"><div class="planner-metric"><strong id="dailycount">0 / 0</strong><span>Daily tasks</span><div class="planner-progress"><div id="dailybar"></div></div></div><div class="planner-metric"><strong id="weeklycount">0 / 0</strong><span>Weekly tasks</span><div class="planner-progress"><div id="weeklybar"></div></div></div></div>
 <p class="muted tiny" id="plannerperiod"></p><div class="toolbar"><input id="plannersearch" placeholder="Search suggested tasks…" type="search"><select id="plannerfilter"><option value="all">Daily &amp; weekly</option><option value="daily">Daily only</option><option value="weekly">Weekly only</option></select></div>
@@ -2394,15 +2406,38 @@ function suggestedBaseEnhancement(cls,role,slot){
  const base=baseClassEnhancement[cls]||'Lucky';
  return base;
 }
-const classBuildSources=[
- ['Artix · 2026 balance notes','https://www.aq.com/gamedesignnotes/AQW-Balance-PatchNotes-9515'],
- ['Artix · enhancement traits','https://www.aq.com/Lore/Guides/EnhancementTraits'],
- ['AQWG · Forge list','https://sites.google.com/view/aqwg-net/forge-enhancements'],
- ['AQW Forge Guide · effects and trade-offs','https://nandixer.github.io/forge/'],
- ['AQW Hub · class progression','https://github.com/Shell1010/AQW-md/blob/main/Other%20Guides/Basic%20Class%20Guide.md'],
- ['Community tests · Arcana Invoker 2026','https://www.reddit.com/r/AQW/comments/1voxqzc/arcana_invoker_farming_i_was_wrong_its_even_better/'],
- ["Community tests · King's Echo 2026",'https://www.reddit.com/r/AQW/comments/1rocfbw/kings_echo_enhancements_small_analysis/']
-];
+const enhancementEffects={
+ Lucky:'Raises Luck, improving critical chance and critical damage. Exact gains depend on enhancement level and class stats.',
+ Wizard:'Adds Intellect and spell-oriented stats; the exact bonus depends on level.',
+ Fighter:'Adds Strength and Endurance; the exact bonus depends on level.',
+ Healer:'Adds health and healing-oriented stats; the exact bonus depends on level.',
+ Forge:'Base Forge helm: strong core stats, with no special passive or HP penalty.',
+ 'Awe Blast':'30% auto-attack proc: 100% hybrid damage; enemy -15% Crit Chance and -15% Defense for 10s.',
+ 'Spiral Carve':'15% auto-attack proc: 200% hybrid damage; +25% Crit Chance for 10s.',
+ 'Mana Vamp':'80% auto-attack proc: 50% true hybrid damage and +10 mana.',
+ Valiance:'Auto-attack proc (15s cooldown): +30% STR/DEX/INT/WIS/END and +15% Luck for 20s.',
+ Dauntless:'Skill 2 proc (3s cooldown): 190–570% physical damage; +15% Crit Chance, +25% Haste, -50% mana cost for 12s; cannot receive heals for 6s.',
+ Ravenous:'Skill 3 proc: +10% outgoing damage and +25% Crit Chance for 10s; reduces enemy damage and Crit Chance (stacking).',
+ Praxis:'Skill 2 proc (4s cooldown): +10% damage per successive hit to the same target; also reduces enemy Dodge.',
+ Smite:'Skill 5 proc (15s cooldown): deals 500% hybrid damage.',
+ "Arcana's Concerto":'50% auto-attack proc: +2% physical and magical damage taken per stack on the target, up to 11 stacks (+22%) for 22s.',
+ 'Arcana’s Concerto':'50% auto-attack proc: +2% physical and magical damage taken per stack on the target, up to 11 stacks (+22%) for 22s.',
+ Elysium:'Skill 3 proc: 250–1125% magic damage (stronger at lower mana), restores 4 mana/s, plus +10% outgoing damage per stack (up to 3).',
+ Acheron:'Skill 3 proc: +30% damage and Hit Chance for 6s, but applies a stacking self-DoT.',
+ Anima:'Offensive physical Forge helm: +10% Hit Chance; boosts Strength but reduces Endurance/HP (level-dependent).',
+ Pneuma:'Offensive magical Forge helm: +10% Hit Chance; boosts Intellect but reduces Endurance/HP (level-dependent).',
+ Vim:'Forge helm: -33% mana consumption; boosts Dexterity but reduces Endurance/HP (level-dependent).',
+ Examen:'Forge helm: -33% mana consumption; boosts Wisdom but reduces Endurance/HP (level-dependent).',
+ Hearty:'Defensive helm: boosts Endurance/HP at the cost of offensive/core stats (level-dependent).',
+ Absolution:'Cape: +50% Heal Boost; -20% physical damage dealt.',
+ Vainglory:'Cape: +15% damage dealt; -50% healing received.',
+ Avarice:'Cape: +10% Haste; -35% Damage Resistance.',
+ Penitence:'Cape: +25% Damage Resistance; -25% damage-over-time damage dealt.',
+ Lament:'Cape: +20% Crit Chance; -5% Haste.'
+};
+function buildEnhancementEffect(name){
+ return enhancementEffects[name]||'Stats or situational effect depend on the class and enhancement level.';
+}
 function suggestedConsumables(cls,role){
  const base=baseClassEnhancement[cls]||'Lucky';
  const physical=base!=='Wizard';
@@ -2437,7 +2472,7 @@ function renderClassBuild(){
  for(const [label,emoji,value] of slotData){
   const slot=node('div',undefined,'build-character-slot build-character-'+label.toLowerCase());
   slot.append(node('span',emoji+' '+label,'build-slot-label'),node('strong',value));
-  const help=enhancementHelp[value]||'Situational Forge enhancement; compare its effect in-game.';
+  const help=buildEnhancementEffect(value);
   slot.append(node('small',help));
   const colorKey=value.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
   slot.dataset.enhancement=colorKey;
@@ -2498,23 +2533,25 @@ function renderClassBuild(){
   observer.observe(mannequin);
  }
  const info=node('div',undefined,'build-detail-stack');
- const expl=node('section',undefined,'build-info-panel');expl.append(node('h4','Why these enhancements?'));
- for(const [label,,value] of slotData){const line=node('div',undefined,'build-info-line');line.append(node('strong',label+' · '+value),node('span',enhancementHelp[value]||'Check the Forge description and the boss mechanics.'));expl.append(line)}
+ const expl=node('section',undefined,'build-info-panel build-effects-panel');
+ expl.append(node('h4','Enhancement effects · standard → recommended'));
+ for(const [label,,recommended] of slotData){
+  const standard=suggestedBaseEnhancement(cls,role,label.toLowerCase());
+  const line=node('div',undefined,'build-effect-row');
+  const heading=node('div',undefined,'build-effect-heading');
+  heading.append(node('strong',label),node('span',standard+' → '+recommended,'build-effect-combo'));
+  const description=standard===recommended
+   ?buildEnhancementEffect(recommended)
+   :'Base '+standard+': '+buildEnhancementEffect(standard)+' Recommended '+recommended+': '+buildEnhancementEffect(recommended);
+  line.append(heading,node('p',description,'build-effect-description'));
+  expl.append(line);
+ }
+ expl.append(node('p','Percentages describe enhancement traits or procs, not guaranteed final character stats. Standard stats depend on level.','muted tiny'));
  info.append(expl);
- const base=node('section',undefined,'build-info-panel');base.append(node('h4','Standard enhancements · before Forge'));
- for(const label of ['Weapon','Helm','Cape','Armor']){const value=suggestedBaseEnhancement(cls,role,label.toLowerCase());const line=node('div',undefined,'build-info-line');line.append(node('strong',label+' · '+value),node('span',enhancementHelp[value]||'Lucky favors physical crits; Wizard favors spell damage; Healer favors support.'));base.append(line)}
- info.append(base);
  const pots=node('section',undefined,'build-info-panel');pots.append(node('h4','Consumables · optional starter ideas'));
  for(const [label,value] of suggestedConsumables(cls,role)){const line=node('div',undefined,'build-info-line');line.append(node('strong',label),node('span',value));pots.append(line)}
  pots.append(node('p','Examples only, not verified for this class or boss. Check exact item names, effects and availability in-game.','muted tiny'));info.append(pots);
- const sources=node('div',undefined,'build-source-note');
- sources.append(node('strong','Sources · reviewed November 2026: '));
- for(const [i,source] of classBuildSources.entries()){
-  if(i)sources.append(node('span',' · '));
-  const link=node('a',source[0]);link.href=source[1];link.target='_blank';link.rel='noopener noreferrer';sources.append(link)
- }
- sources.append(node('p','Curated starter loadouts, not universal best-in-slot. Ultra bosses require fight-specific choices. Recent class balance changes can invalidate older guides.','muted tiny'));
- layout.append(mannequin,info);panel.append(layout,node('div','Alternative: '+build.alternative,'build-alternative'),node('p',build.note,'build-note'),sources);root.append(panel)
+ layout.append(mannequin,info);panel.append(layout,node('div','Alternative: '+build.alternative,'build-alternative'),node('p',build.note,'build-note'));root.append(panel)
 }
 function initClassBuildPlanner(){
  const select=$('build-class'),role=$('build-role'),root=$('build-results');
