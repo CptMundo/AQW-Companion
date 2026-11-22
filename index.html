@@ -1014,6 +1014,15 @@ body{background:#0a1420!important}
 #ultradetail .ultra-setup-card>h3,
 #ultradetail .ultra-quickstart>h3{text-align:center;width:100%}
 </style>
+<style id="aqw-ultras-advanced-condensed-v1">
+#ultradetail .ultra-extra-details>summary{font-size:13px;padding:12px 14px}
+#ultradetail .ultra-extra-content{gap:10px}
+#ultradetail .ultra-extra-content section{padding-top:10px}
+#ultradetail .ultra-extra-content h4{font-size:13px;margin-bottom:7px}
+#ultradetail .ultra-advanced-role-tips ul{margin:4px 0 0;padding-left:19px}
+#ultradetail .ultra-advanced-role-tips li{padding:2px 0}
+#ultradetail .ultra-extra-content section[hidden]{display:none}
+</style>
 <style id="aqw-build-connector-pixel-fix">
 /* SVG geometry is calculated in rendered pixels, not a scaled static viewBox. */
 #builds svg.build-body-connectors{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;transform:none!important;pointer-events:none;overflow:visible}
@@ -2277,27 +2286,50 @@ function renderUltraDetail(b){
  }
  root.append(mechanics);
  const details=node('details',undefined,'ultra-extra-details');
- details.append(node('summary','📚 Mechanics, team setup & extra details'));
+ details.append(node('summary','🧩 Team & advanced tactics'));
  const inner=node('div',undefined,'ultra-extra-content');
  const team=node('section');team.append(node('h4','Party composition'));
  const comp=node('div',undefined,'ultracomp');
  for(const cls of b.team){const box=node('div',undefined,'ultra-team-member');box.append(node('strong',cls),node('span',ultraOwned(cls)?'✓ Owned':'✕ Not owned',ultraOwned(cls)?'ultra-owned':'ultra-missing'));comp.append(box)}
  team.append(comp);inner.append(team);
- const roleDetails=node('section');roleDetails.append(node('h4','Your role — full instructions'));
- const roleAdvice=node('p');const playbook=node('div',undefined,'ultra-role-notes');
- roleDetails.append(roleAdvice,playbook);inner.append(roleDetails);
- if(quick.role||quick.skips){const note=node('section');note.append(node('h4','Mechanics notes'));if(quick.role)note.append(node('p',quick.role));if(quick.skips)note.append(node('p',quick.skips));inner.append(note)}
+ const roleDetails=node('section');roleDetails.append(node('h4','Role-specific tips'));
+ const roleTips=node('div',undefined,'ultra-advanced-role-tips');
+ roleDetails.append(roleTips);inner.append(roleDetails);
  const cues=ultraBattleCues[b.id]||[];
- if(cues.length||quick.quote){
+ const uniqueCallouts=[];
+ const seenCallouts=new Set();
+ for(const cue of [
+  ...(quick.quote?[{quote:quick.quote,action:quick.action}]:[]),
+  ...(quick.specialQuote?[{quote:quick.specialQuote,action:quick.specialAction}]:[]),
+  ...cues
+ ]){
+  const key=String(cue.quote||'').toLowerCase().trim();
+  if(!key||seenCallouts.has(key))continue;
+  seenCallouts.add(key);
+  uniqueCallouts.push(cue);
+ }
+ if(uniqueCallouts.length){
   const callouts=node('section');callouts.append(node('h4','Boss callouts'));
-  if(quick.quote)callouts.append(node('p','“'+quick.quote+'” — '+quick.action));
-  if(quick.specialQuote)callouts.append(node('p','“'+quick.specialQuote+'” — '+quick.specialAction));
-  for(const cue of cues)callouts.append(node('p','“'+cue.quote+'” — '+cue.action));
+  for(const cue of uniqueCallouts){
+   const p=node('p');p.append(node('strong','“'+cue.quote+'”'),node('span',' — '+cue.action));
+   callouts.append(p);
+  }
   inner.append(callouts);
  }
- const others=node('section');others.append(node('h4','Alternatives & wipe causes'));
- others.append(node('p','Alternative team: '+b.alternate.join(' · ')));
- const mistakes=node('ul');for(const m of b.mistakes)mistakes.append(node('li',m));others.append(mistakes);inner.append(others);
+ const others=node('section');others.append(node('h4','Alternative team & wipe risks'));
+ if(b.alternate?.length && b.alternate.join('|')!==b.team.join('|'))
+  others.append(node('p','Alternative team: '+b.alternate.join(' · ')));
+ const normalize=s=>String(s||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').replace(/\\s+/g,' ').trim();
+ // Avoid repeating warnings already present in the quick overview.
+ const highlighted=[quick.avoid,quick.priority,quick.skips].filter(Boolean).map(normalize);
+ const extraMistakes=[...new Set(b.mistakes||[])].filter(m=>{
+  const n=normalize(m);
+  return n&&!highlighted.some(q=>q===n||q.includes(n)||n.includes(q));
+ });
+ if(extraMistakes.length){
+  const mistakes=node('ul');for(const m of extraMistakes)mistakes.append(node('li',m));others.append(mistakes);
+ }
+ if(others.children.length>1)inner.append(others);
  details.append(inner);root.append(details);
  const footer=node('div',undefined,'ultra-focus-footer');
  const link=node('a','↗ Full community strategy');link.href=b.source;link.target='_blank';link.rel='noopener noreferrer';footer.append(link,node('span','Team ownership ≠ boss access · verify encounter-specific gear','muted tiny'));root.append(footer);
@@ -2311,12 +2343,20 @@ function renderUltraDetail(b){
   }else gear.append(node('span','No generic equipment preset for this class','muted tiny'));
   job.textContent=roleMap.get(cls)||'Coordinate your role with the team.';
   roleFocusValue.textContent=play?.steps?.[0]||roleMap.get(cls)||'Follow your assigned mechanic.';
-  roleAdvice.textContent=roleMap.get(cls)||'';
-  playbook.replaceChildren();
+  roleTips.replaceChildren();
   if(play){
-   const steps=node('ol');for(const step of play.steps)steps.append(node('li',step));
-   playbook.append(steps,node('div','⚠ '+play.warning,'ultra-warning'));
-  }else playbook.append(node('p','Check the community strategy for this class.','muted tiny'));
+   // First action is already displayed in Fight at a glance; only show follow-up tips.
+   const nextAction=String(play.steps?.[0]||'').trim();
+   const remaining=[...new Set((play.steps||[]).slice(1).map(x=>String(x).trim()))]
+    .filter(t=>t&&t!==nextAction);
+   if(remaining.length){
+    const ul=node('ul');for(const tip of remaining)ul.append(node('li',tip));roleTips.append(ul);
+   }
+   if(play.warning && (!quick.avoid || (!String(quick.avoid).toLowerCase().includes(play.warning.toLowerCase())
+      && !play.warning.toLowerCase().includes(String(quick.avoid).toLowerCase()))))
+    roleTips.append(node('p','⚠ '+play.warning,'ultra-warning'));
+  }
+  roleDetails.hidden=!roleTips.childNodes.length;
  }
  select.onchange=updateRole;updateRole();
 }
