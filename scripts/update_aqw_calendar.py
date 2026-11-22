@@ -12,7 +12,7 @@ def get(url):
  req=urllib.request.Request(url,headers={'User-Agent':'AQWCompanionCalendar/1.0 (fan project; GitHub Actions)'})
  with urllib.request.urlopen(req,timeout=25) as r:return r.read().decode('utf-8','replace')
 def main():
- old=json.loads(OUT.read_text()) if OUT.exists() else {'events':[]}
+ old=json.loads(OUT.read_text(encoding='utf-8').strip().removesuffix(chr(92)+'n')) if OUT.exists() else {'events':[]}
  today=datetime.datetime.now(datetime.timezone.utc).date().isoformat()
  events=[e for e in old.get('events',[]) if e.get('source')=='curated' or e.get('source')=='official-calendar']
  status='Official news fetch failed; retaining previously verified entries'
@@ -42,6 +42,6 @@ def main():
  # Keep curated entries and recent news only; no silently fabricated schedules.
  filtered=[e for e in unique.values() if e.get('source')!='official-news' or e['date']>=str(datetime.date.today()-datetime.timedelta(days=120))]
  result={'updatedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds'),'status':status,'sources':['https://www.artix.com/calendar/',URL,'https://www.aq.com/gamedesignnotes/'],'events':sorted(filtered,key=lambda x:(x['date'],x['name']))}
- OUT.parent.mkdir(parents=True,exist_ok=True);OUT.write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\\n')
+ OUT.parent.mkdir(parents=True,exist_ok=True);OUT.write_text(json.dumps(result,ensure_ascii=False,indent=2)+chr(10),encoding='utf-8')
  print(status,'events:',len(result['events']))
 if __name__=='__main__':main()
