@@ -3109,9 +3109,11 @@ function damageGearSelector(slot){
  }
  for(const name of [...names].sort((a,b)=>a.localeCompare(b)).slice(0,4000))list.append(new Option(name,name));
  const gearLabel=node('label',undefined,'damage-field');gearLabel.append(node('span','Equipped item'),input,list);
- const enchant=damageField('Enhancement','damage-enchant-'+slot.toLowerCase(),damageEnchants[slot]);
+ const enchant=damageField('Base enhancement','damage-enchant-'+slot.toLowerCase(),['Lucky','Wizard','Fighter','Healer']);
+ const forgeList=slot==='Armor'?['None · use base']:['None · use base',...damageEnchants[slot].filter(x=>!['Lucky','Wizard','Fighter','Healer'].includes(x))];
+ const forge=damageField('Forge / special enhancement','damage-forge-'+slot.toLowerCase(),forgeList);
  const info=node('div',undefined,'damage-verified-note');info.id='damage-info-'+slot.toLowerCase();
- row.append(title,gearLabel,enchant,info);
+ row.append(title,gearLabel,enchant,forge,info);
  return row;
 }
 function damageSafeNumber(id,defaultValue,max){
@@ -3155,7 +3157,7 @@ function renderDamageSimulator(){
  explain.append(node('strong','Calculation breakdown'));
  explain.append(node('p','Reference '+fmt(base)+' × skill '+skill.pct+'% × weapon range '+range[0]+'–'+range[1]+' (normalized to 30) × verified equipment '+gearMultiplier.toFixed(3)+' × experimental buff factor '+attackBuff.toFixed(2)+'.'));
  explain.append(node('p','VHL Unshackle (+50% outgoing), Kneel Before the Nation (+50% outgoing) and Honor Potion (+75%) are modelled here as a simple additive scenario, NOT as an exact replication of AQW buff stacking.'));
- explain.append(node('p','Base and Forge enhancements are saved as selected loadout choices, but their stat/proc effects, critical damage, defenses, attack power, cooldowns, uptime and rotations are NOT included in these numbers.'));
+ explain.append(node('p','Base and Forge enhancements are recorded separately (a Forge enhancement replaces the base in that slot; they do not stack). Their stat/proc effects, critical damage, defenses, attack power, cooldowns, uptime and rotations are NOT included in these numbers.'));
  if(conflicting.length)explain.append(node('p','⚠ '+conflicting.join(' '),'damage-caution'));
  if(equipped.some(x=>x.name&&!x.data))explain.append(node('p','⚠ Some selected items lack a verified Wiki entry in the local catalog. Real boosts may be higher or lower; no guessed values were included.','damage-caution'));
  if(!known)explain.append(node('p','No verified gear bonuses selected yet.','damage-caution'));
@@ -3172,14 +3174,14 @@ function initDamageSimulator(){
  checkbox('damage-buff-kneel','Kneel Before the Nation','Armageddon buff +50% outgoing damage (wiki verified; experimental combined formula)');
  checkbox('damage-consumable-honor','Potent Honor Potion','+75% Damage consumable; experimental combined formula');
  $('damage-item-weapon').value='Necrotic Sword of Doom (Sword)';
- $('damage-enchant-weapon').value='Dauntless';
- $('damage-enchant-helm').value='Vim';
- $('damage-enchant-cape').value='Vainglory';
+ $('damage-forge-weapon').value='Dauntless';
+ $('damage-forge-helm').value='Vim';
+ $('damage-forge-cape').value='Vainglory';
  try{
   const saved=JSON.parse(localStorage.getItem(DAMAGE_PREFERENCES)||'null');
   if(saved&&typeof saved==='object'){
    for(const [id,val] of Object.entries(saved)){
-    if(!/^damage-(item|enchant|target|skill|reference|buff|consumable)/.test(id))continue;
+    if(!/^damage-(item|enchant|forge|target|skill|reference|buff|consumable)/.test(id))continue;
     const el=$(id);if(!el)continue;
     if(el.type==='checkbox')el.checked=val===true;
     else if(typeof val==='string'||typeof val==='number')el.value=String(val).slice(0,250)
