@@ -1,0 +1,451 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-11-23",
+  "scope": "Reference evidence for AQW Companion Damage Simulator. Verified facts, community models and unknowns are distinct. This is NOT a complete AQW character simulator.",
+  "sources": {
+    "statsOfficial": "https://www.aq.com/lore/guides/stats",
+    "boostsOfficial": "https://www.aq.com/lore/Guides/AQWBoosts",
+    "traitsOfficial": "https://www.aq.com/Lore/Guides/EnhancementTraits",
+    "balanceOfficial": "https://www.aq.com/gamedesignnotes/AQW-Balance-PatchNotes-9515",
+    "functionsCommunity": "https://www.aqwhub.com/other-guides/do-ts-explained/",
+    "skillFunctionsCommunity": "https://docs.google.com/spreadsheets/d/1wU6JlyrK_jYn5mVAzrLI4pRA4UM8LgY715kKU2U1vbQ/edit?gid=101348511",
+    "vhlWiki": "https://aqwwiki.wikidot.com/void-highlord-class",
+    "lrWiki": "https://aqwwiki.wikidot.com/legion-revenant-class",
+    "looWiki": "https://aqwwiki.wikidot.com/lord-of-order-0-ac",
+    "scWiki": "https://aqwwiki.wikidot.com/stonecrusher-ac",
+    "dotsCommunity": "https://www.aqwhub.com/other-guides/do-ts-explained/"
+  },
+  "classModels": [
+    {
+      "name": "Void Highlord",
+      "model": "Tank Melee",
+      "weaponDamagePercent": 125,
+      "attackSpeedSeconds": 2.3,
+      "source": "vhlWiki"
+    },
+    {
+      "name": "Legion Revenant",
+      "model": "Offensive Caster",
+      "weaponDamagePercent": 57,
+      "attackSpeedSeconds": 1.5,
+      "source": "lrWiki"
+    },
+    {
+      "name": "Lord of Order",
+      "model": "Defensive Caster",
+      "weaponDamagePercent": 70,
+      "attackSpeedSeconds": 2,
+      "source": "looWiki"
+    },
+    {
+      "name": "StoneCrusher",
+      "model": "Defensive Caster",
+      "weaponDamagePercent": 100,
+      "attackSpeedSeconds": 2,
+      "source": "scWiki"
+    }
+  ],
+  "functionMath": {
+    "status": "community-derived; validate against live class stats and skill function mapping",
+    "weaponDpsAtLevel100": 85,
+    "AP1": "85 + 0.1 * attackPower",
+    "SP1": "85 + 0.1 * spellPower",
+    "AP2": "weaponRangeFactor * 2 * AP1",
+    "SP2": "weaponRangeFactor * 2 * SP1",
+    "note": "AP1/SP1 do not vary with weapon damage range. AP2/SP2 do. The exact function per skill must be sourced separately.",
+    "source": "functionsCommunity"
+  },
+  "skills": [
+    {
+      "class": "Void Highlord",
+      "name": "Shackle",
+      "coefficient": 1.25,
+      "coefficientBasis": "weapon",
+      "function": null,
+      "autoCrit": true,
+      "neverMiss": true,
+      "source": "vhlWiki"
+    },
+    {
+      "class": "Void Highlord",
+      "name": "Highlord's Gaze",
+      "coefficient": 1.3,
+      "coefficientBasis": "weapon",
+      "function": null,
+      "source": "vhlWiki"
+    },
+    {
+      "class": "Void Highlord",
+      "name": "Unshackle",
+      "coefficient": 0.85,
+      "coefficientBasis": "weapon",
+      "function": null,
+      "autoCrit": true,
+      "neverMiss": true,
+      "source": "vhlWiki"
+    },
+    {
+      "class": "Void Highlord",
+      "name": "Armageddon",
+      "coefficient": 4.2,
+      "coefficientBasis": "weapon",
+      "function": null,
+      "source": "vhlWiki"
+    },
+    {
+      "class": "Legion Revenant",
+      "name": "Malevolent Burst",
+      "coefficient": 0.57,
+      "coefficientBasis": "spell",
+      "function": "AoE1",
+      "functionDefinitionAvailable": false,
+      "source": "lrWiki"
+    },
+    {
+      "class": "Legion Revenant",
+      "name": "Atramentous Shade",
+      "coefficient": 0.85,
+      "coefficientBasis": "spell",
+      "function": "AoE1",
+      "functionDefinitionAvailable": false,
+      "source": "lrWiki"
+    },
+    {
+      "class": "Legion Revenant",
+      "name": "Wicked Purgatory",
+      "coefficient": 1,
+      "coefficientBasis": "spell",
+      "function": "AoE1",
+      "functionDefinitionAvailable": false,
+      "source": "lrWiki"
+    },
+    {
+      "class": "Legion Revenant",
+      "name": "Anathema",
+      "coefficient": 3,
+      "coefficientBasis": "spell",
+      "function": "AoE1",
+      "functionDefinitionAvailable": false,
+      "source": "lrWiki"
+    },
+    {
+      "class": "StoneCrusher",
+      "name": "Stalagmite",
+      "coefficient": 1.3,
+      "coefficientBasis": "spell",
+      "function": null,
+      "source": "scWiki",
+      "extra": "Magnitude can modify damage; probabilistic"
+    },
+    {
+      "class": "Lord of Order",
+      "name": "Blessing of Order",
+      "coefficient": 1.45,
+      "coefficientBasis": "spell",
+      "function": "SP1",
+      "functionSource": "skillFunctionsCommunity",
+      "coefficientSource": "skillFunctionsCommunity",
+      "alwaysCritAtRank10": true,
+      "source": "looWiki"
+    },
+    {
+      "class": "Lord of Order",
+      "name": "Strike of Order",
+      "coefficient": 0.7,
+      "coefficientBasis": "hybrid",
+      "function": "APSP1",
+      "functionDefinitionAvailable": false,
+      "source": "skillFunctionsCommunity"
+    }
+  ],
+  "support": [
+    {
+      "class": "Lord of Order",
+      "effect": "Resurgence",
+      "stat": "Outgoing damage",
+      "valuePct": 30,
+      "durationSeconds": 25,
+      "source": "looWiki"
+    },
+    {
+      "class": "Lord of Order",
+      "effect": "Empowerment",
+      "stat": "All six core stats",
+      "valuePct": 20,
+      "durationSeconds": 10,
+      "source": "looWiki"
+    },
+    {
+      "class": "Lord of Order",
+      "effect": "Clarity",
+      "stats": {
+        "Haste": 10,
+        "Hit Chance": 40,
+        "Crit Damage": 40
+      },
+      "source": "looWiki",
+      "notes": "Haste 10% after 2026 balance patch"
+    },
+    {
+      "class": "StoneCrusher",
+      "effect": "Bruised",
+      "stat": "Target incoming damage per stack",
+      "valuePct": 8,
+      "maxStacks": 5,
+      "source": "scWiki"
+    },
+    {
+      "class": "StoneCrusher",
+      "effect": "Resonance",
+      "stats": {
+        "Crit Chance": 30,
+        "Haste": 30
+      },
+      "source": "scWiki"
+    },
+    {
+      "class": "Legion Revenant",
+      "effect": "Depravity",
+      "stats": {
+        "Outgoing Damage": 30,
+        "Crit Chance": 30,
+        "Dodge": 30
+      },
+      "durationSeconds": 12,
+      "source": "lrWiki"
+    },
+    {
+      "class": "Void Highlord",
+      "effect": "Unshackle",
+      "stat": "Outgoing damage",
+      "valuePct": 50,
+      "durationSeconds": 15,
+      "source": "vhlWiki"
+    },
+    {
+      "class": "Void Highlord",
+      "effect": "Kneel Before the Nation",
+      "stat": "Outgoing damage",
+      "valuePct": 50,
+      "durationSeconds": 12,
+      "source": "vhlWiki"
+    }
+  ],
+  "gear": [
+    {
+      "name": "Necrotic Sword of Doom (Sword)",
+      "slot": "Weapon",
+      "allDamagePct": 51,
+      "weaponRange": [
+        27,
+        33
+      ],
+      "source": "https://aqwwiki.wikidot.com/necrotic-sword-of-doom-sword"
+    },
+    {
+      "name": "Blinding Light of Destiny (Axe)",
+      "slot": "Weapon",
+      "undeadDamagePct": 75,
+      "weaponRange": [
+        27,
+        33
+      ],
+      "source": "https://aqwwiki.wikidot.com/blinding-light-of-destiny-axe"
+    },
+    {
+      "name": "Radiant Goddess of War",
+      "slot": "Armor",
+      "taggedPct": 50,
+      "tags": [
+        "Chaos",
+        "Dragon",
+        "Elemental",
+        "Human",
+        "Undead"
+      ],
+      "source": "https://aqwwiki.wikidot.com/radiant-goddess-of-war"
+    },
+    {
+      "name": "Empowered Drakath Armor",
+      "slot": "Armor",
+      "chaosPct": 50,
+      "source": "https://aqwwiki.wikidot.com/empowered-drakath-armor"
+    }
+  ],
+  "forge": [
+    {
+      "name": "Valiance",
+      "slot": "Weapon",
+      "procChance": 1,
+      "trigger": "Autoattack",
+      "cooldownSeconds": 15,
+      "durationSeconds": 20,
+      "stats": {
+        "STR": 30,
+        "DEX": 30,
+        "INT": 30,
+        "WIS": 30,
+        "END": 30,
+        "LUK": 15
+      },
+      "source": "traitsOfficial"
+    },
+    {
+      "name": "Dauntless",
+      "slot": "Weapon",
+      "procChance": 1,
+      "trigger": "Second skill",
+      "cooldownSeconds": 3,
+      "coefficientRange": [
+        1.9,
+        5.7
+      ],
+      "function": "physical damage; depends on user's remaining HP",
+      "guaranteedHitAndCrit": true,
+      "source": "traitsOfficial"
+    },
+    {
+      "name": "Arcana's Concerto",
+      "slot": "Weapon",
+      "procChance": 0.5,
+      "trigger": "Autoattack",
+      "stackPct": 2,
+      "maxStacks": 11,
+      "damageScope": "Target takes more physical and magical damage",
+      "source": "traitsOfficial"
+    },
+    {
+      "name": "Ravenous",
+      "slot": "Weapon",
+      "procChance": 1,
+      "trigger": "Third skill",
+      "damageRange": [
+        0.75,
+        3.38
+      ],
+      "source": "traitsOfficial"
+    },
+    {
+      "name": "Vainglory",
+      "slot": "Cape",
+      "outgoingDamagePct": 15,
+      "healingIntakePenaltyPct": 50,
+      "source": "traitsOfficial"
+    },
+    {
+      "name": "Lament",
+      "slot": "Cape",
+      "critChancePct": 20,
+      "hastePenaltyPct": 5,
+      "source": "traitsOfficial"
+    },
+    {
+      "name": "Absolution",
+      "slot": "Cape",
+      "healingBoostPct": 50,
+      "physicalDamagePenaltyPct": 20,
+      "source": "traitsOfficial"
+    },
+    {
+      "name": "Penitence",
+      "slot": "Cape",
+      "damageResistancePct": 25,
+      "dotDamagePenaltyPct": 25,
+      "source": "traitsOfficial"
+    }
+  ],
+  "unresolved": [
+    "Precise distribution of class primary stats from every enhancement level, for current balance patch",
+    "Attack Power / Spell Power derived exactly from core stats for all stat models",
+    "Mapping of VHL skill damage functions to AP1/AP2, and complete server-side formula for LR AoE1",
+    "Actual class passive and Forge interactions with core stats, outgoing/incoming caps, crit and sequencing",
+    "Target defense/resistances and damage caps",
+    "Full list of every item and every class: curated evidence intentionally limited",
+    "Measured in-game reference tests for hit/crit minimum and maximum",
+    "Implement maximum-per-category equipped item boost selection; audit any older 'equip-order' rules",
+    "Distinguish DoT/HoT from direct damage and ensure item boosts are not applied to DoT/HoT",
+    "Normalize Dragon vs Dragonkin item and monster category mappings from official game values",
+    "Verify each skill's direct hit / DoT / heal type and critical behavior before using universal multipliers"
+  ],
+  "policy": "Unknown or community-only numbers cannot be presented as certified final damage. Do not add invented default damage or silently infer unknown item stats.",
+  "officialRules20261123": {
+    "evidenceGrade": "official Artix guides; applies to item boost categories and displayed stat definitions, not a universal complete damage formula",
+    "itemBoosts": {
+      "categorySelection": "Only highest equipped boost per identical category applies (not last equipped item).",
+      "differentCategories": "Multiply best All boost by best applicable monster-type boost.",
+      "example": {
+        "allPct": 25,
+        "chaosPct": 50,
+        "multiplier": 1.875
+      },
+      "officialMonsterTags": [
+        "All",
+        "Dragonkin",
+        "Undead",
+        "Chaos",
+        "Elemental",
+        "Human",
+        "Orc",
+        "Drakath"
+      ],
+      "normalizationWarning": "UI 'Dragon' or 'Dragonkin' must be reconciled with game monster typing rather than guessed.",
+      "directDamageOnly": "Item damage boosts affect direct damage numbers/healing/self-damage, NOT DoT or HoT.",
+      "source": "boostsOfficial"
+    },
+    "stats": {
+      "weaponDamageRange": "Variance for non-static skills/autoattack; average damage unchanged.",
+      "attackPower": "Adds to base physical damage before combat stats.",
+      "spellPower": "Adds to base magical damage before combat stats.",
+      "criticalMultiplier": "Applied when skill crits; DoTs cannot crit.",
+      "haste": "Cooldown Reduction, not direct per-hit outgoing damage.",
+      "outgoingDamage": "Outgoing all-source bonus except True Damage; special DoT application/tick handling.",
+      "source": "statsOfficial"
+    },
+    "procExamples": {
+      "valiance": "100% activation on autoattack, 15s cooldown, 20s duration: 30% STR/DEX/INT/WIS/END and 15% LUK, multiplicative with other core-stat increases.",
+      "arcana": "50% activation on autoattack; 2% increased target physical/magical damage received per stack, max 11 stacks; avoid modeling this as an unconditional personal All Damage buff.",
+      "dauntless": "100% on second skill with 3s cooldown, 190-570% physical damage depending on HP, always hits and crits: proc hit distinct from triggered skill hit.",
+      "source": "traitsOfficial"
+    }
+  },
+  "communityDotNotes20261123": {
+    "source": "dotsCommunity",
+    "evidenceGrade": "community reverse-engineering, not official confirmation",
+    "applicationVsTick": "DoTs store some outgoing modifiers at application and use others at tick; do not multiply item boosts into DoT and do not treat DoT as a standard direct hit.",
+    "validation": "Require in-game measurements for DoT/HoT duration, ticks and buff snapshots before displaying certified totals."
+  },
+  "validationFixtures": [
+    {
+      "id": "official-boosts-all-chaos",
+      "allPct": 25,
+      "taggedPct": 50,
+      "expectedMultiplier": 1.875,
+      "source": "boostsOfficial"
+    },
+    {
+      "id": "official-boosts-duplicate-all",
+      "equippedAllPcts": [
+        10,
+        25
+      ],
+      "expectedAllMultiplier": 1.25,
+      "source": "boostsOfficial"
+    },
+    {
+      "id": "official-boosts-combination-nsod-rgow",
+      "allPct": 51,
+      "taggedPct": 50,
+      "expectedMultiplier": 2.265,
+      "assumption": "Both gear items equipped and the target matches RGOW relevant tag.",
+      "source": "boostsOfficial"
+    },
+    {
+      "id": "official-boosts-no-tag",
+      "allPct": 51,
+      "taggedPct": 50,
+      "tagMatch": false,
+      "expectedMultiplier": 1.51,
+      "source": "boostsOfficial"
+    }
+  ]
+}

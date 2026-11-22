@@ -1222,6 +1222,29 @@ body{background:#0a1420!important}
  #damage .damage-simulator-card .damage-results{display:flex!important;flex-direction:column!important}
 }
 </style>
+<style id="aqw-damage-support-audit-v1">
+#damage .damage-buffs-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
+#damage .damage-support-group{border:1px solid #355b7b;border-radius:11px;background:#11273a;padding:12px;min-width:0}
+#damage .damage-support-group h5{margin:0 0 10px;font-size:13px;color:#9edffd}
+#damage .damage-support-item{display:flex;flex-direction:column;gap:6px;border:1px solid #294c66;background:#0e2032;border-radius:8px;padding:9px;margin-top:8px;min-width:0}
+#damage .damage-support-item label{display:flex;gap:8px;align-items:center;font-size:12px;font-weight:650;color:#e1f4ff}
+#damage .damage-support-item input[type=checkbox]{width:16px;height:16px;flex-shrink:0}
+#damage .damage-support-item small{font-size:11px;color:#a3c5db;line-height:1.45}
+#damage .damage-support-item select{font-size:12px;max-width:120px}
+#damage .damage-support-item a{font-size:11px;color:#89d4ff}
+@media(max-width:1100px){#damage .damage-buffs-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:650px){#damage .damage-buffs-grid{grid-template-columns:minmax(0,1fr)!important}}
+</style>
+<style id="aqw-verified-stats-v1">
+#damage .damage-combat-stats{padding:14px;border-radius:12px;border:1px solid #365b79;background:#102439;margin:16px 0}
+#damage .damage-combat-stats-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#damage .damage-combat-stats-top .damage-heading{margin:0}
+#damage .damage-combat-stats-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
+#damage .damage-combat-stats-fields label{font-size:12px;color:#b6d6e7;display:flex;flex-direction:column;gap:6px;min-width:0}
+#damage .damage-combat-stats-fields input{min-width:0;width:100%}
+#damage .damage-range-panel>a{font-size:12px;color:#81d4ff;display:inline-block;margin-top:12px}
+@media(max-width:700px){#damage .damage-combat-stats-fields{grid-template-columns:1fr}}
+</style>
 <style id="aqw-build-connector-pixel-fix">
 /* SVG geometry is calculated in rendered pixels, not a scaled static viewBox. */
 #builds svg.build-body-connectors{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;transform:none!important;pointer-events:none;overflow:visible}
@@ -1272,20 +1295,29 @@ body{background:#0a1420!important}
  </div></div></section>
 <section id="damage" class="view">
 <div class="card damage-simulator-card">
- <div class="unlocktop"><div><h3 class="sectiontitle">⚔️ Damage Simulator</h3><p class="muted tiny">VHL test bench · verified item bonuses, class buffs and a reference damage range. Experimental calculations are clearly labelled.</p></div><span class="pill">Alpha · VHL example</span></div>
+ <div class="unlocktop"><div><h3 class="sectiontitle">⚔️ Damage Simulator</h3><p class="muted tiny">Source-reviewed class skills, item boosts and support buffs. Calculated components appear only where the formula is documented.</p></div><span class="pill">Research preview · verified data</span></div>
  <div class="damage-grid">
-  <label>Class<select id="damage-class"><option value="Void Highlord">Void Highlord (first supported class)</option></select></label>
+  <label>Class<select id="damage-class"></select></label>
   <label>Monster type<select id="damage-target"><option value="none">Untagged / other</option><option value="undead">Undead</option><option value="dragon">Dragon</option><option value="human">Human</option><option value="chaos">Chaos</option><option value="elemental">Elemental</option></select></label>
-  <label>Skill<select id="damage-skill"><option value="contract">Contract · normal auto attack (reference)</option><option value="shackle">Shackle · 125% weapon damage</option><option value="gaze">Highlord's Gaze · 130% weapon damage</option><option value="unshackle">Unshackle · 85% weapon damage</option><option value="armageddon">Armageddon · 420% weapon damage</option></select></label>
+  <label>Skill<select id="damage-skill"></select></label>
  </div>
- <p class="muted tiny">Choose a VHL skill to compare damage potential. This alpha simulator uses a fixed demonstration baseline; its numbers are illustrative, not your real in-game damage.</p>
- <h4 class="damage-heading">Equipped items & enhancements</h4>
+ <p class="muted tiny">Compare documented skill coefficients, equipment and party effects. No fictional base damage: the calculator only displays a numeric base component when the skill function and your combat stats are known. The formulas below are community-researched; final server damage still needs in-game validation.</p>
+ <section class="damage-combat-stats">
+ <div class="damage-combat-stats-top"><h4 class="damage-heading">📊 Your combat stats</h4><span class="pill">From AQW · Stats &amp; Class</span></div>
+ <p class="muted tiny">Enter your ACTUAL Attack Power / Spell Power from your character stats after equipping the enhancements and activating any stat buffs. These are not in the inventory JSON, so we won't invent them. Leave blank when unknown.</p>
+ <div class="damage-combat-stats-fields">
+  <label>Attack Power<input id="damage-attack-power" type="number" min="0" max="100000" step="1" placeholder="From in-game Stats"></label>
+  <label>Spell Power<input id="damage-spell-power" type="number" min="0" max="100000" step="1" placeholder="From in-game Stats"></label>
+  <label>Critical multiplier<input id="damage-crit-multiplier" type="number" min="1" max="20" step="0.01" placeholder="From in-game Stats (e.g. 2.25)"></label>
+ </div>
+</section>
+<h4 class="damage-heading">Equipped items & enhancements</h4>
  <div id="damage-gear" class="damage-gear-grid"></div>
  <p class="muted tiny">Equipment suggestions use your imported inventory when available. Item bonuses are applied only for explicitly wiki-verified entries; other items appear as unverified rather than being guessed.</p>
- <h4 class="damage-heading">Active VHL buffs & consumables</h4>
+ <h4 class="damage-heading">Class & party damage buffs</h4>
  <div id="damage-buffs" class="damage-buffs-grid"></div>
  <div id="damage-results" class="damage-results" aria-live="polite"></div>
- <div class="damage-sources"><a href="https://aqwwiki.wikidot.com/void-highlord-class" target="_blank" rel="noopener noreferrer">VHL class / skills ↗</a><a href="https://aqwwiki.wikidot.com/necrotic-sword-of-doom-sword" target="_blank" rel="noopener noreferrer">NSoD ↗</a><a href="https://www.aq.com/gamedesignnotes/patch-notes-extras-7184" target="_blank" rel="noopener noreferrer">Official stacking rules ↗</a></div>
+ <div class="damage-sources"><a href="https://aqwwiki.wikidot.com/void-highlord-class" target="_blank" rel="noopener noreferrer">VHL class / skills ↗</a><a href="https://aqwwiki.wikidot.com/necrotic-sword-of-doom-sword" target="_blank" rel="noopener noreferrer">NSoD ↗</a><a href="https://www.aq.com/lore/Guides/AQWBoosts" target="_blank" rel="noopener noreferrer">Official gear boost rules ↗</a><a href="https://www.aqwhub.com/other-guides/do-ts-explained/" target="_blank" rel="noopener noreferrer">Community damage functions ↗</a></div>
 </div>
 </section>
 <section id="planner" class="view"><div class="card"><div class="goalhead"><h3 class="sectiontitle" style="margin:0">My Pinned Tasks</h3><span class="pill">Changes saved automatically</span></div><div id="planner-my-tasks" class="task-grid"></div><p class="muted tiny">Checks refresh at 00:00 EST (AQW server reset), and weekly on Friday. Saved locally; previous periods remain in backup.</p></div><div class="card" style="margin-bottom:15px"><div class="unlocktop"><div><h3 class="sectiontitle">📅 Daily / Weekly Tracker</h3><p class="muted tiny">Pin only what you want to track. Check off a task for the current local day or tracking week. Nothing is marked complete from your item inventory.</p></div><span class="pill">Local · Optional · Manual</span></div>
@@ -3215,7 +3247,79 @@ const damageEnchants={
  Helm:['Lucky','Wizard','Fighter','Healer','Forge','Vim','Anima','Pneuma','Examen','Hearty'],
  Cape:['Lucky','Wizard','Fighter','Healer','Forge','Vainglory','Penitence','Absolution','Lament','Avarice']
 };
-const damageSkills={contract:{pct:100,source:'Reference 100% weapon damage; Contract is an auto attack with no fixed wiki percentage here.'},shackle:{pct:125},gaze:{pct:130},unshackle:{pct:85},armageddon:{pct:420}};
+const damageClassCatalog={
+ 'Void Highlord':{skills:[['contract','Contract · auto (100% reference)',100,'weapon'],['shackle','Shackle · 125% weapon',125,'weapon'],['gaze',"Highlord's Gaze · 130% weapon",130,'weapon'],['unshackle','Unshackle · 85% weapon',85,'weapon'],['armageddon','Armageddon · 420% weapon',420,'weapon']],source:'https://aqwwiki.wikidot.com/void-highlord-class'},
+ 'Legion Revenant':{skills:[['purgatory','Wicked Purgatory · 100% spell',100,'spell'],['anathema','Anathema · 300% spell',300,'spell']],source:'https://aqwwiki.wikidot.com/legion-revenant-class'},
+ 'StoneCrusher':{skills:[['stalagmite','Stalagmite · 130% spell',130,'spell'],['fissure','Endless Fissure · 300% spell',300,'spell']],source:'https://aqwwiki.wikidot.com/stonecrusher-ac'},
+ 'Lord of Order':{skills:[['strike','Strike of Order · 70% hybrid-function (community)',70,'hybrid'],['blessing','Blessing of Order · 145% SP1 (community)',145,'spell']],source:'https://aqwwiki.wikidot.com/lord-of-order-0-ac'}
+};
+// Only LoO Blessing has a community-documented SP1 function (Damage Functions AQW sheet).
+// Source https://docs.google.com/spreadsheets/d/1wU6JlyrK_jYn5mVAzrLI4pRA4UM8LgY715kKU2U1vbQ/edit?gid=101348511
+// Other skills only expose Wiki coefficients; without the exact function we refuse raw damage.
+const damageSkillFunctions={'Lord of Order':{blessing:'SP1'}};
+const damageSupport=[
+ {id:'loo-out',group:'Lord of Order',name:'Resurgence',kind:'out',value:30,help:'+30% Outgoing Damage (25s)',src:'https://aqwwiki.wikidot.com/lord-of-order-0-ac'},
+ {id:'loo-stat',group:'Lord of Order',name:'Empowerment',kind:'excluded',value:20,help:'+20% core stats (10s) · not converted to damage',src:'https://aqwwiki.wikidot.com/lord-of-order-0-ac'},
+ {id:'loo-crit',group:'Lord of Order',name:'Clarity',kind:'excluded',value:40,help:'+40% Crit Damage/Hit Chance; Haste +10% after latest 2026 balance change · not modelled',src:'https://www.aq.com/gamedesignnotes/AQW-Balance-PatchNotes-9515'},
+ {id:'sc-bruised',group:'StoneCrusher',name:'Bruised',kind:'in',value:8,stacks:5,help:'+8% enemy incoming damage per stack (max 5)',src:'https://aqwwiki.wikidot.com/stonecrusher-ac'},
+ {id:'sc-crit',group:'StoneCrusher',name:'Resonance',kind:'excluded',value:30,help:'+30% Crit Chance and Haste · not direct hit damage',src:'https://aqwwiki.wikidot.com/stonecrusher-ac'},
+ {id:'lr-out',group:'Legion Revenant',name:'Depravity',kind:'out',value:30,help:'+30% Outgoing Damage (12s)',src:'https://aqwwiki.wikidot.com/legion-revenant-class'},
+ {id:'lr-infinita',group:'Legion Revenant',name:'Infinita Nox',kind:'in',value:7,stacks:15,help:'+7% enemy incoming damage per stack (max 15, proc-based)',src:'https://aqwwiki.wikidot.com/legion-revenant-class'},
+ {id:'vhl-in',group:'Void Highlord',name:'Undying Highlord (target)',kind:'in',value:5,stacks:10,help:'+5% enemy incoming per stack (max 10, rank 10)',src:'https://aqwwiki.wikidot.com/void-highlord-class'}
+];
+function updateDamageClassSkills(){
+ const selected=$('damage-class').value,field=$('damage-skill'),previous=field.value;
+ field.replaceChildren();
+ for(const [id,label] of damageClassCatalog[selected].skills)field.append(new Option(label,id));
+ if([...field.options].some(x=>x.value===previous))field.value=previous;
+}
+function renderDamageBuffs(){
+ const root=$('damage-buffs'),cls=$('damage-class').value;
+ const prior={};for(const input of root.querySelectorAll('input,select'))prior[input.id]=input.type==='checkbox'?input.checked:input.value;
+ root.replaceChildren();
+ const groups=[['Personal & Consumable',[
+  ['damage-buff-unshackle','VHL Unshackle · +50% outgoing','Void Highlord'],
+  ['damage-buff-kneel','VHL Kneel · +50% outgoing','Void Highlord'],
+  ['damage-consumable-honor','Potent Honor Potion · +75% outgoing','any']
+ ]],...['Lord of Order','StoneCrusher','Legion Revenant','Void Highlord'].map(g=>[g,damageSupport.filter(b=>b.group===g&&(g!=='Void Highlord'||cls==='Void Highlord'))])];
+ for(const [label,entries] of groups){
+  const section=node('section',undefined,'damage-support-group');section.append(node('h5',label));
+  for(const entry of entries){
+   if(Array.isArray(entry)){
+    const [id,desc,owner]=entry;if(owner!=='any'&&owner!==cls)continue;
+    const row=node('label',undefined,'damage-support-item'),check=node('input');check.type='checkbox';check.id=id;check.checked=prior[id]===true;
+    row.append(check,node('span',desc));section.append(row);continue;
+   }
+   const b=entry,card=node('div',undefined,'damage-support-item');
+   const row=node('label'),check=node('input');check.type='checkbox';check.id='damage-support-'+b.id;check.checked=prior[check.id]===true;
+   row.append(check,node('span',b.name));card.append(row,node('small',b.help));
+   if(b.stacks){
+    const stack=node('select');stack.id='damage-stack-'+b.id;
+    for(let i=1;i<=b.stacks;i++)stack.append(new Option(i+' / '+b.stacks,String(i)));
+    stack.value=String(prior[stack.id]||'1');card.append(stack);
+   }
+   const link=node('a','Wiki ↗');link.href=b.src;link.rel='noopener noreferrer';link.target='_blank';card.append(link);section.append(card);
+  }
+  root.append(section);
+ }
+}
+function damageSupportFactors(){
+ const outgoing=[],incoming=[],excluded=[];
+ const cls=$('damage-class').value;
+ if(cls==='Void Highlord'&&$('damage-buff-unshackle')?.checked)outgoing.push(['VHL Unshackle',50]);
+ if(cls==='Void Highlord'&&$('damage-buff-kneel')?.checked)outgoing.push(['VHL Kneel',50]);
+ if($('damage-consumable-honor')?.checked)outgoing.push(['Honor',75]);
+ for(const b of damageSupport){
+  if(b.group==='Void Highlord'&&cls!=='Void Highlord')continue;
+  if(!$('damage-support-'+b.id)?.checked)continue;
+  const n=b.stacks?Math.min(b.stacks,Math.max(1,Number($('damage-stack-'+b.id)?.value)||1)):1;
+  const pair=[b.group+' '+b.name,b.value*n];
+  if(b.kind==='out')outgoing.push(pair);else if(b.kind==='in')incoming.push(pair);else excluded.push(pair);
+ }
+ const out=outgoing.reduce((x,p)=>x+p[1],0),inc=incoming.reduce((x,p)=>x+p[1],0);
+ return{outgoing,incoming,excluded,out,inc,mult:(1+out/100)*(1+inc/100)};
+}
+
 const DAMAGE_PREFERENCES='aqwc-damage-demo-v1';
 function damageField(label,id,options){
  const field=node('label',undefined,'damage-field'),select=node('select');select.id=id;
@@ -3261,86 +3365,73 @@ function renderDamageSimulator(){
   if(info){info.append(node('span','✓ Verified: '+(eq.data.all?'+'+eq.data.all+'% All Damage':'')+(eq.data.tagBoost?' +'+eq.data.tagBoost+'% '+(eq.data.tag||'tagged'):'')+' · '));
    const link=node('a','AQWWiki ↗');link.href=eq.data.url;link.target='_blank';link.rel='noopener noreferrer';info.append(link)}
  }
- if(categories.all.length>1||categories.tag.length>1)conflicting.push('Several equipped items have the same category of boost. The game uses equip order rather than simple addition or max. This scenario shows the highest verified value only; re-equip the desired booster last in game.');
+ if(categories.all.length>1||categories.tag.length>1)conflicting.push('Multiple item boosts of the same category do not stack; the official AQW Boost Guide specifies that the highest boost is active.');
  const weap=equipped.find(x=>x.slot==='Weapon');
- const range=weap.data?.range||[30,30];
- const skill=damageSkills[$('damage-skill').value]||damageSkills.contract;
- const base=10000; // Fixed demo baseline, NOT a measured VHL damage stat.
- const gearMultiplier=(1+all/100)*(1+tag/100);
- const unshackle=$('damage-buff-unshackle')?.checked||false;
- const kneel=$('damage-buff-kneel')?.checked||false;
- const honor=$('damage-consumable-honor')?.checked||false;
- const attackBuff=1+(unshackle?0.5:0)+(kneel?0.5:0)+(honor?0.75:0);
- const factor=gearMultiplier*attackBuff*skill.pct/100;
- const low=Math.round(base*(range[0]/30)*factor),mid=Math.round(base*((range[0]+range[1])/60)*factor),high=Math.round(base*(range[1]/30)*factor);
- const fmt=n=>Number(n).toLocaleString('en-US',{maximumFractionDigits:0});
- const selection=$('damage-skill');
- const skillLabel=selection?.selectedOptions?.[0]?.textContent?.split(' · ')[0]||'Selected skill';
+ const selectedClass=damageClassCatalog[$('damage-class').value];
+ const skillKind=(selectedClass.skills.find(x=>x[0]===$('damage-skill').value)||selectedClass.skills[0])[3];
+ const range=skillKind==='spell'?[30,30]:(weap.data?.range||[30,30]); // No variance assumed on verified SP1.
+ const cls=$('damage-class').value;
+ const skill=damageClassCatalog[cls].skills.find(x=>x[0]===$('damage-skill').value)||damageClassCatalog[cls].skills[0];
+ const gearMultiplier=(1+all/100)*(1+tag/100),aura=damageSupportFactors();
+ const fn=damageSkillFunctions[cls]?.[skill[0]]||null;
+ const spRaw=$('damage-spell-power')?.value?.trim()||'';
+ const spellPower=spRaw!==''?Number(spRaw):NaN;
+ const statAvailable=Number.isFinite(spellPower)&&spellPower>=0&&spellPower<=100000;
+ const wdps=85; // Community derivation for Lv100 weapon-enhancement baseline (AQW Hub).
+ // Only the SP1 underlying component is explicitly mapped in the sourced sheet.
+ const supported=fn==='SP1'&&statAvailable;
+ const component=supported?(wdps+0.1*spellPower)*skill[2]/100:null;
+ const fmt=n=>Number(n).toLocaleString('en-US',{maximumFractionDigits:2});
+ const selection=$('damage-skill'),skillLabel=selection?.selectedOptions?.[0]?.textContent?.split(' · ')[0]||'Selected skill';
  const targetLabel=$('damage-target')?.selectedOptions?.[0]?.textContent||'Other target';
- const hero=node('div',undefined,'damage-showcase');
- const left=node('div',undefined,'damage-showcase-main');
- left.append(node('span','⚡ YOUR DAMAGE POTENTIAL','damage-showcase-eyebrow'));
- left.append(node('span','Illustrative average','damage-showcase-subtitle'));
- left.append(node('strong',fmt(mid),'damage-showcase-number'));
- left.append(node('p','Void Highlord · '+skillLabel+' · '+targetLabel,'damage-showcase-meta'));
- const status=node('div','Experimental reference units · not real AQW damage','damage-showcase-status');
- left.append(status);
+ const hero=node('div',undefined,'damage-showcase'),left=node('div',undefined,'damage-showcase-main');
+ left.append(node('span','⚡ VERIFIED DAMAGE COMPONENTS','damage-showcase-eyebrow'));
+ left.append(node('span',supported?'SP1 base before modifiers':'Complete damage formula not yet verified','damage-showcase-subtitle'));
+ left.append(node('strong',supported?fmt(component):'—','damage-showcase-number'));
+ left.append(node('p',cls+' · '+skillLabel+' · '+targetLabel,'damage-showcase-meta'));
+ left.append(node('div',supported?'Community formula + your measured stats · NOT actual final damage':'No invented damage values · verified data only','damage-showcase-status'));
  const badge=node('div',undefined,'damage-showcase-multiplier');
- badge.append(node('small','VERIFIED GEAR BOOST'),node('strong','×'+gearMultiplier.toFixed(3)),node('span','All +'+all+'% · Tag +'+tag+'%'));
+ badge.append(node('small','VERIFIED EQUIPMENT BOOST'),node('strong','×'+gearMultiplier.toFixed(3)),node('span','All +'+all+'% · Target +'+tag+'%'));
  hero.append(left,badge);result.append(hero);
  const rangeCard=node('section',undefined,'damage-range-panel');
- const rangeHeading=node('div',undefined,'damage-range-title');
- rangeHeading.append(node('strong','🎯 Damage Range'),node('span','Minimum → Average → Maximum'));
- rangeCard.append(rangeHeading);
- const points=node('div',undefined,'damage-range-points');
- const rangeMetric=(kind,value,klass)=>{
-  const metric=node('div',undefined,'damage-range-value '+klass);
-  metric.append(node('small',kind),node('strong',fmt(value)));
-  return metric
- };
- points.append(rangeMetric('MINIMUM',low,'damage-min'),rangeMetric('AVERAGE',mid,'damage-avg'),rangeMetric('MAXIMUM',high,'damage-max'));
- rangeCard.append(points);
- const track=node('div',undefined,'damage-range-track');
- const fill=node('div',undefined,'damage-range-fill');track.append(fill);
- const avgMarker=node('div',undefined,'damage-range-marker');
- const pct=high===low?50:Math.max(0,Math.min(100,(mid-low)/(high-low)*100));
- avgMarker.style.left=pct+'%';track.append(avgMarker);
- rangeCard.append(track);
- rangeCard.append(node('p','Visual range of the same experimental reference calculation · not a critical-hit distribution.','damage-range-note'));
+ const rangeTitle=node('div',undefined,'damage-range-title');
+ rangeTitle.append(node('strong','🎯 Damage calculation status'),node('span',supported?'Base component available':'Input or skill function missing'));
+ rangeCard.append(rangeTitle);
+ const message=fn==='SP1'
+  ?(!statAvailable?'Enter Spell Power from the in-game stats panel.':'The SP1 function uses WDPS + 0.1 × Spell Power; this is a PRE-MODIFIER component. Final damage cannot be certified without critical damage, resistance and full effect sequencing.')
+  :'The full '+skillLabel+' damage function is not yet identified from a reliable source. Its Wiki coefficient is recorded, but multiplying it by an arbitrary base would produce misleading numbers.';
+ rangeCard.append(node('p',message,'damage-range-note'));
+ if(!fn){const source=node('a','Community skill functions reference ↗');source.href='https://docs.google.com/spreadsheets/d/1wU6JlyrK_jYn5mVAzrLI4pRA4UM8LgY715kKU2U1vbQ/edit?gid=101348511';source.target='_blank';source.rel='noopener noreferrer';rangeCard.append(source)}
  result.append(rangeCard);
  const factors=node('div',undefined,'damage-factor-grid');
  const factorCard=(symbol,name,value,description)=>{
   const card=node('div',undefined,'damage-factor-card');
-  card.append(node('span',symbol+' '+name),node('strong',value),node('small',description));
-  factors.append(card)
+  card.append(node('span',symbol+' '+name),node('strong',value),node('small',description));factors.append(card);
  };
- factorCard('⚔️','All Damage','+'+all+'%','Verified equipped gear');
+ factorCard('⚔️','All Damage','+'+all+'%','Item bonus; verified');
  factorCard('🎯','Tagged Damage','+'+tag+'%',targetLabel);
- factorCard('✨','Skill coefficient',skill.pct+'%','VHL selected skill');
- factorCard('🔥','Buff scenario','×'+attackBuff.toFixed(2),'Simplified additive model');
- factorCard('🗡️','Weapon variance',range[0]+'–'+range[1],'Wiki values or neutral 30–30');
+ factorCard('✨','Skill coefficient',skill[2]+'%','AQWWiki / community reference');
+ factorCard('🔥','Buff effect','×'+aura.mult.toFixed(2),'Scenario, not server-validated');
+ factorCard('🗡️','Skill function',fn||'Unknown','AP1 / SP1 / AP2 / SP2...');
  result.append(factors);
  const explain=node('details',undefined,'damage-calculation-details');
- explain.open=false;
- explain.append(node('summary','🧮 How this estimate is calculated & important limitations'));
- explain.append(node('p','Fixed illustrative baseline '+fmt(base)+' (not a real class stat) × skill '+skill.pct+'% × weapon range '+range[0]+'–'+range[1]+' (normalized to 30) × verified equipment '+gearMultiplier.toFixed(3)+' × experimental buff factor '+attackBuff.toFixed(2)+'.'));
- explain.append(node('p','VHL Unshackle (+50% outgoing), Kneel Before the Nation (+50% outgoing) and Honor Potion (+75%) are modelled here as a simple additive scenario, NOT as an exact replication of AQW buff stacking.'));
- explain.append(node('p','Base and Forge enhancements are recorded separately (a Forge enhancement replaces the base in that slot; they do not stack). Their stat/proc effects, critical damage, defenses, attack power, cooldowns, uptime and rotations are NOT included in these numbers.'));
+ explain.append(node('summary','🧮 Verified data, source formulas and calculation limits'));
+ explain.append(node('p','Official gear stacking: (1 + All Damage / 100) × (1 + matching Tagged Damage / 100). Same-category item boosts do not stack.'));
+ explain.append(node('p','Research-based level-100 functions: WDPS=85; AP1=85+0.1×Attack Power; SP1=85+0.1×Spell Power; AP2 and SP2 use variable weapon rolls. A coefficient alone does not identify a skill function.'));
+ if(supported)explain.append(node('p','For '+skillLabel+': SP1 base = (85 + 0.1 × '+fmt(spellPower)+') × '+(skill[2]/100).toFixed(2)+' = '+fmt(component)+'. This is NOT a finished hit or DPS.'));
+ explain.append(node('p','Outgoing scenario: '+(aura.outgoing.map(x=>x[0]+' +'+x[1]+'%').join(' · ')||'none')+'. Incoming scenario: '+(aura.incoming.map(x=>x[0]+' +'+x[1]+'%').join(' · ')||'none')+'. These are separately sourced percentages, not a validated full server multiplier.'));
+ if(aura.excluded.length)explain.append(node('p','Not converted into damage: '+aura.excluded.map(x=>x[0]).join(' · ')+'.'));
+ explain.append(node('p','UNRESOLVED: base class stats from equipped enhancements, active Forge stat/proc sequencing, skill function for most classes, crit chance and multiplier, critical guarantees, target resistance, class passive effects, buff timing, and damage caps. No absolute hit, minimum/maximum or DPS claim is shown while these remain unresolved.'));
+ if(equipped.some(x=>x.name&&!x.data))explain.append(node('p','⚠ One or more equipped item boosts have no verified Wiki mapping. Their contribution is unknown.','damage-caution'));
  if(conflicting.length)explain.append(node('p','⚠ '+conflicting.join(' '),'damage-caution'));
- if(equipped.some(x=>x.name&&!x.data))explain.append(node('p','⚠ Some selected items lack a verified Wiki entry in the local catalog. Real boosts may be higher or lower; no guessed values were included.','damage-caution'));
- if(!known)explain.append(node('p','No verified gear bonuses selected yet.','damage-caution'));
  result.append(explain);
 }
 function initDamageSimulator(){
  const gear=$('damage-gear'),buffs=$('damage-buffs');if(!gear||!buffs)return;
  gear.replaceChildren();for(const slot of ['Weapon','Armor','Helm','Cape'])gear.append(damageGearSelector(slot));
- const checkbox=(id,label,description)=>{
-  const wrapper=node('label',undefined,'damage-buff-option'),input=node('input');input.type='checkbox';input.id=id;
-  wrapper.append(input,node('span',label),node('small',description));buffs.append(wrapper)
- };
- checkbox('damage-buff-unshackle','Unshackle active','VHL outgoing damage +50% (wiki verified; experimental combined formula)');
- checkbox('damage-buff-kneel','Kneel Before the Nation','Armageddon buff +50% outgoing damage (wiki verified; experimental combined formula)');
- checkbox('damage-consumable-honor','Potent Honor Potion','+75% Damage consumable; experimental combined formula');
+ const cls=$('damage-class');cls.replaceChildren();
+ for(const name of Object.keys(damageClassCatalog))cls.append(new Option(name,name));
+ updateDamageClassSkills();renderDamageBuffs();
  $('damage-item-weapon').value='Necrotic Sword of Doom (Sword)';
  $('damage-forge-weapon').value='Dauntless';
  $('damage-forge-helm').value='Vim';
@@ -3349,13 +3440,23 @@ function initDamageSimulator(){
   const saved=JSON.parse(localStorage.getItem(DAMAGE_PREFERENCES)||'null');
   if(saved&&typeof saved==='object'){
    for(const [id,val] of Object.entries(saved)){
-    if(!/^damage-(item|enchant|forge|target|skill|buff|consumable)/.test(id))continue;
+    if(!/^damage-(item|enchant|forge|target|skill|buff|consumable|attack-power|spell-power|crit-multiplier)/.test(id))continue;
     const el=$(id);if(!el)continue;
     if(el.type==='checkbox')el.checked=val===true;
     else if(typeof val==='string'||typeof val==='number')el.value=String(val).slice(0,250)
    }
   }
  }catch(e){console.warn('Damage simulator preferences unavailable',e)}
+ updateDamageClassSkills();renderDamageBuffs();
+ try{
+  const saved=JSON.parse(localStorage.getItem(DAMAGE_PREFERENCES)||'{}')||{};
+  for(const [id,value] of Object.entries(saved)){
+   if(!/^damage-(support-|stack-)/.test(id))continue;
+   const el=$(id);if(!el)continue;
+   if(el.type==='checkbox')el.checked=value===true;else el.value=String(value);
+  }
+ }catch(e){console.warn('Damage support restore issue',e)}
+
  const redraw=()=>{
   try{
    const saved={};for(const el of $('damage-skill').closest('.damage-simulator-card').querySelectorAll('input,select')){
@@ -3365,6 +3466,7 @@ function initDamageSimulator(){
    renderDamageSimulator()
   }catch(e){console.error('Damage simulator render failed',e);$('damage-results').replaceChildren(node('p','Damage estimate unavailable: '+(e.message||e),'damage-caution'))}
  };
+ cls.addEventListener('change',()=>{updateDamageClassSkills();renderDamageBuffs();redraw()});
  $('damage-skill').closest('.damage-simulator-card').addEventListener('input',redraw);
  $('damage-skill').closest('.damage-simulator-card').addEventListener('change',redraw);
  redraw();
