@@ -1043,6 +1043,30 @@ body{background:#0a1420!important}
  margin-top:16px;
 }
 </style>
+<style id="aqw-forge-tracker-v1">
+#builds .forge-tracker-card{margin-top:16px}
+#builds .forge-tracker-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+#builds .forge-tracker-head .sectiontitle{margin:0 0 6px}
+#builds .forge-tracker-toolbar{display:flex;align-items:end;gap:10px;flex-wrap:wrap;margin:15px 0}
+#builds .forge-tracker-toolbar label{display:flex;flex:1 1 155px;flex-direction:column;gap:5px;font-size:12px;color:#b7d5e9;min-width:0}
+#builds .forge-tracker-toolbar input,#builds .forge-tracker-toolbar select{width:100%;min-width:0}
+#builds .forge-tracker-toolbar #forge-copy-join{min-height:37px}
+#builds .forge-progress-track{height:7px;background:#0b2033;border-radius:15px;overflow:hidden;margin:12px 0 18px;border:1px solid #2a536e}
+#builds #forge-progress-fill{height:100%;background:#70d5bd;width:0;transition:width .2s}
+#builds .forge-tracker-grid{display:grid;gap:20px}
+#builds .forge-tracker-group h4{font-size:15px;margin:0 0 10px;color:#dff4ff}
+#builds .forge-tracker-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#builds .forge-tracker-item{border:1px solid #305a77;border-radius:10px;padding:13px;background:#0e2337;min-width:0}
+#builds .forge-tracker-item.forge-unlocked{border-color:#4c9f87;background:#102b32}
+#builds .forge-item-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+#builds .forge-item-head strong{font-size:14px;color:#a9e3ff}
+#builds .forge-mark{font-size:11px;white-space:nowrap}
+#builds .forge-item-effect{font-size:12px;line-height:1.55;margin:9px 0;color:#d1e4f0}
+#builds .forge-item-requirements{font-size:11px;line-height:1.5;color:#aecddf;margin:0 0 8px}
+#builds .forge-tracker-item>a{font-size:11px;color:#7ed9ff}
+#builds .forge-tracker-disclaimer{margin:16px 0 0}
+@media(max-width:660px){#builds .forge-tracker-items{grid-template-columns:1fr}}
+</style>
 <style id="aqw-build-connector-pixel-fix">
 /* SVG geometry is calculated in rendered pixels, not a scaled static viewBox. */
 #builds svg.build-body-connectors{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;transform:none!important;pointer-events:none;overflow:visible}
@@ -1074,7 +1098,13 @@ body{background:#0a1420!important}
 <section id="ultras" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle">⚡ Ultra Boss Strategy Guides</h3><p class="muted tiny">Choose a boss and your class to see a suggested team, a role-specific plan, fight phases and common wipe causes. Strategies are community-sourced and may change. Guides are community references, not live combat instructions.</p></div><span class="pill">11 strategy guides · Community references</span></div><div class="toolbar"><input id="ultrasearch" type="search" placeholder="Search bosses, mechanics or classes…"><select id="ultrafilter"><option value="all">All guides</option><option value="ready">All suggested classes owned</option></select></div><div class="ultra-reset-tools"><span class="muted tiny">Ultra checklist · Resets at 00:00 EST (AQW server time), weekly on Friday.</span><div class="ultra-reset-actions"><button type="button" id="resetultradaily" class="smallbutton">Reset Daily Ultra checks</button><button type="button" id="resetultraweekly" class="smallbutton">Reset Weekly Ultra checks</button></div></div><div class="ultra-master-detail"><div id="ultracards" class="ultracards"></div><div id="ultradetail" class="ultradetail hidden"></div></div>
 <div class="ultra-catalog-wrapper"><div class="homehead"><h3 class="sectiontitle">⚔️ Other Ultra Encounters</h3><span class="pill">Catalog · not all have guides</span></div>
 <p class="muted tiny">Legacy and seasonal encounters without a reviewed strategy. Main farming ultras now appear above with team comps and fight guides. Verify maps and availability.</p>
-<div id="ultracatalog" class="ultra-catalog"></div></div></div></section><section id="builds" class="view"><div class="card build-planner-card"><div class="unlocktop"><div><h3 class="sectiontitle">🛡️ Class Build Planner</h3><p class="muted tiny">Class enhancement loadouts for solo bosses and farming, with Forge effects and consumables.</p></div><span class="pill">Alpha · Starter builds</span></div><div class="build-controls"><label>Class<select id="build-class"></select></label><label>Activity<select id="build-role"><option value="solo">Solo / Boss</option><option value="farm">Farming</option></select></label></div><div id="build-results" aria-live="polite"></div></div></section>
+<div id="ultracatalog" class="ultra-catalog"></div></div></div></section><section id="builds" class="view"><div class="card build-planner-card"><div class="unlocktop"><div><h3 class="sectiontitle">🛡️ Class Build Planner</h3><p class="muted tiny">Class enhancement loadouts for solo bosses and farming, with Forge effects and consumables.</p></div><span class="pill">Alpha · Starter builds</span></div><div class="build-controls"><label>Class<select id="build-class"></select></label><label>Activity<select id="build-role"><option value="solo">Solo / Boss</option><option value="farm">Farming</option></select></label></div><div id="build-results" aria-live="polite"></div></div><div class="card forge-tracker-card">
+ <div class="forge-tracker-head"><div><h3 class="sectiontitle">⚒️ Forge Unlock Tracker</h3><p class="muted tiny">Track Forge enhancement quests manually. Browse the effects and requirements without losing your progress.</p></div><span id="forge-progress-label" class="pill">0 unlocked</span></div>
+ <div class="forge-tracker-toolbar"><label>Search<input id="forge-search" placeholder="Search enhancement, effect or requirement"></label><label>Category<select id="forge-category"><option value="all">All enhancements</option><option value="Weapon">Weapon</option><option value="Helm">Helm</option><option value="Cape">Cape</option></select></label><label>Progress<select id="forge-status"><option value="all">All statuses</option><option value="todo">Not unlocked</option><option value="done">Unlocked</option></select></label><button id="forge-copy-join" class="smallbutton" type="button">📋 Copy /join forge</button></div>
+ <div id="forge-progress-track" class="forge-progress-track"><div id="forge-progress-fill"></div></div>
+ <div id="forge-list" class="forge-tracker-grid"></div>
+ <p class="muted tiny forge-tracker-disclaimer">Completion is manual: inventory exports cannot prove a Forge quest was completed. Basic requirements are summaries; the AQWWiki quest page has the full recipe. Saves on this browser only.</p>
+ </div></section>
 <section id="planner" class="view"><div class="card"><div class="goalhead"><h3 class="sectiontitle" style="margin:0">My Pinned Tasks</h3><span class="pill">Changes saved automatically</span></div><div id="planner-my-tasks" class="task-grid"></div><p class="muted tiny">Checks refresh at 00:00 EST (AQW server reset), and weekly on Friday. Saved locally; previous periods remain in backup.</p></div><div class="card" style="margin-bottom:15px"><div class="unlocktop"><div><h3 class="sectiontitle">📅 Daily / Weekly Tracker</h3><p class="muted tiny">Pin only what you want to track. Check off a task for the current local day or tracking week. Nothing is marked complete from your item inventory.</p></div><span class="pill">Local · Optional · Manual</span></div>
 <div class="planner-controls"><div class="planner-metric"><strong id="dailycount">0 / 0</strong><span>Daily tasks</span><div class="planner-progress"><div id="dailybar"></div></div></div><div class="planner-metric"><strong id="weeklycount">0 / 0</strong><span>Weekly tasks</span><div class="planner-progress"><div id="weeklybar"></div></div></div></div>
 <p class="muted tiny" id="plannerperiod"></p><div class="toolbar"><input id="plannersearch" placeholder="Search suggested tasks…" type="search"><select id="plannerfilter"><option value="all">Daily &amp; weekly</option><option value="daily">Daily only</option><option value="weekly">Weekly only</option></select></div>
@@ -2895,6 +2925,96 @@ function renderClassBuild(){
  info.append(pots);
  layout.append(mannequin,info);panel.append(layout);root.append(panel)
 }
+// Forge enhancement unlocks: manually confirmed quests, never inferred from inventory possession.
+const FORGE_PROGRESS_KEY='aqwc-forge-unlocks-v1';
+const FORGE_QUESTS_URL='https://aqwwiki.wikidot.com/cysero-s-forge-s-quests';
+const forgeCatalog=[
+ ['Weapon','Forge','Level 30 · Blacksmithing Rank 4 · Escherion quest','Base Forge weapon enhancement'],
+ ['Weapon','Lacerate','Level 40 · Blacksmithing Rank 5 · Hit Job quest','Additional physical damage and hit utility'],
+ ['Weapon','Smite','Level 40+ · Blacksmithing progression; check quest page','Extra damage from your fifth skill'],
+ ['Weapon','Praxis','Level 40+ · Blacksmithing progression; check quest page','Damage that builds on sustained targets'],
+ ['Weapon','Acheron','Level 100 · Blacksmithing Rank 10 · story and item requirements','High-risk damage with a self-DoT'],
+ ['Weapon','Valiance','Level 100 · Blacksmithing Rank 10 · The Final Challenge; class/item prerequisites','General-purpose core-stat buff'],
+ ['Weapon','Elysium','Level 100 · Blacksmithing Rank 10 · Awe-scention','Mana support and magic damage'],
+ ['Weapon',"Arcana's Concerto",'Level 100 · Blacksmithing Rank 10 · Darkon, the Conductor','Teamwide target damage debuff'],
+ ['Weapon','Dauntless','Level 100 · Blacksmithing Rank 10 · Malgor progression; Insignias','High physical burst with healing penalty'],
+ ['Weapon','Ravenous','Level 100 · The Fiend Shard\'s Finale','Damage against lower-HP targets'],
+ ['Cape','Forge','Level 30 · Blacksmithing Rank 4 · Defeat Kitsune quest','Base Forge cape enhancement'],
+ ['Cape','Absolution','Level 90 · Blacksmithing Rank 9 · Ascended Paladin gear','Boosts healing output'],
+ ['Cape','Vainglory','Level 90 · Blacksmithing Rank 9 · after Absolution; Armor of Awe relics','More damage at the cost of healing'],
+ ['Cape','Avarice','Level 90 · Blacksmithing Rank 9 · after Vainglory; Indulgence/Penance','More haste at a defensive cost'],
+ ['Cape','Penitence','Level 90 · Blacksmithing Rank 9 · after Avarice; boss materials','Damage resistance and DoT trade-off'],
+ ['Cape','Lament','Level 90 · Blacksmithing Rank 9 · after Penitence; boss hearts','Critical chance with lower haste'],
+ ['Helm','Forge','Level 30 · Blacksmithing Rank 4','Base Forge helm enhancement'],
+ ['Helm','Vim','Level 70 · Blacksmithing Rank 7 · Rogue Rank 10 · Ethereal Essence','Dexterity and mana-cost efficiency'],
+ ['Helm','Examen','Level 70 · Blacksmithing Rank 7 · Healer Rank 10 · Ethereal Essence','Wisdom and mana-cost efficiency'],
+ ['Helm','Anima','Level 70 · Blacksmithing Rank 7 · Warrior Rank 10 · Ethereal Essence','Physical offense with lower HP'],
+ ['Helm','Pneuma','Level 70 · Blacksmithing Rank 7 · Mage Rank 10 · Ethereal Essence','Magic offense with lower HP']
+].map(([slot,name,requirements,summary])=>({id:slot.toLowerCase()+':'+name.toLowerCase().replace(/[^a-z0-9]/g,''),slot,name,requirements,summary}));
+let forgeUnlocked=new Set();
+function loadForgeUnlocks(){
+ try{
+  const raw=JSON.parse(localStorage.getItem(FORGE_PROGRESS_KEY)||'[]');
+  const valid=new Set(forgeCatalog.map(x=>x.id));
+  forgeUnlocked=new Set(Array.isArray(raw)?raw.filter(x=>typeof x==='string'&&valid.has(x)):[]);
+ }catch(e){console.warn('Forge unlock tracker load failed',e);forgeUnlocked=new Set()}
+}
+function saveForgeUnlocks(){
+ try{localStorage.setItem(FORGE_PROGRESS_KEY,JSON.stringify([...forgeUnlocked]));return true}
+ catch(e){console.error('Forge unlock save failed',e);message('Could not save Forge progress in this browser. Please check site storage.','error');return false}
+}
+function renderForgeTracker(){
+ const list=$('forge-list');if(!list)return;list.replaceChildren();
+ const query=String($('forge-search')?.value||'').toLowerCase().trim();
+ const category=$('forge-category')?.value||'all',status=$('forge-status')?.value||'all';
+ const done=forgeCatalog.filter(x=>forgeUnlocked.has(x.id)).length;
+ const total=forgeCatalog.length;
+ $('forge-progress-label').textContent=done+' / '+total+' unlocked';
+ $('forge-progress-fill').style.width=(total?done/total*100:0)+'%';
+ const matches=forgeCatalog.filter(x=>(category==='all'||x.slot===category)&&(status==='all'||(status==='done')===forgeUnlocked.has(x.id))&&(!query||[x.name,x.slot,x.requirements,x.summary].join(' ').toLowerCase().includes(query)));
+ for(const slot of ['Weapon','Helm','Cape']){
+  const subset=matches.filter(x=>x.slot===slot);
+  if(!subset.length)continue;
+  const group=node('section',undefined,'forge-tracker-group');
+  group.append(node('h4',({Weapon:'⚔️',Helm:'🪖',Cape:'🧥'})[slot]+' '+slot+' enhancements'));
+  const cards=node('div',undefined,'forge-tracker-items');
+  for(const forge of subset){
+   const owned=forgeUnlocked.has(forge.id);
+   const card=node('article',undefined,'forge-tracker-item'+(owned?' forge-unlocked':''));
+   const heading=node('div',undefined,'forge-item-head');
+   heading.append(node('strong',forge.name));
+   const state=node('button',owned?'✓ Unlocked':'○ Mark unlocked','smallbutton forge-mark');
+   state.type='button';state.setAttribute('aria-pressed',String(owned));
+   state.onclick=()=>{
+    if(forgeUnlocked.has(forge.id))forgeUnlocked.delete(forge.id);else forgeUnlocked.add(forge.id);
+    if(!saveForgeUnlocks()){if(owned)forgeUnlocked.add(forge.id);else forgeUnlocked.delete(forge.id);return}
+    renderForgeTracker()
+   };
+   heading.append(state);card.append(heading);
+   const effect=typeof buildEnhancementEffect==='function'?buildEnhancementEffect(forge.name):forge.summary;
+   card.append(node('p',effect||forge.summary,'forge-item-effect'));
+   const req=node('p',undefined,'forge-item-requirements');
+   req.append(node('strong','Unlock: '),node('span',forge.requirements));card.append(req);
+   const source=node('a','View full quest ↗');source.href=FORGE_QUESTS_URL;source.target='_blank';source.rel='noopener noreferrer';
+   card.append(source);cards.append(card);
+  }
+  group.append(cards);list.append(group);
+ }
+ if(!matches.length)list.append(node('p','No matching Forge enhancements.','muted'));
+}
+function initForgeTracker(){
+ loadForgeUnlocks();
+ for(const id of ['forge-search','forge-category','forge-status']){
+  const element=$(id);if(element)element.addEventListener(id==='forge-search'?'input':'change',renderForgeTracker);
+ }
+ const copy=$('forge-copy-join');
+ if(copy)copy.onclick=()=>{
+  const join='/join forge';
+  if(navigator.clipboard?.writeText)navigator.clipboard.writeText(join).then(()=>{copy.textContent='✓ Copied /join forge'},()=>window.prompt('Copy join:',join));
+  else window.prompt('Copy join:',join);
+ };
+ renderForgeTracker();
+}
 function initClassBuildPlanner(){
  const select=$('build-class'),role=$('build-role'),root=$('build-results');
  if(!select||!role||!root)return;
@@ -2924,7 +3044,7 @@ async function init(){
  }
  // Non-inventory features can fail independently without preventing inventory recovery.
  for(const [name,run] of [
-  ['Build planner',()=>initClassBuildPlanner()],
+  ['Build planner',()=>{initClassBuildPlanner();initForgeTracker()}],
   ['Goals',()=>loadGoals()],
   ['Wishlist',()=>loadUnlocks()],
   ['Story',()=>loadStory()],
