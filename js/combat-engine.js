@@ -69,43 +69,48 @@
     const autoStart=input.autoStartSeconds??0;
     if(autoEnabled)finitePositive(autoStart,"autoStartSeconds",true);
     let nextAuto=autoEnabled?autoStart:Infinity;
-    let now=0,cursor=0,attempts=0;
-    while(now<seconds-EPS) {
+    let nextAction=0,cursor=0,attempts=0;
+    while(Math.min(nextAuto,nextAction)<seconds-EPS) {
       if(++attempts>100000)throw new Error("simulation iteration limit reached");
+      // Skills and autoattacks have separate event clocks; actions never bypass the
+      // configured minimum interval because an autoattack happened in-between.
+      const now=Math.min(nextAuto,nextAction);
       active.splice(0,active.length,...active.filter(e=>e.expires>now+EPS));
-      const skills=rotation.filter(id=>{
-        const s=model.skills[id];
-        return (ready[id]??0)<=now+EPS && (!s.group || (groupReady[s.group]??0)<=now+EPS);
-      });
-      let selected=null;
-      if(skills.length) {
-        for(let offset=0;offset<rotation.length;offset++){
-          const candidate=rotation[(cursor+offset)%rotation.length];
-          if(skills.includes(candidate)){selected=candidate;cursor=(cursor+offset+1)%rotation.length;break;}
+      if(nextAuto<=nextAction+EPS && nextAuto<seconds-EPS) {
+        const buffs=active.map(e=>({id:e.id,stacks:e.stacks,expires:e.expires}));
+        events.push({time:+nextAuto.toFixed(5),kind:"auto",id:model.auto.id,
+          buffsBefore:buffs,damage:getDamage(input,model.auto.id,nextAuto,"auto")});
+        nextAuto+=model.auto.cooldown*cooldownFactor;
+      }
+      if(nextAction<=now+EPS && nextAction<seconds-EPS) {
+        let selected=null;
+        for(let offset=0;offset<rotation.length;offset++) {
+          const candidate=rotation[(cursor+offset)%rotation.length],skill=model.skills[candidate];
+          if((ready[candidate]??0)<=now+EPS &&
+             (!skill.group||(groupReady[skill.group]??0)<=now+EPS)){
+            selected=candidate;
+            cursor=(cursor+offset+1)%rotation.length;
+            break;
+          }
+        }
+        if(selected){
+          const skill=model.skills[selected];
+          const buffs=active.map(e=>({id:e.id,stacks:e.stacks,expires:e.expires}));
+          events.push({time:+now.toFixed(5),kind:"skill",id:selected,label:skill.label,
+            coefficient:skill.coefficient,buffsBefore:buffs,
+            damage:getDamage(input,selected,now,"skill"),alwaysCrit:skill.alwaysCrit===true});
+          ready[selected]=now+skill.cooldown*cooldownFactor;
+          if(skill.group)groupReady[skill.group]=ready[selected];
+          pushEffects(active,skill,now);
+          nextAction=now+gap;
+        }else{
+          // No cast is legal: jump to next cooldown completion; never invent a cast.
+          const candidates=rotation.map(id=>Math.max(ready[id]??0,
+            model.skills[id].group?(groupReady[model.skills[id].group]??0):0))
+            .filter(t=>t>now+EPS);
+          nextAction=candidates.length?Math.min(...candidates):seconds;
         }
       }
-      if(autoEnabled && nextAuto<=now+EPS) {
-        const buffs=active.map(e=>({id:e.id,stacks:e.stacks,expires:e.expires}));
-        events.push({time:+now.toFixed(5),kind:"auto",id:model.auto.id,buffsBefore:buffs,damage:getDamage(input,model.auto.id,now,"auto")});
-        nextAuto=now+model.auto.cooldown*cooldownFactor;
-        // Assumes autos independent of button action, a placeholder to validate in-game.
-      }
-      if(selected){
-        const s=model.skills[selected], buffs=active.map(e=>({id:e.id,stacks:e.stacks,expires:e.expires}));
-        events.push({time:+now.toFixed(5),kind:"skill",id:selected,label:s.label,coefficient:s.coefficient,
-          buffsBefore:buffs,damage:getDamage(input,selected,now,"skill"),alwaysCrit:s.alwaysCrit===true});
-        ready[selected]=now+s.cooldown*cooldownFactor;
-        if(s.group)groupReady[s.group]=ready[selected];
-        pushEffects(active,s,now);
-        now+=gap;
-      } else {
-        const next=[...Object.values(ready),...Object.values(groupReady),nextAuto]
-          .filter(t=>Number.isFinite(t)&&t>now+EPS);
-        if(!next.length)break;
-        // Prevent zero-length loop; advance to next relevant time.
-        now=Math.min(seconds,...next);
-      }
-      if(autoEnabled && nextAuto<now-EPS && nextAuto<seconds-EPS)now=nextAuto;
     }
     const missing=events.filter(e=>e.damage===null);
     const measuredTotal=events.reduce((sum,e)=>sum+(e.damage??0),0);
