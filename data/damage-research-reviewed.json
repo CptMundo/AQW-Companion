@@ -12,7 +12,8 @@
     "vhlWiki": "https://aqwwiki.wikidot.com/void-highlord-class",
     "lrWiki": "https://aqwwiki.wikidot.com/legion-revenant-class",
     "looWiki": "https://aqwwiki.wikidot.com/lord-of-order-0-ac",
-    "scWiki": "https://aqwwiki.wikidot.com/stonecrusher-ac"
+    "scWiki": "https://aqwwiki.wikidot.com/stonecrusher-ac",
+    "dotsCommunity": "https://www.aqwhub.com/other-guides/do-ts-explained/"
   },
   "classModels": [
     {
@@ -360,7 +361,91 @@
     "Actual class passive and Forge interactions with core stats, outgoing/incoming caps, crit and sequencing",
     "Target defense/resistances and damage caps",
     "Full list of every item and every class: curated evidence intentionally limited",
-    "Measured in-game reference tests for hit/crit minimum and maximum"
+    "Measured in-game reference tests for hit/crit minimum and maximum",
+    "Implement maximum-per-category equipped item boost selection; audit any older 'equip-order' rules",
+    "Distinguish DoT/HoT from direct damage and ensure item boosts are not applied to DoT/HoT",
+    "Normalize Dragon vs Dragonkin item and monster category mappings from official game values",
+    "Verify each skill's direct hit / DoT / heal type and critical behavior before using universal multipliers"
   ],
-  "policy": "Unknown or community-only numbers cannot be presented as certified final damage. Do not add invented default damage or silently infer unknown item stats."
+  "policy": "Unknown or community-only numbers cannot be presented as certified final damage. Do not add invented default damage or silently infer unknown item stats.",
+  "officialRules20261123": {
+    "evidenceGrade": "official Artix guides; applies to item boost categories and displayed stat definitions, not a universal complete damage formula",
+    "itemBoosts": {
+      "categorySelection": "Only highest equipped boost per identical category applies (not last equipped item).",
+      "differentCategories": "Multiply best All boost by best applicable monster-type boost.",
+      "example": {
+        "allPct": 25,
+        "chaosPct": 50,
+        "multiplier": 1.875
+      },
+      "officialMonsterTags": [
+        "All",
+        "Dragonkin",
+        "Undead",
+        "Chaos",
+        "Elemental",
+        "Human",
+        "Orc",
+        "Drakath"
+      ],
+      "normalizationWarning": "UI 'Dragon' or 'Dragonkin' must be reconciled with game monster typing rather than guessed.",
+      "directDamageOnly": "Item damage boosts affect direct damage numbers/healing/self-damage, NOT DoT or HoT.",
+      "source": "boostsOfficial"
+    },
+    "stats": {
+      "weaponDamageRange": "Variance for non-static skills/autoattack; average damage unchanged.",
+      "attackPower": "Adds to base physical damage before combat stats.",
+      "spellPower": "Adds to base magical damage before combat stats.",
+      "criticalMultiplier": "Applied when skill crits; DoTs cannot crit.",
+      "haste": "Cooldown Reduction, not direct per-hit outgoing damage.",
+      "outgoingDamage": "Outgoing all-source bonus except True Damage; special DoT application/tick handling.",
+      "source": "statsOfficial"
+    },
+    "procExamples": {
+      "valiance": "100% activation on autoattack, 15s cooldown, 20s duration: 30% STR/DEX/INT/WIS/END and 15% LUK, multiplicative with other core-stat increases.",
+      "arcana": "50% activation on autoattack; 2% increased target physical/magical damage received per stack, max 11 stacks; avoid modeling this as an unconditional personal All Damage buff.",
+      "dauntless": "100% on second skill with 3s cooldown, 190-570% physical damage depending on HP, always hits and crits: proc hit distinct from triggered skill hit.",
+      "source": "traitsOfficial"
+    }
+  },
+  "communityDotNotes20261123": {
+    "source": "dotsCommunity",
+    "evidenceGrade": "community reverse-engineering, not official confirmation",
+    "applicationVsTick": "DoTs store some outgoing modifiers at application and use others at tick; do not multiply item boosts into DoT and do not treat DoT as a standard direct hit.",
+    "validation": "Require in-game measurements for DoT/HoT duration, ticks and buff snapshots before displaying certified totals."
+  },
+  "validationFixtures": [
+    {
+      "id": "official-boosts-all-chaos",
+      "allPct": 25,
+      "taggedPct": 50,
+      "expectedMultiplier": 1.875,
+      "source": "boostsOfficial"
+    },
+    {
+      "id": "official-boosts-duplicate-all",
+      "equippedAllPcts": [
+        10,
+        25
+      ],
+      "expectedAllMultiplier": 1.25,
+      "source": "boostsOfficial"
+    },
+    {
+      "id": "official-boosts-combination-nsod-rgow",
+      "allPct": 51,
+      "taggedPct": 50,
+      "expectedMultiplier": 2.265,
+      "assumption": "Both gear items equipped and the target matches RGOW relevant tag.",
+      "source": "boostsOfficial"
+    },
+    {
+      "id": "official-boosts-no-tag",
+      "allPct": 51,
+      "taggedPct": 50,
+      "tagMatch": false,
+      "expectedMultiplier": 1.51,
+      "source": "boostsOfficial"
+    }
+  ]
 }
