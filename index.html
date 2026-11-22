@@ -868,31 +868,6 @@ body{background:#0a1420!important}
  #builds .build-character-armor{right:8px;left:auto;top:auto;bottom:11%}
 }
 </style>
-<style id="aqw-build-calibration">
-#builds .build-calibration-tools{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:10px 0}
-#builds .build-calibration-tools button{padding:7px 11px;border-radius:7px;border:1px solid #4b7796;background:#16314b;color:#d4efff;cursor:pointer;font-size:12px}
-#builds .build-calibration-tools button:hover{background:#204563}
-#builds .build-calibration-tools [hidden],#builds .build-calibration-hint[hidden]{display:none}
-#builds .build-calibration-hint{color:#a9d4ec;font-size:12px}
-#builds .build-calibration-overlay{position:absolute;inset:0;pointer-events:none;z-index:5}
-#builds .build-calibration-handle{display:none;position:absolute;transform:translate(-50%,-50%);width:27px;height:27px;border-radius:50%;border:2px solid #071422;background:var(--anchor-color,#6dc9ec);color:#081725;font-size:12px;font-weight:900;box-shadow:0 0 0 3px #dcecff,0 3px 12px #071422;cursor:grab;touch-action:none;pointer-events:auto;align-items:center;justify-content:center}
-#builds .build-calibrating .build-calibration-handle{display:flex}
-#builds .build-calibration-handle:active{cursor:grabbing}
-#builds .build-calibrating .build-body-connectors path{stroke-width:2.4}
-</style>
-<style id="aqw-build-calibration-v2">
-#builds .build-calibrating .build-calibration-overlay{pointer-events:none}
-#builds .build-calibrating .build-calibration-handle{pointer-events:auto;z-index:9}
-#builds .build-mannequin{overflow:hidden}
-</style>
-<style id="aqw-build-calibration-v3">
-#builds .build-calibration-tools .build-anchor-picker{padding:7px 9px;background:#10263b;color:#d4efff;border:1px solid #4b7796;border-radius:7px}
-#builds .build-calibration-tools .build-anchor-picker[hidden],#builds .build-calibration-tools button[hidden]{display:none}
-#builds .build-placing{cursor:crosshair}
-#builds .build-calibrating .build-calibration-overlay{overflow:visible}
-#builds .build-body-connectors{overflow:visible}
-#builds .build-body-connectors path{stroke-linecap:round}
-</style>
 <style id="aqw-build-connector-pixel-fix">
 /* SVG geometry is calculated in rendered pixels, not a scaled static viewBox. */
 #builds svg.build-body-connectors{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;transform:none!important;pointer-events:none;overflow:visible}
@@ -1962,35 +1937,10 @@ function renderClassBuild(){
   slot.style.setProperty('--build-enh-color',palette[colorKey]||'#7fc6df');
   mannequin.append(slot)
  }
- // Artix calibration: normalized points stay attached to the image as it scales.
- const calibrationKey='aqwc-artix-anchors-v2';
- const defaults={weapon:[0.22220158781744742,0.55728125],helm:[0.6827615023910116,0.23928125],cape:[0.3648265936208738,0.32128125],armor:[0.3707693021960165,0.49728125]};
- const safePoints=(value)=>{
-  const output={};
-  for(const name of Object.keys(defaults)){
-   const p=value&&value[name];
-   output[name]=Array.isArray(p)&&p.length===2&&p.every(v=>typeof v==='number'&&Number.isFinite(v)&&v>=-5&&v<=6)?p.slice():defaults[name].slice();
-  }
-  return output;
- };
- let saved=null;try{saved=JSON.parse(localStorage.getItem(calibrationKey)||'null')}catch(e){}
- let points=safePoints(saved),calibrating=false;
+ // Fixed Artix equipment anchor points (normalized relative to the image).
+ const anchors={weapon:[0.22220158781744742,0.55728125],helm:[0.6827615023910116,0.23928125],cape:[0.3648265936208738,0.32128125],armor:[0.3707693021960165,0.49728125]};
  const artImage=mannequin.querySelector('.build-artix-image');
  const toSvg=(x,y,frame)=>[x-frame.left,y-frame.top];
- const overlay=document.createElement('div');overlay.className='build-calibration-overlay';mannequin.append(overlay);
- const handles={};
- for(const name of Object.keys(defaults)){
-  const handle=document.createElement('button');handle.type='button';handle.className='build-calibration-handle';
-  handle.textContent=name[0].toUpperCase();handle.title='Drag '+name+' point';handle.setAttribute('aria-label','Move '+name+' anchor');
-  handle.style.setProperty('--anchor-color',mannequin.querySelector('.build-character-'+name)?.style.getPropertyValue('--build-enh-color')||'#7fc6df');
-  overlay.append(handle);handles[name]=handle;
- }
- const toolsRow=node('div',undefined,'build-calibration-tools');
- const editButton=document.createElement('button');editButton.type='button';editButton.textContent='🎯 Calibrate arrows';
- const resetButton=document.createElement('button');resetButton.type='button';resetButton.textContent='Reset points';resetButton.hidden=true;
- const exportButton=document.createElement('button');exportButton.type='button';exportButton.textContent='Copy coordinates';exportButton.hidden=true;
- const hint=node('span','Drag points anywhere in this whole panel (even outside the image). Saved in this browser.','build-calibration-hint');hint.hidden=true;
- toolsRow.append(editButton,resetButton,exportButton,hint);
  const updateBuildConnectors=()=>{
   if(!mannequin.isConnected)return;
   const frame=arrows.getBoundingClientRect(),art=artImage?.getBoundingClientRect();
@@ -1998,11 +1948,11 @@ function renderClassBuild(){
   // Use the actual rendered SVG dimensions in CSS pixels. Avoid mismatches
   // between the fixed 600x430 viewBox and the responsive panel size.
   arrows.setAttribute('viewBox','0 0 '+frame.width+' '+frame.height);
-  for(const name of Object.keys(defaults)){
+  for(const name of Object.keys(anchors)){
    const card=mannequin.querySelector('.build-character-'+name),path=arrows.querySelector('.build-arrow-'+name);
    if(!card||!path)continue;
    const r=card.getBoundingClientRect();
-   const targetX=art.left+art.width*points[name][0],targetY=art.top+art.height*points[name][1];
+   const targetX=art.left+art.width*anchors[name][0],targetY=art.top+art.height*anchors[name][1];
    // Attach to the nearest edge of the *actual* label, not an assumed left/right side.
    const edges=[
     [r.left,r.top+r.height/2],[r.right,r.top+r.height/2],
@@ -2013,61 +1963,8 @@ function renderClassBuild(){
    const [tx,ty]=toSvg(targetX,targetY,frame);
    path.setAttribute('d','M '+sx+' '+sy+' L '+tx+' '+ty);
    path.style.stroke=card.style.getPropertyValue('--build-enh-color')||'#6dc9ec';
-   const handle=handles[name];
-   const panel=mannequin.getBoundingClientRect();
-   handle.style.left=(art.left-panel.left+art.width*points[name][0])+'px';
-   handle.style.top=(art.top-panel.top+art.height*points[name][1])+'px';
   }
  };
- const setCalibrating=(on)=>{
-  calibrating=on;mannequin.classList.toggle('build-calibrating',on);
-  editButton.textContent=on?'✓ Finish calibration':'🎯 Calibrate arrows';
-  resetButton.hidden=!on;exportButton.hidden=!on;hint.hidden=!on;
-  updateBuildConnectors();
- };
- editButton.addEventListener('click',()=>setCalibrating(!calibrating));
- resetButton.addEventListener('click',()=>{points=safePoints(null);try{localStorage.removeItem(calibrationKey)}catch(e){}updateBuildConnectors()});
- exportButton.addEventListener('click',()=>{
-  const value=JSON.stringify(points);
-  if(navigator.clipboard?.writeText)navigator.clipboard.writeText(value).then(()=>{exportButton.textContent='✓ Copied'},()=>{window.prompt('Copy coordinates:',value)});
-  else window.prompt('Copy coordinates:',value);
- });
- // Click-to-place avoids pointer-capture limits and allows exact positioning.
- let selectedAnchor=null;
- const pick=document.createElement('select');pick.className='build-anchor-picker';pick.setAttribute('aria-label','Select anchor to place');
- for(const name of Object.keys(defaults)){const opt=document.createElement('option');opt.value=name;opt.textContent='Place '+name;pick.append(opt)}
- const place=document.createElement('button');place.type='button';place.textContent='📍 Click to place';
- toolsRow.insertBefore(pick,resetButton);toolsRow.insertBefore(place,resetButton);
- pick.hidden=true;place.hidden=true;
- const originalSetCalibrating=setCalibrating;
- // Keep the existing mode switch and reveal precision controls together.
- editButton.addEventListener('click',()=>{pick.hidden=!calibrating;place.hidden=!calibrating;if(!calibrating){selectedAnchor=null;place.textContent='📍 Click to place';mannequin.classList.remove('build-placing')}});
- place.addEventListener('click',()=>{selectedAnchor=pick.value;mannequin.classList.add('build-placing');place.textContent='Click a point on the panel…'});
- mannequin.addEventListener('click',e=>{
-  if(!calibrating||!selectedAnchor||e.target.closest('.build-character-slot')||e.target.closest('.build-calibration-handle'))return;
-  const frame=mannequin.getBoundingClientRect(),art=artImage.getBoundingClientRect();
-  points[selectedAnchor]=[(e.clientX-art.left)/art.width,(e.clientY-art.top)/art.height];
-  try{localStorage.setItem(calibrationKey,JSON.stringify(points))}catch(err){}
-  selectedAnchor=null;mannequin.classList.remove('build-placing');place.textContent='📍 Click to place';
-  updateBuildConnectors();
- });
- for(const [name,handle] of Object.entries(handles)){
-  const move=e=>{
-   const art=artImage.getBoundingClientRect(),frame=mannequin.getBoundingClientRect();
-   if(!art.width||!art.height||!frame.width||!frame.height)return;
-   // Drag anywhere within the full panel, including outside the Artix image.
-   // Keep a small inset so the draggable handle remains reachable.
-   // Permit an extended calibration range, including outside the visible panel.
-   const margin=160;
-   const x=Math.max(frame.left-margin,Math.min(frame.right+margin,e.clientX));
-   const y=Math.max(frame.top-margin,Math.min(frame.bottom+margin,e.clientY));
-   points[name]=[(x-art.left)/art.width,(y-art.top)/art.height];
-   updateBuildConnectors();
-  };
-  handle.addEventListener('pointerdown',e=>{if(!calibrating)return;e.preventDefault();handle.setPointerCapture(e.pointerId);move(e)});
-  handle.addEventListener('pointermove',e=>{if(calibrating&&handle.hasPointerCapture(e.pointerId))move(e)});
-  handle.addEventListener('pointerup',e=>{if(!calibrating)return;move(e);try{localStorage.setItem(calibrationKey,JSON.stringify(points))}catch(err){}});
- }
  requestAnimationFrame(updateBuildConnectors);
  if(artImage&&!artImage.complete)artImage.addEventListener('load',updateBuildConnectors,{once:true});
  if(typeof ResizeObserver!=='undefined'){
@@ -2084,7 +1981,7 @@ function renderClassBuild(){
  const pots=node('section',undefined,'build-info-panel');pots.append(node('h4','Consumables · optional starter ideas'));
  for(const [label,value] of suggestedConsumables(cls,role)){const line=node('div',undefined,'build-info-line');line.append(node('strong',label),node('span',value));pots.append(line)}
  pots.append(node('p','Examples only, not verified for this class or boss. Check exact item names, effects and availability in-game.','muted tiny'));info.append(pots);
- layout.append(mannequin,info);panel.append(toolsRow,layout,node('div','Alternative: '+build.alternative,'build-alternative'),node('p',build.note,'build-note'));root.append(panel)
+ layout.append(mannequin,info);panel.append(layout,node('div','Alternative: '+build.alternative,'build-alternative'),node('p',build.note,'build-note'));root.append(panel)
 }
 function initClassBuildPlanner(){const select=$('build-class'),role=$('build-role');if(!select||!role)return;for(const name of Object.keys(starterBuilds))select.append(new Option(name,name));select.onchange=renderClassBuild;role.onchange=renderClassBuild;renderClassBuild()}
 
