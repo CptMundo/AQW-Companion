@@ -1009,6 +1009,11 @@ body{background:#0a1420!important}
  #ultradetail .ultra-focus-gear-cell{padding:6px}
 }
 </style>
+<style id="aqw-ultras-fight-flow-polish-v1">
+/* Center the two top Ultra card headings, without changing the sidebar or content. */
+#ultradetail .ultra-setup-card>h3,
+#ultradetail .ultra-quickstart>h3{text-align:center;width:100%}
+</style>
 <style id="aqw-build-connector-pixel-fix">
 /* SVG geometry is calculated in rendered pixels, not a scaled static viewBox. */
 #builds svg.build-body-connectors{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;transform:none!important;pointer-events:none;overflow:visible}
@@ -2256,7 +2261,7 @@ function renderUltraDetail(b){
  const sequence=node('div',undefined,'ultra-flow-list');
  for(const [i,phase] of b.phases.slice(0,5).entries()){
   const step=node('details',undefined,'ultra-flow-step');
-  if(i===0)step.open=true;
+  step.open=true; // Fight flow steps are short; show them expanded by default.
   const head=node('summary');
   head.append(node('span',String(i+1).padStart(2,'0'),'ultra-step-number'),node('strong',phase[0]),node('span','View step','ultra-flow-expand'));
   step.append(head,node('p',phase[1]));sequence.append(step);
