@@ -880,6 +880,15 @@ body{background:#0a1420!important}
 #builds .build-effect-row:last-of-type{margin-bottom:8px}
 @media(max-width:900px){#builds .build-detail-stack{grid-template-rows:auto}}
 </style>
+<style id="aqw-build-polished-2026">
+#builds .build-character-slot{gap:4px}
+#builds .build-character-slot .build-slot-label{font-size:11px}
+#builds .build-character-slot strong{font-size:14px}
+#builds .build-detail-stack{grid-template-rows:minmax(0,1fr) auto}
+#builds .build-consumable-row{padding:9px 0;border-bottom:1px solid #2b4055}
+#builds .build-consumable-row:last-child{border-bottom:0}
+#builds .build-consumables-panel h4,#builds .build-effects-panel h4{font-size:16px;letter-spacing:-.02em}
+</style>
 <style id="aqw-build-connector-pixel-fix">
 /* SVG geometry is calculated in rendered pixels, not a scaled static viewBox. */
 #builds svg.build-body-connectors{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;transform:none!important;pointer-events:none;overflow:visible}
@@ -911,7 +920,7 @@ body{background:#0a1420!important}
 <section id="ultras" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle">⚡ Ultra Boss Strategy Guides</h3><p class="muted tiny">Choose a boss and your class to see a suggested team, a role-specific plan, fight phases and common wipe causes. Strategies are community-sourced and may change. Guides are community references, not live combat instructions.</p></div><span class="pill">11 strategy guides · Community references</span></div><div class="toolbar"><input id="ultrasearch" type="search" placeholder="Search bosses, mechanics or classes…"><select id="ultrafilter"><option value="all">All guides</option><option value="ready">All suggested classes owned</option></select></div><div class="ultra-reset-tools"><span class="muted tiny">Ultra checklist · Resets at 00:00 EST (AQW server time), weekly on Friday.</span><div class="ultra-reset-actions"><button type="button" id="resetultradaily" class="smallbutton">Reset Daily Ultra checks</button><button type="button" id="resetultraweekly" class="smallbutton">Reset Weekly Ultra checks</button></div></div><div class="ultra-master-detail"><div id="ultracards" class="ultracards"></div><div id="ultradetail" class="ultradetail hidden"></div></div>
 <div class="ultra-catalog-wrapper"><div class="homehead"><h3 class="sectiontitle">⚔️ Other Ultra Encounters</h3><span class="pill">Catalog · not all have guides</span></div>
 <p class="muted tiny">Legacy and seasonal encounters without a reviewed strategy. Main farming ultras now appear above with team comps and fight guides. Verify maps and availability.</p>
-<div id="ultracatalog" class="ultra-catalog"></div></div></div></section><section id="builds" class="view"><div class="card build-planner-card"><div class="unlocktop"><div><h3 class="sectiontitle">🛡️ Class Build Planner</h3><p class="muted tiny">2026 class loadouts for Solo, Farming and Group / Ultras. Includes base enhancements and situational Forge choices; verify each boss strategy.</p></div><span class="pill">Alpha · Starter builds</span></div><div class="build-controls"><label>Class<select id="build-class"></select></label><label>Activity<select id="build-role"><option value="solo">Solo / Boss</option><option value="farm">Farming</option><option value="group">Group / Ultras</option></select></label></div><div id="build-results" aria-live="polite"></div></div></section>
+<div id="ultracatalog" class="ultra-catalog"></div></div></div></section><section id="builds" class="view"><div class="card build-planner-card"><div class="unlocktop"><div><h3 class="sectiontitle">🛡️ Class Build Planner</h3><p class="muted tiny">2026 class loadouts for Solo, Farming and Group / Ultras. Includes base enhancements and situational Forge choices; verify each boss strategy.</p></div><span class="pill">Alpha · Starter builds</span></div><div class="build-controls"><label>Class<select id="build-class"></select></label><label>Activity<select id="build-role"><option value="solo">Solo / Boss</option><option value="farm">Farming</option></select></label></div><div id="build-results" aria-live="polite"></div></div></section>
 <section id="planner" class="view"><div class="card"><div class="goalhead"><h3 class="sectiontitle" style="margin:0">My Pinned Tasks</h3><span class="pill">Changes saved automatically</span></div><div id="planner-my-tasks" class="task-grid"></div><p class="muted tiny">Checks refresh at 00:00 EST (AQW server reset), and weekly on Friday. Saved locally; previous periods remain in backup.</p></div><div class="card" style="margin-bottom:15px"><div class="unlocktop"><div><h3 class="sectiontitle">📅 Daily / Weekly Tracker</h3><p class="muted tiny">Pin only what you want to track. Check off a task for the current local day or tracking week. Nothing is marked complete from your item inventory.</p></div><span class="pill">Local · Optional · Manual</span></div>
 <div class="planner-controls"><div class="planner-metric"><strong id="dailycount">0 / 0</strong><span>Daily tasks</span><div class="planner-progress"><div id="dailybar"></div></div></div><div class="planner-metric"><strong id="weeklycount">0 / 0</strong><span>Weekly tasks</span><div class="planner-progress"><div id="weeklybar"></div></div></div></div>
 <p class="muted tiny" id="plannerperiod"></p><div class="toolbar"><input id="plannersearch" placeholder="Search suggested tasks…" type="search"><select id="plannerfilter"><option value="all">Daily &amp; weekly</option><option value="daily">Daily only</option><option value="weekly">Weekly only</option></select></div>
@@ -2438,24 +2447,42 @@ const enhancementEffects={
 function buildEnhancementEffect(name){
  return enhancementEffects[name]||'Stats or situational effect depend on the class and enhancement level.';
 }
+// Curated Alchemy setups for the selected class; separate from encounter-specific Ultra consumables.
+// Effects are kept in one place so the class mappings do not duplicate percentages.
+const alchemyEffects={
+ 'Fate Tonic':'Luck +20% for 15 min. Helps critical-focused and hybrid builds.',
+ 'Sage Tonic':'Intelligence +20% for 15 min. Improves magic-based damage.',
+ 'Might Tonic':'Strength +20% for 15 min. Useful for strength-scaling physical damage.',
+ 'Body Tonic':'Endurance +20% for 15 min. Defensive alternative when extra HP matters.',
+ 'Potent Battle Elixir':'Physical Damage +25% for 15 min.',
+ 'Potent Malevolence Elixir':'Spell Power +25% for 15 min.',
+ 'Potent Honor Potion':'Damage +75% and Mana Cost +15% for 35 sec. Short burst window.',
+ 'Felicitous Philtre':'Luck +50% for 45 sec. Crit-oriented alternative to Honor.'
+};
+// Checked against AQWG Alchemy and the AQWG common-class consumables setups.
+// Individual encounter requirements and consumable availability can still vary.
+const classAlchemy={
+ 'Void Highlord':['Fate Tonic','Potent Battle Elixir','Potent Honor Potion'],
+ 'Legion Revenant':['Fate Tonic','Potent Malevolence Elixir','Potent Honor Potion'],
+ 'ArchPaladin':['Fate Tonic','Potent Battle Elixir','Potent Honor Potion'],
+ 'StoneCrusher':['Fate Tonic','Potent Malevolence Elixir','Potent Honor Potion'],
+ 'Lord of Order':['Fate Tonic','Potent Battle Elixir','Potent Honor Potion'],
+ 'Chaos Avenger':['Fate Tonic','Potent Battle Elixir','Felicitous Philtre'],
+ 'ArchMage':['Sage Tonic','Potent Malevolence Elixir','Potent Honor Potion'],
+ 'Arcana Invoker':['Fate Tonic','Potent Battle Elixir','Felicitous Philtre'],
+ 'Dragon of Time':['Sage Tonic','Potent Malevolence Elixir','Potent Honor Potion'],
+ 'Shaman':['Sage Tonic','Potent Malevolence Elixir','Potent Honor Potion'],
+ 'Blaze Binder':['Sage Tonic','Potent Malevolence Elixir','Potent Honor Potion'],
+ 'Verus DoomKnight':['Fate Tonic','Potent Battle Elixir','Potent Honor Potion'],
+ 'Yami no Ronin':['Fate Tonic','Potent Battle Elixir','Felicitous Philtre'],
+ "King's Echo":['Fate Tonic','Potent Battle Elixir','Felicitous Philtre'],
+ 'LightCaster':['Sage Tonic','Potent Malevolence Elixir','Potent Honor Potion']
+};
 function suggestedConsumables(cls,role){
- const base=baseClassEnhancement[cls]||'Lucky';
- const physical=base!=='Wizard';
- if(role==='group')return [
-  ['Potion',physical?'Potent Honor Potion (physical) / class-specific encounter potion':'Potent Malevolence Potion (magic) / class-specific encounter potion'],
-  ['Elixir','Potent Revitalize Elixir for survival (if appropriate)'],
-  ['Tonic','Endurance Draught for HP (if appropriate)']
- ];
- if(role==='farm')return [
-  ['Potion',physical?'Potent Honor Potion (physical damage)':'Potent Malevolence Potion (magic damage)'],
-  ['Elixir','Pick offensive or sustain elixir based on class needs'],
-  ['Tonic','Pick offensive or defensive tonic based on survival']
- ];
- return [
-  ['Potion',physical?'Potent Honor Potion (physical damage)':'Potent Malevolence Potion (magic damage)'],
-  ['Elixir','Offensive or survival elixir according to encounter'],
-  ['Tonic','Damage or health tonic according to encounter']
- ];
+ const selected=classAlchemy[cls]||['Fate Tonic','Potent Battle Elixir','Felicitous Philtre'];
+ // Reorder to match the actual Tonic, Elixir, Potion categories.
+ return [['Tonic',selected[0]],['Elixir',selected[1]],['Potion',selected[2]]]
+  .map(([kind,name])=>({kind,name,effect:alchemyEffects[name]||'Refer to the item effect before use.'}));
 }
 function renderClassBuild(){
  const cls=$('build-class')?.value,role=$('build-role')?.value,root=$('build-results');if(!root)return;root.replaceChildren();
@@ -2472,8 +2499,7 @@ function renderClassBuild(){
  for(const [label,emoji,value] of slotData){
   const slot=node('div',undefined,'build-character-slot build-character-'+label.toLowerCase());
   slot.append(node('span',emoji+' '+label,'build-slot-label'),node('strong',value));
-  const help=buildEnhancementEffect(value);
-  slot.append(node('small',help));
+   // Enhancement stats and procs are shown in the Equipment & Effects panel, not on Artix labels.
   const colorKey=value.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
   slot.dataset.enhancement=colorKey;
   const palette={dauntless:'#ef9b59',valiance:'#68bce9',anima:'#d6a0f5',pneuma:'#a68cf5',vainglory:'#ef8595',avarice:'#f3b66b',absolution:'#71d4aa',elysium:'#85c9ff',hearty:'#8fd2a2',lucky:'#eac66f',wizard:'#a995ff',healer:'#7cdeb0',fighter:'#f0a66a'};
@@ -2534,24 +2560,31 @@ function renderClassBuild(){
  }
  const info=node('div',undefined,'build-detail-stack');
  const expl=node('section',undefined,'build-info-panel build-effects-panel');
- expl.append(node('h4','Enhancement effects · standard → recommended'));
+ expl.append(node('h4','Equipment & Effects'));
  for(const [label,,recommended] of slotData){
   const standard=suggestedBaseEnhancement(cls,role,label.toLowerCase());
   const line=node('div',undefined,'build-effect-row');
   const heading=node('div',undefined,'build-effect-heading');
-  heading.append(node('strong',label),node('span',standard+' → '+recommended,'build-effect-combo'));
+  heading.append(node('strong',label),node('span',standard===recommended?standard:standard+' → '+recommended,'build-effect-combo'));
   const description=standard===recommended
    ?buildEnhancementEffect(recommended)
-   :'Base '+standard+': '+buildEnhancementEffect(standard)+' Recommended '+recommended+': '+buildEnhancementEffect(recommended);
+   :'Standard '+standard+': '+buildEnhancementEffect(standard)+'  ·  Recommended '+recommended+': '+buildEnhancementEffect(recommended);
   line.append(heading,node('p',description,'build-effect-description'));
   expl.append(line);
  }
  expl.append(node('p','Percentages describe enhancement traits or procs, not guaranteed final character stats. Standard stats depend on level.','muted tiny'));
  info.append(expl);
- const pots=node('section',undefined,'build-info-panel');pots.append(node('h4','Consumables · optional starter ideas'));
- for(const [label,value] of suggestedConsumables(cls,role)){const line=node('div',undefined,'build-info-line');line.append(node('strong',label),node('span',value));pots.append(line)}
- pots.append(node('p','Examples only, not verified for this class or boss. Check exact item names, effects and availability in-game.','muted tiny'));info.append(pots);
- layout.append(mannequin,info);panel.append(layout,node('div','Alternative: '+build.alternative,'build-alternative'),node('p',build.note,'build-note'));root.append(panel)
+ const pots=node('section',undefined,'build-info-panel build-consumables-panel');
+ pots.append(node('h4','Recommended Consumables'));
+ for(const {kind,name,effect} of suggestedConsumables(cls,role)){
+  const line=node('div',undefined,'build-consumable-row');
+  const heading=node('div',undefined,'build-effect-heading');
+  heading.append(node('strong',kind),node('span',name,'build-effect-combo'));
+  line.append(heading,node('p',effect,'build-effect-description'));
+  pots.append(line);
+ }
+ info.append(pots);
+ layout.append(mannequin,info);panel.append(layout);root.append(panel)
 }
 function initClassBuildPlanner(){
  const select=$('build-class'),role=$('build-role'),root=$('build-results');
