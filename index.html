@@ -1177,6 +1177,51 @@ body{background:#0a1420!important}
  #damage .damage-range-value strong{font-size:clamp(15px,5vw,22px)}
 }
 </style>
+<style id="aqw-damage-final-grid-layout-v1">
+/* Final cascade override: earlier showcase CSS set display:flex!important after the desktop grid rule. */
+@media(min-width:1100px){
+ #damage .damage-simulator-card .damage-grid{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:12px!important;
+ }
+ #damage .damage-simulator-card .damage-grid>label{
+  grid-column:auto!important;
+  min-width:0!important;
+ }
+ #damage .damage-simulator-card .damage-results{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:14px!important;
+  align-items:stretch!important;
+ }
+ #damage .damage-simulator-card .damage-results>.damage-showcase,
+ #damage .damage-simulator-card .damage-results>.damage-range-panel{
+  grid-column:auto!important;
+  min-width:0!important;
+  height:100%!important;
+  min-height:260px!important;
+  box-sizing:border-box!important;
+ }
+ #damage .damage-simulator-card .damage-results>.damage-factor-grid,
+ #damage .damage-simulator-card .damage-results>.damage-calculation-details{
+  grid-column:1/-1!important;
+ }
+}
+@media(min-width:650px) and (max-width:1099px){
+ #damage .damage-simulator-card .damage-grid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ }
+ #damage .damage-simulator-card .damage-grid>label:last-child{grid-column:1/-1!important}
+ #damage .damage-simulator-card .damage-results{display:flex!important;flex-direction:column!important}
+}
+@media(max-width:649px){
+ #damage .damage-simulator-card .damage-grid{display:grid!important;grid-template-columns:minmax(0,1fr)!important}
+ #damage .damage-simulator-card .damage-grid>label{grid-column:1/-1!important}
+ #damage .damage-simulator-card .damage-results{display:flex!important;flex-direction:column!important}
+}
+</style>
 <style id="aqw-build-connector-pixel-fix">
 /* SVG geometry is calculated in rendered pixels, not a scaled static viewBox. */
 #builds svg.build-body-connectors{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;transform:none!important;pointer-events:none;overflow:visible}
