@@ -1023,6 +1023,14 @@ body{background:#0a1420!important}
 #ultradetail .ultra-advanced-role-tips li{padding:2px 0}
 #ultradetail .ultra-extra-content section[hidden]{display:none}
 </style>
+<style id="aqw-ultra-role-tips-v1">
+#ultradetail .ultra-role-context{display:flex;align-items:baseline;gap:8px;margin:0 0 11px;color:#9cbdd4;font-size:12px}
+#ultradetail .ultra-role-selected{font-size:14px;color:#a1e1ff}
+#ultradetail .ultra-role-step{display:grid;grid-template-columns:24px minmax(0,1fr);align-items:start;gap:10px;border:1px solid #34526c;border-radius:9px;background:#0d2133;padding:11px 12px}
+#ultradetail .ultra-role-step p{margin:0;font-size:13px;line-height:1.55;color:#e4eff9}
+#ultradetail .ultra-role-step .ultra-step-number{padding-top:2px}
+#ultradetail .ultra-role-warning{border:1px solid #985d30;background:#35281f;border-radius:8px;color:#ffc38d;padding:10px 12px;font-size:12px;line-height:1.5}
+</style>
 <style id="aqw-build-connector-pixel-fix">
 /* SVG geometry is calculated in rendered pixels, not a scaled static viewBox. */
 #builds svg.build-body-connectors{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;transform:none!important;pointer-events:none;overflow:visible}
@@ -1614,6 +1622,28 @@ function renderStory(){renderStoryAccess();const root=$('storylist');if(!root)re
 $('discoverysearch').addEventListener('input',renderDiscover);$('discoveryfilter').addEventListener('change',renderDiscover);$('hideowned').addEventListener('change',renderDiscover);$('storysearch').addEventListener('input',renderStory);$('storyfilter').addEventListener('change',renderStory);$('storyreset').onclick=()=>{if(confirm('Reset all manually marked story statuses?')){storyStatuses={};saveStory();renderStory()}};
 $('file').addEventListener('change',async e=>{try{let result=[];for(const file of e.target.files)result.push(await importFile(file));await refresh();message('✅ Imported '+result.length+' file(s) · '+inventoryStorageMode+'. '+(inventoryStorageError?'Warning: '+inventoryStorageError+'. ':'')+'Keep the original JSON as an external backup.','success');}catch(err){message('Import error: '+err.message,'error')}finally{e.target.value=''}});
 const ultraGuides=[
+ {id:'kathool',name:'God of the Depths (Kathool)',join:'/join kathooldepths',difficulty:'Expert · 7 players',type:'Daily',reward:'Daily Exercise 5; Adeptus Kathooli progression (Challenge Boss)',
+  team:['StoneCrusher','Lord of Order','Legion Revenant','Verus DoomKnight','ArchFiend','Arachnomancer','Legendary Hero'],
+  alternate:['StoneCrusher','Lord of Order','Legion Revenant','Verus DoomKnight','Great Thief','Arachnomancer','Bard'],
+  description:'Seven-player challenge boss: everyone uses Vigil on “You cannot resist.”; clear the dangerous Sacrosanct Tendrils.',
+  roles:[
+   ['StoneCrusher','Keep party mana and defensive buffs active; watch Kathool’s Glare doubling mana costs.'],
+   ['Lord of Order','Maintain team buffs and healing. Use Vigil yourself at every “You cannot resist.” cue.'],
+   ['Legion Revenant','Apply party support and steady DPS; protect mana and react to every Vigil cue.'],
+   ['Verus DoomKnight','Maintain defensive/damage debuffs and contribute sustained DPS; use Vigil personally on cue.'],
+   ['ArchFiend','Help clear the Sacrosanct Tendrils, then support focused damage on Kathool; use Vigil on cue.'],
+   ['Arachnomancer','Apply damage-amplifying debuffs and focus the called target; use Vigil on cue.'],
+   ['Legendary Hero','Help sustain the seven-player team with heals/buffs and use Vigil on every cue.']
+  ],
+  phases:[
+   ['Prepare','Bring Vigil from the merge shop in /join kathooldepths. All seven players equip it; agree on tendril focus and sustain.'],
+   ['Control the Tendrils','Focus the Sacrosanct Tendrils before their stacking damage overwhelms the party. Each enrages below 30% HP; coordinate your focus.'],
+   ['React to the cue','When Kathool says “You cannot resist.”, EVERY player uses Vigil within the 3-second charge. Taunt cannot prevent this attack.'],
+   ['Repeat and finish','StoneCrusher maintains mana support against Kathool’s Glare. Recover from Migraine DoTs, keep buffs up and continue coordinated boss DPS.']
+  ],
+  mistakes:['Missing or forgetting Vigil on a 3-second cue.','Ignoring the two Sacrosanct Tendrils while their damage stacks.','Treating a seven-player challenge like a standard four-player Ultra.'],
+  source:'https://aqw.app/monsters/kathooldepths'
+ },
  {id:'drakath',name:'Champion Drakath',join:'/join championdrakath',difficulty:'Intermediate',type:'Weekly',reward:'Chaos Avenger progression',
   team:['Void Highlord','StoneCrusher','Lord of Order','ArchPaladin'],
   alternate:['Dragon of Time','StoneCrusher','Lord of Order','ArchPaladin'],
@@ -1658,6 +1688,16 @@ const ultraGuides=[
 // Short class-specific playbooks, with cues and timing from linked community references.
 // Mechanics can change. Read the source before using advanced taunt variants.
 const ultraRolePlaybooks={
+ kathool:{
+  'StoneCrusher':{steps:['Before pull, equip Vigil and establish mana buffs for all seven players.','Maintain support when Kathool’s Glare doubles mana costs; save resources for sustained survival.','When “You cannot resist.” appears, use Vigil immediately, then refresh support during the Migraine DoT.','Help focus Sacrosanct Tendrils before their damage ramps up.'],warning:'Never skip your personal Vigil because you are concentrating on buffs.'},
+  'Lord of Order':{steps:['Equip Vigil; coordinate healer coverage before the pull.','Maintain team buffs and timed healing while the group focuses the Tendrils.','Use Vigil immediately on every “You cannot resist.” cue (3-second window).','Keep recovery active after Migraine and stabilize the group through the next cycle.'],warning:'No taunt substitutes for Vigil against Endless Nightmare.'},
+  'Legion Revenant':{steps:['Equip Vigil and keep damage/support buffs active from the opening.','Focus the assigned Sacrosanct Tendril to reduce stacking true damage.','Use Vigil immediately at the “You cannot resist.” warning.','Continue steady boss DPS while preserving mana and support uptime.'],warning:'Do not tunnel boss damage and miss the Vigil cue.'},
+  'Verus DoomKnight':{steps:['Equip Vigil and prepare your damage and defensive debuffs.','Help focus down the assigned Tendril; coordinate target switching.','Use Vigil on every “You cannot resist.” cue within 3 seconds.','Keep debuffs on Kathool and contribute sustained boss damage once adds are controlled.'],warning:'A defensive class cannot tank the untauntable Nightmare instead of using Vigil.'},
+  'ArchFiend':{steps:['Equip Vigil and agree which Tendril you help focus first.','Use your multi-target pressure to clear Tendrils without splitting the team’s priority.','Use Vigil on the “You cannot resist.” warning every time.','Keep the group’s damage consistent on Kathool while adds are managed.'],warning:'A Tendril below 30% HP enrages; finish it together.'},
+  'Arachnomancer':{steps:['Equip Vigil; agree on the team’s first Tendril target.','Apply offensive debuffs to the focused target rather than splitting damage.','Use Vigil immediately when “You cannot resist.” appears.','Keep team DPS amplified on Kathool after the dangerous adds are controlled.'],warning:'Do not miss Vigil while managing target debuffs.'},
+  'Legendary Hero':{steps:['Equip Vigil and coordinate your healing/support coverage.','Keep the team stable when tendril critical damage ramps up.','Use Vigil yourself as soon as the “You cannot resist.” quote appears.','Heal through the shorter Migraine DoT and support steady DPS.'],warning:'Healing cannot save teammates who miss the Vigil window.'}
+ },
+
 ezrajal:{
 "Legion Revenant":{steps:["Before pull: sustain party buffs and agree on the Counter Attack warning.","As Counter Attack starts, stop attacking/untarget until the reflection window passes.","Resume group support and AoE damage after the counter ends."],warning:"Attacking into Counter Attack reflects damage back onto you."},
 "Lord of Order":{steps:["Buff the team at pull and watch the heavy prism burst window.","Stop offensive skills during the counter; keep survivability ready.","Stabilize the group as soon as lockouts/reflect end."],warning:"Do not accidentally continue offensive attacks through the counter."},
@@ -1737,6 +1777,7 @@ const ultraBossCatalog=[
  {name:'Ultra Darkon',map:'ultradarkon',group:'Modern',guide:'darkon'},
  {name:'Ultra Speaker',map:'ultraspeaker',group:'Modern',guide:'speaker'},
  {name:'Ultra Gramiel',map:'ultragramiel',group:'Modern',guide:'gramiel'},
+ {name:'God of the Depths',map:'kathooldepths',group:'Challenge / 7 players',guide:'kathool'},
  {name:'Ultra Alteon',map:'ultraalteon',group:'Legacy / special'},
  {name:'Ultra Brutalcorn',map:'ultrabrutalcorn',group:'Legacy / special'},
  {name:'Ultra Carnax',map:'ultracarnax',group:'Legacy / special'},
@@ -1776,7 +1817,7 @@ function renderUltraCatalog(){
  if(!filtered.length)root.append(node('p','No bosses matched your search.','muted tiny'));
 }
 
-const ultraEmoji={drakath:'👑',nulgath:'💀',dage:'☠️',speaker:'🔊',ezrajal:'🔮',warden:'🛡️',engineer:'⚙️',tyndarius:'🔥',drago:'🐉',darkon:'🌌',gramiel:'🕯️'};
+const ultraEmoji={drakath:'👑',nulgath:'💀',dage:'☠️',speaker:'🔊',ezrajal:'🔮',warden:'🛡️',engineer:'⚙️',tyndarius:'🔥',drago:'🐉',darkon:'🌌',gramiel:'🕯️',kathool:'🐙'};
 function ultraEmojiFor(b){return ultraEmoji[b.id]||'⚔️'}
 function makeCopyJoin(join){
  const button=node('button',undefined,'ultra-copy-join');
@@ -1821,6 +1862,14 @@ function renderUltras(){renderUltraCatalog();const term=$('ultrasearch').value.t
  const cards=$('ultracards');cards.replaceChildren();let currentGroup='';for(const b of all){const group=b.type==='Daily'?'☀️ Daily Ultras':b.type==='Weekly'?'📆 Weekly Ultras':'Other Ultras';if(group!==currentGroup){currentGroup=group;cards.append(node('div',group,'ultra-group-label'))}const btn=node('button',undefined,'ultracard'+(b.id===selectedUltra?' active':''));btn.type='button';btn.append(node('small',b.type+' · '+b.difficulty),node('strong',ultraEmojiFor(b)+' '+b.name),node('small',b.description));btn.onclick=()=>{selectedUltra=b.id;renderUltras()};cards.append(btn)}
  const chosen=ultraGuides.find(x=>x.id===selectedUltra);renderUltraDetail(chosen);}
 const ultraBeginner101={
+ kathool:{
+  priority:'ALL 7 players use Vigil at “You cannot resist.” (3-second charge). Control the two Sacrosanct Tendrils and keep party mana stable.',
+  role:'Everyone equips Vigil. StoneCrusher keeps mana support active; the team coordinates tendril targets and healing.',
+  avoid:'Never rely on taunts to block Endless Nightmare. Missing Vigil causes a 60-second stun/heal-block/DoT effect; tendrils become especially dangerous at low HP.',
+  quote:'You cannot resist.',
+  action:'EVERYONE immediately uses Vigil before the 3-second cast finishes. This changes Endless Nightmare into a shorter Migraine DoT.'
+ },
+
  drakath:{
    priority:'ONE player taunts the HP nukes. The other three keep DPS, buffs and healing steady.',
    role:'Taunter: Lord of Order with Scroll of Enrage in the displayed team. If using an AP-taunt variant, agree on that before pulling.',
@@ -2260,22 +2309,15 @@ function renderUltraDetail(b){
  }
  focus.append(focusCard('✅','YOUR GOAL',quick.priority||b.phases[0]?.[1]||'Follow your assigned role','ultra-focus-good'));
  focus.append(focusCard('⛔','AVOID',quick.avoid||b.mistakes[0]||'Avoid damage spikes','ultra-focus-danger'));
- const roleFocus=node('div',undefined,'ultra-focus-item ultra-focus-role');
- roleFocus.append(node('small','👤 YOUR NEXT ACTION'));
- const roleFocusValue=node('strong');roleFocus.append(roleFocusValue);focus.append(roleFocus);
  summary.append(focus);
  compact.append(setup,summary);root.append(compact);
- const mechanics=node('section',undefined,'ultra-focus-card ultra-mechanics');
- mechanics.append(node('h3','🧭 Fight flow'));
- const sequence=node('div',undefined,'ultra-flow-list');
- for(const [i,phase] of b.phases.slice(0,5).entries()){
-  const step=node('details',undefined,'ultra-flow-step');
-  step.open=true; // Fight flow steps are short; show them expanded by default.
-  const head=node('summary');
-  head.append(node('span',String(i+1).padStart(2,'0'),'ultra-step-number'),node('strong',phase[0]),node('span','View step','ultra-flow-expand'));
-  step.append(head,node('p',phase[1]));sequence.append(step);
- }
- mechanics.append(sequence);
+ const mechanics=node('section',undefined,'ultra-focus-card ultra-mechanics ultra-class-guide');
+ mechanics.append(node('h3','👤 Role-specific Tips'));
+ const roleContext=node('div',undefined,'ultra-role-context');
+ const roleName=node('strong',undefined,'ultra-role-selected');
+ roleContext.append(node('span','Playing as'),roleName);
+ mechanics.append(roleContext);
+ const sequence=node('div',undefined,'ultra-flow-list');mechanics.append(sequence);
  if(b.id==='drakath'){
   const timing=node('div',undefined,'ultra-focus-timing');
   timing.append(node('strong','📍 Taunt BEFORE these HP marks'));
@@ -2283,6 +2325,12 @@ function renderUltraDetail(b){
   for(const hp of quick.thresholds||[])chips.append(node('span',hp,'ultra101-chip'));
   timing.append(chips,node('p','10M: transformation · 2M: final meteor (burst immediately; not tauntable)','ultra-focus-note'));
   mechanics.append(timing);
+ }
+ if(b.id==='kathool'){
+  const vigil=node('div',undefined,'ultra-focus-timing');
+  vigil.append(node('strong','⚠ “You cannot resist.” → EVERYONE uses Vigil within 3 seconds'));
+  vigil.append(node('p','/join kathooldepths · 7-player challenge · Vigil is obtained from the map merge shop. The cast cannot be taunted.','ultra-focus-note'));
+  mechanics.append(vigil);
  }
  root.append(mechanics);
  const details=node('details',undefined,'ultra-extra-details');
@@ -2292,9 +2340,6 @@ function renderUltraDetail(b){
  const comp=node('div',undefined,'ultracomp');
  for(const cls of b.team){const box=node('div',undefined,'ultra-team-member');box.append(node('strong',cls),node('span',ultraOwned(cls)?'✓ Owned':'✕ Not owned',ultraOwned(cls)?'ultra-owned':'ultra-missing'));comp.append(box)}
  team.append(comp);inner.append(team);
- const roleDetails=node('section');roleDetails.append(node('h4','Role-specific tips'));
- const roleTips=node('div',undefined,'ultra-advanced-role-tips');
- roleDetails.append(roleTips);inner.append(roleDetails);
  const cues=ultraBattleCues[b.id]||[];
  const uniqueCallouts=[];
  const seenCallouts=new Set();
@@ -2342,21 +2387,20 @@ function renderUltraDetail(b){
    }
   }else gear.append(node('span','No generic equipment preset for this class','muted tiny'));
   job.textContent=roleMap.get(cls)||'Coordinate your role with the team.';
-  roleFocusValue.textContent=play?.steps?.[0]||roleMap.get(cls)||'Follow your assigned mechanic.';
-  roleTips.replaceChildren();
-  if(play){
-   // First action is already displayed in Fight at a glance; only show follow-up tips.
-   const nextAction=String(play.steps?.[0]||'').trim();
-   const remaining=[...new Set((play.steps||[]).slice(1).map(x=>String(x).trim()))]
-    .filter(t=>t&&t!==nextAction);
-   if(remaining.length){
-    const ul=node('ul');for(const tip of remaining)ul.append(node('li',tip));roleTips.append(ul);
-   }
-   if(play.warning && (!quick.avoid || (!String(quick.avoid).toLowerCase().includes(play.warning.toLowerCase())
-      && !play.warning.toLowerCase().includes(String(quick.avoid).toLowerCase()))))
-    roleTips.append(node('p','⚠ '+play.warning,'ultra-warning'));
+  const uniqueSteps=[...new Set((play?.steps||[]).map(step=>String(step).trim()).filter(Boolean))];
+  const tips=uniqueSteps.length?uniqueSteps:[roleMap.get(cls)||'Confirm your assigned team responsibilities before pulling.'];
+  roleName.textContent=cls;
+  sequence.replaceChildren();
+  for(const [i,tip] of tips.slice(0,5).entries()){
+   const step=node('div',undefined,'ultra-role-step');
+   step.append(node('span',String(i+1).padStart(2,'0'),'ultra-step-number'),node('p',tip));
+   sequence.append(step);
   }
-  roleDetails.hidden=!roleTips.childNodes.length;
+  const warning=play?.warning;
+  if(warning && !String(quick.avoid||'').toLowerCase().includes(warning.toLowerCase())){
+   const caution=node('div','⚠ '+warning,'ultra-role-warning');
+   sequence.append(caution);
+  }
  }
  select.onchange=updateRole;updateRole();
 }
