@@ -1067,6 +1067,35 @@ body{background:#0a1420!important}
 #builds .forge-tracker-disclaimer{margin:16px 0 0}
 @media(max-width:660px){#builds .forge-tracker-items{grid-template-columns:1fr}}
 </style>
+<style id="aqw-damage-simulator-and-build-tabs-v1">
+#builds .builds-subtabs{display:flex;gap:9px;margin:0 0 15px}
+#builds .builds-subtab{padding:12px 16px;border-radius:10px;border:1px solid #365b75;background:#0d2236;color:#a9d2ec;font-weight:750;cursor:pointer}
+#builds .builds-subtab.active{border-color:#80cfff;background:#163750;color:#f0fbff;box-shadow:inset 0 2px #7cceff}
+#builds .builds-subpanel[hidden]{display:none!important}
+#builds .damage-simulator-card{margin-top:15px}
+#builds .damage-grid,#builds .damage-gear-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:15px 0}
+#builds .damage-grid label,#builds .damage-field{display:flex;flex-direction:column;gap:6px;min-width:0;font-size:12px;color:#bad4e7}
+#builds .damage-grid select,#builds .damage-grid input,#builds .damage-field select,#builds .damage-field input{width:100%;min-width:0}
+#builds .damage-heading{font-size:14px;margin:19px 0 10px;color:#d9f3ff}
+#builds .damage-slot-card{border:1px solid #355a77;background:#10273a;border-radius:10px;padding:12px;min-width:0}
+#builds .damage-slot-card h5{font-size:14px;color:#91d7ff;margin:0 0 9px}
+#builds .damage-slot-card .damage-field+ .damage-field{margin-top:10px}
+#builds .damage-verified-note{font-size:11px;line-height:1.45;color:#a8d6c9;margin-top:9px}
+#builds .damage-buffs-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#builds .damage-buff-option{display:flex;flex-wrap:wrap;gap:7px;align-content:start;background:#10273a;border:1px solid #355a77;border-radius:10px;padding:10px;font-size:12px;color:#dff2fe}
+#builds .damage-buff-option input{width:auto}
+#builds .damage-buff-option small{width:100%;color:#93afc2;line-height:1.5}
+#builds .damage-results{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:17px}
+#builds .damage-metric{display:flex;flex-direction:column;gap:5px;background:#0b2437;border:1px solid #3a6581;border-radius:10px;padding:13px;min-width:0}
+#builds .damage-metric>small{font-size:11px;color:#a1c0d7}
+#builds .damage-metric>strong{font-size:21px;color:#8ce2c7;font-variant-numeric:tabular-nums}
+#builds .damage-calculation-details{grid-column:1/-1;border-radius:10px;border:1px solid #3c5b75;padding:13px;background:#0c2032}
+#builds .damage-calculation-details p{font-size:12px;line-height:1.6;margin:8px 0 0;color:#bbd2e4}
+#builds .damage-calculation-details .damage-caution{color:#ffc88e}
+#builds .damage-sources{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:12px}
+@media(max-width:850px){#builds .damage-results{grid-template-columns:repeat(2,minmax(0,1fr))}#builds .damage-buffs-grid{grid-template-columns:1fr}}
+@media(max-width:600px){#builds .damage-grid,#builds .damage-gear-grid,#builds .damage-results{grid-template-columns:1fr}#builds .builds-subtabs{flex-wrap:wrap}}
+</style>
 <style id="aqw-build-connector-pixel-fix">
 /* SVG geometry is calculated in rendered pixels, not a scaled static viewBox. */
 #builds svg.build-body-connectors{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;transform:none!important;pointer-events:none;overflow:visible}
@@ -1098,13 +1127,39 @@ body{background:#0a1420!important}
 <section id="ultras" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle">⚡ Ultra Boss Strategy Guides</h3><p class="muted tiny">Choose a boss and your class to see a suggested team, a role-specific plan, fight phases and common wipe causes. Strategies are community-sourced and may change. Guides are community references, not live combat instructions.</p></div><span class="pill">11 strategy guides · Community references</span></div><div class="toolbar"><input id="ultrasearch" type="search" placeholder="Search bosses, mechanics or classes…"><select id="ultrafilter"><option value="all">All guides</option><option value="ready">All suggested classes owned</option></select></div><div class="ultra-reset-tools"><span class="muted tiny">Ultra checklist · Resets at 00:00 EST (AQW server time), weekly on Friday.</span><div class="ultra-reset-actions"><button type="button" id="resetultradaily" class="smallbutton">Reset Daily Ultra checks</button><button type="button" id="resetultraweekly" class="smallbutton">Reset Weekly Ultra checks</button></div></div><div class="ultra-master-detail"><div id="ultracards" class="ultracards"></div><div id="ultradetail" class="ultradetail hidden"></div></div>
 <div class="ultra-catalog-wrapper"><div class="homehead"><h3 class="sectiontitle">⚔️ Other Ultra Encounters</h3><span class="pill">Catalog · not all have guides</span></div>
 <p class="muted tiny">Legacy and seasonal encounters without a reviewed strategy. Main farming ultras now appear above with team comps and fight guides. Verify maps and availability.</p>
-<div id="ultracatalog" class="ultra-catalog"></div></div></div></section><section id="builds" class="view"><div class="card build-planner-card"><div class="unlocktop"><div><h3 class="sectiontitle">🛡️ Class Build Planner</h3><p class="muted tiny">Class enhancement loadouts for solo bosses and farming, with Forge effects and consumables.</p></div><span class="pill">Alpha · Starter builds</span></div><div class="build-controls"><label>Class<select id="build-class"></select></label><label>Activity<select id="build-role"><option value="solo">Solo / Boss</option><option value="farm">Farming</option></select></label></div><div id="build-results" aria-live="polite"></div></div><div class="card forge-tracker-card">
+<div id="ultracatalog" class="ultra-catalog"></div></div></div></section><section id="builds" class="view">
+<div class="builds-subtabs" role="tablist" aria-label="Class Builds sections">
+ <button id="builds-tab-planner" class="builds-subtab active" type="button" role="tab" aria-controls="builds-panel-planner" aria-selected="true">🛡️ Class Builds & Damage</button>
+ <button id="builds-tab-forge" class="builds-subtab" type="button" role="tab" aria-controls="builds-panel-forge" aria-selected="false">⚒️ Forge Tracker</button>
+</div>
+<div id="builds-panel-planner" class="builds-subpanel" role="tabpanel">
+<div class="card build-planner-card"><div class="unlocktop"><div><h3 class="sectiontitle">🛡️ Class Build Planner</h3><p class="muted tiny">Class enhancement loadouts for solo bosses and farming, with Forge effects and consumables.</p></div><span class="pill">Alpha · Starter builds</span></div><div class="build-controls"><label>Class<select id="build-class"></select></label><label>Activity<select id="build-role"><option value="solo">Solo / Boss</option><option value="farm">Farming</option></select></label></div><div id="build-results" aria-live="polite"></div></div>
+<div class="card damage-simulator-card">
+ <div class="unlocktop"><div><h3 class="sectiontitle">⚔️ Damage Simulator</h3><p class="muted tiny">VHL test bench · verified item bonuses, class buffs and a reference damage range. Experimental calculations are clearly labelled.</p></div><span class="pill">Alpha · VHL example</span></div>
+ <div class="damage-grid">
+  <label>Class<select id="damage-class"><option value="Void Highlord">Void Highlord (first supported class)</option></select></label>
+  <label>Monster type<select id="damage-target"><option value="none">Untagged / other</option><option value="undead">Undead</option><option value="dragon">Dragon</option><option value="human">Human</option><option value="chaos">Chaos</option><option value="elemental">Elemental</option></select></label>
+  <label>Skill<select id="damage-skill"><option value="contract">Contract · normal auto attack (reference)</option><option value="shackle">Shackle · 125% weapon damage</option><option value="gaze">Highlord's Gaze · 130% weapon damage</option><option value="unshackle">Unshackle · 85% weapon damage</option><option value="armageddon">Armageddon · 420% weapon damage</option></select></label>
+  <label>Reference damage at 100% weapon damage<input id="damage-reference" type="number" min="1" max="10000000" step="100" value="10000"></label>
+ </div>
+ <p class="muted tiny">The 10,000 default is a test reference, NOT a VHL stat. Enter a comparable unboosted in-game reference to calibrate the result.</p>
+ <h4 class="damage-heading">Equipped items & enhancements</h4>
+ <div id="damage-gear" class="damage-gear-grid"></div>
+ <p class="muted tiny">Equipment suggestions use your imported inventory when available. Item bonuses are applied only for explicitly wiki-verified entries; other items appear as unverified rather than being guessed.</p>
+ <h4 class="damage-heading">Active VHL buffs & consumables</h4>
+ <div id="damage-buffs" class="damage-buffs-grid"></div>
+ <div id="damage-results" class="damage-results" aria-live="polite"></div>
+ <div class="damage-sources"><a href="https://aqwwiki.wikidot.com/void-highlord-class" target="_blank" rel="noopener noreferrer">VHL class / skills ↗</a><a href="https://aqwwiki.wikidot.com/necrotic-sword-of-doom-sword" target="_blank" rel="noopener noreferrer">NSoD ↗</a><a href="https://www.aq.com/gamedesignnotes/patch-notes-extras-7184" target="_blank" rel="noopener noreferrer">Official stacking rules ↗</a></div>
+</div>
+</div>
+<div id="builds-panel-forge" class="builds-subpanel" role="tabpanel" hidden>
+<div class="card forge-tracker-card">
  <div class="forge-tracker-head"><div><h3 class="sectiontitle">⚒️ Forge Unlock Tracker</h3><p class="muted tiny">Track Forge enhancement quests manually. Browse the effects and requirements without losing your progress.</p></div><span id="forge-progress-label" class="pill">0 unlocked</span></div>
  <div class="forge-tracker-toolbar"><label>Search<input id="forge-search" placeholder="Search enhancement, effect or requirement"></label><label>Category<select id="forge-category"><option value="all">All enhancements</option><option value="Weapon">Weapon</option><option value="Helm">Helm</option><option value="Cape">Cape</option></select></label><label>Progress<select id="forge-status"><option value="all">All statuses</option><option value="todo">Not unlocked</option><option value="done">Unlocked</option></select></label><button id="forge-copy-join" class="smallbutton" type="button">📋 Copy /join forge</button></div>
  <div id="forge-progress-track" class="forge-progress-track"><div id="forge-progress-fill"></div></div>
  <div id="forge-list" class="forge-tracker-grid"></div>
  <p class="muted tiny forge-tracker-disclaimer">Completion is manual: inventory exports cannot prove a Forge quest was completed. Basic requirements are summaries; the AQWWiki quest page has the full recipe. Saves on this browser only.</p>
- </div></section>
+ </div></div></section>
 <section id="planner" class="view"><div class="card"><div class="goalhead"><h3 class="sectiontitle" style="margin:0">My Pinned Tasks</h3><span class="pill">Changes saved automatically</span></div><div id="planner-my-tasks" class="task-grid"></div><p class="muted tiny">Checks refresh at 00:00 EST (AQW server reset), and weekly on Friday. Saved locally; previous periods remain in backup.</p></div><div class="card" style="margin-bottom:15px"><div class="unlocktop"><div><h3 class="sectiontitle">📅 Daily / Weekly Tracker</h3><p class="muted tiny">Pin only what you want to track. Check off a task for the current local day or tracking week. Nothing is marked complete from your item inventory.</p></div><span class="pill">Local · Optional · Manual</span></div>
 <div class="planner-controls"><div class="planner-metric"><strong id="dailycount">0 / 0</strong><span>Daily tasks</span><div class="planner-progress"><div id="dailybar"></div></div></div><div class="planner-metric"><strong id="weeklycount">0 / 0</strong><span>Weekly tasks</span><div class="planner-progress"><div id="weeklybar"></div></div></div></div>
 <p class="muted tiny" id="plannerperiod"></p><div class="toolbar"><input id="plannersearch" placeholder="Search suggested tasks…" type="search"><select id="plannerfilter"><option value="all">Daily &amp; weekly</option><option value="daily">Daily only</option><option value="weekly">Weekly only</option></select></div>
@@ -3015,6 +3070,149 @@ function initForgeTracker(){
  };
  renderForgeTracker();
 }
+// Damage Simulator v1: a curated, sourced VHL example, never live wiki scraping.
+// Only explicitly verified item boosts enter calculations; unknown inventory items are not treated as +0% confirmed.
+const damageWikiItems={
+ 'necrotic sword of doom':{slot:'Weapon',all:51,range:[27,33],url:'https://aqwwiki.wikidot.com/necrotic-sword-of-doom-sword'},
+ 'necrotic sword of doom (sword)':{slot:'Weapon',all:51,range:[27,33],url:'https://aqwwiki.wikidot.com/necrotic-sword-of-doom-sword'},
+ 'blinding light of destiny':{slot:'Weapon',tag:'undead',tagBoost:75,range:[27,33],url:'https://aqwwiki.wikidot.com/blinding-light-of-destiny-axe'},
+ 'blinding light of destiny (axe)':{slot:'Weapon',tag:'undead',tagBoost:75,range:[27,33],url:'https://aqwwiki.wikidot.com/blinding-light-of-destiny-axe'},
+ 'radiant goddess of war':{slot:'Armor',tags:['chaos','dragon','elemental','human','undead'],tagBoost:50,url:'https://aqwwiki.wikidot.com/radiant-goddess-of-war'},
+ 'empowered drakath armor':{slot:'Armor',tag:'chaos',tagBoost:50,url:'https://aqwwiki.wikidot.com/empowered-drakath-armor'}
+};
+const damageSlotTypes={Weapon:['weapon'],Armor:['armor'],Helm:['helm'],Cape:['cape']};
+const damageEnchants={
+ Weapon:['Lucky','Wizard','Fighter','Healer','Dauntless','Valiance','Ravenous','Smite','Praxis','Arcana\'s Concerto','Elysium','Acheron','Awe Blast','Spiral Carve','Mana Vamp'],
+ Armor:['Lucky','Wizard','Fighter','Healer'],
+ Helm:['Lucky','Wizard','Fighter','Healer','Forge','Vim','Anima','Pneuma','Examen','Hearty'],
+ Cape:['Lucky','Wizard','Fighter','Healer','Forge','Vainglory','Penitence','Absolution','Lament','Avarice']
+};
+const damageSkills={contract:{pct:100,source:'Reference 100% weapon damage; Contract is an auto attack with no fixed wiki percentage here.'},shackle:{pct:125},gaze:{pct:130},unshackle:{pct:85},armageddon:{pct:420}};
+const DAMAGE_PREFERENCES='aqwc-damage-demo-v1';
+function damageField(label,id,options){
+ const field=node('label',undefined,'damage-field'),select=node('select');select.id=id;
+ for(const option of options)select.append(new Option(option,option));
+ field.append(node('span',label),select);return field;
+}
+function damageVerified(name,slot){
+ const key=String(name||'').trim().toLowerCase();
+ const source=damageWikiItems[key];
+ return source?.slot===slot?source:null;
+}
+function damageGearSelector(slot){
+ const row=node('section',undefined,'damage-slot-card'),title=node('h5',slot),list=document.createElement('datalist');
+ const input=node('input');input.id='damage-item-'+slot.toLowerCase();input.placeholder='Search owned item or type a wiki item';input.setAttribute('list','damage-options-'+slot.toLowerCase());
+ list.id='damage-options-'+slot.toLowerCase();
+ const names=new Set(Object.keys(damageWikiItems).filter(k=>damageWikiItems[k].slot===slot).map(k=>k));
+ for(const item of items||[]){
+  if(damageSlotTypes[slot].includes(String(item.Type||'').toLowerCase()))names.add(item.Name);
+ }
+ for(const name of [...names].sort((a,b)=>a.localeCompare(b)).slice(0,4000))list.append(new Option(name,name));
+ const gearLabel=node('label',undefined,'damage-field');gearLabel.append(node('span','Equipped item'),input,list);
+ const enchant=damageField('Base enhancement','damage-enchant-'+slot.toLowerCase(),['Lucky','Wizard','Fighter','Healer']);
+ const forgeList=slot==='Armor'?['None · use base']:['None · use base',...damageEnchants[slot].filter(x=>!['Lucky','Wizard','Fighter','Healer'].includes(x))];
+ const forge=damageField('Forge / special enhancement','damage-forge-'+slot.toLowerCase(),forgeList);
+ const info=node('div',undefined,'damage-verified-note');info.id='damage-info-'+slot.toLowerCase();
+ row.append(title,gearLabel,enchant,forge,info);
+ return row;
+}
+function damageSafeNumber(id,defaultValue,max){
+ const n=Number($(id)?.value);return Number.isFinite(n)&&n>=0&&n<=max?n:defaultValue;
+}
+function renderDamageSimulator(){
+ const result=$('damage-results');if(!result)return;result.replaceChildren();
+ const slots=['Weapon','Armor','Helm','Cape'];
+ const equipped=slots.map(slot=>({slot,name:$('damage-item-'+slot.toLowerCase())?.value||'',data:damageVerified($('damage-item-'+slot.toLowerCase())?.value,slot)}));
+ const target=$('damage-target').value;
+ let all=0,tag=0,known=false,conflicting=[];
+ const categories={all:[],tag:[]};
+ for(const eq of equipped){
+  const info=$('damage-info-'+eq.slot.toLowerCase());if(info)info.replaceChildren();
+  if(!eq.name){if(info)info.textContent='No item selected';continue}
+  if(!eq.data){if(info)info.textContent='⚠ Bonus not yet verified on AQWWiki — excluded from estimate.';continue}
+  known=true;
+  if(eq.data.all){all=Math.max(all,eq.data.all);categories.all.push(eq.name)}
+  if((eq.data.tag===target||eq.data.tags?.includes(target))&&eq.data.tagBoost){tag=Math.max(tag,eq.data.tagBoost);categories.tag.push(eq.name)}
+  if(info){info.append(node('span','✓ Verified: '+(eq.data.all?'+'+eq.data.all+'% All Damage':'')+(eq.data.tagBoost?' +'+eq.data.tagBoost+'% '+(eq.data.tag||'tagged'):'')+' · '));
+   const link=node('a','AQWWiki ↗');link.href=eq.data.url;link.target='_blank';link.rel='noopener noreferrer';info.append(link)}
+ }
+ if(categories.all.length>1||categories.tag.length>1)conflicting.push('Several equipped items have the same category of boost. The game uses equip order rather than simple addition or max. This scenario shows the highest verified value only; re-equip the desired booster last in game.');
+ const weap=equipped.find(x=>x.slot==='Weapon');
+ const range=weap.data?.range||[30,30];
+ const skill=damageSkills[$('damage-skill').value]||damageSkills.contract;
+ const base=damageSafeNumber('damage-reference',10000,10000000),gearMultiplier=(1+all/100)*(1+tag/100);
+ const unshackle=$('damage-buff-unshackle')?.checked||false;
+ const kneel=$('damage-buff-kneel')?.checked||false;
+ const honor=$('damage-consumable-honor')?.checked||false;
+ const attackBuff=1+(unshackle?0.5:0)+(kneel?0.5:0)+(honor?0.75:0);
+ const factor=gearMultiplier*attackBuff*skill.pct/100;
+ const low=Math.round(base*(range[0]/30)*factor),mid=Math.round(base*((range[0]+range[1])/60)*factor),high=Math.round(base*(range[1]/30)*factor);
+ const metric=(title,value,foot)=>{const card=node('div',undefined,'damage-metric');card.append(node('small',title),node('strong',value),node('small',foot));result.append(card)};
+ const fmt=n=>Number(n).toLocaleString('en-US',{maximumFractionDigits:0});
+ metric('Illustrative minimum',fmt(low),'Reference units · not actual AQW damage');
+ metric('Illustrative average',fmt(mid),'Reference units · not actual AQW damage');
+ metric('Illustrative maximum',fmt(high),'Reference units · not actual AQW damage');
+ metric('Verified equipment multiplier','×'+gearMultiplier.toFixed(3),'All +'+all+'% · matching tag +'+tag+'%');
+ const explain=node('div',undefined,'damage-calculation-details');
+ explain.append(node('strong','Calculation breakdown'));
+ explain.append(node('p','Reference '+fmt(base)+' × skill '+skill.pct+'% × weapon range '+range[0]+'–'+range[1]+' (normalized to 30) × verified equipment '+gearMultiplier.toFixed(3)+' × experimental buff factor '+attackBuff.toFixed(2)+'.'));
+ explain.append(node('p','VHL Unshackle (+50% outgoing), Kneel Before the Nation (+50% outgoing) and Honor Potion (+75%) are modelled here as a simple additive scenario, NOT as an exact replication of AQW buff stacking.'));
+ explain.append(node('p','Base and Forge enhancements are recorded separately (a Forge enhancement replaces the base in that slot; they do not stack). Their stat/proc effects, critical damage, defenses, attack power, cooldowns, uptime and rotations are NOT included in these numbers.'));
+ if(conflicting.length)explain.append(node('p','⚠ '+conflicting.join(' '),'damage-caution'));
+ if(equipped.some(x=>x.name&&!x.data))explain.append(node('p','⚠ Some selected items lack a verified Wiki entry in the local catalog. Real boosts may be higher or lower; no guessed values were included.','damage-caution'));
+ if(!known)explain.append(node('p','No verified gear bonuses selected yet.','damage-caution'));
+ result.append(explain);
+}
+function initDamageSimulator(){
+ const gear=$('damage-gear'),buffs=$('damage-buffs');if(!gear||!buffs)return;
+ gear.replaceChildren();for(const slot of ['Weapon','Armor','Helm','Cape'])gear.append(damageGearSelector(slot));
+ const checkbox=(id,label,description)=>{
+  const wrapper=node('label',undefined,'damage-buff-option'),input=node('input');input.type='checkbox';input.id=id;
+  wrapper.append(input,node('span',label),node('small',description));buffs.append(wrapper)
+ };
+ checkbox('damage-buff-unshackle','Unshackle active','VHL outgoing damage +50% (wiki verified; experimental combined formula)');
+ checkbox('damage-buff-kneel','Kneel Before the Nation','Armageddon buff +50% outgoing damage (wiki verified; experimental combined formula)');
+ checkbox('damage-consumable-honor','Potent Honor Potion','+75% Damage consumable; experimental combined formula');
+ $('damage-item-weapon').value='Necrotic Sword of Doom (Sword)';
+ $('damage-forge-weapon').value='Dauntless';
+ $('damage-forge-helm').value='Vim';
+ $('damage-forge-cape').value='Vainglory';
+ try{
+  const saved=JSON.parse(localStorage.getItem(DAMAGE_PREFERENCES)||'null');
+  if(saved&&typeof saved==='object'){
+   for(const [id,val] of Object.entries(saved)){
+    if(!/^damage-(item|enchant|forge|target|skill|reference|buff|consumable)/.test(id))continue;
+    const el=$(id);if(!el)continue;
+    if(el.type==='checkbox')el.checked=val===true;
+    else if(typeof val==='string'||typeof val==='number')el.value=String(val).slice(0,250)
+   }
+  }
+ }catch(e){console.warn('Damage simulator preferences unavailable',e)}
+ const redraw=()=>{
+  try{
+   const saved={};for(const el of $('damage-skill').closest('.damage-simulator-card').querySelectorAll('input,select')){
+    if(el.id&&el.id.startsWith('damage-'))saved[el.id]=el.type==='checkbox'?el.checked:el.value
+   }
+   try{localStorage.setItem(DAMAGE_PREFERENCES,JSON.stringify(saved))}catch(e){console.warn('Damage simulator preferences not saved',e)}
+   renderDamageSimulator()
+  }catch(e){console.error('Damage simulator render failed',e);$('damage-results').replaceChildren(node('p','Damage estimate unavailable: '+(e.message||e),'damage-caution'))}
+ };
+ $('damage-skill').closest('.damage-simulator-card').addEventListener('input',redraw);
+ $('damage-skill').closest('.damage-simulator-card').addEventListener('change',redraw);
+ redraw();
+}
+function initBuildSubtabs(){
+ const planner=$('builds-panel-planner'),forge=$('builds-panel-forge');
+ const plannerTab=$('builds-tab-planner'),forgeTab=$('builds-tab-forge');
+ if(!planner||!forge||!plannerTab||!forgeTab)return;
+ const activate=which=>{
+  const isForge=which==='forge';planner.hidden=isForge;forge.hidden=!isForge;
+  plannerTab.classList.toggle('active',!isForge);forgeTab.classList.toggle('active',isForge);
+  plannerTab.setAttribute('aria-selected',String(!isForge));forgeTab.setAttribute('aria-selected',String(isForge));
+ };
+ plannerTab.onclick=()=>activate('planner');forgeTab.onclick=()=>activate('forge');
+ activate('planner');
+}
 function initClassBuildPlanner(){
  const select=$('build-class'),role=$('build-role'),root=$('build-results');
  if(!select||!role||!root)return;
@@ -3044,7 +3242,7 @@ async function init(){
  }
  // Non-inventory features can fail independently without preventing inventory recovery.
  for(const [name,run] of [
-  ['Build planner',()=>{initClassBuildPlanner();initForgeTracker()}],
+  ['Build planner',()=>{initClassBuildPlanner();initForgeTracker();initDamageSimulator();initBuildSubtabs()}],
   ['Goals',()=>loadGoals()],
   ['Wishlist',()=>loadUnlocks()],
   ['Story',()=>loadStory()],
