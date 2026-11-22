@@ -889,6 +889,19 @@ body{background:#0a1420!important}
 #builds .build-consumable-row:last-child{border-bottom:0}
 #builds .build-consumables-panel h4,#builds .build-effects-panel h4{font-size:16px;letter-spacing:-.02em}
 </style>
+<style id="aqw-build-center-labels-and-detail-rows-v1">
+#builds .build-character-slot{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:5px;box-sizing:border-box}
+#builds .build-character-slot .build-slot-label{display:block;text-align:center;width:100%;font-size:11px}
+#builds .build-character-slot strong{display:block;width:100%;font-size:13px;line-height:1.3;text-align:center;overflow-wrap:anywhere}
+#builds .build-character-slot .build-slot-mini{display:block;width:100%;font-size:10px;line-height:1.35;text-align:center;color:#b9d2e6}
+#builds .build-effect-group{padding:10px 0;border-bottom:1px solid #2b4055}
+#builds .build-effect-group:last-of-type{border-bottom:0}
+#builds .build-effect-slot-title{display:block;font-size:13px;margin-bottom:6px;color:#e3f2ff}
+#builds .build-effect-detail{display:grid;grid-template-columns:minmax(90px,0.32fr) minmax(0,1fr);gap:9px;align-items:baseline;padding:5px 0;border:0}
+#builds .build-effect-detail .build-effect-description{margin:0}
+#builds .build-effect-detail .build-effect-combo{font-size:12px}
+@media(max-width:540px){#builds .build-effect-detail{grid-template-columns:1fr;gap:3px}#builds .build-character-slot{padding:6px;gap:3px}#builds .build-character-slot .build-slot-mini{font-size:9px}}
+</style>
 <style id="aqw-build-connector-pixel-fix">
 /* SVG geometry is calculated in rendered pixels, not a scaled static viewBox. */
 #builds svg.build-body-connectors{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;transform:none!important;pointer-events:none;overflow:visible}
@@ -2484,6 +2497,18 @@ function suggestedConsumables(cls,role){
  return [['Tonic',selected[0]],['Elixir',selected[1]],['Potion',selected[2]]]
   .map(([kind,name])=>({kind,name,effect:alchemyEffects[name]||'Refer to the item effect before use.'}));
 }
+const enhancementMiniDescriptions={
+ Lucky:'Crit-focused base stats',Wizard:'Magic-focused base stats',Fighter:'Physical base stats',Healer:'HP and healing stats',
+ Valiance:'Balanced stat boost',Dauntless:'High physical burst',Ravenous:'Damage and crit boost',
+ Praxis:'Stacking boss damage',Smite:'Skill 5 burst','Arcana’s Concerto':'Team damage debuff',
+ "Arcana's Concerto":'Team damage debuff',Elysium:'Mana sustain and magic',Acheron:'High-risk magic damage',
+ 'Awe Blast':'Enemy defense debuff','Spiral Carve':'Extra critical chance','Mana Vamp':'Restore mana',
+ Forge:'Balanced helm stats',Anima:'Physical offense',Pneuma:'Magic offense',Vim:'Dodge and mana savings',
+ Examen:'Wisdom and mana savings',Hearty:'Higher survivability',
+ Vainglory:'More damage, less healing',Avarice:'Haste with defense cost',
+ Absolution:'Stronger healing',Penitence:'More damage resistance',Lament:'Critical chance boost'
+};
+function shortEnhancementEffect(name){return enhancementMiniDescriptions[name]||'Situational enhancement'}
 function renderClassBuild(){
  const cls=$('build-class')?.value,role=$('build-role')?.value,root=$('build-results');if(!root)return;root.replaceChildren();
  const build=starterBuilds[cls]?.[role];if(!build){root.append(node('div','No starter build available yet.','build-empty'));return}
@@ -2498,8 +2523,10 @@ function renderClassBuild(){
  const slotData=[['Weapon','⚔️',build.weapon],['Helm','🪖',build.helm],['Cape','🧥',build.cape],['Armor','🛡️',suggestedBaseEnhancement(cls,role,'armor')]];
  for(const [label,emoji,value] of slotData){
   const slot=node('div',undefined,'build-character-slot build-character-'+label.toLowerCase());
-  slot.append(node('span',emoji+' '+label,'build-slot-label'),node('strong',value));
-   // Enhancement stats and procs are shown in the Equipment & Effects panel, not on Artix labels.
+  const baseValue=suggestedBaseEnhancement(cls,role,label.toLowerCase());
+  slot.append(node('span',emoji+' '+label,'build-slot-label'));
+  slot.append(node('strong',baseValue===value?value:baseValue+' → '+value));
+  slot.append(node('small',shortEnhancementEffect(value),'build-slot-mini'));
   const colorKey=value.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
   slot.dataset.enhancement=colorKey;
   const palette={dauntless:'#ef9b59',valiance:'#68bce9',anima:'#d6a0f5',pneuma:'#a68cf5',vainglory:'#ef8595',avarice:'#f3b66b',absolution:'#71d4aa',elysium:'#85c9ff',hearty:'#8fd2a2',lucky:'#eac66f',wizard:'#a995ff',healer:'#7cdeb0',fighter:'#f0a66a'};
@@ -2562,15 +2589,17 @@ function renderClassBuild(){
  const expl=node('section',undefined,'build-info-panel build-effects-panel');
  expl.append(node('h4','Equipment & Effects'));
  for(const [label,,recommended] of slotData){
-  const standard=suggestedBaseEnhancement(cls,role,label.toLowerCase());
-  const line=node('div',undefined,'build-effect-row');
-  const heading=node('div',undefined,'build-effect-heading');
-  heading.append(node('strong',label),node('span',standard===recommended?standard:standard+' → '+recommended,'build-effect-combo'));
-  const description=standard===recommended
-   ?buildEnhancementEffect(recommended)
-   :'Standard '+standard+': '+buildEnhancementEffect(standard)+'  ·  Recommended '+recommended+': '+buildEnhancementEffect(recommended);
-  line.append(heading,node('p',description,'build-effect-description'));
-  expl.append(line);
+  const base=suggestedBaseEnhancement(cls,role,label.toLowerCase());
+  const group=node('div',undefined,'build-effect-group');
+  group.append(node('strong',label,'build-effect-slot-title'));
+  const enchants=base===recommended?[base]:[base,recommended];
+  for(const enchant of enchants){
+   const line=node('div',undefined,'build-effect-row build-effect-detail');
+   const heading=node('strong',enchant,'build-effect-combo');
+   line.append(heading,node('p',buildEnhancementEffect(enchant),'build-effect-description'));
+   group.append(line);
+  }
+  expl.append(group);
  }
  expl.append(node('p','Percentages describe enhancement traits or procs, not guaranteed final character stats. Standard stats depend on level.','muted tiny'));
  info.append(expl);
