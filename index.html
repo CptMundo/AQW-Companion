@@ -868,19 +868,6 @@ body{background:#0a1420!important}
  #builds .build-character-armor{right:8px;left:auto;top:auto;bottom:11%}
 }
 </style>
-<style id="aqw-build-free-position-editor">
-#builds .build-position-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
-#builds .build-position-tools button{padding:7px 11px;border:1px solid #4b7796;border-radius:8px;background:#16314b;color:#d4efff;cursor:pointer}
-#builds .build-position-tools button:hover{background:#204563}
-#builds .build-position-tools .build-edit-tip{font-size:12px;color:#a9d4ec;flex-basis:100%}
-#builds .build-position-tools [hidden]{display:none!important}
-#builds .build-position-edit .build-character-slot{cursor:grab;touch-action:none;outline:1px dashed #bfe8ff}
-#builds .build-position-edit .build-character-slot:active{cursor:grabbing}
-#builds .build-position-overlay{position:absolute;inset:0;z-index:5;pointer-events:none}
-#builds .build-position-handle{display:none;position:absolute;transform:translate(-50%,-50%);width:28px;height:28px;border:2px solid #0b1826;box-shadow:0 0 0 2px #ecfaff;border-radius:50%;background:var(--point-color,#6dc9ec);color:#06111b;font-weight:800;cursor:grab;touch-action:none;pointer-events:auto;align-items:center;justify-content:center}
-#builds .build-position-edit .build-position-handle{display:flex}
-#builds .build-position-edit .build-character-slot{z-index:7}
-</style>
 <style id="aqw-build-connector-pixel-fix">
 /* SVG geometry is calculated in rendered pixels, not a scaled static viewBox. */
 #builds svg.build-body-connectors{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;transform:none!important;pointer-events:none;overflow:visible}
@@ -1950,121 +1937,52 @@ function renderClassBuild(){
   slot.style.setProperty('--build-enh-color',palette[colorKey]||'#7fc6df');
   mannequin.append(slot)
  }
- // Temporary position editor. Export both label positions (panel-relative)
- // and equipment endpoints (image-relative) for precise final hardcoding.
+ // Final calibrated layout: label top-left positions relative to the mannequin panel,
+ // and equipment target points relative to the rendered Artix image.
+ const labelPositions={
+  weapon:[0.7040358744394619,0.03920233953511824],
+  helm:[0.03139013452914798,0.06378258458125347],
+  cape:[0.026905829596412557,0.5132859375787828],
+  armor:[0.6711509715994021,0.7726516412040538]
+ };
+ const anchors={
+  weapon:[0.7184177538418682,0.27128125],
+  helm:[0.3826547193463021,0.32728125],
+  cape:[0.23111565068016157,0.54928125],
+  armor:[0.4004828450717304,0.52528125]
+ };
  const artImage=mannequin.querySelector('.build-artix-image');
  const toSvg=(x,y,frame)=>[x-frame.left,y-frame.top];
- const defaultAnchors={weapon:[0.22220158781744742,0.55728125],helm:[0.6827615023910116,0.23928125],cape:[0.3648265936208738,0.32128125],armor:[0.3707693021960165,0.49728125]};
- const names=['weapon','helm','cape','armor'];
- const editorKey='aqwc-artix-position-editor-v1';
- const restore=()=>{try{return JSON.parse(localStorage.getItem(editorKey)||'null')}catch{return null}};
- const saved=restore();
- const validPair=p=>Array.isArray(p)&&p.length===2&&p.every(v=>Number.isFinite(v)&&v>=-5&&v<=6);
- const anchors=Object.fromEntries(names.map(n=>[n,validPair(saved?.anchors?.[n])?saved.anchors[n].slice():defaultAnchors[n].slice()]));
- const labels=Object.fromEntries(names.map(n=>[n,validPair(saved?.labels?.[n])?saved.labels[n].slice():null]));
- let editing=false;
- const overlay=document.createElement('div');overlay.className='build-position-overlay';mannequin.append(overlay);
- const handles={};
- for(const n of names){
-  const handle=document.createElement('button');handle.type='button';handle.className='build-position-handle';
-  handle.textContent=n[0].toUpperCase();handle.title='Move '+n+' equipment point';handle.setAttribute('aria-label','Move '+n+' equipment point');
-  handle.style.setProperty('--point-color',mannequin.querySelector('.build-character-'+n)?.style.getPropertyValue('--build-enh-color')||'#7fc6df');
-  overlay.append(handle);handles[n]=handle;
+ for(const [name,p] of Object.entries(labelPositions)){
+  const card=mannequin.querySelector('.build-character-'+name);
+  if(!card)continue;
+  card.style.left=(p[0]*100)+'%';
+  card.style.top=(p[1]*100)+'%';
+  card.style.right='auto';
+  card.style.bottom='auto';
  }
- const toolsRow=node('div',undefined,'build-position-tools');
- const editButton=node('button','🎯 Edit labels & points');
- const exportButton=node('button','📋 Copy all coordinates');exportButton.hidden=true;
- const resetButton=node('button','↺ Reset layout');resetButton.hidden=true;
- const hint=node('span','Drag the rectangular labels and circular equipment points independently. Copy the JSON when done.','build-edit-tip');hint.hidden=true;
- toolsRow.append(editButton,exportButton,resetButton,hint);
- const setLabelPosition=(name,p)=>{
-  labels[name]=p;
-  const card=mannequin.querySelector('.build-character-'+name),rect=mannequin.getBoundingClientRect();
-  if(!card||!rect.width||!rect.height)return;
-  card.style.left=(p[0]*rect.width)+'px';card.style.top=(p[1]*rect.height)+'px';
-  card.style.right='auto';card.style.bottom='auto';
- };
- const captureDefaultLabels=()=>{
-  const panel=mannequin.getBoundingClientRect();
-  if(!panel.width||!panel.height)return;
-  for(const n of names){
-   if(labels[n])continue;
-   const r=mannequin.querySelector('.build-character-'+n).getBoundingClientRect();
-   labels[n]=[(r.left-panel.left)/panel.width,(r.top-panel.top)/panel.height];
-  }
- };
- const savePositions=()=>{try{localStorage.setItem(editorKey,JSON.stringify({labels,anchors}))}catch(e){}};
  const updateBuildConnectors=()=>{
   if(!mannequin.isConnected)return;
-  const frame=arrows.getBoundingClientRect(),art=artImage?.getBoundingClientRect(),panel=mannequin.getBoundingClientRect();
-  if(!art||!frame.width||!frame.height||!art.width||!art.height||!panel.width||!panel.height)return;
-  captureDefaultLabels();
-  for(const n of names)if(labels[n])setLabelPosition(n,labels[n]);
+  const frame=arrows.getBoundingClientRect(),art=artImage?.getBoundingClientRect();
+  if(!art||!frame.width||!frame.height||!art.width||!art.height)return;
   arrows.setAttribute('viewBox','0 0 '+frame.width+' '+frame.height);
-  for(const n of names){
-   const card=mannequin.querySelector('.build-character-'+n),path=arrows.querySelector('.build-arrow-'+n);
+  for(const [name,point] of Object.entries(anchors)){
+   const card=mannequin.querySelector('.build-character-'+name);
+   const path=arrows.querySelector('.build-arrow-'+name);
    if(!card||!path)continue;
-   const r=card.getBoundingClientRect(),targetX=art.left+art.width*anchors[n][0],targetY=art.top+art.height*anchors[n][1];
-   const edges=[[r.left,r.top+r.height/2],[r.right,r.top+r.height/2],[r.left+r.width/2,r.top],[r.left+r.width/2,r.bottom]];
+   const r=card.getBoundingClientRect();
+   const targetX=art.left+art.width*point[0],targetY=art.top+art.height*point[1];
+   const edges=[
+    [r.left,r.top+r.height/2],[r.right,r.top+r.height/2],
+    [r.left+r.width/2,r.top],[r.left+r.width/2,r.bottom]
+   ];
    const edge=edges.reduce((best,p)=>Math.hypot(p[0]-targetX,p[1]-targetY)<Math.hypot(best[0]-targetX,best[1]-targetY)?p:best);
-   const [sx,sy]=toSvg(edge[0],edge[1],frame),[tx,ty]=toSvg(targetX,targetY,frame);
+   const [sx,sy]=toSvg(edge[0],edge[1],frame);
+   const [tx,ty]=toSvg(targetX,targetY,frame);
    path.setAttribute('d','M '+sx+' '+sy+' L '+tx+' '+ty);
    path.style.stroke=card.style.getPropertyValue('--build-enh-color')||'#6dc9ec';
-   handles[n].style.left=(targetX-panel.left)+'px';handles[n].style.top=(targetY-panel.top)+'px';
   }
  };
- editButton.addEventListener('click',()=>{
-  editing=!editing;mannequin.classList.toggle('build-position-edit',editing);
-  editButton.textContent=editing?'✓ Finish positioning':'🎯 Edit labels & points';
-  exportButton.hidden=!editing;resetButton.hidden=!editing;hint.hidden=!editing;
-  updateBuildConnectors();
- });
- exportButton.addEventListener('click',()=>{
-  captureDefaultLabels();const value=JSON.stringify({labels,anchors},null,2);
-  if(navigator.clipboard?.writeText)navigator.clipboard.writeText(value).then(()=>{exportButton.textContent='✓ Copied'},()=>window.prompt('Copy positions:',value));
-  else window.prompt('Copy positions:',value);
- });
- resetButton.addEventListener('click',()=>{
-  try{localStorage.removeItem(editorKey)}catch(e){}
-  for(const n of names){
-   labels[n]=null;anchors[n]=defaultAnchors[n].slice();
-   const card=mannequin.querySelector('.build-character-'+n);
-   card.style.removeProperty('left');card.style.removeProperty('top');card.style.removeProperty('right');card.style.removeProperty('bottom');
-  }
-  updateBuildConnectors();
- });
- const makeDraggable=(element,onMove,onFinish)=>{
-  element.addEventListener('pointerdown',e=>{
-   if(!editing||e.button!==0)return;
-   e.preventDefault();element.setPointerCapture(e.pointerId);
-  });
-  element.addEventListener('pointermove',e=>{
-   if(!editing||!element.hasPointerCapture(e.pointerId))return;
-   onMove(e);updateBuildConnectors();
-  });
-  element.addEventListener('pointerup',e=>{
-   if(!editing||!element.hasPointerCapture(e.pointerId))return;
-   onMove(e);savePositions();updateBuildConnectors();onFinish?.();
-   if(element.hasPointerCapture(e.pointerId))element.releasePointerCapture(e.pointerId);
-  });
- };
- for(const n of names){
-  const card=mannequin.querySelector('.build-character-'+n);
-  let offsetX=0,offsetY=0;
-  card.addEventListener('pointerdown',e=>{
-   if(!editing)return;
-   const r=card.getBoundingClientRect();offsetX=e.clientX-r.left;offsetY=e.clientY-r.top;
-  });
-  makeDraggable(card,e=>{
-   const frame=mannequin.getBoundingClientRect();
-   setLabelPosition(n,[(e.clientX-offsetX-frame.left)/frame.width,(e.clientY-offsetY-frame.top)/frame.height]);
-  });
-  makeDraggable(handles[n],e=>{
-   const art=artImage.getBoundingClientRect();
-   if(!art.width||!art.height)return;
-   anchors[n]=[(e.clientX-art.left)/art.width,(e.clientY-art.top)/art.height];
-  });
- }
  requestAnimationFrame(updateBuildConnectors);
  if(artImage&&!artImage.complete)artImage.addEventListener('load',updateBuildConnectors,{once:true});
  if(typeof ResizeObserver!=='undefined'){
@@ -2081,7 +1999,7 @@ function renderClassBuild(){
  const pots=node('section',undefined,'build-info-panel');pots.append(node('h4','Consumables · optional starter ideas'));
  for(const [label,value] of suggestedConsumables(cls,role)){const line=node('div',undefined,'build-info-line');line.append(node('strong',label),node('span',value));pots.append(line)}
  pots.append(node('p','Examples only, not verified for this class or boss. Check exact item names, effects and availability in-game.','muted tiny'));info.append(pots);
- layout.append(mannequin,info);panel.append(toolsRow,layout,node('div','Alternative: '+build.alternative,'build-alternative'),node('p',build.note,'build-note'));root.append(panel)
+ layout.append(mannequin,info);panel.append(layout,node('div','Alternative: '+build.alternative,'build-alternative'),node('p',build.note,'build-note'));root.append(panel)
 }
 function initClassBuildPlanner(){const select=$('build-class'),role=$('build-role');if(!select||!role)return;for(const name of Object.keys(starterBuilds))select.append(new Option(name,name));select.onchange=renderClassBuild;role.onchange=renderClassBuild;renderClassBuild()}
 
