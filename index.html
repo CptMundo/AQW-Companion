@@ -1099,6 +1099,20 @@ body{background:#0a1420!important}
 <style id="aqw-damage-reference-cleanup-v1">
 #damage .damage-grid>label:last-child{grid-column:1/-1}
 </style>
+<style id="aqw-damage-four-column-gear-v1">
+/* Display all four equipped slots in one row on wide screens. */
+@media(min-width:1200px){
+ #damage .damage-gear-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px}
+ #damage .damage-slot-card{padding:12px 10px;min-width:0}
+ #damage .damage-slot-card input,#damage .damage-slot-card select{min-width:0;width:100%}
+}
+@media(min-width:601px) and (max-width:1199px){
+ #damage .damage-gear-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:600px){
+ #damage .damage-gear-grid{grid-template-columns:minmax(0,1fr)!important}
+}
+</style>
 <style id="aqw-damage-showcase-v2">
 .subnav:has(button.group-visible[data-parent="damage"]){display:none!important}
 .subnav button[data-parent="damage"]{display:none!important}
