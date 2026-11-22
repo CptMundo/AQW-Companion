@@ -899,7 +899,7 @@ body{background:#0a1420!important}
 <section id="ultras" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle">⚡ Ultra Boss Strategy Guides</h3><p class="muted tiny">Choose a boss and your class to see a suggested team, a role-specific plan, fight phases and common wipe causes. Strategies are community-sourced and may change. Guides are community references, not live combat instructions.</p></div><span class="pill">11 strategy guides · Community references</span></div><div class="toolbar"><input id="ultrasearch" type="search" placeholder="Search bosses, mechanics or classes…"><select id="ultrafilter"><option value="all">All guides</option><option value="ready">All suggested classes owned</option></select></div><div class="ultra-reset-tools"><span class="muted tiny">Ultra checklist · Resets at 00:00 EST (AQW server time), weekly on Friday.</span><div class="ultra-reset-actions"><button type="button" id="resetultradaily" class="smallbutton">Reset Daily Ultra checks</button><button type="button" id="resetultraweekly" class="smallbutton">Reset Weekly Ultra checks</button></div></div><div class="ultra-master-detail"><div id="ultracards" class="ultracards"></div><div id="ultradetail" class="ultradetail hidden"></div></div>
 <div class="ultra-catalog-wrapper"><div class="homehead"><h3 class="sectiontitle">⚔️ Other Ultra Encounters</h3><span class="pill">Catalog · not all have guides</span></div>
 <p class="muted tiny">Legacy and seasonal encounters without a reviewed strategy. Main farming ultras now appear above with team comps and fight guides. Verify maps and availability.</p>
-<div id="ultracatalog" class="ultra-catalog"></div></div></div></section><section id="builds" class="view"><div class="card build-planner-card"><div class="unlocktop"><div><h3 class="sectiontitle">🛡️ Class Build Planner</h3><p class="muted tiny">Quick enhancement loadouts by class and activity. Starter recommendations are suggestions, not guaranteed best-in-slot. Check current mechanics in-game.</p></div><span class="pill">Alpha · Starter builds</span></div><div class="build-controls"><label>Class<select id="build-class"></select></label><label>Activity<select id="build-role"><option value="solo">Solo / Boss</option><option value="farm">Farming</option><option value="group">Group / Ultras</option></select></label></div><div id="build-results" aria-live="polite"></div><p class="muted tiny">Forge unlock detection and verified source links will be added in a future PR. Nothing here changes your character or inventory.</p></div></section>
+<div id="ultracatalog" class="ultra-catalog"></div></div></div></section><section id="builds" class="view"><div class="card build-planner-card"><div class="unlocktop"><div><h3 class="sectiontitle">🛡️ Class Build Planner</h3><p class="muted tiny">2026 class loadouts for Solo, Farming and Group / Ultras. Includes base enhancements and situational Forge choices; verify each boss strategy.</p></div><span class="pill">Alpha · Starter builds</span></div><div class="build-controls"><label>Class<select id="build-class"></select></label><label>Activity<select id="build-role"><option value="solo">Solo / Boss</option><option value="farm">Farming</option><option value="group">Group / Ultras</option></select></label></div><div id="build-results" aria-live="polite"></div><p class="muted tiny">Forge unlock detection and verified source links will be added in a future PR. Nothing here changes your character or inventory.</p></div></section>
 <section id="planner" class="view"><div class="card"><div class="goalhead"><h3 class="sectiontitle" style="margin:0">My Pinned Tasks</h3><span class="pill">Changes saved automatically</span></div><div id="planner-my-tasks" class="task-grid"></div><p class="muted tiny">Checks refresh at 00:00 EST (AQW server reset), and weekly on Friday. Saved locally; previous periods remain in backup.</p></div><div class="card" style="margin-bottom:15px"><div class="unlocktop"><div><h3 class="sectiontitle">📅 Daily / Weekly Tracker</h3><p class="muted tiny">Pin only what you want to track. Check off a task for the current local day or tracking week. Nothing is marked complete from your item inventory.</p></div><span class="pill">Local · Optional · Manual</span></div>
 <div class="planner-controls"><div class="planner-metric"><strong id="dailycount">0 / 0</strong><span>Daily tasks</span><div class="planner-progress"><div id="dailybar"></div></div></div><div class="planner-metric"><strong id="weeklycount">0 / 0</strong><span>Weekly tasks</span><div class="planner-progress"><div id="weeklybar"></div></div></div></div>
 <p class="muted tiny" id="plannerperiod"></p><div class="toolbar"><input id="plannersearch" placeholder="Search suggested tasks…" type="search"><select id="plannerfilter"><option value="all">Daily &amp; weekly</option><option value="daily">Daily only</option><option value="weekly">Weekly only</option></select></div>
@@ -1613,11 +1613,351 @@ function renderUltra101(b){
 }
 
 const starterBuilds={
- 'Void Highlord':{solo:{weapon:'Dauntless',helm:'Anima',cape:'Vainglory',alternative:'Valiance if Dauntless is unavailable',note:'Offensive solo setup. Survivability and boss mechanics can require different choices.'},farm:{weapon:'Valiance',helm:'Anima',cape:'Avarice',alternative:'Use a dedicated farming class for large packs',note:'Situational option; VHL is primarily a solo class.'},group:{weapon:'Valiance',helm:'Forge / defensive option',cape:'Absolution',alternative:'Adapt to the specific Ultra encounter',note:'Ultra fights have encounter-specific restrictions and survival requirements.'}},
- 'Legion Revenant':{solo:{weapon:'Valiance',helm:'Pneuma',cape:'Vainglory',alternative:'Arcana’s Concerto for team utility',note:'Balanced damage and support starter suggestion.'},farm:{weapon:'Valiance',helm:'Pneuma',cape:'Avarice',alternative:'Elysium where applicable',note:'Compare mana sustain and survivability for your farming spot.'},group:{weapon:'Arcana’s Concerto',helm:'Pneuma',cape:'Absolution',alternative:'Valiance when another player provides Arcana',note:'Coordinate enhancements with your team; avoid duplicate utility where possible.'}},
- 'ArchPaladin':{solo:{weapon:'Valiance',helm:'Hearty',cape:'Absolution',alternative:'Standard enhancements for a simpler setup',note:'Defensive setup; adjust for damage and sustain.'},farm:{weapon:'Valiance',helm:'Hearty',cape:'Absolution',alternative:'Consider a dedicated farming class',note:'Not primarily a high-speed farming class.'},group:{weapon:'Valiance',helm:'Hearty',cape:'Absolution',alternative:'Encounter-specific defensive substitutions',note:'Taunt timing and mechanics matter more than a universal loadout.'}},
- 'StoneCrusher':{solo:{weapon:'Valiance',helm:'Pneuma',cape:'Absolution',alternative:'Standard enhancements if Forge is locked',note:'Support-oriented; solo performance varies.'},farm:{weapon:'Elysium',helm:'Pneuma',cape:'Avarice',alternative:'Valiance',note:'Situational farming setup.'},group:{weapon:'Arcana’s Concerto',helm:'Pneuma',cape:'Absolution',alternative:'Valiance if Arcana is covered',note:'Coordinate team debuffs and support.'}},
- 'Lord of Order':{solo:{weapon:'Valiance',helm:'Hearty',cape:'Absolution',alternative:'Standard enhancements',note:'Mostly designed for team support.'},farm:{weapon:'Valiance',helm:'Hearty',cape:'Absolution',alternative:'Use a dedicated farming class',note:'Farming is not its main strength.'},group:{weapon:'Arcana’s Concerto',helm:'Hearty',cape:'Absolution',alternative:'Valiance if Arcana is covered',note:'Prioritize survival and the encounter’s mechanics.'}}
+ "Void Highlord": {
+  "solo": {
+   "weapon": "Dauntless",
+   "helm": "Vim",
+   "cape": "Vainglory",
+   "alternative": "Valiance or Smite if Dauntless is locked",
+   "note": "High solo DPS; use safer cape on lethal bosses."
+  },
+  "farm": {
+   "weapon": "Dauntless",
+   "helm": "Anima",
+   "cape": "Vainglory",
+   "alternative": "Valiance and Vim for sustained farming",
+   "note": "Good multi-target option after its 2026 range adjustment."
+  },
+  "group": {
+   "weapon": "Valiance",
+   "helm": "Forge",
+   "cape": "Penitence",
+   "alternative": "Awe Blast or Praxis when useful",
+   "note": "Ultra viability depends on encounter; prioritize HP and survivability over damage."
+  }
+ },
+ "Legion Revenant": {
+  "solo": {
+   "weapon": "Valiance",
+   "helm": "Pneuma",
+   "cape": "Vainglory",
+   "alternative": "Arcana's Concerto for group debuffs",
+   "note": "Versatile solo damage and sustain."
+  },
+  "farm": {
+   "weapon": "Valiance",
+   "helm": "Pneuma",
+   "cape": "Vainglory",
+   "alternative": "Avarice only when extra haste is needed",
+   "note": "Strong general farmer, with 2026 improvements to secondary-target damage."
+  },
+  "group": {
+   "weapon": "Arcana's Concerto",
+   "helm": "Forge",
+   "cape": "Penitence",
+   "alternative": "Valiance if Arcana is already covered",
+   "note": "Popular Arcana carrier; avoid fragile helm/cape choices for dangerous ultras."
+  }
+ },
+ "ArchPaladin": {
+  "solo": {
+   "weapon": "Valiance",
+   "helm": "Vim",
+   "cape": "Vainglory",
+   "alternative": "Awe Blast for utility",
+   "note": "Tanky debuffs and solo sustain; Vim only if the HP trade-off is safe."
+  },
+  "farm": {
+   "weapon": "Valiance",
+   "helm": "Forge",
+   "cape": "Vainglory",
+   "alternative": "Dedicated farming class preferred",
+   "note": "Can clear mobs, but is not a top farming pick."
+  },
+  "group": {
+   "weapon": "Awe Blast",
+   "helm": "Forge",
+   "cape": "Penitence",
+   "alternative": "Valiance / Absolution depending on encounter",
+   "note": "Prioritize taunt, defense and party safety over personal DPS."
+  }
+ },
+ "StoneCrusher": {
+  "solo": {
+   "weapon": "Valiance",
+   "helm": "Forge",
+   "cape": "Absolution",
+   "alternative": "Awe Blast as a simpler weapon",
+   "note": "Support-oriented rather than fast solo DPS."
+  },
+  "farm": {
+   "weapon": "Valiance",
+   "helm": "Pneuma",
+   "cape": "Vainglory",
+   "alternative": "Use dedicated farmers for best KPM",
+   "note": "Not a primary AoE farming choice."
+  },
+  "group": {
+   "weapon": "Arcana's Concerto",
+   "helm": "Forge",
+   "cape": "Absolution",
+   "alternative": "Awe Blast / Valiance if Arcana already covered",
+   "note": "Absolution helps group healing; switch to Penitence if survival demands it."
+  }
+ },
+ "Lord of Order": {
+  "solo": {
+   "weapon": "Valiance",
+   "helm": "Forge",
+   "cape": "Vainglory",
+   "alternative": "Awe Blast for debuff utility",
+   "note": "Support first; lower priority for solo content."
+  },
+  "farm": {
+   "weapon": "Valiance",
+   "helm": "Forge",
+   "cape": "Vainglory",
+   "alternative": "Use a dedicated farming class",
+   "note": "Not designed for efficient AoE farming."
+  },
+  "group": {
+   "weapon": "Awe Blast",
+   "helm": "Forge",
+   "cape": "Absolution",
+   "alternative": "Arcana's Concerto if no one else applies it",
+   "note": "Support balance changed in 2026; coordinate buffs and defensive coverage."
+  }
+ },
+ "Chaos Avenger": {
+  "solo": {
+   "weapon": "Dauntless",
+   "helm": "Anima",
+   "cape": "Vainglory",
+   "alternative": "Valiance for more balanced damage",
+   "note": "Physical tank/DPS with strong sustain; swap to defensive cape as needed."
+  },
+  "farm": {
+   "weapon": "Valiance",
+   "helm": "Anima",
+   "cape": "Vainglory",
+   "alternative": "Dauntless for aggressive fights",
+   "note": "Solid option but not a dedicated high-KPM farmer."
+  },
+  "group": {
+   "weapon": "Valiance",
+   "helm": "Forge",
+   "cape": "Penitence",
+   "alternative": "Ravenous / Praxis for particular encounters",
+   "note": "A common ultra tank; keep a full-HP helm instead of Anima."
+  }
+ },
+ "ArchMage": {
+  "solo": {
+   "weapon": "Elysium",
+   "helm": "Pneuma",
+   "cape": "Vainglory",
+   "alternative": "Valiance or Acheron for specialized rotations",
+   "note": "Strong but rotation-dependent; mana/HP management changes outcomes."
+  },
+  "farm": {
+   "weapon": "Elysium",
+   "helm": "Pneuma",
+   "cape": "Vainglory",
+   "alternative": "Acheron + Penitence in specialized builds",
+   "note": "Excellent AoE class; performance depends heavily on rotation and mob HP."
+  },
+  "group": {
+   "weapon": "Valiance",
+   "helm": "Forge",
+   "cape": "Penitence",
+   "alternative": "Elysium if mana sustain requires it",
+   "note": "Niche ultra pick; use durable alternatives unless a tested party plan exists."
+  }
+ },
+ "Arcana Invoker": {
+  "solo": {
+   "weapon": "Valiance",
+   "helm": "Forge",
+   "cape": "Vainglory",
+   "alternative": "Ravenous for damage-focused setups",
+   "note": "Avoid assuming Pneuma or Elysium are best; class scales with hybrid stats."
+  },
+  "farm": {
+   "weapon": "Valiance",
+   "helm": "Examen",
+   "cape": "Vainglory",
+   "alternative": "Base Forge helm for safer farming",
+   "note": "Community 2026 tests favor Valiance with Examen on efficient farming routes."
+  },
+  "group": {
+   "weapon": "Valiance",
+   "helm": "Forge",
+   "cape": "Penitence",
+   "alternative": "Ravenous depending on target and team",
+   "note": "Situational ultra pick; specific boss strategies required."
+  }
+ },
+ "Dragon of Time": {
+  "solo": {
+   "weapon": "Elysium",
+   "helm": "Pneuma",
+   "cape": "Vainglory",
+   "alternative": "Wizard helm for more HP",
+   "note": "Elysium can improve mana flow; DoT-based damage requires practice."
+  },
+  "farm": {
+   "weapon": "Elysium",
+   "helm": "Pneuma",
+   "cape": "Vainglory",
+   "alternative": "Valiance for alternative rotations",
+   "note": "Flexible multi-target farming and damage-over-time."
+  },
+  "group": {
+   "weapon": "Valiance",
+   "helm": "Forge",
+   "cape": "Penitence",
+   "alternative": "Healer class enhancement for HP-sensitive fights",
+   "note": "DoT specialist; survival and boss compatibility take priority."
+  }
+ },
+ "Shaman": {
+  "solo": {
+   "weapon": "Elysium",
+   "helm": "Pneuma",
+   "cape": "Vainglory",
+   "alternative": "Mana Vamp before Forge",
+   "note": "Mana-hungry class that improves significantly with Elysium."
+  },
+  "farm": {
+   "weapon": "Elysium",
+   "helm": "Pneuma",
+   "cape": "Vainglory",
+   "alternative": "Avarice when haste remains below cap",
+   "note": "Strong accessible farming class, especially with Elysium."
+  },
+  "group": {
+   "weapon": "Valiance",
+   "helm": "Forge",
+   "cape": "Penitence",
+   "alternative": "Use StoneCrusher or Lord of Order for standard support",
+   "note": "Not a normal ultra staple; treat as encounter-specific."
+  }
+ },
+ "Blaze Binder": {
+  "solo": {
+   "weapon": "Valiance",
+   "helm": "Pneuma",
+   "cape": "Vainglory",
+   "alternative": "Awe Blast before Forge",
+   "note": "Reliable magic-based AoE class."
+  },
+  "farm": {
+   "weapon": "Valiance",
+   "helm": "Pneuma",
+   "cape": "Vainglory",
+   "alternative": "Elysium if mana is a bottleneck",
+   "note": "Accessible farming option; use a safer helm if needed."
+  },
+  "group": {
+   "weapon": "Awe Blast",
+   "helm": "Forge",
+   "cape": "Penitence",
+   "alternative": "Use dedicated support classes for standard ultra teams",
+   "note": "Not a default choice for Ultras."
+  }
+ },
+ "Verus DoomKnight": {
+  "solo": {
+   "weapon": "Dauntless",
+   "helm": "Anima",
+   "cape": "Vainglory",
+   "alternative": "Ravenous / Valiance as alternatives",
+   "note": "Strong physical boss DPS and debuffs."
+  },
+  "farm": {
+   "weapon": "Valiance",
+   "helm": "Anima",
+   "cape": "Vainglory",
+   "alternative": "Other classes are better for dense AoE farming",
+   "note": "Mostly suited to boss-focused gameplay."
+  },
+  "group": {
+   "weapon": "Valiance",
+   "helm": "Forge",
+   "cape": "Penitence",
+   "alternative": "Ravenous if encounter and party favor it",
+   "note": "Debuff DPS role; coordinate with team before replacing tank/support."
+  }
+ },
+ "Yami no Ronin": {
+  "solo": {
+   "weapon": "Dauntless",
+   "helm": "Vim",
+   "cape": "Vainglory",
+   "alternative": "Smite or Spiral Carve if locked",
+   "note": "Dodge soloer; damage build may require careful avoidance."
+  },
+  "farm": {
+   "weapon": "Valiance",
+   "helm": "Vim",
+   "cape": "Vainglory",
+   "alternative": "Use dedicated AoE farmers",
+   "note": "Primarily a single-target dodge class."
+  },
+  "group": {
+   "weapon": "Valiance",
+   "helm": "Forge",
+   "cape": "Penitence",
+   "alternative": "Use a more standard ultra class unless strategy permits",
+   "note": "Dodge does not bypass all ultra mechanics."
+  }
+ },
+ "King's Echo": {
+  "solo": {
+   "weapon": "Valiance",
+   "helm": "Forge",
+   "cape": "Vainglory",
+   "alternative": "Spiral Carve before Forge; test Ravenous",
+   "note": "2026 endgame solo contender. Gameplay and boost uptime affect comparisons."
+  },
+  "farm": {
+   "weapon": "Valiance",
+   "helm": "Forge",
+   "cape": "Vainglory",
+   "alternative": "Arcana Invoker / ArchMage for mass farming",
+   "note": "Effective on medium/high-HP targets; not always best for low-HP packs."
+  },
+  "group": {
+   "weapon": "Praxis",
+   "helm": "Forge",
+   "cape": "Penitence",
+   "alternative": "Valiance for shorter encounters",
+   "note": "Long-fight weapon option based on community testing; not boss-universal."
+  }
+ },
+ "LightCaster": {
+  "solo": {
+   "weapon": "Valiance",
+   "helm": "Pneuma",
+   "cape": "Vainglory",
+   "alternative": "Smite as an earlier offensive option",
+   "note": "Solid support-damage hybrid; team heals matter."
+  },
+  "farm": {
+   "weapon": "Valiance",
+   "helm": "Pneuma",
+   "cape": "Vainglory",
+   "alternative": "A dedicated farming class is faster",
+   "note": "Can clear mobs but is primarily single-target/support."
+  },
+  "group": {
+   "weapon": "Awe Blast",
+   "helm": "Forge",
+   "cape": "Absolution",
+   "alternative": "Penitence if survival is more important",
+   "note": "Support choice varies by boss and party setup."
+  }
+ }
 };
 function renderUltraDetail(b){const root=$('ultradetail');root.classList.remove('hidden');root.replaceChildren();if(!b)return;
  const head=node('div',undefined,'goalhead ultra-title-row');const headActions=node('div',undefined,'ultra-title-actions');headActions.append(makeCopyJoin(b.join),node('span',b.type,'quick-pill'),node('span',b.difficulty,'pill'));head.append(node('h2',ultraEmojiFor(b)+' '+b.name),headActions);root.append(head);
@@ -1898,22 +2238,53 @@ document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()
 activateTab('overview');$('opencommunityadvanced').onclick=()=>activateTab('database');renderUltras();renderPlanner();$('homeplanner').onclick=()=>selectTab('planner');$('homeprojects').onclick=()=>selectTab('unlocks');$('homeexplore').onclick=()=>selectTab('discover');$('homecompare').onclick=()=>selectTab('compare');for(let id of ['search','type','location','order','rarity','qtymin','qtymax','datefrom','dateto'])$(id).addEventListener(['search','qtymin','qtymax'].includes(id)?'input':'change',()=>{page=0;renderItems()});$('resetinventoryfilters').onclick=()=>{for(const id of ['search','qtymin','qtymax','datefrom','dateto'])$(id).value='';for(const id of ['type','location','rarity'])$(id).value='';$('order').value='name';page=0;renderItems()};$('prev').onclick=()=>{page--;renderItems()};$('next').onclick=()=>{page++;renderItems()};$('addgoal').onclick=()=>{let name=$('goalname').value.trim(),target=Number($('goaltarget').value);if(!name||!Number.isSafeInteger(target)||target<1){message('Enter an item name and a positive whole-number target.');return}goals.push({id:crypto.randomUUID(),name,target});saveGoals();$('goalname').value='';$('goaltarget').value='';renderGoals()};$('startergoals').onclick=()=>{for(let [name,target]of [['Void Aura',7500],['Bone Dust',6666]])if(!goals.some(g=>g.name===name))goals.push({id:crypto.randomUUID(),name,target});saveGoals();renderGoals()};$('comparebtn').onclick=comparison;$('backup').onclick=()=>{saveDownload({format:'AQW Companion backup v0.9.3',storyStatuses,planner:{pinned:pinnedTasks,checks:taskChecks},createdAt:new Date().toISOString(),snapshots,goals,unlocks},'AQW_Companion_Backup.json')};$('clear').onclick=async()=>{if(!confirm('Delete ALL snapshots, goals, unlock projects, planner tasks and story statuses stored in this browser? Create a backup first.'))return;try{if(db)await txn('readwrite',s=>s.clear());snapshots=[];current=null;goals=[];unlocks=[];localStorage.removeItem('aqw-companion-goals');localStorage.removeItem('aqw-companion-unlocks');storyStatuses={};saveStory();pinnedTasks=[];taskChecks={};localStorage.removeItem(plannerKey);renderPlanner();renderAll()}catch(e){message(e.message)}};
 
 const enhancementHelp={
- Valiance:'Balanced offensive Forge weapon enhancement.',Dauntless:'Aggressive melee-oriented Forge weapon option.',Elysium:'Spell-focused Forge option with sustain benefits.',
- 'Arcana’s Concerto':'Team utility: applies helpful enemy debuffs.',Pneuma:'Forge helm focused on magical offense.',Anima:'Forge helm focused on physical offense.',
- Hearty:'Defensive helm option for more health.',Vainglory:'Offensive cape with a survivability trade-off.',Avarice:'Faster-paced offensive cape with trade-offs.',Absolution:'Support-oriented cape option.',
- Lucky:'Standard physical / critical-hit oriented enhancement.',Wizard:'Standard spellcaster-oriented enhancement.',Fighter:'Standard physical offense / health-oriented enhancement.',Healer:'Standard supportive / health-oriented enhancement.'
+ Valiance:'Forge weapon: balanced stats and offensive buffs.',
+ Dauntless:'Forge weapon: aggressive physical DPS; manage its effects.',
+ Ravenous:'Forge weapon: third-skill proc and damage/debuff effects; reworked in 2025.',
+ Praxis:'Forge weapon: stacks effectiveness in sustained fights.',
+ Smite:'Forge weapon: can boost a class with a suitable fifth skill.',
+ 'Arcana\u2019s Concerto':'Forge weapon: team damage-taken debuff; coordinate one carrier.',
+ "Arcana's Concerto":'Forge weapon: team damage-taken debuff; coordinate one carrier.',
+ Elysium:'Forge weapon: especially useful on mana-hungry classes.',
+ Acheron:'Specialized weapon setup with self-damage requirements.',
+ 'Awe Blast':'Awe weapon: general-purpose enemy damage-taken debuff.',
+ 'Spiral Carve':'Awe weapon: boosts critical chance.',
+ 'Mana Vamp':'Awe weapon: helps sustain mana.',
+ Anima:'Forge helm: physical offense; may lower HP.',
+ Vim:'Forge helm: dodge / critical synergy; can reduce HP.',
+ Pneuma:'Forge helm: magical offense; may lower HP.',
+ Examen:'Forge helm: situational dodge and wisdom build.',
+ Forge:'Base Forge helm: good stats with no special HP penalty.',
+ Vainglory:'Forge cape: general damage boost, lower incoming healing.',
+ Avarice:'Forge cape: haste with defensive trade-offs.',
+ Absolution:'Forge cape: amplifies healing.',
+ Penitence:'Forge cape: defensive choice, common in hard Ultras.',
+ Lament:'Forge cape: extra critical chance for specific builds.',
+ Lucky:'Standard: critical damage and luck, strong on physical and hybrid classes.',
+ Wizard:'Standard: intellect and spell power for magic classes.',
+ Fighter:'Standard: strength and endurance for physical classes.',
+ Healer:'Standard: health and healing-oriented stats.'
+};
+const baseClassEnhancement={
+ 'Void Highlord':'Lucky','Legion Revenant':'Wizard','ArchPaladin':'Lucky',
+ 'StoneCrusher':'Wizard','Lord of Order':'Lucky','Chaos Avenger':'Lucky',
+ 'ArchMage':'Wizard','Arcana Invoker':'Lucky','Dragon of Time':'Wizard',
+ 'Shaman':'Wizard','Blaze Binder':'Wizard','Verus DoomKnight':'Lucky',
+ 'Yami no Ronin':'Lucky',"King's Echo":'Lucky','LightCaster':'Wizard'
 };
 function suggestedBaseEnhancement(cls,role,slot){
- const physical=['Void Highlord'];const magic=['Legion Revenant','StoneCrusher'];
- if(slot==='weapon')return physical.includes(cls)?'Lucky':magic.includes(cls)?'Wizard':'Lucky / Wizard';
- if(slot==='helm')return physical.includes(cls)?'Lucky':magic.includes(cls)?'Wizard':'Healer';
- return physical.includes(cls)?'Lucky':magic.includes(cls)?'Wizard':'Healer';
+ const base=baseClassEnhancement[cls]||'Lucky';
+ return base;
 }
-function suggestedConsumables(cls,role){
- if(role==='group')return [['Potion','Potent Honor Potion / Potent Malevolence Elixir (role-dependent)'],['Elixir','Potent Revitalize Elixir (survival)'],['Tonic','Endurance Draught (survival)']];
- if(role==='farm')return [['Potion','Potent Malevolence Potion (magic) / Potent Honor Potion (physical)'],['Elixir','Choose damage or sustain for the class'],['Tonic','Choose offense or survivability']];
- return [['Potion','Potent Honor Potion (physical) / Potent Malevolence Potion (magic)'],['Elixir','Choose offense or survivability'],['Tonic','Choose damage or health']];
-}
+const classBuildSources=[
+ ['Artix · 2026 balance notes','https://www.aq.com/gamedesignnotes/AQW-Balance-PatchNotes-9515'],
+ ['Artix · enhancement traits','https://www.aq.com/Lore/Guides/EnhancementTraits'],
+ ['AQWG · Forge list','https://sites.google.com/view/aqwg-net/forge-enhancements'],
+ ['AQW Forge Guide · effects and trade-offs','https://nandixer.github.io/forge/'],
+ ['AQW Hub · class progression','https://github.com/Shell1010/AQW-md/blob/main/Other%20Guides/Basic%20Class%20Guide.md'],
+ ['Community tests · Arcana Invoker 2026','https://www.reddit.com/r/AQW/comments/1voxqzc/arcana_invoker_farming_i_was_wrong_its_even_better/'],
+ ["Community tests · King's Echo 2026",'https://www.reddit.com/r/AQW/comments/1rocfbw/kings_echo_enhancements_small_analysis/']
+];
 function renderClassBuild(){
  const cls=$('build-class')?.value,role=$('build-role')?.value,root=$('build-results');if(!root)return;root.replaceChildren();
  const build=starterBuilds[cls]?.[role];if(!build){root.append(node('div','No starter build available yet.','build-empty'));return}
@@ -1994,12 +2365,19 @@ function renderClassBuild(){
  for(const [label,,value] of slotData){const line=node('div',undefined,'build-info-line');line.append(node('strong',label+' · '+value),node('span',enhancementHelp[value]||'Check the Forge description and the boss mechanics.'));expl.append(line)}
  info.append(expl);
  const base=node('section',undefined,'build-info-panel');base.append(node('h4','Standard enhancements · before Forge'));
- for(const label of ['Weapon','Helm','Cape']){const value=suggestedBaseEnhancement(cls,role,label.toLowerCase());const line=node('div',undefined,'build-info-line');line.append(node('strong',label+' · '+value),node('span',enhancementHelp[value]||'Lucky favors physical crits; Wizard favors spell damage; Healer favors support.'));base.append(line)}
+ for(const label of ['Weapon','Helm','Cape','Armor']){const value=suggestedBaseEnhancement(cls,role,label.toLowerCase());const line=node('div',undefined,'build-info-line');line.append(node('strong',label+' · '+value),node('span',enhancementHelp[value]||'Lucky favors physical crits; Wizard favors spell damage; Healer favors support.'));base.append(line)}
  info.append(base);
  const pots=node('section',undefined,'build-info-panel');pots.append(node('h4','Consumables · optional starter ideas'));
  for(const [label,value] of suggestedConsumables(cls,role)){const line=node('div',undefined,'build-info-line');line.append(node('strong',label),node('span',value));pots.append(line)}
  pots.append(node('p','Examples only, not verified for this class or boss. Check exact item names, effects and availability in-game.','muted tiny'));info.append(pots);
- layout.append(mannequin,info);panel.append(layout,node('div','Alternative: '+build.alternative,'build-alternative'),node('p',build.note,'build-note'));root.append(panel)
+ const sources=node('div',undefined,'build-source-note');
+ sources.append(node('strong','Sources · reviewed November 2026: '));
+ for(const [i,source] of classBuildSources.entries()){
+  if(i)sources.append(node('span',' · '));
+  const link=node('a',source[0]);link.href=source[1];link.target='_blank';link.rel='noopener noreferrer';sources.append(link)
+ }
+ sources.append(node('p','Curated starter loadouts, not universal best-in-slot. Ultra bosses require fight-specific choices. Recent class balance changes can invalidate older guides.','muted tiny'));
+ layout.append(mannequin,info);panel.append(layout,node('div','Alternative: '+build.alternative,'build-alternative'),node('p',build.note,'build-note'),sources);root.append(panel)
 }
 function initClassBuildPlanner(){const select=$('build-class'),role=$('build-role');if(!select||!role)return;for(const name of Object.keys(starterBuilds))select.append(new Option(name,name));select.onchange=renderClassBuild;role.onchange=renderClassBuild;renderClassBuild()}
 
