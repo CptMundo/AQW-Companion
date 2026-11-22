@@ -1097,6 +1097,8 @@ body{background:#0a1420!important}
 @media(max-width:600px){#damage .damage-grid,#damage .damage-gear-grid,#damage .damage-results{grid-template-columns:1fr}#builds .builds-subtabs{flex-wrap:wrap}}
 </style>
 <style id="aqw-damage-showcase-v2">
+.subnav:has(button.group-visible[data-parent="damage"]){display:none!important}
+.subnav button[data-parent="damage"]{display:none!important}
 #damage{max-width:100%}
 #damage .damage-simulator-card{border-top:3px solid #89c8ff!important;margin-top:0!important}
 #damage .damage-simulator-card>.unlocktop{margin-bottom:18px}
