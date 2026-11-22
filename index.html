@@ -1096,6 +1096,38 @@ body{background:#0a1420!important}
 @media(max-width:850px){#damage .damage-results{grid-template-columns:repeat(2,minmax(0,1fr))}#damage .damage-buffs-grid{grid-template-columns:1fr}}
 @media(max-width:600px){#damage .damage-grid,#damage .damage-gear-grid,#damage .damage-results{grid-template-columns:1fr}#builds .builds-subtabs{flex-wrap:wrap}}
 </style>
+<style id="aqw-damage-reference-cleanup-v1">
+#damage .damage-grid>label:last-child{grid-column:1/-1}
+</style>
+<style id="aqw-damage-four-column-gear-v1">
+/* Display all four equipped slots in one row on wide screens. */
+@media(min-width:1200px){
+ #damage .damage-gear-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px}
+ #damage .damage-slot-card{padding:12px 10px;min-width:0}
+ #damage .damage-slot-card input,#damage .damage-slot-card select{min-width:0;width:100%}
+}
+@media(min-width:601px) and (max-width:1199px){
+ #damage .damage-gear-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:600px){
+ #damage .damage-gear-grid{grid-template-columns:minmax(0,1fr)!important}
+}
+</style>
+<style id="aqw-damage-hero-range-side-by-side-v1">
+/* Two result panels side by side; supporting breakdown spans the full row. */
+@media(min-width:1050px){
+ #damage .damage-results{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:14px!important;align-items:stretch}
+ #damage .damage-results>.damage-showcase,#damage .damage-results>.damage-range-panel{min-width:0;margin:0;min-height:265px;height:100%;box-sizing:border-box}
+ #damage .damage-results>.damage-showcase{padding:24px}
+ #damage .damage-results>.damage-showcase .damage-showcase-number{font-size:clamp(39px,4vw,64px)}
+ #damage .damage-results>.damage-showcase .damage-showcase-multiplier strong{font-size:clamp(24px,2.6vw,36px)}
+ #damage .damage-results>.damage-range-panel{display:flex;flex-direction:column;justify-content:center;padding:20px}
+ #damage .damage-results>.damage-factor-grid,#damage .damage-results>.damage-calculation-details{grid-column:1/-1;min-width:0}
+}
+@media(max-width:1049px){
+ #damage .damage-results{display:flex!important;flex-direction:column!important}
+}
+</style>
 <style id="aqw-damage-showcase-v2">
 .subnav:has(button.group-visible[data-parent="damage"]){display:none!important}
 .subnav button[data-parent="damage"]{display:none!important}
@@ -1200,9 +1232,8 @@ body{background:#0a1420!important}
   <label>Class<select id="damage-class"><option value="Void Highlord">Void Highlord (first supported class)</option></select></label>
   <label>Monster type<select id="damage-target"><option value="none">Untagged / other</option><option value="undead">Undead</option><option value="dragon">Dragon</option><option value="human">Human</option><option value="chaos">Chaos</option><option value="elemental">Elemental</option></select></label>
   <label>Skill<select id="damage-skill"><option value="contract">Contract · normal auto attack (reference)</option><option value="shackle">Shackle · 125% weapon damage</option><option value="gaze">Highlord's Gaze · 130% weapon damage</option><option value="unshackle">Unshackle · 85% weapon damage</option><option value="armageddon">Armageddon · 420% weapon damage</option></select></label>
-  <label>Reference damage at 100% weapon damage<input id="damage-reference" type="number" min="1" max="10000000" step="100" value="10000"></label>
  </div>
- <p class="muted tiny">The 10,000 default is a test reference, NOT a VHL stat. Enter a comparable unboosted in-game reference to calibrate the result.</p>
+ <p class="muted tiny">Choose a VHL skill to compare damage potential. This alpha simulator uses a fixed demonstration baseline; its numbers are illustrative, not your real in-game damage.</p>
  <h4 class="damage-heading">Equipped items & enhancements</h4>
  <div id="damage-gear" class="damage-gear-grid"></div>
  <p class="muted tiny">Equipment suggestions use your imported inventory when available. Item bonuses are applied only for explicitly wiki-verified entries; other items appear as unverified rather than being guessed.</p>
@@ -3168,9 +3199,6 @@ function damageGearSelector(slot){
  row.append(title,gearLabel,enchant,forge,info);
  return row;
 }
-function damageSafeNumber(id,defaultValue,max){
- const n=Number($(id)?.value);return Number.isFinite(n)&&n>=0&&n<=max?n:defaultValue;
-}
 function renderDamageSimulator(){
  const result=$('damage-results');if(!result)return;result.replaceChildren();
  const slots=['Weapon','Armor','Helm','Cape'];
@@ -3192,7 +3220,8 @@ function renderDamageSimulator(){
  const weap=equipped.find(x=>x.slot==='Weapon');
  const range=weap.data?.range||[30,30];
  const skill=damageSkills[$('damage-skill').value]||damageSkills.contract;
- const base=damageSafeNumber('damage-reference',10000,10000000),gearMultiplier=(1+all/100)*(1+tag/100);
+ const base=10000; // Fixed demo baseline, NOT a measured VHL damage stat.
+ const gearMultiplier=(1+all/100)*(1+tag/100);
  const unshackle=$('damage-buff-unshackle')?.checked||false;
  const kneel=$('damage-buff-kneel')?.checked||false;
  const honor=$('damage-consumable-honor')?.checked||false;
@@ -3249,7 +3278,7 @@ function renderDamageSimulator(){
  const explain=node('details',undefined,'damage-calculation-details');
  explain.open=false;
  explain.append(node('summary','🧮 How this estimate is calculated & important limitations'));
- explain.append(node('p','Reference '+fmt(base)+' × skill '+skill.pct+'% × weapon range '+range[0]+'–'+range[1]+' (normalized to 30) × verified equipment '+gearMultiplier.toFixed(3)+' × experimental buff factor '+attackBuff.toFixed(2)+'.'));
+ explain.append(node('p','Fixed illustrative baseline '+fmt(base)+' (not a real class stat) × skill '+skill.pct+'% × weapon range '+range[0]+'–'+range[1]+' (normalized to 30) × verified equipment '+gearMultiplier.toFixed(3)+' × experimental buff factor '+attackBuff.toFixed(2)+'.'));
  explain.append(node('p','VHL Unshackle (+50% outgoing), Kneel Before the Nation (+50% outgoing) and Honor Potion (+75%) are modelled here as a simple additive scenario, NOT as an exact replication of AQW buff stacking.'));
  explain.append(node('p','Base and Forge enhancements are recorded separately (a Forge enhancement replaces the base in that slot; they do not stack). Their stat/proc effects, critical damage, defenses, attack power, cooldowns, uptime and rotations are NOT included in these numbers.'));
  if(conflicting.length)explain.append(node('p','⚠ '+conflicting.join(' '),'damage-caution'));
@@ -3275,7 +3304,7 @@ function initDamageSimulator(){
   const saved=JSON.parse(localStorage.getItem(DAMAGE_PREFERENCES)||'null');
   if(saved&&typeof saved==='object'){
    for(const [id,val] of Object.entries(saved)){
-    if(!/^damage-(item|enchant|forge|target|skill|reference|buff|consumable)/.test(id))continue;
+    if(!/^damage-(item|enchant|forge|target|skill|buff|consumable)/.test(id))continue;
     const el=$(id);if(!el)continue;
     if(el.type==='checkbox')el.checked=val===true;
     else if(typeof val==='string'||typeof val==='number')el.value=String(val).slice(0,250)
