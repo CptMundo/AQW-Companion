@@ -3343,9 +3343,11 @@ function renderDamageSimulator(){
   if(info){info.append(node('span','✓ Verified: '+(eq.data.all?'+'+eq.data.all+'% All Damage':'')+(eq.data.tagBoost?' +'+eq.data.tagBoost+'% '+(eq.data.tag||'tagged'):'')+' · '));
    const link=node('a','AQWWiki ↗');link.href=eq.data.url;link.target='_blank';link.rel='noopener noreferrer';info.append(link)}
  }
- if(categories.all.length>1||categories.tag.length>1)conflicting.push('Several equipped items have the same category of boost. The game uses equip order rather than simple addition or max. This scenario shows the highest verified value only; re-equip the desired booster last in game.');
+ if(categories.all.length>1||categories.tag.length>1)conflicting.push('Multiple item boosts of the same category do not stack; the official AQW Boost Guide specifies that the highest boost is active.');
  const weap=equipped.find(x=>x.slot==='Weapon');
- const range=weap.data?.range||[30,30]; // Unknown range defaults to neutral illustration.
+ const selectedClass=damageClassCatalog[$('damage-class').value];
+ const skillKind=(selectedClass.skills.find(x=>x[0]===$('damage-skill').value)||selectedClass.skills[0])[3];
+ const range=skillKind==='spell'?[30,30]:(weap.data?.range||[30,30]); // Weapon range is NOT applied to spell-index skills.
  const cls=$('damage-class').value;
  const skill=damageClassCatalog[cls].skills.find(x=>x[0]===$('damage-skill').value)||damageClassCatalog[cls].skills[0];
  const base=10000; // Normalized demonstration index, NOT in-game damage.
@@ -3398,15 +3400,16 @@ function renderDamageSimulator(){
  factorCard('🎯','Tagged Damage','+'+tag+'%',targetLabel);
  factorCard('✨','Skill coefficient',skill[2]+'%','Wiki sourced · '+skill[3]+' index');
  factorCard('🔥','Buff scenario','×'+attackBuff.toFixed(2),'Outgoing × target incoming (model)');
- factorCard('🗡️','Weapon variance',range[0]+'–'+range[1],'Wiki values or neutral 30–30');
+ factorCard('🗡️','Weapon variance',range[0]+'–'+range[1],skill[3]==='spell'?'Neutral for spell skills':'Wiki values or neutral 30–30');
  result.append(factors);
  const explain=node('details',undefined,'damage-calculation-details');
  explain.open=false;
  explain.append(node('summary','🧮 How this estimate is calculated & important limitations'));
- explain.append(node('p','Fictional baseline '+fmt(base)+' × '+skill[2]+'% '+skill[3]+' skill index × normalized weapon range '+range[0]+'–'+range[1]+' × verified gear '+gearMultiplier.toFixed(3)+' × outgoing '+(1+aura.out/100).toFixed(2)+' × enemy incoming '+(1+aura.inc/100).toFixed(2)+'. The weapon-range factor is NOT verified for spell skills.'));
+ explain.append(node('p','Fictional baseline '+fmt(base)+' × '+skill[2]+'% '+skill[3]+' skill index × normalized weapon range '+range[0]+'–'+range[1]+' × verified gear '+gearMultiplier.toFixed(3)+' × outgoing '+(1+aura.out/100).toFixed(2)+' × enemy incoming '+(1+aura.inc/100).toFixed(2)+'. Spell-index skills use neutral weapon variance (30–30) instead of incorrectly inheriting physical weapon ranges.'));
  explain.append(node('p','Outgoing: '+(aura.outgoing.map(x=>x[0]+' +'+x[1]+'%').join(' · ')||'none')+'. Enemy incoming: '+(aura.incoming.map(x=>x[0]+' +'+x[1]+'%').join(' · ')||'none')+'. Same-category modifiers are summed, then outgoing and enemy incoming are multiplied as an EXPERIMENTAL model.'));
  if(aura.excluded.length)explain.append(node('p','Excluded from raw damage index: '+aura.excluded.map(x=>x[0]).join(' · ')+' (crit, haste or core stats).'));
  explain.append(node('p','Important: buff duration, proc chance, crit, hit, true/physical/magic resistance, attack/spell power and defense are not implemented. No actual AQW damage or DPS prediction is available.'));
+ if(cls==='Void Highlord')explain.append(node('p','VHL Unshackle and Armageddon buffs are shown as already active BEFORE the chosen hit; their application by that hit does not automatically improve the same hit.'));
  explain.append(node('p','Base and Forge enhancements are recorded separately (a Forge enhancement replaces the base in that slot; they do not stack). Their stat/proc effects, critical damage, defenses, attack power, cooldowns, uptime and rotations are NOT included in these numbers.'));
  if(conflicting.length)explain.append(node('p','⚠ '+conflicting.join(' '),'damage-caution'));
  if(equipped.some(x=>x.name&&!x.data))explain.append(node('p','⚠ Some selected items lack a verified Wiki entry in the local catalog. Real boosts may be higher or lower; no guessed values were included.','damage-caution'));
