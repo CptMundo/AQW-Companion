@@ -902,6 +902,40 @@ body{background:#0a1420!important}
 #builds .build-effect-detail .build-effect-combo{font-size:12px}
 @media(max-width:540px){#builds .build-effect-detail{grid-template-columns:1fr;gap:3px}#builds .build-character-slot{padding:6px;gap:3px}#builds .build-character-slot .build-slot-mini{font-size:9px}}
 </style>
+<style id="aqw-build-details-visual-hierarchy-v1">
+/* Tight, consistent vertical rhythm for the two right-hand build cards. */
+#builds .build-detail-stack{display:grid;grid-template-rows:auto auto;align-content:start;gap:12px}
+#builds .build-detail-stack .build-info-panel{padding:15px 17px;min-height:0}
+#builds .build-effects-panel{display:block}
+#builds .build-detail-stack .build-info-panel h4{
+ margin:0 0 11px;font-size:18px;line-height:1.25;font-weight:750;letter-spacing:-.025em;color:#f2f8ff
+}
+#builds .build-effects-panel .build-effect-group{padding:9px 0;border-bottom:1px solid #294158}
+#builds .build-effects-panel .build-effect-group:first-of-type{padding-top:0}
+#builds .build-effects-panel .build-effect-group:last-of-type{padding-bottom:3px;border-bottom:0}
+#builds .build-effects-panel .build-effect-slot-title{font-size:14px;line-height:1.35;font-weight:750;margin:0 0 5px;color:#f1f8ff}
+#builds .build-effects-panel .build-effect-detail{
+ display:grid;grid-template-columns:minmax(92px,25%) minmax(0,1fr);
+ gap:10px;align-items:start;padding:3px 0;border:0
+}
+#builds .build-effects-panel .build-effect-detail .build-effect-combo{font-size:13px;line-height:1.45;font-weight:700}
+#builds .build-effects-panel .build-effect-detail .build-effect-description{
+ margin:0;font-size:12px;line-height:1.5;color:#c4d9ec
+}
+#builds .build-effects-panel>p.muted{margin:9px 0 0;font-size:11px;line-height:1.45}
+#builds .build-consumables-panel .build-consumable-row{padding:9px 0;border-bottom:1px solid #294158}
+#builds .build-consumables-panel .build-consumable-row:first-of-type{padding-top:0}
+#builds .build-consumables-panel .build-consumable-row:last-child{padding-bottom:0;border-bottom:0}
+#builds .build-consumables-panel .build-effect-heading{display:flex;gap:9px;align-items:baseline;flex-wrap:wrap;line-height:1.4}
+#builds .build-consumables-panel .build-effect-heading>strong{min-width:48px;font-size:11px;color:#abc7df;font-weight:700}
+#builds .build-consumables-panel .build-effect-combo{font-size:13px;font-weight:750;color:#a5e0ff}
+#builds .build-consumables-panel .build-effect-description{margin:3px 0 0;font-size:12px;line-height:1.45;color:#c4d9ec}
+@media(max-width:540px){
+ #builds .build-detail-stack .build-info-panel{padding:12px}
+ #builds .build-detail-stack .build-info-panel h4{font-size:16px}
+ #builds .build-effects-panel .build-effect-detail{grid-template-columns:minmax(78px,28%) minmax(0,1fr);gap:8px}
+}
+</style>
 <style id="aqw-build-connector-pixel-fix">
 /* SVG geometry is calculated in rendered pixels, not a scaled static viewBox. */
 #builds svg.build-body-connectors{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;transform:none!important;pointer-events:none;overflow:visible}
