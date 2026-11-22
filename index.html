@@ -854,6 +854,20 @@ body{background:#0a1420!important}
 #builds .build-body-connectors path{stroke-width:1.8;stroke-dasharray:5 4;vector-effect:non-scaling-stroke;fill:none}
 @media(max-width:540px){#builds .build-character-cape{left:8px;top:12%}#builds .build-character-armor{right:8px;bottom:11%;top:auto;left:auto}}
 </style>
+<style id="aqw-build-equipment-label-layout-v6">
+/* Rotate labels: Weapon -> Cape's former slot; Cape -> Helm's former slot;
+   Helm -> Weapon's former slot. Armor stays bottom-right. */
+#builds .build-character-weapon{left:12px;right:auto;top:13%;bottom:auto}
+#builds .build-character-cape{right:12px;left:auto;top:12%;bottom:auto}
+#builds .build-character-helm{left:12px;right:auto;top:48%;bottom:auto}
+#builds .build-character-armor{right:12px;left:auto;top:auto;bottom:12%}
+@media(max-width:540px){
+ #builds .build-character-weapon{left:8px;right:auto;top:12%;bottom:auto}
+ #builds .build-character-cape{right:8px;left:auto;top:12%;bottom:auto}
+ #builds .build-character-helm{left:8px;right:auto;top:48%;bottom:auto}
+ #builds .build-character-armor{right:8px;left:auto;top:auto;bottom:11%}
+}
+</style>
 <style id="aqw-build-calibration">
 #builds .build-calibration-tools{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:10px 0}
 #builds .build-calibration-tools button{padding:7px 11px;border-radius:7px;border:1px solid #4b7796;background:#16314b;color:#d4efff;cursor:pointer;font-size:12px}
@@ -1949,8 +1963,8 @@ function renderClassBuild(){
   mannequin.append(slot)
  }
  // Artix calibration: normalized points stay attached to the image as it scales.
- const calibrationKey='aqwc-artix-anchors-v1';
- const defaults={weapon:[0.6916755652537258,0.30128125],helm:[0.3945401364965876,0.28328125],cape:[0.22814429639259018,0.56328125],armor:[0.31134221644458887,0.46928125]};
+ const calibrationKey='aqwc-artix-anchors-v2';
+ const defaults={weapon:[0.22220158781744742,0.55728125],helm:[0.6827615023910116,0.23928125],cape:[0.3648265936208738,0.32128125],armor:[0.3707693021960165,0.49728125]};
  const safePoints=(value)=>{
   const output={};
   for(const name of Object.keys(defaults)){
