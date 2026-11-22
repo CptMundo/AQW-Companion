@@ -2403,6 +2403,25 @@ const classBuildSources=[
  ['Community tests · Arcana Invoker 2026','https://www.reddit.com/r/AQW/comments/1voxqzc/arcana_invoker_farming_i_was_wrong_its_even_better/'],
  ["Community tests · King's Echo 2026",'https://www.reddit.com/r/AQW/comments/1rocfbw/kings_echo_enhancements_small_analysis/']
 ];
+function suggestedConsumables(cls,role){
+ const base=baseClassEnhancement[cls]||'Lucky';
+ const physical=base!=='Wizard';
+ if(role==='group')return [
+  ['Potion',physical?'Potent Honor Potion (physical) / class-specific encounter potion':'Potent Malevolence Potion (magic) / class-specific encounter potion'],
+  ['Elixir','Potent Revitalize Elixir for survival (if appropriate)'],
+  ['Tonic','Endurance Draught for HP (if appropriate)']
+ ];
+ if(role==='farm')return [
+  ['Potion',physical?'Potent Honor Potion (physical damage)':'Potent Malevolence Potion (magic damage)'],
+  ['Elixir','Pick offensive or sustain elixir based on class needs'],
+  ['Tonic','Pick offensive or defensive tonic based on survival']
+ ];
+ return [
+  ['Potion',physical?'Potent Honor Potion (physical damage)':'Potent Malevolence Potion (magic damage)'],
+  ['Elixir','Offensive or survival elixir according to encounter'],
+  ['Tonic','Damage or health tonic according to encounter']
+ ];
+}
 function renderClassBuild(){
  const cls=$('build-class')?.value,role=$('build-role')?.value,root=$('build-results');if(!root)return;root.replaceChildren();
  const build=starterBuilds[cls]?.[role];if(!build){root.append(node('div','No starter build available yet.','build-empty'));return}
@@ -2497,7 +2516,19 @@ function renderClassBuild(){
  sources.append(node('p','Curated starter loadouts, not universal best-in-slot. Ultra bosses require fight-specific choices. Recent class balance changes can invalidate older guides.','muted tiny'));
  layout.append(mannequin,info);panel.append(layout,node('div','Alternative: '+build.alternative,'build-alternative'),node('p',build.note,'build-note'),sources);root.append(panel)
 }
-function initClassBuildPlanner(){const select=$('build-class'),role=$('build-role');if(!select||!role)return;for(const name of Object.keys(starterBuilds))select.append(new Option(name,name));select.onchange=renderClassBuild;role.onchange=renderClassBuild;renderClassBuild()}
+function initClassBuildPlanner(){
+ const select=$('build-class'),role=$('build-role'),root=$('build-results');
+ if(!select||!role||!root)return;
+ if(!select.options.length)for(const name of Object.keys(starterBuilds))select.append(new Option(name,name));
+ const redraw=()=>{
+  try{renderClassBuild()}
+  catch(error){
+   console.error('Class Build Planner render failed',error);
+   root.replaceChildren(node('div','Could not display this build: '+(error?.message||error)+'. Select another class or report this message.','build-empty'));
+  }
+ };
+ select.onchange=redraw;role.onchange=redraw;redraw();
+}
 
 async function init(){
  $('inventory-storage-diagnostic')?.addEventListener('click',showInventoryDiagnostic);
