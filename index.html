@@ -2459,13 +2459,19 @@ function renderSeasonalOpportunities(){
  prev.onclick=()=>{month--;if(month<0){month=11;year--}selected=1;draw()};
  next.onclick=()=>{month++;if(month>11){month=0;year++}selected=1;draw()};
  draw();
+ const feedStatus=node('small','Checking the dated event feed…','aqw-calendar-feed-status');
+ shell.append(feedStatus);
  fetch('./data/aqw-calendar.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Calendar feed unavailable');return r.json()}).then(feed=>{
-  if(!Array.isArray(feed.events))return;
+  if(!root.contains(shell))return; // Ignore results from obsolete calendar render passes.
+  if(!Array.isArray(feed.events))throw Error('Invalid calendar events list');
   known=feed.events.filter(e=>/^\d{4}-\d{2}-\d{2}$/.test(e.date)&&e.name&&e.url);
   draw();
-  const status=node('small','Official feed checked: '+(feed.updatedAt||'unknown')+' · '+(feed.status||'Verified dated entries only'),'muted');
-  root.append(status);
- }).catch(()=>root.append(node('small','Showing offline fallback; official feed unavailable.','muted')));
+  feedStatus.textContent='Dated announcements checked · '+(feed.updatedAt||'update time unknown')+' · not a live boost status';
+ }).catch(error=>{
+  if(!root.contains(shell))return;
+  console.warn('Calendar feed unavailable:',error);
+  feedStatus.textContent='Dated feed unavailable · showing last known announcements';
+ });
  const legend=node('div',undefined,'aqw-cal-legend');
  for(const type of ['boost','seasonal','drop','release']){const item=node('span',undefined,'aqw-cal-legend-item');item.append(node('span','','aqw-cal-marker aqw-cal-marker-'+type),node('span',categoryLabel[type]));legend.append(item)}
  root.append(legend);
