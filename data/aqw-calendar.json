@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-11-21T16:50:03+00:00",
-  "status": "Official AQWorlds news page checked; calendar boosts require explicit confirmation",
+  "updatedAt": "2026-11-22T00:00:00Z",
+  "status": "Curated official dated announcements through November 22, 2026; not a live boost feed",
   "sources": [
     "https://www.artix.com/calendar/",
     "https://www.artix.com/games/aqworlds/",
@@ -50,11 +50,51 @@
     },
     {
       "date": "2026-11-20",
+      "name": "Cursed Harvest Part 2 — CryptFeast",
+      "desc": "New Harvest Fest storyline at /join cryptfeast.",
+      "url": "https://www.aq.com/gamedesignnotes/aqw-cursedharvest26-20nov26-10529",
+      "category": "release",
+      "source": "curated"
+    },
+    {
+      "date": "2026-11-20",
+      "name": "Double Gold Boost announced",
+      "desc": "Official weekend boost; exact end time not confirmed. Do not interpret this entry as a live status.",
+      "url": "https://www.aq.com/gamedesignnotes/aqw-cursedharvest26-20nov26-10529",
+      "category": "boost",
+      "source": "curated"
+    },
+    {
+      "date": "2026-11-20",
       "name": "Safiria collection",
       "desc": "Previously announced release; verify actual availability.",
       "url": "https://www.aq.com/gamedesignnotes/",
       "category": "release",
       "source": "curated"
+    },
+    {
+      "date": "2026-11-21",
+      "name": "Last Lady and Undead Bear daily gifts",
+      "desc": "Official Saturday gifts: fight the Last Lady and Undead Bear in /join cryptfeast.",
+      "url": "https://www.aq.com/gamedesignnotes/aqw-cursedharvest26-20nov26-10529",
+      "category": "drop",
+      "source": "curated"
+    },
+    {
+      "date": "2026-11-22",
+      "name": "Alina's Trial Serum Vial daily gifts",
+      "desc": "Official Sunday gifts: fight Alina in /join ebilcorphq.",
+      "url": "https://www.aq.com/gamedesignnotes/aqw-cursedharvest26-20nov26-10529",
+      "category": "drop",
+      "source": "curated"
+    },
+    {
+      "date": "2026-12-11",
+      "name": "Black Friday 2026 Collection leaves",
+      "desc": "Official announced departure date for the collection.",
+      "url": "https://www.aq.com/gamedesignnotes/aqw-cursedharvest26-20nov26-10529",
+      "category": "event",
+      "source": "curated"
     }
   ]
-}\n
+}
