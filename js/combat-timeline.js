@@ -26,10 +26,10 @@ const model=Object.freeze({
   name:"Void Highlord",
   classModel:"Tank Melee",
   skills:Object.freeze({
-    unshackle:{cooldown:4,slot:"soul",label:"Unshackle",hpCostPct:20,effects:effects.unshackle},
-    shackle:{cooldown:4,slot:"soul",label:"Shackle",hpCostPct:20,effects:effects.shackle},
+    unshackle:{cooldown:4,slot:"unshackle",button:4,label:"Unshackle",hpCostPct:20,effects:effects.unshackle},
+    shackle:{cooldown:4,slot:"shackle",button:2,label:"Shackle",hpCostPct:20,effects:effects.shackle},
     gaze:{cooldown:5,slot:"gaze",label:"Highlord's Gaze",manaCost:20,effects:[]},
-    armageddon:{cooldown:15,slot:"armageddon",label:"Armageddon",manaCost:50,effects:effects.armageddon}
+    armageddon:{cooldown:15,slot:"armageddon",button:5,label:"Armageddon",manaCost:50,effects:effects.armageddon}
   }),
   auto:Object.freeze({id:"contract",cooldown:2.3,label:"Contract"})
 });
@@ -145,9 +145,12 @@ function plan(options={}){
         spentManaNominal+=skill.manaCost||0;
         totals[chosen]=(totals[chosen]||0)+1;
         ready.set(skill.slot,now+skill.cooldown*(1-before.haste/100));
+        // Shackle/Unshackle are separate buttons and cooldowns; their POSTURES
+        // overwrite each other. Any Contract DoT/HoT already applied is independent.
+        if(chosen==="shackle")auras.delete("self:unshackled");
+        else if(chosen==="unshackle")auras.delete("self:shackled");
         applyEffects(auras,skill,now);
-        const button=chosen==="shackle"||chosen==="unshackle"?"second":
-          chosen==="gaze"?"third":"fifth";
+        const button={2:"second",3:"third",4:"fourth",5:"fifth"}[skill.button];
         forgeTrigger(button,now);
         nextAction=now+gap;
       }else{
@@ -156,7 +159,14 @@ function plan(options={}){
       }
     }
   }
-  return {status:"timeline-only",className:model.name,seconds:WINDOW,rotation:[...rotation],
+  const warnings=[];
+  if((weaponForge==="Dauntless"||weaponForge==="Lacerate")&&!rotation.includes("shackle")){
+    warnings.push(weaponForge+" requires button 2 (Shackle); the selected rotation never uses it, so no proc activates.");
+  }
+  if(weaponForge==="Valiance"&&!options.includeAuto){
+    warnings.push("Autoattacks are included automatically to model the Valiance trigger; their exact phase is uncalibrated.");
+  }
+  return {status:"timeline-only",className:model.name,seconds:WINDOW,rotation:[...rotation],warnings,
     baseHastePercent:baseHaste,dynamicHaste,weaponForge,strategy,events,counts:{...totals},
     nominalResourceCosts:{spentMaxHpPct,spentMana:spentManaNominal,modeledSurvival:false},
     damage:null,dps:null,
@@ -165,6 +175,8 @@ function plan(options={}){
       "HP costs, mana use, heal effects, passive procs and actual damage are not simulated.",
       "Forge proc triggers and buffs use published descriptions; proc hit damage and health-dependent multipliers remain unavailable.",
       "Rotation choices and cast gap are model assumptions, not verified optimal play.",
+      "Dauntless/Lacerate trigger only on button 2 (Shackle); Unshackle is button 4.",
+      "Shackle and Unshackle have distinct cooldowns, but overwrite each other's postures.",
       "Nominal HP costs can exceed 100% maximum health; heals/lifesteal and survival are not implemented.",
       "Contract may apply Soul Breach DoT or Soul Fend HoT; ticks/stack damage are not calculated."]};
 }
