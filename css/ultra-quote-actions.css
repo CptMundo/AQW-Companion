@@ -14,3 +14,5 @@
 #ultradetail .ultra-step-number{font-size:12px;font-weight:800;color:#78d7ff}
 #ultradetail .ultra-gear-source{grid-column:1/-1;color:#99d9fc;text-decoration:underline;font-size:11px;padding-top:4px}
 @media(max-width:550px){#ultradetail .ultra-role-step{padding:10px 11px;grid-template-columns:23px minmax(0,1fr);gap:8px}}
+
+#ultradetail .ultra-guide-emphasis{font-weight:800;color:#b9efff}
