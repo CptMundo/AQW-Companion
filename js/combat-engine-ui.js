@@ -2,7 +2,7 @@
 (function () {
 "use strict";
 function initCombatWindow() {
-  const host=document.getElementById("damage"),engine=window.AQWCombatEngine;
+  const host=document.getElementById("damage"),engine=window.AQWCombatEngine,timeline=window.AQWCombatTimeline;
   if(!host||!engine||document.getElementById("aqw-combat-window"))return;
   const container=document.createElement("section");
   container.id="aqw-combat-window";
@@ -20,17 +20,18 @@ function initCombatWindow() {
       <label>Total damage in 60 seconds <input id="combat-total-damage" type="number" min="0" step="1" placeholder="e.g. 600000" style="display:block;width:100%;margin:5px 0 10px"></label>
       <p id="combat-total-result" role="status" aria-live="polite" style="font-weight:800;color:#a3f6d5">Enter measured total damage to calculate DPS.</p>
     </div>
-    <h4 style="margin:14px 0 7px">VHL rotation timeline (timing preview, not DPS prediction)</h4>
+    <h4 style="margin:14px 0 7px">VHL action timeline (dynamic Soul Void haste; not a damage prediction)</h4>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:12px">
       <label>Rotation <select id="combat-rotation" style="display:block;width:100%;margin-top:5px">
         <option value="unshackle,gaze,armageddon">Offensive: 3 → 2 → 5</option>
         <option value="shackle,gaze,armageddon">Defensive: 2 → 3 → 5</option>
         <option value="unshackle,armageddon,gaze">Offensive: 3 → 5 → 2</option>
       </select></label>
-      <label>Effective haste (%) <input id="combat-haste" type="number" min="0" max="99" step="1" value="0" style="display:block;width:100%;margin-top:5px"></label>
+      <label>Base haste (%) <input id="combat-haste" type="number" min="0" max="50" step="1" value="0" style="display:block;width:100%;margin-top:5px"></label>
       <label>Cast spacing (seconds; calibration) <input id="combat-gap" type="number" min="0.1" max="5" step="0.1" value="0.5" style="display:block;width:100%;margin-top:5px"></label>
       <label style="align-self:center"><input id="combat-autos" type="checkbox"> Include autoattacks (unverified phase)</label>
     </div>
+    <p style="font-size:12px;color:#bad8e9">Haste entered below is your <strong>base haste</strong>; Soul Void adds 30% during its 12-second duration (up to 50% total). Cast gap and auto phase remain calibration assumptions.</p>
     <p id="combat-summary" role="status" style="margin-top:12px;color:#b9f6dc"></p>
     <div id="combat-events" style="max-height:300px;overflow:auto;border:1px solid #345b77;border-radius:8px;padding:10px"></div>
     <details style="margin-top:14px"><summary>Detailed measurement — paste every recorded hit (optional)</summary>
@@ -39,7 +40,7 @@ function initCombatWindow() {
       <button type="button" id="combat-measure-button" style="margin-top:9px;padding:9px 13px;border:1px solid #71cafa;border-radius:8px;background:#174e70;color:#fff;cursor:pointer">Calculate observed 60s DPS</button>
       <p id="combat-measured-result" role="status"></p>
     </details>
-    <small style="display:block;color:#a2c5d8;margin-top:12px">Current limitations: dynamic haste, server cast lock, HP/mana, Forge procs, crit variance and actual damage functions are not yet reproduced. <a href="https://aqwwiki.wikidot.com/void-highlord-class" target="_blank" rel="noopener noreferrer" style="color:#8cdefa">VHL source ↗</a></small>`;
+    <small style="display:block;color:#a2c5d8;margin-top:12px">Current limitations: cooldown retiming on auras, server cast lock, HP/mana, Forge procs, crit variance and actual damage functions are not yet reproduced. <a href="https://aqwwiki.wikidot.com/void-highlord-class" target="_blank" rel="noopener noreferrer" style="color:#8cdefa">VHL source ↗</a></small>`;
   host.appendChild(container);
   const totalInput=container.querySelector("#combat-total-damage");
   const classInput=container.querySelector("#combat-class-name");
@@ -64,13 +65,17 @@ function initCombatWindow() {
     try{
       const report=engine.simulate({seconds:60,rotation:rotation.value.split(","),hastePercent:Number(haste.value),
         actionGapSeconds:Number(gap.value),includeAuto:autos.checked});
-      summary.textContent=report.events.length+" timeline events · damage unknown · DPS unavailable until measurement.";
+      const plan=timeline?timeline.plan({seconds:60,rotation:rotation.value.split(","),
+        baseHastePercent:Number(haste.value),actionGapSeconds:Number(gap.value),
+        includeAuto:autos.checked,dynamicHaste:true}):null;
+      summary.textContent=(plan?plan.events.length:report.events.length)+" planned events · dynamic haste enabled · theoretical DPS unavailable until skill functions are validated.";
       events.replaceChildren();
       const list=document.createElement("ol");list.style.cssText="padding-left:22px;margin:0;line-height:1.8";
-      for(const event of report.events){
+      for(const event of (plan?plan.events:report.events)){
         const item=document.createElement("li");
         item.textContent=event.time.toFixed(2)+"s — "+(event.label||event.id)+
-          (event.buffsBefore.length?" · active: "+event.buffsBefore.map(b=>b.id+(b.stacks>1?" ×"+b.stacks:"")).join(", "):"");
+          " · haste "+(event.hastePercent??0).toFixed(0)+"%"+
+          " · active: "+((event.auras||event.buffsBefore||[]).map(b=>b.id+(b.stacks>1?" ×"+b.stacks:"")).join(", ")||"none");
         list.appendChild(item);
       }
       events.appendChild(list);
