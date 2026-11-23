@@ -5,12 +5,14 @@ on:
       - feature/combat-standard-60s-dps
     paths:
       - 'js/combat-engine.js'
+      - 'js/combat-timeline.js'
       - 'js/damage-formulas.js'
       - 'tests/**'
       - '.github/workflows/combat-regression.yml'
   pull_request:
     paths:
       - 'js/combat-engine.js'
+      - 'js/combat-timeline.js'
       - 'js/damage-formulas.js'
       - 'tests/**'
       - '.github/workflows/combat-regression.yml'
@@ -27,3 +29,5 @@ jobs:
         run: node tests/combat-engine.test.cjs
       - name: Verify damage formulas
         run: node tests/damage-formulas.test.cjs
+      - name: Verify VHL dynamic-haste timeline
+        run: node tests/combat-timeline.test.cjs
