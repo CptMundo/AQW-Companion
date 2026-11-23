@@ -21,7 +21,7 @@ assert.ok(html.includes("metadataLookup:name=>communityItems.get(communityKey(na
 assert.ok(html.includes("forgeUnlocked:forgeUnlocked.size"),"Forge count is manual tracker state");
 assert.ok(html.includes("renderAll()"),"Existing dashboard is preserved");
 assert.ok(css.includes("@media(max-width:520px)"),"Dashboard must be responsive");
-assert.ok(!/fetch\(|XMLHttpRequest|sendBeacon|gtag\(/i.test(js),"Statistics module cannot transmit account data");
+assert.ok(!/\bfetch\s*\(|\bXMLHttpRequest\b|\bsendBeacon\s*\(|\bgtag\s*\(/i.test(js),"Statistics module cannot transmit account data");
 new vm.Script(js,{filename:"account-statistics.js"});
 for(const [i,m] of [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].entries())
   if(!m[1].includes("src=")&&m[2].trim())new vm.Script(m[2],{filename:"index-inline-"+i});
