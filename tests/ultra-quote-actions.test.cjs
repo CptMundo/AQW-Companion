@@ -24,6 +24,11 @@ for(const [boss,classes] of Object.entries(roles)){
 for(const cls of ["StoneCrusher","Lord of Order","Legion Revenant","Verus DoomKnight","ArchFiend","Arachnomancer","Legendary Hero"])
  assert.deepEqual(ultra.forRole("kathool",cls),[],"Kathool already explains Vigil in its role tips and timing warning");
 assert.deepEqual(ultra.forRole("speaker","StoneCrusher"),[],"Do not invent unlisted class assignments");
+assert.ok(ultra.forRole("kathool","Bard").some(x=>/Vigil/.test(x.response)));
+assert.ok(ultra.forRole("kathool","Great Thief").some(x=>/Vigil/.test(x.response)));
+assert.ok(ultra.forRole("speaker","Void Highlord").some(x=>/ZONE #1/.test(x.response)));
+assert.ok(ultra.forRole("drakath","Dragon of Time").some(x=>/BEFORE|before/.test(x.response)));
+assert.ok(ultra.forRole("nulgath","Dragon of Time").some(x=>/Blade/.test(x.response)));
 assert.ok(ultra.forRole("dage","Legion DoomKnight").some(x=>/skill 5/.test(x.response)));
 assert.ok(ultra.forRole("dage","Legion Revenant").some(x=>/skill 2/.test(x.response)));
 assert.ok(ultra.forRole("dage","Lord of Order").every(x=>!x.response.includes("YOU APPLY DECAY")));
@@ -35,5 +40,6 @@ assert.ok(html.includes("ultra-role-quote"));
 assert.ok(html.includes('src="js/ultra-quote-actions.js"'));
 assert.ok(html.includes('href="css/ultra-quote-actions.css"'));
 assert.ok(html.includes("b.alternate||[]"),"Alternate classes must be selectable");
+assert.ok(html.includes("ultraRolePlaybooks[b.id]?.[x]"),"Hide unsupported alternate classes");
 assert.ok(stylesheet.includes(".ultra-role-quote"));
 console.log("Ultra quote actions: verified role-dependent prompts across all declared classes.");
