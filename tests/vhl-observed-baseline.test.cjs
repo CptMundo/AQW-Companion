@@ -1,0 +1,30 @@
+"use strict";
+const assert=require("node:assert/strict");
+const fs=require("node:fs");
+const path=require("node:path");
+require("../js/dps-calibration.js");
+const input=JSON.parse(fs.readFileSync(path.join(__dirname,"../data/combat/vhl-observed-baseline-2026-11-23.json"),"utf8"));
+const C=globalThis.AQWCalibration;
+assert.equal(input.schemaVersion,1);
+assert.equal(input.samples.length,2);
+assert.equal(input.windowSeconds,60);
+assert.equal(input.validation.observationStatus,"preliminary-two-run-baseline");
+assert.ok(input.equipmentContext.status.includes("Not independently verified"));
+for(const sample of input.samples){
+  assert.equal(sample.seconds,60);
+  assert.equal(Math.round(sample.damage/60),sample.reportedDpsRounded);
+  assert.equal(Math.round(sample.healing/60),sample.reportedHealingPerSecondRounded);
+  assert.equal(sample.damageTaken,30);
+}
+const result=C.summarize(input.samples);
+assert.equal(result.status,"insufficient-trials");
+assert.equal(result.count,2);
+assert.equal(result.className,"Void Highlord");
+assert.equal(result.meanDps,399710/60);
+assert.equal(result.medianDps,399710/60);
+assert.equal(result.minDps,393842/60);
+assert.equal(result.maxDps,405578/60);
+assert.ok(Math.abs(result.cvPct-1.468)<0.005);
+assert.equal(result.requiredTrials,3);
+assert.ok(!result.prediction,"Never claim prediction accuracy from observed totals alone");
+console.log("Two real 60-second VHL screenshots verified:",result.meanDps.toFixed(2),"observed DPS; n=2 provisional");
