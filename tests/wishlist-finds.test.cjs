@@ -29,7 +29,7 @@ assert.equal(api.find([old,recent],[{name:"ALPHA"}]).count,0,"Owned before first
 const olderDate=s("historical","2026-10-31T11:00:00Z","2026-11-22T14:00:00Z",[item("Other",3)]);
 assert.equal(api.find([old,olderDate,recent],[{name:"Other",createdAt:"2026-11-22T12:00:00Z"}]).count,0,"Old exported file imported later is not proof of recent acquisition");
 const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
-assert.ok(html.includes("AQWWishlistFinds.find(snapshots,unlocks)"));
+assert.ok(html.includes("AQWWishlistFinds?.find(snapshots,unlocks)"));
 assert.ok(html.includes('src="js/wishlist-finds.js"'));
 assert.ok(html.includes("createdAt:new Date().toISOString()"));
 new vm.Script(fs.readFileSync(path.join(__dirname,"../js/wishlist-finds.js"),"utf8"));
