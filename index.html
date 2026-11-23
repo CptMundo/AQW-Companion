@@ -1487,7 +1487,16 @@ function renderUltraDetail(b){
    const body=node('div',undefined,'ultra-role-step-body');
    const heading=node('h4',part.title,'ultra-role-mini-title');
    if(part.quote)heading.classList.add('ultra-role-quote-heading');
-   body.append(heading,node('p',part.text));
+   const description=node('p');
+   // Highlight actionable skills/callouts without inserting untrusted HTML.
+   const actionWords=/(“[^”]+”|"[^"]+"|Vigil|Scroll of Enrage|Decay|Counter Attack|Seal|Zone|Tendril|Legion Mages|Stasis|Awe Blast|Quixotic|Vim|Penitence)/gi;
+   for(const fragment of String(part.text).split(actionWords)){
+    if(!fragment)continue;
+    if(/^(?:“[^”]+”|"[^"]+"|Vigil|Scroll of Enrage|Decay|Counter Attack|Seal|Zone|Tendril|Legion Mages|Stasis|Awe Blast|Quixotic|Vim|Penitence)$/i.test(fragment))
+     description.append(node('strong',fragment,'ultra-guide-emphasis'));
+    else description.append(document.createTextNode(fragment));
+   }
+   body.append(heading,description);
    step.append(node('span',part.number,'ultra-step-number'),body);
    sequence.append(step);
   }
