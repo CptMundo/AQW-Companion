@@ -28,11 +28,16 @@ const model=Object.freeze({
   skills:Object.freeze({
     unshackle:{cooldown:4,slot:"unshackle",button:4,label:"Unshackle",hpCostPct:20,effects:effects.unshackle},
     shackle:{cooldown:4,slot:"shackle",button:2,label:"Shackle",hpCostPct:20,effects:effects.shackle},
-    gaze:{cooldown:5,slot:"gaze",label:"Highlord's Gaze",manaCost:20,effects:[]},
+    gaze:{cooldown:5,slot:"gaze",button:3,label:"Highlord's Gaze",manaCost:20,effects:[]},
     armageddon:{cooldown:15,slot:"armageddon",button:5,label:"Armageddon",manaCost:50,effects:effects.armageddon}
   }),
   auto:Object.freeze({id:"contract",cooldown:2.3,label:"Contract"})
 });
+// Forge procs are keyed to physical action bar positions 2/3/5.
+const buttons=Object.values(model.skills).map(skill=>skill.button);
+if(buttons.length!==4||new Set(buttons).size!==4||buttons.some(v=>![2,3,4,5].includes(v))){
+  throw new Error("VHL skill to action-bar button mapping is incomplete");
+}
 function validNumber(value,label,min,max){
   if(typeof value!=="number"||!Number.isFinite(value)||value<min||value>max)
     throw new RangeError(label+" must be a finite number between "+min+" and "+max);
