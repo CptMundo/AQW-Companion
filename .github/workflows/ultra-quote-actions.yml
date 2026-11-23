@@ -1,0 +1,28 @@
+name: Ultra quote role tips
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'js/ultra-quote-actions.js'
+      - 'css/ultra-quote-actions.css'
+      - 'tests/ultra-quote-actions.test.cjs'
+      - '.github/workflows/ultra-quote-actions.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'js/ultra-quote-actions.js'
+      - 'css/ultra-quote-actions.css'
+      - 'tests/ultra-quote-actions.test.cjs'
+      - '.github/workflows/ultra-quote-actions.yml'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Assert only relevant classes see contextual quote actions
+        run: node tests/ultra-quote-actions.test.cjs

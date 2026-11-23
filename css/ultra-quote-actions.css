@@ -1,0 +1,5 @@
+/* AQW Companion: one compact block per quote, inside selected-class Role-specific Tips. */
+.ultra-role-quote{border-left:3px solid #3dbbcf;border-radius:7px;padding:9px 12px;margin:6px 0;background:#102d40;color:#d7eeff}
+.ultra-role-quote strong{display:block;font-size:12px;color:#8de3f5;margin:0 0 4px}
+.ultra-role-quote p{margin:0;font-size:12px;line-height:1.5}
+.ultra-role-quote .ultra-role-quote-source{margin-top:5px;display:inline-block;font-size:11px;color:#9bd5fa;text-decoration:underline}
