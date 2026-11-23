@@ -35,3 +35,5 @@ jobs:
         run: node tests/combat-timeline.test.cjs
       - name: Verify official item boost and critical model guards
         run: node tests/damage-kernel.test.cjs
+      - name: Verify website integration and scripts
+        run: node tests/site-script-smoke.test.cjs
