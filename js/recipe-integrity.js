@@ -12,6 +12,22 @@
  const normalize=s=>String(s||"").trim().toLowerCase().replace(/[’‘]/g,"'");
  const SIN_SOURCE="https://aqwwiki.wikidot.com/sin-of-the-abyss";
  const FORGE_SOURCE="https://aqwwiki.wikidot.com/forge-metal";
+ const VOID_SOURCE="https://aqwwiki.wikidot.com/void-highlord-merge-shop";
+ const VOID_MERGES=[
+  {name:"Necrotic Sword of the Abyss",type:"Weapon",ingredients:[
+   ["Necrotic Sword of Doom",1],["Roentgenium of Nulgath",2],["Void Crystal A",1],["Void Crystal B",1]
+  ]},
+  {name:"Void Highlord",type:"Class",ingredients:[
+   ["Roentgenium of Nulgath",15],["Void Crystal A",1],["Void Crystal B",1]
+  ]},
+  {name:"The Mortal Coil",type:"Misc",ingredients:[["Roentgenium of Nulgath",4]]},
+  {name:"Void Crystal A",type:"Misc",ingredients:[
+   ["Unidentified 10",200],["Gem of Nulgath",150],["Dark Crystal Shard",200],["Tainted Gem",200]
+  ]},
+  {name:"Void Crystal B",type:"Misc",ingredients:[
+   ["Diamond of Nulgath",200],["Blood Gem of the Archfiend",30],["Totem of Nulgath",15],["Elder's Blood",2]
+  ]}
+ ];
  const SIN=[
   ["Blood Gem of the Archfiend",50],
   ["Dark Crystal Shard",200],
@@ -32,10 +48,14 @@
   {name:"Sin of the Abyss",type:"Weapon",source:SIN_SOURCE,sourceKind:"final-merge",reviewedOn:"2026-11-23",ingredients:SIN},
   ...DESTINY.map(metal=>({name:metal+" of Destiny",type:"Misc",source:FORGE_SOURCE,sourceKind:"forge-metal",reviewedOn:"2026-11-23",ingredients:[["Loyal Spirit Orb",5],["Bright Aura",2],[metal,1]]})),
   ...DOOM.map(metal=>({name:metal+" of Doom",type:"Misc",source:FORGE_SOURCE,sourceKind:"forge-metal",reviewedOn:"2026-11-23",ingredients:[["Corrupt Spirit Orb",5],["Ominous Aura",2],[metal,1]]})),
-  ...LIGHT_MERGE.map(([name,ingredients])=>({name,type:/^(?:Bright Aura|Brilliant Aura|Loyal Spirit Orb|Spirit Orb)$/.test(name)?"Misc":"Weapon",source:LIGHT_SOURCE,sourceKind:"light-merge",reviewedOn:"2026-11-23",ingredients}))
+  ...LIGHT_MERGE.map(([name,ingredients])=>({name,type:/^(?:Bright Aura|Brilliant Aura|Loyal Spirit Orb|Spirit Orb)$/.test(name)?"Misc":"Weapon",source:LIGHT_SOURCE,sourceKind:"light-merge",reviewedOn:"2026-11-23",ingredients})),
+  ...VOID_MERGES.map(row=>({...row,source:VOID_SOURCE,sourceKind:"void-highlord-shop",reviewedOn:"2026-11-23"}))
  ];
  const indexed=new Map(reviewed.map(entry=>[normalize(entry.name),entry]));
  indexed.set("spirit orb (misc)",indexed.get("spirit orb"));
+ indexed.set("void highlord (class)",indexed.get("void highlord"));
+ // Wiki category suffix on the NSoD component is not part of the character export item name.
+ indexed.set("necrotic sword of the abyss (sword)",indexed.get("necrotic sword of the abyss"));
  function getVerified(name){return indexed.get(normalize(name))||null}
  function toSteps(entry){
   return entry.ingredients.map(([item,target])=>({label:item+" ×"+target,kind:target===1?"owned":"material",item,target}));
@@ -49,8 +69,8 @@
   return {
    name:entry.name,type:entry.type,origin:"reviewed",wiki:entry.source,
    complete:"final-merge",ingredients:entry.ingredients.map(row=>[...row]),
-   methods:[{type:"Merge/Shop",title:entry.sourceKind==="forge-metal"?"Forge Metal — Geopetal, Dwarfhold Keep":entry.sourceKind==="light-merge"?"Light Merge — Artix, Necropolis":"Nulgath's Merge Shop (Ultra Nulgath)",
-    url:entry.source,join:entry.sourceKind==="forge-metal"?"/join dwarfhold":entry.sourceKind==="light-merge"?"/join necropolis":"/join ultranulgath",
+   methods:[{type:"Merge/Shop",title:entry.sourceKind==="forge-metal"?"Forge Metal — Geopetal, Dwarfhold Keep":entry.sourceKind==="light-merge"?"Light Merge — Artix, Necropolis":entry.sourceKind==="void-highlord-shop"?"Void Highlord Merge Shop — Tercessuinotlim":"Nulgath's Merge Shop (Ultra Nulgath)",
+    url:entry.source,join:entry.sourceKind==="forge-metal"?"/join dwarfhold":entry.sourceKind==="light-merge"?"/join necropolis":entry.sourceKind==="void-highlord-shop"?"/join tercessuinotlim":"/join ultranulgath",
     details:"These are the ingredients for this merge, not prerequisites of a later quest."}]
   };
  }
@@ -105,6 +125,24 @@
   if(!project.steps.some(step=>step.kind==="owned"&&normalize(step.item)==="forge key"))return false;
   return project.steps.some(step=>step.kind==="manual"&&step.label==="Complete "+entry.name+" (confirm in game)"&&["unknown",undefined,null].includes(step.status));
  }
+ // Earlier auto-generated goals may only contain "Own <item>" and an unknown
+ // acquisition placeholder. Convert EXACT untouched placeholders, never custom steps.
+ const UNKNOWN_ACQUISITION="Acquisition route not yet in the catalog";
+ function oldPlaceholder(project){
+  const entry=getVerified(project?.name);
+  if(!entry||!Array.isArray(project.steps)||project.steps.length!==2)return false;
+  const owned=project.steps.find(step=>step.kind==="owned"&&normalize(step.item)===normalize(entry.name)&&
+   ["unknown",undefined,null].includes(step.status));
+  const manual=project.steps.find(step=>step.kind==="manual"&&step.label===UNKNOWN_ACQUISITION&&
+   ["unknown",undefined,null].includes(step.status));
+  return !!(owned&&manual);
+ }
+ function isOldPlaceholderStep(step,name){
+  return (step.kind==="manual"&&step.label===UNKNOWN_ACQUISITION&&["unknown",null,undefined].includes(step.status))||
+   (step.kind==="owned"&&normalize(step.item)===normalize(name)&&
+    ["unknown",null,undefined].includes(step.status)&&
+    (step.label==="Own "+name||step.label===name+" ×1"));
+ }
  function sync(project,makeStep){
   const entry=getVerified(project?.name);
   if(!entry||!Array.isArray(project.steps)||typeof makeStep!=="function")
@@ -122,13 +160,14 @@
   const before=project.steps.length;
   project.steps=project.steps.filter(step=>{
    if(entry.sourceKind==="forge-metal")return !forgeArtifact(step,entry.name);
+   if(entry.sourceKind==="void-highlord-shop")return !isOldPlaceholderStep(step,entry.name);
    return !(step.kind==="manual"&&step.label===SIN_PLACEHOLDER);
   });
   removedPlaceholder=before-project.steps.length;
   return {changed:!!(added||updated||removedPlaceholder),added,updated,removedPlaceholder};
  }
  function upgradeUntouchedLegacy(project,makeStep){
-  return isLegacySin(project)||isLegacyForge(project)?sync(project,makeStep).changed:false;
+  return isLegacySin(project)||isLegacyForge(project)||oldPlaceholder(project)?sync(project,makeStep).changed:false;
  }
  return Object.freeze({getVerified,getRecipe,getAcquisition,inspect,sync,isLegacySin,isLegacyForge,upgradeUntouchedLegacy,
   reviewedNames:Object.freeze(reviewed.map(entry=>entry.name))});
