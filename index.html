@@ -2472,7 +2472,7 @@ function renderUltraDetail(b){
  const selectorRow=node('div',undefined,'ultra-focus-selector');
  const select=node('select',undefined,'ultra-role-select');
  // Alternate-team class picks must show their own relevant role-specific cue reactions too.
- for(const cls of [...new Set([...b.team,...(b.alternate||[])])]){const option=node('option',cls);option.value=cls;select.append(option)}
+ for(const cls of [...new Set([...b.team,...(b.alternate||[]).filter(x=>ultraRolePlaybooks[b.id]?.[x]||window.AQWUltraQuoteActions?.forRole(b.id,x)?.length)])]){const option=node('option',cls);option.value=cls;select.append(option)}
  select.value=b.team.find(ultraOwned)||b.team[0];
  selectorRow.append(node('span','Class'),select);setup.append(selectorRow);
  const gear=node('div',undefined,'ultra-focus-gear');
