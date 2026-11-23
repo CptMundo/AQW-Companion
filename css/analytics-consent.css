@@ -1,35 +1,35 @@
 /* Optional Analytics: keep consent controls clear on desktop and mobile. */
 #aqw-analytics-settings {
-  margin-left:8px;padding:6px 10px;border:1px solid #417697;
+  margin-left:6px;padding:4px 8px;border:1px solid #417697;
   border-radius:8px;color:#a9d9ff;background:#122b42;
-  font:inherit;font-size:12px;cursor:pointer;
+  font:inherit;font-size:11px;cursor:pointer;
 }
 #aqw-analytics-settings:hover,#aqw-analytics-settings:focus-visible {border-color:#8addff;color:#fff}
 #aqw-analytics-banner[hidden]{display:none!important}
 #aqw-analytics-banner{
-  position:fixed;inset:auto 15px 15px 15px;z-index:9999;
-  width:min(1000px,calc(100% - 30px));margin-inline:auto;
-  border:1px solid #568cae;border-radius:13px;
+  position:fixed;bottom:12px;right:12px;left:auto;z-index:9999;
+  width:min(550px,calc(100% - 24px));max-height:70vh;overflow-y:auto;
+  border:1px solid #385a75;border-radius:11px;
   background:#102438;color:#eaf7ff;
-  box-shadow:0 12px 45px rgba(0,0,0,.65);
-  padding:17px 19px;display:flex;align-items:center;gap:16px;
+  box-shadow:0 6px 24px rgba(0,0,0,.48);
+  padding:11px 13px;display:flex;align-items:center;gap:9px;
   flex-wrap:wrap;
 }
-#aqw-analytics-banner .aqw-analytics-copy{flex:1 1 310px;min-width:0}
-#aqw-analytics-banner h2{font-size:16px;line-height:1.3;margin:0 0 8px}
-#aqw-analytics-banner p{font-size:13px;line-height:1.5;margin:0;color:#c9e1ee}
+#aqw-analytics-banner .aqw-analytics-copy{flex:1 1 235px;min-width:0}
+#aqw-analytics-banner h2{font-size:13px;line-height:1.25;margin:0 0 4px}
+#aqw-analytics-banner p{font-size:11px;line-height:1.45;margin:0;color:#c9e1ee}
 #aqw-analytics-banner a{color:#83d5ff;text-decoration:underline}
 #aqw-analytics-banner .aqw-analytics-actions{
-  display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+  display:flex;gap:6px;align-items:center;flex-wrap:wrap;
 }
-#aqw-analytics-banner button{font:inherit;font-size:13px;font-weight:700;line-height:1.2;
-  padding:12px 15px;min-height:42px;border-radius:9px;cursor:pointer;
+#aqw-analytics-banner button{font:inherit;font-size:11px;font-weight:700;line-height:1.2;
+  padding:8px 10px;min-height:36px;border-radius:9px;cursor:pointer;
   border:1px solid #66889f}
 #aqw-analytics-accept{background:#1f6ab8;color:#fff;border-color:#61b7ff!important}
 #aqw-analytics-reject{background:#183147;color:#ebf8ff}
 #aqw-analytics-banner button:focus-visible{outline:2px solid #a7e4ff;outline-offset:3px}
 @media(max-width:650px){
-  #aqw-analytics-banner{inset:auto 10px 10px 10px;width:calc(100% - 20px);padding:15px}
+  #aqw-analytics-banner{bottom:8px;left:8px;right:8px;width:auto;padding:11px}
   #aqw-analytics-banner .aqw-analytics-actions{width:100%}
   #aqw-analytics-banner .aqw-analytics-actions button{flex:1 1 120px}
 }

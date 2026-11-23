@@ -1,0 +1,28 @@
+name: Wishlist & Explore type UI
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'css/analytics-consent.css'
+      - 'tests/item-type-ui.test.cjs'
+      - '.github/workflows/item-type-ui.yml'
+  push:
+    branches:
+      - feature/wishlist-explore-types-compact-privacy-20261123
+      - main
+    paths:
+      - 'index.html'
+      - 'css/analytics-consent.css'
+      - 'tests/item-type-ui.test.cjs'
+      - '.github/workflows/item-type-ui.yml'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify item type consistency and privacy UI
+        run: node tests/item-type-ui.test.cjs
