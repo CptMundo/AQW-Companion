@@ -38,7 +38,10 @@
   const speakerListen=(role)=>make(Q.listenSpeaker,role,S.speaker);
   const meteor=()=>make(Q.meteorDrakath,"EVERYONE: this is the 2M HP final Meteor DPS check. Burst to finish promptly; Scroll of Enrage does not stop the meteor.",S.drakath);
   const roles={
-    kathool:{},
+    kathool:{
+      "Great Thief":[make("You cannot resist.","EVERYONE, including Great Thief: use Vigil immediately before the 3-second Nightmare cast finishes. Damage evasion cannot replace Vigil.",S.kathool)],
+      "Bard":[make("You cannot resist.","EVERYONE, including Bard: use Vigil immediately on this quote within 3 seconds, then continue mana/healing support.",S.kathool)]
+    },
     dage:{
       "Chaos Avenger":[zoneDage(),magesSupport()],
       "Legion DoomKnight":[zoneDage(),make(Q.magesDage,"YOU APPLY DECAY: use Legion DoomKnight skill 5 as Dage starts the regeneration cast; maintain Decay while it heals. Coordinate a substitute if you cannot cover it.",S.dage)],
@@ -47,18 +50,21 @@
       "ArchPaladin":[zoneDage(),magesSupport()]
     },
     nulgath:{
+      "Dragon of Time":[nulgathBlade()],
       "Void Highlord":[nulgathSecond(),nulgathBlade()],
       "Lord of Order":[nulgathSecond(),nulgathBlade()],
       "ArchPaladin":[nulgathSecond(),nulgathBlade()],
       "Legion Revenant":[nulgathSecond(),nulgathBlade()]
     },
     speaker:{
+      "Void Highlord":[speakerZone(1),speakerTruth("DPS in the standard variant: do not taunt Truth unless your team explicitly assigns a different taunt role."),speakerListen("DPS: leave Listen for your team's nominated LR/LoO taunter and stay clear of Stasis.")],
       "Dragon of Time":[speakerZone(1),speakerTruth("DPS: focus damage; do not taunt Truth unless your team has specifically assigned you an alternate taunt role."),speakerListen("DPS: let the assigned taunter handle Listen; avoid entering a Zone with Stasis.")],
       "Legion Revenant":[speakerZone(2),speakerTruth("In the standard 3-taunter tactic, taunt opening Truth if assigned; other Truth assignments vary by agreed variant. Keep LR skill 2 ready when Zone appears."),speakerListen("In the standard variant, taunt the Listen after your own Zone and the second Listen after LoO's Zone if assigned; otherwise let LoO cover it.")],
       "ArchPaladin":[speakerZone(3),speakerTruth("Taunt the alternating Truths assigned to AP, starting after the FIRST Zone; use Seal (skill 5) in the preceding Zone so it is ready."),speakerListen("AP does not automatically taunt every Listen. Allow the nominated LoO/LR player to intercept and time heals around the stun.")],
       "Lord of Order":[speakerZone(4),speakerTruth("In the standard variant, handle the later assigned Truth after LR's Zone; use Quixotic (skill 5) first when planned, then run out when Listen is called."),speakerListen("You handle most assigned Listen casts: use Scroll of Enrage at your allocated cue and click/move outside the Zone as instructed by your team's variant.")]
     },
     drakath:{
+      "Dragon of Time":[make(Q.nukeDrakath,"DPS: stop before the next tauntable HP threshold until the designated taunter has already applied Enrage.",S.drakath),meteor()],
       "Lord of Order":[make(Q.nukeDrakath,"IF ASSIGNED TAUNTER: Enrage must already be active BEFORE DPS crosses the tauntable HP threshold; do not wait for the quote to start your scroll.",S.drakath),meteor()],
       "ArchPaladin":[make(Q.nukeDrakath,"IF AP IS THE ASSIGNED TAUNTER: pre-taunt before the HP threshold. Otherwise mitigate/heal and let the designated taunter handle the nuke.",S.drakath),meteor()],
       "Void Highlord":[make(Q.nukeDrakath,"DPS: hold burst BEFORE the next nuke HP threshold until your taunter confirms Enrage is ready. The quote is too late for a reactive scroll.",S.drakath),meteor()],
