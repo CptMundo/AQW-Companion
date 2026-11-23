@@ -49,6 +49,8 @@ jobs:
         run: node tests/vhl-evidence.test.cjs
       - name: Validate local class skill evidence import
         run: node tests/class-skill-import.test.cjs
+      - name: Verify real VHL two-trial Battle Analyzer baseline
+        run: node tests/vhl-observed-baseline.test.cjs
       - name: Verify official item boost and critical model guards
         run: node tests/damage-kernel.test.cjs
       - name: Verify website integration and scripts
