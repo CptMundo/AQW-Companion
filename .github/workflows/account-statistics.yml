@@ -1,0 +1,32 @@
+name: Account Statistics
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'js/account-statistics.js'
+      - 'css/account-statistics.css'
+      - 'tests/account-statistics.test.cjs'
+      - 'tests/remove-damage-simulator.test.cjs'
+      - '.github/workflows/account-statistics.yml'
+  push:
+    branches:
+      - feature/account-statistics-dashboard-20261123
+      - main
+    paths:
+      - 'index.html'
+      - 'js/account-statistics.js'
+      - 'css/account-statistics.css'
+      - 'tests/account-statistics.test.cjs'
+      - 'tests/remove-damage-simulator.test.cjs'
+      - '.github/workflows/account-statistics.yml'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate local metrics and dashboard controls
+        run: node tests/account-statistics.test.cjs

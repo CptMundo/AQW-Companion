@@ -1,0 +1,58 @@
+/* AQW Companion Account Statistics — only affects the Home / Account Statistics view. */
+#account-stats{--aqws-bg:#102235;--aqws-line:#36556c;--aqws-accent:#73d8f6;--aqws-muted:#b6cce0}
+#account-stats .aqws-hero{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 15px}
+#account-stats .aqws-title{font-size:21px;line-height:1.25;margin:0 0 6px;color:#f2faff}
+#account-stats .aqws-note{font-size:12px;line-height:1.55;color:var(--aqws-muted);margin:6px 0}
+#account-stats .aqws-hero .aqws-note{max-width:760px}
+#account-stats .aqws-source{border:1px solid var(--aqws-line);background:#0d1e30;border-radius:9px;padding:11px 14px;margin-bottom:15px;font-size:12px;color:#bfdeef;overflow-wrap:anywhere}
+#account-stats .aqws-source strong{color:#f2fbff}
+#account-stats .aqws-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+#account-stats .aqws-stat{background:linear-gradient(140deg,#172e44,#0e2337);border:1px solid var(--aqws-line);border-radius:10px;padding:14px 15px;min-width:0;display:flex;flex-direction:column;gap:4px}
+#account-stats .aqws-stat-label{color:#bcd7e9;font-size:12px;font-weight:700}
+#account-stats .aqws-stat-value{color:#f2faff;font-size:27px;font-weight:850;line-height:1.3;font-variant-numeric:tabular-nums}
+#account-stats .aqws-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:14px;margin:15px 0}
+#account-stats .aqws-card{background:#15273a;border:1px solid var(--aqws-line);border-radius:12px;padding:18px;min-width:0;margin:15px 0}
+#account-stats .aqws-columns .aqws-card{margin:0;height:100%}
+#account-stats .aqws-section-title{margin:0 0 9px;font-size:16px;color:#eef8ff}
+#account-stats .aqws-tag-info{font-size:12px;color:#a7e7ff;font-weight:700;margin:9px 0}
+#account-stats .aqws-bar-row{margin:12px 0}
+#account-stats .aqws-bar-caption{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#d4e8f5;font-size:12px;margin-bottom:5px}
+#account-stats .aqws-bar-caption strong{font-variant-numeric:tabular-nums;font-size:12px;color:#f3faff}
+#account-stats .aqws-bar-track{height:8px;width:100%;background:#203b53;border:1px solid #31556d;overflow:hidden;border-radius:20px}
+#account-stats .aqws-bar-fill{height:100%;background:linear-gradient(90deg,#36a8ee,#6de7d5);border-radius:20px;transition:width .2s ease}
+#account-stats .aqws-chart-wrap{margin:12px 0}
+#account-stats .aqws-chart-wrap svg{display:block;width:100%;height:auto;min-height:120px;background:#0e2031;border:1px solid #29475d;border-radius:10px;padding:6px}
+#account-stats .aqws-history-scroll{overflow-x:auto;max-width:100%;margin:13px 0}
+#account-stats .aqws-history{border-collapse:collapse;width:100%;min-width:550px;font-size:12px;text-align:left}
+#account-stats .aqws-history th,#account-stats .aqws-history td{padding:10px 8px;border-bottom:1px solid #29455e}
+#account-stats .aqws-history th{color:#a6d7f4;font-weight:750}
+#account-stats .aqws-history td{color:#d3e6f3}
+#account-stats .aqws-history td:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}
+#account-stats .aqws-empty{border:1px dashed #40677d;border-radius:8px;padding:17px;color:#b9d7e9}
+#account-stats .aqws-goal-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0}
+#account-stats .aqws-goal-kpis .aqws-stat{padding:11px}
+#account-stats .aqws-goal-kpis .aqws-stat-value{font-size:20px}
+#account-stats .aqws-recent{padding-left:22px;margin:9px 0;max-height:180px;overflow:auto;color:#dcebf7;font-size:12px;line-height:1.7}
+#account-stats .aqws-milestones{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:13px}
+#account-stats .aqws-milestone{border:1px solid #3c5169;border-radius:11px;background:#112133;padding:14px;display:flex;flex-direction:column;min-width:0;gap:5px}
+#account-stats .aqws-milestone.unlocked{border-color:#4cae9e;background:linear-gradient(145deg,#153a3c,#142b3b)}
+#account-stats .aqws-milestone-icon{font-size:21px}
+#account-stats .aqws-milestone strong{font-size:13px;color:#f5fbff}
+#account-stats .aqws-milestone .aqws-note{flex:1}
+#account-stats .aqws-milestone-score{font-size:12px;font-weight:750;color:#aeeaf8}
+#account-stats .smallbutton{margin-top:10px;white-space:normal}
+@media(max-width:850px){
+ #account-stats .aqws-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #account-stats .aqws-columns{grid-template-columns:1fr}
+ #account-stats .aqws-milestones{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:520px){
+ #account-stats .aqws-card{padding:12px}
+ #account-stats .aqws-kpis{gap:8px}
+ #account-stats .aqws-stat{padding:12px}
+ #account-stats .aqws-stat-value{font-size:22px}
+ #account-stats .aqws-goal-kpis{grid-template-columns:1fr}
+ #account-stats .aqws-milestones{grid-template-columns:1fr}
+ #account-stats .aqws-title{font-size:19px}
+}
+@media(prefers-reduced-motion:reduce){#account-stats .aqws-bar-fill{transition:none}}
