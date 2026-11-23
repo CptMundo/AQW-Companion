@@ -96,7 +96,9 @@ assert.ok(html.includes("Recipe ingredients need updating"),"Only actionable rec
 assert.ok(html.includes("href=\"css/recipe-coverage.css\""));
 assert.ok(html.includes("src=\"js/recipe-integrity.js\""));
 assert.ok(html.includes("AQWCRecipeIntegrity?.reviewedNames"),"Reviewed recipe should remain searchable without community catalog");
-assert.ok(html.includes("Source-reviewed final merge requirements"),"Only audited recipes get a verified badge");
+assert.ok(!html.includes("Source-reviewed final merge requirements"),"Do not clutter recipe details with verification badges");
+assert.ok(html.includes("section.append(node(\'h3\',\'Ingredients\'))"),"Recipe details use a short universal label");
+assert.ok(html.includes("Self-dependent quests are later stages"),"Reject self-dependent quest route as recipe");
 assert.ok(!html.includes("Verified merge ingredients")&&!html.includes("Verified final merge requirements"),"Unaudited recipes must not be labelled verified");
 assert.ok(html.indexOf("src=\"js/recipe-integrity.js\"")<html.indexOf("src=\"js/account-statistics.js\""),"Registry loads before app");
 assert.ok(css.includes(".recipe-coverage-line"));
