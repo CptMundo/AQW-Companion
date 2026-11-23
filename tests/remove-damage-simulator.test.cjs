@@ -23,7 +23,8 @@ assert.deepEqual(groupNames,groups,"primary navigation must retain the other eig
 const tabs=[...html.matchAll(/<button\b[^>]*data-tab="([^"]+)"[^>]*data-parent="([^"]+)"/g)]
   .map(m=>({name:m[1],parent:m[2]}));
 const views=new Set([...html.matchAll(/<section\s+id="([^"]+)"\s+class="view\b/g)].map(m=>m[1]));
-assert.equal(views.size,12,"all twelve existing non-damage views remain");
+assert.ok(views.size>=12,"all previously present non-damage views remain");
+assert.ok(views.has("forge"),"Forge Tracker now has its own secondary view");
 for(const tab of tabs){
   assert.ok(groups.includes(tab.parent),"tab parent not in groups: "+tab.name);
   assert.ok(views.has(tab.name),"tab has no view: "+tab.name);
