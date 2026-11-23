@@ -12,6 +12,13 @@ const mainNav=html.match(/<nav class="primarynav"[\s\S]*?<\/nav>/)?.[0]||"";
 assert.ok(mainNav.includes('data-group="home"'),"Home main tab remains");
 const homeTabs=[...html.matchAll(/data-tab="(overview|account-stats)" data-parent="home"/g)].map(x=>x[1]);
 assert.deepEqual(homeTabs,["overview","account-stats"],"Home has Overview and Account Statistics secondary tabs");
+const navCss=html.match(/<style id="aqw-feedback-nav-v2">([\s\S]*?)<\/style>/)?.[1];
+assert.ok(navCss,"Custom navigation CSS must be present");
+assert.ok(!navCss.includes('.subnav button[data-parent="home"]'),"Home secondary buttons must never be forcibly hidden");
+assert.ok(!navCss.includes(':not([data-parent="home"])'),"Home must not be excluded from secondary nav visibility");
+assert.ok(navCss.includes('button.group-visible:not([data-parent="story"])'),"Visible Home group must open subnav");
+assert.ok(html.includes('.tabs.subnav button.group-visible{display:inline-flex}'),"Active group navigation buttons remain visible");
+
 assert.ok(html.includes('<section id="account-stats" class="view">'));
 assert.ok(html.includes('href="css/account-statistics.css"'));
 assert.ok(html.includes('src="js/account-statistics.js"'));
