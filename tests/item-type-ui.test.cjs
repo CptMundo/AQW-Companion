@@ -35,8 +35,8 @@ assert.ok(html.includes("itemTypeGroup(x.type)===filter"),
  "Explore filter must use normalized types");
 assert.ok(html.includes(".slice(0,80);$('discoverytitle')"),
  "Filter before limiting results, so new types cannot be truncated away");
-assert.ok(html.includes("itemTypeIcon(project.type)"),"Wishlist cards use shared Explore icons");
-assert.ok(html.includes("itemTypeIcon(candidate.type)"),"Wishlist suggestions use shared Explore icons");
+assert.ok(html.includes("itemTypeNode(project.type)"),"Wishlist cards use shared Explore icons");
+assert.ok(html.includes("itemTypeNode(candidate.type)"),"Wishlist suggestions use shared Explore icons");
 assert.ok(html.includes("itemTypeLabel(project.type)"),"Wishlist headings use matching type labels");
 assert.ok(html.includes("<option>Helm</option><option>Cape</option>"),
  "Wishlist can preserve new equipment types");
@@ -44,18 +44,31 @@ assert.ok(html.includes("<option>Helm</option><option>Cape</option>"),
 const helperStart=html.indexOf("function itemTypeGroup(");
 const helperEnd=html.indexOf("function renderDiscover()",helperStart);
 assert.ok(helperStart>0&&helperEnd>helperStart);
-const context=vm.createContext({});
+const context=vm.createContext({
+ document:{createElement(tag){return {tagName:tag.toUpperCase(),src:"",alt:"",className:"",width:0,height:0}}},
+ node(tag,body,className){return {tagName:tag.toUpperCase(),textContent:body,className}}
+});
 vm.runInContext(html.slice(helperStart,helperEnd),context,{timeout:2000});
 for(const [raw,expected,icon] of [
  ["Class","Class","⚔️"],["Sword","Weapon","🗡️"],
  ["Weapon","Weapon","🗡️"],["Armor","Armor","🛡️"],
- ["Helm","Helm","🪖"],["Helmet","Helm","🪖"],["Cape","Cape","🧥"],
+ ["Helm","Helm","🪖"],["Helmet","Helm","🪖"],["Cape","Cape","🦸"],
  ["Other","Other","📦"],["Misc","Other","📦"],["Pet","Other","🐾"],
  ["House Item","Other","🏠"]
 ]){
  assert.equal(context.itemTypeGroup(raw),expected,"Type category mismatch for "+raw);
  assert.equal(context.itemTypeIcon(raw),icon,"Type icon mismatch for "+raw);
 }
+const cape=context.itemTypeNode("Cape");
+assert.equal(cape.tagName,"IMG","Cape displays a real illustration instead of a jacket emoji");
+assert.equal(cape.src,"assets/cape-icon.svg");
+assert.equal(cape.alt,"Cape");
+assert.equal(cape.width,24);
+assert.equal(cape.height,24);
+assert.ok(cape.className.includes("cape-item-icon"));
+const armor=context.itemTypeNode("Armor");
+assert.equal(armor.tagName,"SPAN");
+assert.equal(armor.textContent,"🛡️");
 assert.equal(context.itemTypeLabel("Other"),"Misc");
 assert.equal(context.itemTypeLabel("Misc"),"Misc");
 assert.equal(context.itemTypeLabel("Cape"),"Cape");

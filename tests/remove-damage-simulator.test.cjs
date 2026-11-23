@@ -18,7 +18,7 @@ const noFragments=[
 ];
 for(const token of noFragments)assert.ok(!html.includes(token),"retired Damage Simulator is still present: "+token);
 const groupNames=[...html.matchAll(/<button\b[^>]*data-group="([^"]+)"/g)].map(m=>m[1]);
-const groups=["home","projects","planner","builds","story","ultras","explore","inventory"];
+const groups=["home","projects","planner","ultras","builds","story","explore","inventory"];
 assert.deepEqual(groupNames,groups,"primary navigation must retain the other eight sections");
 const tabs=[...html.matchAll(/<button\b[^>]*data-tab="([^"]+)"[^>]*data-parent="([^"]+)"/g)]
   .map(m=>({name:m[1],parent:m[2]}));

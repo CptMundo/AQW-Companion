@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - 'index.html'
+      - 'assets/cape-icon.svg'
+      - 'tests/cape-icon-navigation.test.cjs'
       - 'css/analytics-consent.css'
       - 'tests/item-type-ui.test.cjs'
       - '.github/workflows/item-type-ui.yml'
@@ -12,6 +14,8 @@ on:
       - main
     paths:
       - 'index.html'
+      - 'assets/cape-icon.svg'
+      - 'tests/cape-icon-navigation.test.cjs'
       - 'css/analytics-consent.css'
       - 'tests/item-type-ui.test.cjs'
       - '.github/workflows/item-type-ui.yml'
@@ -26,3 +30,5 @@ jobs:
           node-version: '22'
       - name: Verify item type consistency and privacy UI
         run: node tests/item-type-ui.test.cjs
+      - name: Verify cape artwork and Ultras navigation order
+        run: node tests/cape-icon-navigation.test.cjs
