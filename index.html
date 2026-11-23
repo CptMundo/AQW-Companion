@@ -58,7 +58,7 @@
 <p class="muted tiny">Legacy and seasonal encounters without a reviewed strategy. Main farming ultras now appear above with team comps and fight guides. Verify maps and availability.</p>
 <div id="ultracatalog" class="ultra-catalog"></div></div></div></section><section id="builds" class="view">
 
-<div class="card build-planner-card"><div class="unlocktop"><div><h3 class="sectiontitle">🛡️ Class Build Planner</h3><p class="muted tiny">Class enhancement loadouts for solo bosses and farming, with Forge effects and consumables.</p></div><span class="pill">Alpha · Class builds · 2026 meta</span></div><div class="build-controls"><label>Class<select id="build-class"></select></label><label>Activity<select id="build-role"><option value="solo">Solo / Boss</option><option value="farm">Farming</option><option value="group">Group / Ultras</option></select></label></div><div id="build-results" aria-live="polite"></div></div>
+<div class="card build-planner-card"><div class="unlocktop"><div><h3 class="sectiontitle">🛡️ Class Build Planner</h3><p class="muted tiny">Class enhancement loadouts for solo bosses and farming, with Forge effects and consumables.</p></div><span class="pill">Alpha · Class builds · 2026 meta</span></div><div class="build-controls"><label>Search class<input id="build-search" type="search" placeholder="Search by class name…" autocomplete="off"></label><label>Class<select id="build-class"></select></label><label>Activity<select id="build-role"></select></label></div><div id="build-results" aria-live="polite"></div></div>
 
 </section>
 <section id="forge" class="view">
@@ -2116,18 +2116,51 @@ function initForgeTracker(){
  };
  renderForgeTracker();
 }
+// The 2026 meta is role-specific. Old templates can contain a placeholder
+// farming preset even for classes whose actual specialty is boss/support.
+const classNoFarming=new Set([
+ 'Void Highlord','ArchPaladin','StoneCrusher','Lord of Order','Chaos Avenger',
+ 'Verus DoomKnight','Yami no Ronin',"King's Echo",'LightCaster',
+ 'Chrono ShadowHunter','Chrono ShadowSlayer','Phantasm Chronomancer',
+ 'Phantom Chronomancer','Hollowborn Vindicator','Great Thief','Guardian'
+]);
+const classFarmingOnly=new Set(['Blaze Binder']);
+function supportedClassActivities(name){
+ const b=starterBuilds[name]||{};
+ if(classFarmingOnly.has(name))return b.farm?['farm']:['solo'];
+ const available=[];
+ if(b.solo)available.push('solo');
+ if(b.farm&&!classNoFarming.has(name))available.push('farm');
+ return available.length?available:(b.farm?['farm']:['solo']);
+}
 function initClassBuildPlanner(){
- const select=$('build-class'),role=$('build-role'),root=$('build-results');
- if(!select||!role||!root)return;
- if(!select.options.length)for(const name of Object.keys(starterBuilds))select.append(new Option(name,name));
- const redraw=()=>{
-  try{renderClassBuild()}
-  catch(error){
-   console.error('Class Build Planner render failed',error);
-   root.replaceChildren(node('div','Could not display this build: '+(error?.message||error)+'. Select another class or report this message.','build-empty'));
-  }
+ const select=$('build-class'),role=$('build-role'),root=$('build-results'),search=$('build-search');
+ if(!select||!role||!root||!search)return;
+ const redraw=()=>{try{renderClassBuild()}catch(error){
+  console.error('Class Build Planner render failed',error);
+  root.replaceChildren(node('div','Could not display this build: '+(error?.message||error),'build-empty'));
+ }};
+ const updateActivities=()=>{
+  const previous=role.value,available=supportedClassActivities(select.value);
+  role.replaceChildren();
+  for(const value of available)role.append(new Option(value==='solo'?'Solo / Boss':'Farming',value));
+  role.value=available.includes(previous)?previous:available[0];
  };
- select.onchange=redraw;role.onchange=redraw;redraw();
+ const filter=()=>{
+  const previous=select.value;
+  const query=search.value.trim().toLowerCase();
+  const names=Object.keys(starterBuilds).filter(n=>n.toLowerCase().includes(query));
+  select.replaceChildren();
+  for(const name of names)select.append(new Option(name,name));
+  if(names.includes(previous))select.value=previous;
+  else if(names.length)select.value=names[0];
+  else{root.replaceChildren(node('div','No matching classes. Try another name.','build-empty'));role.replaceChildren();return}
+  updateActivities();redraw();
+ };
+ search.addEventListener('input',filter);
+ select.onchange=()=>{updateActivities();redraw()};
+ role.onchange=redraw;
+ filter();
 }
 
 async function init(){
