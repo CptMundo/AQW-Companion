@@ -63,13 +63,45 @@ function plan(options={}){
     throw new RangeError("unknown VHL skill: "+String(id));
   const baseHaste=validNumber(options.baseHastePercent??0,"baseHastePercent",0,50);
   const gap=validNumber(options.actionGapSeconds??0.5,"actionGapSeconds",0.1,3);
-  const includeAutos=options.includeAuto===true;
+  const includeAutos=options.includeAuto===true || options.weaponForge==="Valiance";
   const autoStart=validNumber(options.autoStartSeconds??0,"autoStartSeconds",0,WINDOW);
   const strategy=options.strategy??"cycle";
   if(!["cycle","priority"].includes(strategy))throw new RangeError("invalid rotation strategy");
   const dynamicHaste=options.dynamicHaste!==false;
+  const weaponForge=options.weaponForge??"None";
+  if(!["None","Dauntless","Valiance","Ravenous","Lacerate","Smite"].includes(weaponForge))
+    throw new RangeError("unsupported weapon Forge");
+  const forgeSpecs={
+    Dauntless:{on:"second",cooldown:3,duration:12,effects:[
+      {id:"dauntless",duration:12,stat:"haste",value:25},
+      {id:"dauntlessCrit",duration:12,stat:"critChance",value:15},
+      {id:"dauntlessMana",duration:12,stat:"manaCostReduction",value:50},
+      {id:"decay",duration:6,stat:"cannotHeal",value:1}]},
+    Valiance:{on:"auto",cooldown:15,duration:20,effects:[
+      {id:"valiance",duration:20,stat:"coreStatsExceptLuck",value:30},
+      {id:"valianceLuck",duration:20,stat:"luck",value:15}]},
+    Ravenous:{on:"third",cooldown:0,duration:10,effects:[
+      {id:"ravenous",duration:10,stat:"outgoingDamage",value:10},
+      {id:"ravenousCrit",duration:10,stat:"critChance",value:25},
+      {id:"consumed",duration:10,stat:"targetOutgoingDamageReduction",value:10,target:true}]},
+    Lacerate:{on:"second",cooldown:2,effects:[{id:"laceration",duration:15,stat:"targetDodgeHitHasteReduction",value:10,target:true}]},
+    Smite:{on:"fifth",cooldown:15,effects:[]}
+  };
+  const forge=forgeSpecs[weaponForge];
+  const forgeReady={time:0};
   let now=0,nextAction=0,nextAuto=includeAutos?autoStart:Infinity,turn=0,cursor=0;
   const ready=new Map(),auras=new Map(),events=[],totals=Object.create(null),uptime=Object.create(null);
+  function forgeTrigger(trigger,time){
+    if(!forge||forge.on!==trigger||forgeReady.time>time+EPS)return;
+    const snapshot=view(time);
+    // Separate unknown proc hit; never add a fictitious number to DPS.
+    events.push({time:+time.toFixed(5),type:"forge-proc",id:weaponForge.toLowerCase(),
+      label:weaponForge+" proc",hastePercent:snapshot.haste,auras:snapshot.active,
+      damage:null,damageStatus:"unverified server damage function"});
+    totals["forge:"+weaponForge]=(totals["forge:"+weaponForge]||0)+1;
+    forgeReady.time=time+forge.cooldown;
+    applyEffects(auras,{effects:forge.effects},time);
+  }
   function view(now) {
     const active=activeAuras(auras,now);
     return {active,haste:dynamicHaste?activeHaste(auras,now,baseHaste):baseHaste};
@@ -85,6 +117,7 @@ function plan(options={}){
       events.push({time:+nextAuto.toFixed(5),type:"auto",id:"contract",label:"Contract",
         hastePercent:snapshot.haste,auras:snapshot.active});
       totals.contract=(totals.contract||0)+1;
+      forgeTrigger("auto",nextAuto);
       nextAuto+=model.auto.cooldown*(1-snapshot.haste/100);
     }
     if(nextAction<=now+EPS&&nextAction<WINDOW-EPS){
@@ -106,6 +139,9 @@ function plan(options={}){
         totals[chosen]=(totals[chosen]||0)+1;
         ready.set(skill.slot,now+skill.cooldown*(1-before.haste/100));
         applyEffects(auras,skill,now);
+        const button=chosen==="shackle"||chosen==="unshackle"?"second":
+          chosen==="gaze"?"third":"fifth";
+        forgeTrigger(button,now);
         nextAction=now+gap;
       }else{
         const times=rotation.map(id=>ready.get(model.skills[id].slot)??Infinity).filter(t=>t>now+EPS);
@@ -114,11 +150,12 @@ function plan(options={}){
     }
   }
   return {status:"timeline-only",className:model.name,seconds:WINDOW,rotation:[...rotation],
-    baseHastePercent:baseHaste,dynamicHaste,strategy,events,counts:{...totals},
+    baseHastePercent:baseHaste,dynamicHaste,weaponForge,strategy,events,counts:{...totals},
     damage:null,dps:null,
     caveats:["Cooldown is snapshotted when a skill is cast; retroactive haste changes are not modelled.",
       "Autoattacks are treated as independently timed; game animation/cast locks may delay them.",
       "HP costs, mana use, heal effects, passive procs and actual damage are not simulated.",
+      "Forge proc triggers and buffs use published descriptions; proc hit damage and health-dependent multipliers remain unavailable.",
       "Rotation choices and cast gap are model assumptions, not verified optimal play."]};
 }
 root.AQWCombatTimeline=Object.freeze({version:"0.1.0-preview",WINDOW,model,plan});
