@@ -10,5 +10,4 @@
 #unlocks .wishlist-dismiss{display:inline-flex;justify-content:center;align-items:center;min-width:28px;min-height:28px;padding:3px 7px;font-size:19px;line-height:1;color:#a9c5d7;border-radius:8px;border:1px solid #3b526e;background:transparent}
 #unlocks .wishlist-dismiss:hover,#unlocks .wishlist-dismiss:focus-visible{color:#fff;background:#663548;border-color:#c56b80}
 #unlocks .unlockhead .wishlist-dismiss{margin-left:auto;flex:0 0 auto}
-#unlocks .remove-step-quiet.wishlist-dismiss{margin-top:7px!important;min-width:26px;min-height:26px;width:26px;opacity:.75}
-@media(pointer:coarse){#unlocks .wishlist-dismiss{min-width:36px;min-height:36px}#unlocks .remove-step-quiet.wishlist-dismiss{min-width:36px;min-height:36px;width:36px}}
+@media(pointer:coarse){#unlocks .wishlist-dismiss{min-width:36px;min-height:36px}}
