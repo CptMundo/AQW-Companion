@@ -17,6 +17,7 @@
 
 <link rel="stylesheet" href="css/account-statistics.css">
 <link rel="stylesheet" href="css/meta-class-builds.css">
+<link rel="stylesheet" href="css/planner-routines.css">
 <link rel="stylesheet" href="css/recipe-coverage.css">
 <link rel="stylesheet" href="css/ultra-quote-actions.css">
 </head><body><div class="wrap"><header class="top"><div class="brand"><div class="logo"><img src="assets/brand-logo.png" width="52" height="52" alt="AQW Companion Prometheus-inspired helmet logo"></div><div><h1>AQW Companion <span class="tag">ALPHA 0.9.9.24</span></h1><small>AdventureQuest Worlds Inventory & Farming · Created by CptMundo</small></div></div><div class="actions"><label class="upload primary">📂 Import JSON export<input id="file" type="file" accept=".json,application/json" multiple></label><button id="backup">⬇️ Backup</button><button id="clear">Clear data</button></div></header><div id="alert" class="alert"></div><div class="notice aqw-storage-diagnostics" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><strong id="inventory-storage-status" aria-live="polite">💾 Inventory: checking browser storage…</strong><button id="inventory-storage-diagnostic" class="smallbutton" type="button">📋 Copy storage diagnostic</button></div><div class="notice"><strong>🔒 Your game data stays in this browser.</strong> Inventory, Wishlist and progress are stored locally. <button id="aqw-analytics-settings" type="button">Privacy settings</button> <a href="privacy.html">Privacy details</a>.</div>
@@ -58,7 +59,7 @@
 <p class="muted tiny">Legacy and seasonal encounters without a reviewed strategy. Main farming ultras now appear above with team comps and fight guides. Verify maps and availability.</p>
 <div id="ultracatalog" class="ultra-catalog"></div></div></div></section><section id="builds" class="view">
 
-<div class="card build-planner-card"><div class="unlocktop"><div><h3 class="sectiontitle">🛡️ Class Build Planner</h3><p class="muted tiny">Class enhancement loadouts for solo bosses and farming, with Forge effects and consumables.</p></div><span class="pill">Alpha · Class builds · 2026 meta</span></div><div class="build-controls"><label>Class<select id="build-class"></select></label><label>Activity<select id="build-role"><option value="solo">Solo / Boss</option><option value="farm">Farming</option><option value="group">Group / Ultras</option></select></label></div><div id="build-results" aria-live="polite"></div></div>
+<div class="card build-planner-card"><div class="unlocktop"><div><h3 class="sectiontitle">🛡️ Class Build Planner</h3><p class="muted tiny">Class enhancement loadouts for solo bosses and farming, with Forge effects and consumables.</p></div><span class="pill">Alpha · Class builds · 2026 meta</span></div><div class="build-controls"><label>Search class<input id="build-search" type="search" placeholder="Search by class name…" autocomplete="off"></label><label>Class<select id="build-class"></select></label><label>Activity<select id="build-role"></select></label></div><div id="build-results" aria-live="polite"></div></div>
 
 </section>
 <section id="forge" class="view">
@@ -72,13 +73,15 @@
 <section id="planner" class="view"><div class="card"><div class="goalhead"><h3 class="sectiontitle" style="margin:0">My Pinned Tasks</h3><span class="pill">Changes saved automatically</span></div><div id="planner-my-tasks" class="task-grid"></div><p class="muted tiny">Checks refresh at 00:00 EST (AQW server reset), and weekly on Friday. Saved locally; previous periods remain in backup.</p></div><div class="card" style="margin-bottom:15px"><div class="unlocktop"><div><h3 class="sectiontitle">📅 Daily / Weekly Tracker</h3><p class="muted tiny">Pin only what you want to track. Check off a task for the current local day or tracking week. Nothing is marked complete from your item inventory.</p></div><span class="pill">Local · Optional · Manual</span></div>
 <div class="planner-controls"><div class="planner-metric"><strong id="dailycount">0 / 0</strong><span>Daily tasks</span><div class="planner-progress"><div id="dailybar"></div></div></div><div class="planner-metric"><strong id="weeklycount">0 / 0</strong><span>Weekly tasks</span><div class="planner-progress"><div id="weeklybar"></div></div></div></div>
 <p class="muted tiny" id="plannerperiod"></p><div class="toolbar"><input id="plannersearch" placeholder="Search suggested tasks…" type="search"><select id="plannerfilter"><option value="all">Daily &amp; weekly</option><option value="daily">Daily only</option><option value="weekly">Weekly only</option></select></div>
-<div class="packrow"><button class="smallbutton" data-pack="essentials">+ Starter routines</button><button class="smallbutton" data-pack="legion">+ Legion</button><button class="smallbutton" data-pack="nulgath">+ Nulgath</button><button class="smallbutton" data-pack="shadowfall">+ Shadowfall / Doom</button><button class="smallbutton" data-pack="ultras">+ Ultra weeklies</button></div><p class="muted tiny">Suggested routines are editable reminders, not a validated list of quest availability or exact reset times. Confirm availability in game.</p><h4 class="sectiontitle" style="margin-top:14px">Available Tasks <small class="muted">(pin tasks you want)</small></h4><div id="planner-suggestions" class="task-grid"></div>
+<div class="packrow"><button class="smallbutton" data-pack="essentials">+ Starter routines</button><button class="smallbutton" data-pack="legion">+ Legion</button><button class="smallbutton" data-pack="nulgath">+ Nulgath</button><button class="smallbutton" data-pack="shadowfall">+ Shadowfall / Doom</button><button class="smallbutton" data-pack="ultras">+ Ultra weeklies</button></div><p class="muted tiny">Routines from AQWWiki's Daily Quest Board and curated Ultra guides. Other quests may exist; some need unlocks or membership. <a href="https://aqwwiki.wikidot.com/daily-quest-board-s-quests" target="_blank" rel="noopener noreferrer">Daily Quest Board ↗</a> · <a href="https://aqwwiki.wikidot.com/sort-by-all-quests" target="_blank" rel="noopener noreferrer">All AQW quests ↗</a></p><h4 class="sectiontitle" style="margin-top:14px">Available Tasks <small class="muted">(pin tasks you want)</small></h4><div id="planner-suggestions" class="task-grid"></div>
 <div class="new-task"><input id="customtask" maxlength="120" placeholder="Add your own task, e.g. Check Wheel of Doom"><select id="customfrequency"><option value="daily">Daily</option><option value="weekly">Weekly</option></select><input id="customjoin" placeholder="Optional /join" maxlength="80"><button id="addcustomtask" class="primary">+ Add task</button></div></div>
 </section><section id="compare" class="view"><div class="card"><h3 class="sectiontitle">Compare two snapshots</h3><p class="muted" style="font-size:13px">Import both snapshots into the same browser. Comparison uses <b>ID</b> and quantity; moving items between inventory and bank does not count as a new item.</p><div class="comparecontrols"><label>Older <select id="oldselect"></select></label><label>Newer <select id="newselect"></select></label><button id="comparebtn" class="primary">Compare</button></div><div id="compareresult" class="muted">Import at least two snapshots to get started.</div></div></section>
 <section id="history" class="view"><div class="card"><h3 class="sectiontitle">Local import history</h3><div id="historylist"></div><p class="muted" style="font-size:12px">Each imported file is validated and saved in your browser's IndexedDB. The Backup button downloads a JSON file you can import later to restore your data. Clear data removes snapshots, farming goals and unlock projects.</p></div></section><div class="foot">Created by <strong>CptMundo</strong> for the AQWorlds community · Unofficial fan project · Not affiliated with Artix Entertainment · v0.9.9.24</div></div>
 <div id="itemdetails" class="detailoverlay hidden" role="dialog" aria-modal="true" aria-label="Item acquisition details"><div class="detailpanel"><div class="detailhead"><div><small style="color:#7da5d1;font-weight:700">AQW COMPANION · ACQUISITION EXPLORER</small><h2 id="detailname"></h2></div><button type="button" class="smallbutton" id="closedetails" aria-label="Close details">✕ Close</button></div><div id="detailcontent"></div></div></div><script src="js/meta-class-builds.js"></script>
 <script src="js/recipe-integrity.js"></script>
 <script src="js/ultra-quote-actions.js"></script>
+<script src="js/ultra-guide-rows.js"></script>
+<script src="js/routine-library.js"></script>
 <script src="js/wishlist-finds.js"></script>
 <script src="js/account-statistics.js"></script>
 <script>
@@ -458,8 +461,13 @@ const acquisitionCatalog = [
 ];
 function acquisitionFor(name){return window.AQWCRecipeIntegrity?.getAcquisition(name)||acquisitionCatalog.find(x=>normalizedName(x.name)===normalizedName(name))||communityAcquisition.get(communityKey(name))||null}
 function catalogToProject(entry){return {name:entry.name,type:entry.type||'Other',steps:(entry.ingredients||[]).map(([item,target])=>({label:`${item} ×${target}`,kind:target===1?'owned':'material',item,target}))}}
-const stock=item=>items.filter(x=>x.Name.toLowerCase()===String(item).toLowerCase()).reduce((a,b)=>a+b.Count,0);
-const owned=item=>items.some(x=>x.Name.toLowerCase()===String(item).toLowerCase());
+// AQWWiki uses category suffixes like "(Sword)" and an alternate apostrophe in
+// "Elders' Blood". A player's exported inventory need not use those labels.
+const inventoryRecipeKey=name=>String(name||'').toLowerCase().trim()
+ .replace(/\s*\((?:sword|class|misc)\)$/i,'')
+ .replace(/^elders' blood$/,"elder's blood");
+const stock=item=>items.filter(x=>inventoryRecipeKey(x.Name)===inventoryRecipeKey(item)).reduce((a,b)=>a+Number(b.Count||1),0);
+const owned=item=>items.some(x=>inventoryRecipeKey(x.Name)===inventoryRecipeKey(item));
 function freshStep(raw){return {id:crypto.randomUUID(),label:raw.label,kind:raw.kind||'manual',item:raw.item||'',target:raw.target||1,status:'unknown'}}
 function newProject(p){return{id:crypto.randomUUID(),name:p.name,type:p.type||'Other',createdAt:new Date().toISOString(),steps:(p.steps||[]).map(freshStep)}}
 
@@ -1404,20 +1412,6 @@ function renderUltraDetail(b){
  roleContext.append(node('span','Playing as'),roleName);
  mechanics.append(roleContext);
  const sequence=node('div',undefined,'ultra-flow-list');mechanics.append(sequence);
- if(b.id==='drakath'){
-  const timing=node('div',undefined,'ultra-focus-timing');
-  timing.append(node('strong','📍 Taunt BEFORE these HP marks'));
-  const chips=node('div',undefined,'ultra101-chips');
-  for(const hp of quick.thresholds||[])chips.append(node('span',hp,'ultra101-chip'));
-  timing.append(chips,node('p','10M: transformation · 2M: final meteor (burst immediately; not tauntable)','ultra-focus-note'));
-  mechanics.append(timing);
- }
- if(b.id==='kathool'){
-  const vigil=node('div',undefined,'ultra-focus-timing');
-  vigil.append(node('strong','⚠ “You cannot resist.” → EVERYONE uses Vigil within 3 seconds'));
-  vigil.append(node('p','/join kathooldepths · 7-player challenge · Vigil is obtained from the map merge shop. The cast cannot be taunted.','ultra-focus-note'));
-  mechanics.append(vigil);
- }
  root.append(mechanics);
  const details=node('details',undefined,'ultra-extra-details');
  details.append(node('summary','🧩 Team & advanced tactics'));
@@ -1465,37 +1459,46 @@ function renderUltraDetail(b){
  const footer=node('div',undefined,'ultra-focus-footer');
  const link=node('a','↗ Full community strategy');link.href=b.source;link.target='_blank';link.rel='noopener noreferrer';footer.append(link,node('span','Team ownership ≠ boss access · verify encounter-specific gear','muted tiny'));root.append(footer);
  function updateRole(){
-  const cls=select.value,build=starterBuilds[cls]?.group,play=ultraRolePlaybooks[b.id]?.[cls];
+  const cls=select.value,play=ultraRolePlaybooks[b.id]?.[cls];
+  // Bard is a Kathool support class. Official guidance endorses Healer/Wizard/Lucky;
+  // Awe Blast + defensive Forge is a suggested group utility setup, not a hard requirement.
+  const bardSupport={weapon:'Awe Blast',helm:'Forge',cape:'Absolution',
+    note:'Healer base/armor for safer support; Wizard or Lucky are alternatives. Penitence is a defensive cape option.'};
+  const build=starterBuilds[cls]?.group||(cls==='Bard'?bardSupport:null);
   gear.replaceChildren();
   if(build){
    for(const [label,value] of [['Weapon',build.weapon],['Helm',build.helm],['Cape',build.cape]]){
     const cell=node('div',undefined,'ultra-focus-gear-cell');cell.append(node('small',label),node('strong',value));gear.append(cell)
    }
-  }else gear.append(node('span','No generic equipment preset for this class','muted tiny'));
-  job.textContent=roleMap.get(cls)||'Coordinate your role with the team.';
-  const uniqueSteps=[...new Set((play?.steps||[]).map(step=>String(step).trim()).filter(Boolean))];
-  const tips=uniqueSteps.length?uniqueSteps:[roleMap.get(cls)||'Confirm your assigned team responsibilities before pulling.'];
+   if(cls==='Bard'){
+    const source=node('a','Bard enhancement reference ↗','ultra-gear-source');
+    source.href='https://www.aq.com/lore/classes/bard';source.target='_blank';source.rel='noopener noreferrer';gear.append(source);
+   }
+  }else gear.append(node('span','No reviewed class-specific gear preset; consult the encounter guide.','muted tiny'));
+  job.textContent=cls==='Bard'?bardSupport.note:(roleMap.get(cls)||'Coordinate your role with the team.');
   roleName.textContent=cls;
   sequence.replaceChildren();
-  // Only show quote reactions applicable to this specific class/assigned role.
-  for(const cue of (window.AQWUltraQuoteActions?.forRole(b.id,cls)||[])){
-   const card=node('div',undefined,'ultra-role-quote');
-   card.append(node('strong','📣 “'+cue.quote+'”'),node('p',cue.response));
-   if(/^https:\/\/[a-z0-9.-]+\/[a-z0-9/?#-]*$/i.test(cue.source)){
-    const source=document.createElement('a');source.href=cue.source;source.target='_blank';source.rel='noopener noreferrer';
-    source.className='ultra-role-quote-source';source.textContent='Mechanics source ↗';card.append(source);
-   }
-   sequence.append(card);
-  }
-  for(const [i,tip] of tips.slice(0,5).entries()){
+  const tips=[...new Set((play?.steps||[]).map(step=>String(step).trim()).filter(Boolean))];
+  const callouts=window.AQWUltraQuoteActions?.forRole(b.id,cls)||[];
+  const rows=window.AQWCGuideRows?.rows({tips,quotes:callouts,warning:play?.warning,
+   fallback:roleMap.get(cls)||'Confirm your assigned responsibilities before pulling.'})||[];
+  for(const part of rows){
    const step=node('div',undefined,'ultra-role-step');
-   step.append(node('span',String(i+1).padStart(2,'0'),'ultra-step-number'),node('p',tip));
+   const body=node('div',undefined,'ultra-role-step-body');
+   const heading=node('h4',part.title,'ultra-role-mini-title');
+   if(part.quote)heading.classList.add('ultra-role-quote-heading');
+   const description=node('p');
+   // Highlight actionable skills/callouts without inserting untrusted HTML.
+   const actionWords=/(“[^”]+”|"[^"]+"|Vigil|Scroll of Enrage|Decay|Counter Attack|Seal|Zone|Tendril|Legion Mages|Stasis|Awe Blast|Quixotic|Vim|Penitence)/gi;
+   for(const fragment of String(part.text).split(actionWords)){
+    if(!fragment)continue;
+    if(/^(?:“[^”]+”|"[^"]+"|Vigil|Scroll of Enrage|Decay|Counter Attack|Seal|Zone|Tendril|Legion Mages|Stasis|Awe Blast|Quixotic|Vim|Penitence)$/i.test(fragment))
+     description.append(node('strong',fragment,'ultra-guide-emphasis'));
+    else description.append(document.createTextNode(fragment));
+   }
+   body.append(heading,description);
+   step.append(node('span',part.number,'ultra-step-number'),body);
    sequence.append(step);
-  }
-  const warning=play?.warning;
-  if(warning && !String(quick.avoid||'').toLowerCase().includes(warning.toLowerCase())){
-   const caution=node('div','⚠ '+warning,'ultra-role-warning');
-   sequence.append(caution);
   }
  }
  select.onchange=updateRole;updateRole();
@@ -1508,8 +1511,8 @@ const taskCatalog=[
 {id:'odd',name:"Odd's 'n' Ends",group:'General',freq:'daily',join:'/join boxes',packs:['essentials']},
 {id:'ex107',name:'Experiment 107',group:'General',freq:'daily',join:'/join arcangrove',packs:['essentials']},
 {id:'ex231',name:'Experiment 231',group:'General',freq:'daily',join:'/join arcangrove',packs:['essentials']},
-{id:'mining',name:'Mine Crafting',group:'Metals',freq:'daily',join:'/join necropolis',packs:['essentials','shadowfall']},
-{id:'hardcore',name:'Hard Core Metals',group:'Metals',freq:'daily',join:'/join necropolis',packs:['shadowfall']},
+{id:'mining',name:'Mine Crafting',group:'Metals',freq:'daily',join:'/join stalagbite',packs:['essentials','shadowfall']},
+{id:'hardcore',name:'Hard Core Metals',group:'Metals',freq:'daily',join:'/join stalagbite',packs:['shadowfall']},
 {id:'encroach',name:'The Encroaching Shadows',group:'Shadowfall',freq:'daily',join:'/join shadowfall',packs:['shadowfall','essentials']},
 {id:'glimpse',name:'Glimpse Into the Dark',group:'Shadowfall',freq:'daily',join:'/join shadowfall',packs:['shadowfall','essentials']},
 {id:'wrongturn',name:'Wrong Turn at Voidbuquerque',group:'Nulgath',freq:'daily',join:'/join originul',packs:['nulgath']},
@@ -1523,6 +1526,16 @@ const taskCatalog=[
 {id:'ultra-speaker',name:'Ultra Speaker',group:'Ultra Boss',freq:'weekly',join:'/join ultraspeaker',packs:['ultras']},
 {id:'tyndarius',name:'Ultra Avatar Tyndarius',group:'Ultra Boss',freq:'weekly',join:'/join ultratyndarius',packs:['ultras']}
 ];
+// All quests at the Daily Quest Board from our reviewed index, plus Ultras
+// already present in Companion's guide. Not all quests elsewhere in the game.
+for(const task of (window.AQWCRoutineLibrary?.entries||[]))
+ if(!taskCatalog.some(x=>x.id===task.id))taskCatalog.push({...task});
+for(const boss of ultraGuides){
+ const freq=String(boss.type||'').toLowerCase();
+ if(!['daily','weekly'].includes(freq)||taskCatalog.some(t=>t.join===boss.join))continue;
+ taskCatalog.push({id:'guide-ultra-'+boss.id,name:boss.name,group:'Ultra Boss',freq,
+  join:boss.join,packs:freq==='weekly'?['ultras']:[],wiki:boss.source});
+}
 // Curated acquisition instructions. Missing destinations deliberately stay unverified.
 const taskRoutes={
  'odd':{npc:'Daily Quest Board · /join yulgar (or Vinara in Curiosities)',targets:[['Sneevil','Metal Ore ×1','/join boxes']],wiki:'https://aqwwiki.wikidot.com/daily-quest-board-s-quests'},
@@ -1543,6 +1556,17 @@ const taskRoutes={
  'drakath':{npc:'Weekly Ultra Boss',targets:[['Champion Drakath','Defeat boss','/join championdrakath']],wiki:'https://aqwwiki.wikidot.com/champion-drakath-monster'},
  'ultra-speaker':{npc:'Weekly Ultra Boss',targets:[['The First Speaker','Defeat boss','/join ultraspeaker']],wiki:'https://aqwwiki.wikidot.com/the-first-speaker-monster'}
 };
+// Do not fabricate quest drops for board entries, but provide a verified NPC
+// location and a Wiki link for the current level/membership prerequisites.
+for(const entry of (window.AQWCRoutineLibrary?.entries||[]))
+ taskRoutes[entry.id]={npc:'Daily Quest Board · /join yulgar',targets:[],wiki:entry.wiki};
+for(const boss of ultraGuides){
+ const id='guide-ultra-'+boss.id;
+ if(!taskCatalog.some(t=>t.id===id))continue;
+ taskRoutes[id]={npc:'Ultra Boss challenge · '+boss.join,
+  targets:[[boss.name,'Check challenge requirements and the current reward',boss.join]],
+  wiki:boss.source};
+}
 // Curated project-to-routine suggestions: not automatic proof that a daily is unlocked.
 const projectRoutines=[
  {terms:['necrotic sword of doom','void aura',"necrotic sword's"],ids:['glimpse','encroach','hardcore']},
@@ -1755,13 +1779,22 @@ function taskCard(t,pinned){const card=node('div',undefined,'task-card'+(taskDon
  const info=taskRoutes[t.id];
  if(info){const details=node('details',undefined,'task-route');const summary=node('summary','📍 Where / what to defeat');details.append(summary);details.append(node('div',info.npc.replace(/\s*·\s*\/join\s+[a-z0-9-]+/gi,''),'task-location'));
  for(const target of info.targets){const line=node('div',undefined,'task-target');line.append(node('strong',target[0]),node('small',target[1]));if(target[2]){line.append(makeCopyJoin(target[2]))}else{line.append(node('small','Map not yet verified','task-unverified'))}details.append(line)}
+ if(t.join)details.append(makeCopyJoin(t.join));
  const wiki=node('a','Verify on AQWWiki','task-wiki');wiki.href=info.wiki;wiki.target='_blank';wiki.rel='noopener noreferrer';details.append(wiki);name.append(details);
  }else{if(t.join){const link=makeCopyJoin(t.join);link.style.marginTop='6px';name.append(link)}name.append(node('small','Custom / pending guide: open the quest in-game to confirm its current objectives.','task-unverified'));const quick=node('a','Daily Quest Board (AQWWiki) ↗','task-wiki');quick.href='https://aqwwiki.wikidot.com/daily-quest-board-s-quests';quick.target='_blank';quick.rel='noopener noreferrer';name.append(quick)}
  inner.append(name);card.append(inner);const button=node('button',pinned?'Unpin':'+ Pin','smallbutton');button.onclick=()=>pinned?unpinTask(t):pinTask(t);card.append(button);return card}
 $('resetultradaily').onclick=()=>resetUltraChecks('daily');$('resetultraweekly').onclick=()=>resetUltraChecks('weekly');
+let plannerShowAll=false;
 function renderPlanner(){const suggested=$('planner-suggestions'),my=$('planner-my-tasks');if(!suggested||!my)return;
  const query=$('plannersearch').value.trim().toLowerCase(),freq=$('plannerfilter').value;
- const matches=taskCatalog.filter(x=>(freq==='all'||x.freq===freq)&&(!query||[x.name,x.group,x.join].join(' ').toLowerCase().includes(query))&&!pinnedTasks.some(y=>y.id===x.id));suggested.replaceChildren();for(const t of matches)suggested.append(taskCard(t,false));if(!matches.length)suggested.append(node('div','No unpinned suggestions match your search.','planner-empty'));
+ const matches=taskCatalog.filter(x=>(freq==='all'||x.freq===freq)&&(!query||[x.name,x.group,x.join].join(' ').toLowerCase().includes(query))&&!pinnedTasks.some(y=>y.id===x.id));suggested.replaceChildren();
+ const visible=(plannerShowAll||query)?matches:matches.slice(0,18);
+ for(const t of visible)suggested.append(taskCard(t,false));
+ if(visible.length<matches.length){
+  const more=node('button','Show all '+matches.length+' tasks','smallbutton planner-show-all');
+  more.type='button';more.onclick=()=>{plannerShowAll=true;renderPlanner()};suggested.append(more);
+ }
+ if(!matches.length)suggested.append(node('div','No unpinned suggestions match your search.','planner-empty'));
  my.replaceChildren();for(const t of [...pinnedTasks].sort((a,b)=>a.freq.localeCompare(b.freq)||a.name.localeCompare(b.name)))my.append(taskCard(t,true));if(!pinnedTasks.length)my.append(node('div','Pin a starter pack, a suggestion, or add your own task.','planner-empty'));
  for(const freq of ['daily','weekly']){const t=pinnedTasks.filter(x=>x.freq===freq),done=t.filter(taskDone).length;$(freq+'count').textContent=done+' / '+t.length;$(freq+'bar').style.width=(t.length?100*done/t.length:0)+'%'}
  $('plannerperiod').textContent='AQW server day: '+taskPeriod('daily').slice(2)+' (EST) · Weekly reset: Friday 00:00 EST';
@@ -2129,18 +2162,51 @@ function initForgeTracker(){
  };
  renderForgeTracker();
 }
+// The 2026 meta is role-specific. Old templates can contain a placeholder
+// farming preset even for classes whose actual specialty is boss/support.
+const classNoFarming=new Set([
+ 'Void Highlord','ArchPaladin','StoneCrusher','Lord of Order','Chaos Avenger',
+ 'Verus DoomKnight','Yami no Ronin',"King's Echo",'LightCaster',
+ 'Chrono ShadowHunter','Chrono ShadowSlayer','Phantasm Chronomancer',
+ 'Phantom Chronomancer','Hollowborn Vindicator','Great Thief','Guardian'
+]);
+const classFarmingOnly=new Set(['Blaze Binder']);
+function supportedClassActivities(name){
+ const b=starterBuilds[name]||{};
+ if(classFarmingOnly.has(name))return b.farm?['farm']:['solo'];
+ const available=[];
+ if(b.solo)available.push('solo');
+ if(b.farm&&!classNoFarming.has(name))available.push('farm');
+ return available.length?available:(b.farm?['farm']:['solo']);
+}
 function initClassBuildPlanner(){
- const select=$('build-class'),role=$('build-role'),root=$('build-results');
- if(!select||!role||!root)return;
- if(!select.options.length)for(const name of Object.keys(starterBuilds))select.append(new Option(name,name));
- const redraw=()=>{
-  try{renderClassBuild()}
-  catch(error){
-   console.error('Class Build Planner render failed',error);
-   root.replaceChildren(node('div','Could not display this build: '+(error?.message||error)+'. Select another class or report this message.','build-empty'));
-  }
+ const select=$('build-class'),role=$('build-role'),root=$('build-results'),search=$('build-search');
+ if(!select||!role||!root||!search)return;
+ const redraw=()=>{try{renderClassBuild()}catch(error){
+  console.error('Class Build Planner render failed',error);
+  root.replaceChildren(node('div','Could not display this build: '+(error?.message||error),'build-empty'));
+ }};
+ const updateActivities=()=>{
+  const previous=role.value,available=supportedClassActivities(select.value);
+  role.replaceChildren();
+  for(const value of available)role.append(new Option(value==='solo'?'Solo / Boss':'Farming',value));
+  role.value=available.includes(previous)?previous:available[0];
  };
- select.onchange=redraw;role.onchange=redraw;redraw();
+ const filter=()=>{
+  const previous=select.value;
+  const query=search.value.trim().toLowerCase();
+  const names=Object.keys(starterBuilds).filter(n=>n.toLowerCase().includes(query));
+  select.replaceChildren();
+  for(const name of names)select.append(new Option(name,name));
+  if(names.includes(previous))select.value=previous;
+  else if(names.length)select.value=names[0];
+  else{root.replaceChildren(node('div','No matching classes. Try another name.','build-empty'));role.replaceChildren();return}
+  updateActivities();redraw();
+ };
+ search.addEventListener('input',filter);
+ select.onchange=()=>{updateActivities();redraw()};
+ role.onchange=redraw;
+ filter();
 }
 
 async function init(){

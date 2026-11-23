@@ -48,7 +48,10 @@ assert.equal(new Set([...originalClassKeys,...addon.classes]).size,27,"Dropdown 
 
 assert.ok(html.includes("Object.assign(baseClassEnhancement,window.AQWCMetaBuilds?.base||{})"));
 assert.ok(html.includes("Object.assign(classAlchemy,window.AQWCMetaBuilds?.alchemy||{})"));
-assert.ok(html.includes('<option value="group">Group / Ultras</option>'),"Group role selector must be accessible");
+assert.ok(html.includes('id="build-search"'),"Class search must be available");
+assert.ok(html.includes("function supportedClassActivities(name)"),"Class-specific roles required");
+assert.ok(html.includes("classNoFarming"),"Boss-only classes cannot show fake farming builds");
+assert.ok(!html.includes('<option value="group">Group / Ultras</option>'),"Class planner only offers Solo and Farming");
 assert.ok(html.includes("No recommended "),"Unsupported roles show truthful explanation");
 assert.ok(html.includes("Same skills as "),"Alias explanations available");
 assert.ok(html.includes("Build reference"),"Source links shown in UI");

@@ -7,3 +7,9 @@
 .build-meta-sources{display:flex;flex-wrap:wrap;gap:12px;margin:10px 0 7px}
 .build-meta-sources a{font-size:12px;color:#8dddf5;text-decoration:underline;text-underline-offset:3px}
 .build-meta-sources a:hover,.build-meta-sources a:focus-visible{color:#fff}
+
+/* Search, class selector and current activity share a responsive control row. */
+#builds .build-controls{display:grid;grid-template-columns:minmax(160px,1fr) minmax(180px,1.25fr) minmax(135px,.8fr);align-items:end;gap:10px}
+#builds #build-search{width:100%;min-width:0;min-height:40px}
+#builds .build-controls label{min-width:0}
+@media(max-width:700px){#builds .build-controls{grid-template-columns:1fr}}
