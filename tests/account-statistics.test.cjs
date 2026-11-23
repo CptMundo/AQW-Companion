@@ -24,7 +24,7 @@ assert.ok(css.includes("@media(max-width:520px)"),"Dashboard must be responsive"
 assert.ok(!/\bfetch\s*\(|\bXMLHttpRequest\b|\bsendBeacon\s*\(|\bgtag\s*\(/i.test(js),"Statistics module cannot transmit account data");
 new vm.Script(js,{filename:"account-statistics.js"});
 for(const [i,m] of [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].entries())
-  if(!m[1].includes("src=")&&m[2].trim())new vm.Script(m[2],{filename:"index-inline-"+i});
+  if(!m[0].includes("src=")&&m[1].trim())new vm.Script(m[1],{filename:"index-inline-"+i});
 
 function item(ID,Name,Type,Bank=0,Count=1){return {ID:String(ID),Name,Type,Bank,Count};}
 function snapshot(uid,exportedAt,items){return {uid,fileName:uid+".json",exportedAt,importedAt:exportedAt,items};}
