@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-11-23",
+  "provenance": "Transcribed from two user-provided AQWorlds Battle Analyzer screenshots. Screenshot files remain in the conversation; images are not added to this public repository.",
+  "description": "Preliminary 60-second measured VHL benchmark. Two independent runs; not enough evidence to certify automatic damage formulas or every build component.",
+  "windowSeconds": 60,
+  "equipmentContext": {
+    "className": "Void Highlord",
+    "classRank": "Rank 10 visible/previously reported",
+    "build": "Full Lucky, NSoD +51% All requested as the control build",
+    "status": "Not independently verified from Battle Analyzer screenshots; the screenshots show totals but not all equipped enhancements, buffs or target tags.",
+    "target": "Class Hall Testing Dummy requested in setup; target identity not independently visible in screenshots.",
+    "party": "Solo requested in setup; not independently visible in screenshots.",
+    "consumables": "None requested in setup; not independently visible in screenshots."
+  },
+  "samples": [
+    {
+      "id": "trial-1",
+      "seconds": 60,
+      "className": "Void Highlord",
+      "build": "control-build-unconfirmed",
+      "target": "test-dummy-unconfirmed",
+      "party": "solo-unconfirmed",
+      "targets": 1,
+      "damage": 393842,
+      "healing": 30772,
+      "damageTaken": 30,
+      "reportedDpsRounded": 6564,
+      "reportedHealingPerSecondRounded": 513
+    },
+    {
+      "id": "trial-2",
+      "seconds": 60,
+      "className": "Void Highlord",
+      "build": "control-build-unconfirmed",
+      "target": "test-dummy-unconfirmed",
+      "party": "solo-unconfirmed",
+      "targets": 1,
+      "damage": 405578,
+      "healing": 33786,
+      "damageTaken": 30,
+      "reportedDpsRounded": 6760,
+      "reportedHealingPerSecondRounded": 563
+    }
+  ],
+  "validation": {
+    "observationStatus": "preliminary-two-run-baseline",
+    "accurateFor": "Arithmetic DPS for two recorded 60-second fights and relative variability only.",
+    "notAccurateFor": "Automatic model-based DPS from class, build, Forge, buffs or target damage functions.",
+    "uncertainty": "Cannot infer the full equipment/Forge/loadout or verify target from these two Analyzer screenshots alone.",
+    "sourceCheck": "Reported DPS on screenshots matches damage / 60, rounded to nearest whole number."
+  }
+}
