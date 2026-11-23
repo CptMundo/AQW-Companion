@@ -56,14 +56,20 @@
   }
   function simulate(input) {
     if(!input||typeof input!=="object")throw new TypeError("input required");
-    const seconds=input.seconds??20;
-    if(seconds!==20)throw new RangeError("prototype has one fixed 20-second window");
+    const seconds=input.seconds??60;
+    if(seconds!==60)throw new RangeError("prototype has one fixed 60-second window");
+    if(input.observedTotalDamage!==undefined) {
+      const amount=finitePositive(input.observedTotalDamage,"observedTotalDamage",true);
+      return {seconds,model:input.className||null,events:[],fullDamage:amount,dps:amount/seconds,
+        resultStatus:"observed-total",knownHitSubtotal:amount,missingHitCount:0,
+        limitations:["Input must be the COMPLETE damage done within exactly 60 seconds; otherwise the DPS is not representative.","This is observed DPS, not a theoretical prediction."]};
+    }
     if(input.observedEvents!==undefined) {
       if(!Array.isArray(input.observedEvents))throw new TypeError("observedEvents must be an array");
       const events=input.observedEvents.map((e,i)=>{
         if(!e||typeof e!=="object")throw new TypeError("invalid observed event "+i);
         const time=finitePositive(e.time,"observed event time",true);
-        if(time>=seconds)throw new RangeError("observed event outside 20-second window");
+        if(time>=seconds)throw new RangeError("observed event outside 60-second window");
         const damage=finitePositive(e.damage,"observed event damage",true);
         if(typeof e.id!=="string"||!e.id.trim())throw new TypeError("observed event must name its skill");
         return {time,kind:"observed",id:e.id.trim(),damage};
@@ -73,7 +79,7 @@
       const fullDamage=events.reduce((sum,e)=>sum+e.damage,0);
       return {seconds,events,fullDamage,dps:fullDamage/seconds,resultStatus:"observed-window",
         knownHitSubtotal:fullDamage,missingHitCount:0,
-        limitations:["Observed DPS represents only the manually supplied events; verify that ALL hits, DoTs and procs within 20s are included.","No damage is predicted from class/enhancement formulas."]};
+        limitations:["Observed DPS represents only the manually supplied events; verify that ALL hits, DoTs and procs within 60s are included.","No damage is predicted from class/enhancement formulas."]};
     }
     const model=input.model||VHL;
     const rotation=normalizeSkillIds(input.rotation||["unshackle","gaze","armageddon"],model.skills);
@@ -139,5 +145,5 @@
       knownHitSubtotal:measuredTotal,missingHitCount:missing.length,
       limitations:[...model.notes,"Measured hits are assumed constant despite changing buffs and target debuffs; this is NOT calibrated true fight DPS.","Proc/DoT/HoT, evasion, skill animation/cast locks, mana and target defenses are not yet modeled."]};
   }
-  root.AQWCombatEngine=Object.freeze({version:"0.2.0-20s-preview",VHL,simulate});
+  root.AQWCombatEngine=Object.freeze({version:"0.3.0-60s-standard",VHL,simulate});
 })(typeof window!=="undefined"?window:globalThis);
