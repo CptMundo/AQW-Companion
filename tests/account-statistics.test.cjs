@@ -10,14 +10,68 @@ const js=fs.readFileSync(path.join(__dirname,"../js/account-statistics.js"),"utf
 
 const mainNav=html.match(/<nav class="primarynav"[\s\S]*?<\/nav>/)?.[0]||"";
 assert.ok(mainNav.includes('data-group="home"'),"Home main tab remains");
-const homeTabs=[...html.matchAll(/data-tab="(overview|account-stats)" data-parent="home"/g)].map(x=>x[1]);
-assert.deepEqual(homeTabs,["overview","account-stats"],"Home has Overview and Account Statistics secondary tabs");
-const navCss=html.match(/<style id="aqw-feedback-nav-v2">([\s\S]*?)<\/style>/)?.[1];
-assert.ok(navCss,"Custom navigation CSS must be present");
-assert.ok(!navCss.includes('.subnav button[data-parent="home"]'),"Home secondary buttons must never be forcibly hidden");
-assert.ok(!navCss.includes(':not([data-parent="home"])'),"Home must not be excluded from secondary nav visibility");
-assert.ok(navCss.includes('button.group-visible:not([data-parent="story"])'),"Visible Home group must open subnav");
-assert.ok(html.includes('.tabs.subnav button.group-visible{display:inline-flex}'),"Active group navigation buttons remain visible");
+const tabs=[...html.matchAll(/<button\b[^>]*data-tab="([^"]+)"[^>]*data-parent="([^"]+)"/g)]
+  .map(x=>({tab:x[1],group:x[2]}));
+assert.equal(tabs.filter(x=>x.group==="home").length,0,"Home has no secondary tabs");
+assert.equal(tabs.filter(x=>x.tab==="account-stats").length,1,"Stats appears exactly once");
+assert.deepEqual(tabs.filter(x=>x.group==="inventory").map(x=>x.tab),
+  ["inventory","account-stats","compare","history"],"Account Statistics belongs with the Inventory subviews");
+assert.ok(!html.includes('data-tab="overview"'),"Overview remains the Home main view, not a subtab");
+const navCssStart=html.indexOf('<style id="aqw-feedback-nav-v2">');
+const navCss=html.slice(navCssStart,html.indexOf("</style>",navCssStart));
+assert.ok(navCssStart>=0,"Custom navigation CSS must be present");
+assert.ok(navCss.includes('.subnav button[data-parent="home"]'),"Home single-view secondary navigation must stay hidden");
+assert.ok(navCss.includes(':not([data-parent="home"])'),"Home is excluded from multi-view subnav");
+assert.ok(html.includes('.tabs.subnav button.group-visible{display:inline-flex}'),"Inventory secondary buttons remain visible");
+assert.ok(html.includes("if(!b&&tab!=='overview')return"),"Home must navigate to Overview without a secondary tab");
+assert.ok(html.includes("const group=tab==='overview'?'home':b.dataset.parent"),"Home group derived even without a subtab");
+
+// Exercise actual navigation logic without changing persisted user data.
+const navStart=html.indexOf("const groupDefaults=");
+const navEnd=html.indexOf("document.querySelectorAll('[data-group]').forEach(b=>b.addEventListener",navStart);
+assert.ok(navStart>0&&navEnd>navStart,"Navigation function exists");
+const classList=()=>({set:new Set(),toggle(name,on){if(on)this.set.add(name);else this.set.delete(name);return !!on},
+  contains(name){return this.set.has(name)}});
+const makeNav=(id,group)=>({dataset:{tab:id,group:group||id,parent:group},classList:classList()});
+const groupButtons=["home","projects","planner","ultras","builds","story","explore","inventory"].map(g=>makeNav(g));
+const tabButtons=tabs.map(({tab,group})=>makeNav(tab,group));
+const views=[...html.matchAll(/<section\s+id="([^"]+)"\s+class="view\b/g)]
+  .map(m=>({id:m[1],classList:classList()}));
+let statsRenderCount=0;
+const documentShim={
+  querySelector(selector){
+    const match=selector.match(/^\[data-tab="([^"]+)"\]$/);
+    return match?tabButtons.find(b=>b.dataset.tab===match[1])||null:null;
+  },
+  querySelectorAll(selector){
+    if(selector==="[data-group]")return groupButtons;
+    if(selector==="[data-tab]")return tabButtons;
+    if(selector===".view")return views;
+    throw Error("Unexpected nav query "+selector);
+  }
+};
+const navigate=vm.runInNewContext(html.slice(navStart,navEnd)+"\nactivateTab",{
+  document:documentShim,renderAccountStatistics(){statsRenderCount++}
+});
+function activeGroup(){return groupButtons.find(x=>x.classList.contains("active"))?.dataset.group}
+function activeView(){return views.find(x=>x.classList.contains("active"))?.id}
+navigate("overview");
+assert.equal(activeGroup(),"home");
+assert.equal(activeView(),"overview");
+assert.equal(tabButtons.filter(x=>x.classList.contains("group-visible")).length,0,"No secondary buttons visible in Home");
+navigate("inventory");
+assert.equal(activeGroup(),"inventory");
+assert.equal(activeView(),"inventory");
+assert.deepEqual(tabButtons.filter(x=>x.classList.contains("group-visible")).map(x=>x.dataset.tab),
+  ["inventory","account-stats","compare","history"]);
+navigate("account-stats");
+assert.equal(activeGroup(),"inventory");
+assert.equal(activeView(),"account-stats");
+assert.equal(statsRenderCount,1,"Statistics renders when its Inventory subtab is selected");
+navigate("overview");
+assert.equal(activeGroup(),"home");
+assert.equal(activeView(),"overview");
+assert.equal(statsRenderCount,1,"Returning Home should not reopen statistics");
 
 assert.ok(html.includes('<section id="account-stats" class="view">'));
 assert.ok(html.includes('href="css/account-statistics.css"'));
