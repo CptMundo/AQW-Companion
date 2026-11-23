@@ -112,6 +112,10 @@
       bankRecords,elsewhereRecords,classes,
       categories:TYPES.map(type=>({type,label:LABELS[type],count:perType[type]})),
       wishlist:{total:projects.length,owned:ownedCount,active:activeCount,stepsDone:steps.done,stepsTotal:steps.total,byCategory},
+      wishlistFinds:{
+        count:Math.max(0,Number(input.wishlistFinds?.count)||0),
+        recent:(Array.isArray(input.wishlistFinds?.recent)?input.wishlistFinds.recent:[]).slice(0,12)
+      },
       forge:{unlocked:forgeUnlocked,total:forgeTotal},
       communityTags:{counts:[...tagCounts].sort((a,b)=>b[1]-a[1]).map(([name,count])=>({name,count})),
         tagged:withTags,unknown:withoutTags},
@@ -291,6 +295,26 @@
       }
     }
     third.append(recent);root.append(third);
+
+    const wins=section('🎉 Recent Wishlist Finds',
+      'Targets first seen between two saved inventory exports. This is when the Companion noticed them, not proof of the exact date obtained in AQWorlds.');
+    if(!stats.wishlistFinds?.count){
+      wins.append(element('p','aqws-note',
+        'No new Wishlist matches between imports yet. Keep your goals and import a newer inventory export to spot them.'));
+    }else{
+      wins.append(element('p','aqws-tag-info',
+        fmt(stats.wishlistFinds.count)+' Wishlist target(s) first seen across your imports'));
+      const list=element('ul','aqws-wishlist-finds');
+      for(const found of stats.wishlistFinds.recent){
+        const row=element('li','aqws-wishlist-find');
+        row.append(element('strong','',found.name),
+          element('span','aqws-note',found.type+' · First observed '+readableDate(found.firstSeenAt)));
+        list.append(row);
+      }
+      wins.append(list);
+    }
+    wins.append(button('Open Wishlist ↗',()=>handlers.onWishlist?.()));
+    root.append(wins);
 
     const badges=section('🏆 Companion Milestones','Personal collection challenges calculated by AQW Companion, not official AQWorlds achievements or character badges.');
     const badgeGrid=element('div','aqws-milestones');

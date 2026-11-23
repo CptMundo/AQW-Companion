@@ -84,6 +84,14 @@ This file is a context handoff, not a replacement for current GitHub source and 
 
 - New extra CSS cascade entries (after `css/account-statistics.css`): `css/recipe-coverage.css` → `css/ultra-quote-actions.css`. These were present as external links before the extraction; preserve their order.
 - New pre-application JS modules: `js/recipe-integrity.js`, `js/ultra-quote-actions.js`, loaded before `js/account-statistics.js` and the single legacy inline application script. Do not move the existing initialization code while extracting CSS.
-- `js/recipe-integrity.js` explicitly reviews Sin of the Abyss final merge only. Other recipes remain unreviewed; see `docs/RECIPE_COVERAGE.md`.
+- `js/recipe-integrity.js` records 37 item-specific reviewed merge recipes (Sin of the Abyss, 14 Forge Metal entries, 22 Light Merge entries), not the full community catalog; see `docs/WISHLIST_RECIPE_AND_FINDS.md`.
 - `js/ultra-quote-actions.js` provides class/role-specific boss quote responses. Exact tactics depend on team assignments; see `docs/ULTRA_QUOTES_RECIPE_AUDIT.md`.
 - `scripts/audit_recipe_catalog.cjs` scans the published 2026-11-15 community catalog. A missing ingredient name, empty merge entry or multiple quest routes is a structural flag, **not a confirmed gameplay error**. CI creates a report artifact.
+
+## 9. Wishlist Finds / cleaner checklist UX (PR #87)
+
+- `js/wishlist-finds.js` is a pure local module. It compares already stored full exports and Wishlist targets by name, with `createdAt` on new goals to prevent retroactive achievements; no schema migration, no network, no personal data in the public repository.
+- `js/account-statistics.js` renders **Recent Wishlist Finds**, dates of first observation in a newer export, not actual acquisition dates. Browser-only derived metrics.
+- The CSS/JS load sequence includes `js/wishlist-finds.js` between the Ultra modules and Account Statistics. Current CSS retains `css/recipe-coverage.css` for accessible icon-only delete controls.
+- In Wishlist, recipe notices only appear for actionable discrepancies against a reviewed source; routine provenance warnings are deliberately kept out of the cards. Details remain accessible on demand in **How to obtain**.
+- Distinguish merge ingredient requirements from separate quest prerequisites; reject self-dependent quest data as an item creation recipe.

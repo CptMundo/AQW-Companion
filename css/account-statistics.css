@@ -56,3 +56,10 @@
  #account-stats .aqws-title{font-size:19px}
 }
 @media(prefers-reduced-motion:reduce){#account-stats .aqws-bar-fill{transition:none}}
+
+/* Recent wishlist matches from successive, local snapshots. */
+#account-stats .aqws-wishlist-finds{list-style:none;margin:10px 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+#account-stats .aqws-wishlist-find{display:flex;flex-direction:column;gap:3px;background:#102739;border:1px solid #335775;border-radius:9px;padding:10px 12px;min-width:0}
+#account-stats .aqws-wishlist-find strong{font-size:13px;overflow-wrap:anywhere;color:#d5f7ed}
+#account-stats .aqws-wishlist-find .aqws-note{font-size:11px}
+@media(max-width:520px){#account-stats .aqws-wishlist-finds{grid-template-columns:1fr}}

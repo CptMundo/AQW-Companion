@@ -17,7 +17,7 @@ const expected=[
  ["Totem of Nulgath",50]
 ];
 const recipe=api.getRecipe("Sin of the Abyss");
-assert.ok(recipe&&recipe.coverage==="reviewed-final-merge");
+assert.ok(recipe&&recipe.coverage==="reviewed-ingredients");
 assert.equal(recipe.steps.length,8,"All screenshot + AQWWiki components are present");
 assert.deepEqual(recipe.steps.map(x=>[x.item,x.target]),expected);
 assert.equal(recipe.steps.find(x=>x.item==="Nulgath Insignia").kind,"material");
@@ -90,14 +90,99 @@ assert.ok(!html.includes("Collect 50 Blood Gems of the Archfiend"),"Old hard-cod
 assert.ok(html.includes("window.AQWCRecipeIntegrity?.getRecipe(name)"),"Use reviewed recipes before starter catalog");
 assert.ok(html.includes("AQWCRecipeIntegrity?.upgradeUntouchedLegacy(p,freshStep)"),"Migrate old saved projects");
 assert.ok(html.includes("AQWCRecipeIntegrity.sync(project,freshStep)"),"Manual sync for edited projects");
-assert.ok(html.includes("complete recipe not independently verified"),"Clearly label other recipes");
+assert.ok(!html.includes("Starter checklist — complete recipe not independently verified"),"No repetitive unverified banners in Wishlist");
+assert.ok(!html.includes("Final merge checked against AQWWiki"),"No repetitive verification badges");
+assert.ok(html.includes("Recipe ingredients need updating"),"Only actionable recipe fixes surface a notice");
 assert.ok(html.includes("href=\"css/recipe-coverage.css\""));
 assert.ok(html.includes("src=\"js/recipe-integrity.js\""));
 assert.ok(html.includes("AQWCRecipeIntegrity?.reviewedNames"),"Reviewed recipe should remain searchable without community catalog");
-assert.ok(html.includes("Source-reviewed final merge requirements"),"Only audited recipes get a verified badge");
+assert.ok(!html.includes("Source-reviewed final merge requirements"),"Do not clutter recipe details with verification badges");
+assert.ok(html.includes("section.append(node(\'h3\',\'Ingredients\'))"),"Recipe details use a short universal label");
+assert.ok(html.includes("Self-dependent quests are later stages"),"Reject self-dependent quest route as recipe");
 assert.ok(!html.includes("Verified merge ingredients")&&!html.includes("Verified final merge requirements"),"Unaudited recipes must not be labelled verified");
 assert.ok(html.indexOf("src=\"js/recipe-integrity.js\"")<html.indexOf("src=\"js/account-statistics.js\""),"Registry loads before app");
 assert.ok(css.includes(".recipe-coverage-line"));
 for(const [i,m] of [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].entries())
  if(!m[1].includes("src=")&&m[2].trim())new vm.Script(m[2],{filename:"index-inline-"+i});
+
+const forgeMetalNames=[
+ "Almighty Aluminum of Destiny","Blessed Barium of Destiny","Celestial Copper of Destiny",
+ "Glorious Gold of Destiny","Immortal Iron of Destiny","Pious Platinum of Destiny",
+ "Sanctified Silver of Destiny","Accursed Arsenic of Doom","Baneful Beryllium of Doom",
+ "Calamitous Chromium of Doom","Malefic Mercury of Doom","Pernicious Palladium of Doom",
+ "Reprehensible Rhodium of Doom","Treacherous Thorium of Doom"
+];
+assert.equal(api.reviewedNames.length,37,"Sin + 14 Forge Metal + 22 Light Merge rows reviewed");
+for(const name of forgeMetalNames){
+ const entry=api.getRecipe(name);
+ assert.equal(entry.steps.length,3,name+" needs the three Forge Metal ingredients");
+ assert.ok(!entry.steps.some(s=>s.item===name),"The target itself is not a recipe ingredient");
+ assert.ok(!entry.steps.some(s=>s.item==="Forge Key"),"Forge Key belongs to a later BLoD quest");
+ assert.equal(api.getAcquisition(name).wiki,"https://aqwwiki.wikidot.com/forge-metal");
+}
+const copper=api.getRecipe("Celestial Copper of Destiny");
+assert.deepEqual(copper.steps.map(s=>[s.item,s.target]),[
+ ["Loyal Spirit Orb",5],["Bright Aura",2],["Celestial Copper",1]
+]);
+let forgeId=0;
+const legacyForge={
+ id:"old-forge-goal",name:"Celestial Copper of Destiny",type:"Misc",
+ steps:[
+  {id:"self",label:"Celestial Copper of Destiny ×1",kind:"owned",item:"Celestial Copper of Destiny",target:1,status:"unknown"},
+  {id:"key",label:"Forge Key ×1",kind:"owned",item:"Forge Key",target:1,status:"unknown"},
+  {id:"quest",label:"Complete Celestial Copper of Destiny (confirm in game)",kind:"manual",status:"unknown"}
+ ]
+};
+assert.equal(api.isLegacyForge(legacyForge),true);
+assert.equal(api.upgradeUntouchedLegacy(legacyForge,step=>({id:"copper-"+ ++forgeId,...step,status:"unknown"})),true);
+assert.equal(legacyForge.id,"old-forge-goal","Saved wishlist goal ID persists");
+assert.deepEqual(legacyForge.steps.map(s=>[s.item,s.target]),[
+ ["Loyal Spirit Orb",5],["Bright Aura",2],["Celestial Copper",1]
+]);
+assert.equal(api.inspect(legacyForge).status,"reviewed");
+assert.equal(api.upgradeUntouchedLegacy(legacyForge,()=>{throw Error("must be idempotent")}),false);
+const customizedForge={name:"Celestial Copper of Destiny",steps:[
+  {id:"self",label:"Celestial Copper of Destiny ×1",kind:"owned",item:"Celestial Copper of Destiny",target:1,status:"unknown"},
+  {id:"key",label:"Forge Key ×1",kind:"owned",item:"Forge Key",target:1,status:"unknown"},
+  {id:"quest",label:"Complete Celestial Copper of Destiny (confirm in game)",kind:"manual",status:"done"},
+  {id:"my-note",kind:"manual",label:"My personal plan",status:"done"}
+]};
+assert.equal(api.upgradeUntouchedLegacy(customizedForge,()=>{throw Error("must not auto edit")}),false,"Custom project safe");
+assert.equal(api.inspect(customizedForge).status,"needs-sync");
+api.sync(customizedForge,step=>({id:"added-"+ ++forgeId,...step,status:"unknown"}));
+assert.equal(customizedForge.steps.length,4,"Three ingredients plus the custom note");
+assert.ok(customizedForge.steps.some(s=>s.id==="my-note"&&s.status==="done"),"Preserve customized step");
+
+
+const lightRecipes={
+ "Blade of Destiny":[["Basic Weapon Kit",1],["Blessed Barium of Destiny",1],["Spirit Orb",15],["Loyal Spirit Orb",1],["Brilliant Aura",1]],
+ "Bright Blade of Destiny":[["Blade of Destiny",1],["Advanced Weapon Kit",1],["Brilliant Aura",1]],
+ "Blinding Blade of Destiny":[["Bright Blade of Destiny",1],["Ultimate Weapon Kit",1]],
+ "Broadsword of Destiny":[["Basic Weapon Kit",1],["Glorious Gold of Destiny",1],["Spirit Orb",20],["Loyal Spirit Orb",1],["Brilliant Aura",1]],
+ "Bright Broadsword of Destiny":[["Broadsword of Destiny",1],["Advanced Weapon Kit",1],["Bright Aura",1],["Undead Energy",25]],
+ "Blinding Broadsword of Destiny":[["Bright Broadsword of Destiny",1],["Ultimate Weapon Kit",1]],
+ "Daggers of Destiny":[["Basic Weapon Kit",1],["Almighty Aluminum of Destiny",1],["Spirit Orb",50]],
+ "Bright Daggers of Destiny":[["Undead Energy",50],["Daggers of Destiny",1],["Advanced Weapon Kit",1],["Spirit Orb",75]],
+ "Blinding Daggers of Destiny":[["Bright Daggers of Destiny",1],["Ultimate Weapon Kit",1]],
+ "Bow of Destiny":[["Basic Weapon Kit",1],["Sanctified Silver of Destiny",1],["Undead Energy",17],["Spirit Orb",13],["Loyal Spirit Orb",1],["Brilliant Aura",1]],
+ "Bright Bow of Destiny":[["Bow of Destiny",1],["Advanced Weapon Kit",1],["Loyal Spirit Orb",3]],
+ "Blinding Bow of Destiny":[["Bright Bow of Destiny",1],["Ultimate Weapon Kit",1]],
+ "Mace of Destiny":[["Basic Weapon Kit",1],["Celestial Copper of Destiny",1],["Undead Energy",7],["Spirit Orb",20],["Loyal Spirit Orb",1]],
+ "Bright Mace of Destiny":[["Mace of Destiny",1],["Advanced Weapon Kit",1],["Bright Aura",2]],
+ "Blinding Mace of Destiny":[["Bright Mace of Destiny",1],["Ultimate Weapon Kit",1]],
+ "Scythe of Destiny":[["Basic Weapon Kit",1],["Immortal Iron of Destiny",1],["Undead Energy",10],["Spirit Orb",10],["Loyal Spirit Orb",2]],
+ "Bright Scythe of Destiny":[["Scythe of Destiny",1],["Advanced Weapon Kit",1],["Brilliant Aura",2]],
+ "Blinding Scythe of Destiny":[["Bright Scythe of Destiny",1],["Ultimate Weapon Kit",1]],
+ "Bright Aura":[["Loyal Spirit Orb",50]],
+ "Brilliant Aura":[["Bright Aura",25]],
+ "Loyal Spirit Orb":[["Spirit Orb",100]],
+ "Spirit Orb":[["Undead Energy",50]]
+};
+for(const [name,ingredients] of Object.entries(lightRecipes)){
+ assert.deepEqual(api.getRecipe(name).steps.map(x=>[x.item,x.target]),ingredients,"Light Merge wiki ingredients for "+name);
+ assert.equal(api.getAcquisition(name).wiki,"https://aqwwiki.wikidot.com/light-merge");
+ assert.ok(api.getAcquisition(name).methods[0].join==="/join necropolis");
+}
+assert.deepEqual(api.getRecipe("Spirit Orb (Misc)").steps.map(x=>[x.item,x.target]),[["Undead Energy",50]],"Wiki disambiguation alias resolves to inventory-friendly name");
+
 console.log("Wishlist recipe integrity passed: 8 verified components, saved checklists, safe sync and incomplete-recipe warnings");

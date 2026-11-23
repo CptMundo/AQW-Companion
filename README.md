@@ -57,9 +57,16 @@ The repository root is deployed to GitHub Pages on pushes to `main` by `.github/
 
 ## Recipe verification and Ultra boss cue modules (PR #85–86)
 
-- `js/recipe-integrity.js` and `css/recipe-coverage.css`: audited final merge ingredients for Sin of the Abyss; migration of old untouched Wishlist checklists, explicit sync for customized steps, notices when a community recipe is not independently verified.
+- `js/recipe-integrity.js` and `css/recipe-coverage.css`: 37 individually reviewed merges (Sin of the Abyss, 14 Forge Metal recipes and 22 Light Merge entries), non-destructive legacy Checklist upgrades, and a compact update action only when known ingredients are stale.
 - `js/ultra-quote-actions.js` and `css/ultra-quote-actions.css`: reaction instructions to boss quotes, conditional on selected class and assigned role in Ultras.
 - `scripts/audit_recipe_catalog.cjs`: read-only structural scan across every public catalog item and acquisition entry. Its CI report is a **review queue**, not proof that thousands of game recipes are wrong or that they have been checked against live AQWWiki.
 - `docs/RECIPE_COVERAGE.md` and `docs/ULTRA_QUOTES_RECIPE_AUDIT.md`: limitations, sources, migration details and review workflow.
 
 These modules load after the extracted legacy CSS; recipe/ultra JS is linked before the main inline application. This extraction does not alter any player data.
+
+## Wishlist findings & source review (PR #87)
+
+- `js/wishlist-finds.js`: local-only comparison of saved full inventory exports with current Wishlist names; `Account Statistics` displays **Recent Wishlist Finds** first observed between imports, never an exact in-game acquisition timestamp.
+- Cleaner cards: icon-only × remove buttons and no repetitive starter/check-against-Wiki/not-detected banners. Saved custom steps are protected.
+- Source-backed subset: https://aqwwiki.wikidot.com/sin-of-the-abyss, https://aqwwiki.wikidot.com/forge-metal, https://aqwwiki.wikidot.com/light-merge. Details and limitations: `docs/WISHLIST_RECIPE_AND_FINDS.md`.
+- Most community recipes are **not independently verified**; the structural audit doesn't establish current truth. Never label the whole item database source-reviewed.
