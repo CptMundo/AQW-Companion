@@ -34,7 +34,10 @@ function audit(db){
     sourceReviewedAgainstLiveGame:0
   };
   const candidateNames=[];
-  for(const [name,entry] of acq){
+  // Scan ALL source records, including category-alias collisions; maps are only for lookups.
+  for(const row of db.acquisition){
+    if(!record(row))continue;
+    const name=normalize(row[0]),entry=row[1];
     if(!entry||typeof entry!=="object"||Array.isArray(entry)){issue("invalid-acquisition",name,"non-object");continue}
     const methods=Array.isArray(entry.methods)?entry.methods:[];
     if(methods.length)metrics.withMethod++;
