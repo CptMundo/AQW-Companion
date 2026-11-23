@@ -1,0 +1,39 @@
+name: Guide and Recipe Reliability
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'js/ultra-guide-rows.js'
+      - 'js/routine-library.js'
+      - 'js/recipe-integrity.js'
+      - 'css/ultra-quote-actions.css'
+      - 'css/meta-class-builds.css'
+      - 'css/planner-routines.css'
+      - 'tests/**'
+      - '.github/workflows/guide-recipe-reliability.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'js/ultra-guide-rows.js'
+      - 'js/routine-library.js'
+      - 'js/recipe-integrity.js'
+      - 'tests/**'
+      - '.github/workflows/guide-recipe-reliability.yml'
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run all Node regressions
+        run: |
+          for t in tests/*.test.cjs; do
+            echo "Running $t"
+            node "$t" || exit 1
+          done
+      - name: Run entire catalog STRUCTURAL audit only
+        run: node scripts/audit_recipe_catalog.cjs data/companion_database.json review_output/recipe-audit
