@@ -59,6 +59,14 @@ for(const [raw,expected,icon] of [
  assert.equal(context.itemTypeGroup(raw),expected,"Type category mismatch for "+raw);
  assert.equal(context.itemTypeIcon(raw),icon,"Type icon mismatch for "+raw);
 }
+const clazz=context.itemTypeNode("Class");
+assert.equal(clazz.tagName,"IMG","Class displays high-definition armor icon");
+assert.equal(clazz.src,"assets/class-armor-icon.svg");
+assert.equal(clazz.alt,"Class");
+assert.equal(clazz.width,24);
+assert.equal(clazz.height,24);
+assert.ok(clazz.className.includes("class-item-icon"));
+assert.equal(context.itemTypeIcon("Class"),"⚔️","Keep safe emoji fallback");
 const cape=context.itemTypeNode("Cape");
 assert.equal(cape.tagName,"IMG","Cape displays a real illustration instead of a jacket emoji");
 assert.equal(cape.src,"assets/cape-icon.svg");
@@ -75,4 +83,4 @@ assert.equal(context.itemTypeLabel("Cape"),"Cape");
 
 const scripts=[...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
 for(const [i,m] of scripts.entries())if(!m[1].includes("src=")&&m[2].trim())new vm.Script(m[2],{filename:"index-inline-"+i});
-console.log("Privacy, compact consent, Wishlist icons, and Explore Helm/Cape/Misc regression tests passed");
+console.log("Item type icons including high-definition class armor plus privacy regression passed");
