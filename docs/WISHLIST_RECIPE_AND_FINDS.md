@@ -14,9 +14,16 @@ Sources:
 - https://aqwwiki.wikidot.com/artix-s-quests
 - https://aqwwiki.wikidot.com/dwarfhold-keep (map name /join dwarfhold)
 
-The other **13** metals in that same Forge Metal shop are also registered from the wiki: seven Destiny metals requiring **Loyal Spirit Orb ×5 + Bright Aura ×2 + named metal ×1**, and seven Doom metals requiring **Corrupt Spirit Orb ×5 + Ominous Aura ×2 + named metal ×1**. The reviewed Sin of the Abyss final merge remains unchanged. The recipe registry is **15 individually identified merges**, not the whole published catalog.
+The other **13** metals in that same Forge Metal shop are also registered from the wiki: seven Destiny metals requiring **Loyal Spirit Orb ×5 + Bright Aura ×2 + named metal ×1**, and seven Doom metals requiring **Corrupt Spirit Orb ×5 + Ominous Aura ×2 + named metal ×1**. The reviewed Sin of the Abyss final merge remains unchanged. The registry now covers **37 individually listed merge results**, not the whole published catalog: 1 Sin of the Abyss final merge + 14 Forge Metal + 22 entries from the Light Merge shop.
 
 The merge recipe has priority over quest-only routes where explicitly reviewed. For other catalog entries, an explicit `community-merge` recipe is preferred over a `community-quest` route **when it has non-self ingredients and positive quantities**. Never sum multiple alternative acquisition routes automatically.
+
+
+### Light Merge — source-reviewed additions
+
+From https://aqwwiki.wikidot.com/light-merge, the review covers all 18 standard Destiny weapon chain merges shown under Weapons (1)/(2), plus four exchange rows: Bright Aura (50 Loyal Spirit Orbs), Brilliant Aura (25 Bright Auras), Loyal Spirit Orb (100 Spirit Orbs), and Spirit Orb (50 Undead Energy). All required quantities are fixed in `js/recipe-integrity.js` and tested in `tests/recipe-integrity.test.cjs`.
+
+The public wiki writes `Spirit Orb (Misc)` to disambiguate the category; the Companion uses inventory-friendly `Spirit Orb` and supports the wiki alias when searching. Other acquisition routes may still exist; these are specifically the **Light Merge shop costs**.
 
 ## Existing user's Wishlist protection
 
