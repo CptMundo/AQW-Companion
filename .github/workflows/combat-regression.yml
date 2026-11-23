@@ -1,0 +1,29 @@
+name: Combat simulator regression
+on:
+  push:
+    branches:
+      - feature/combat-standard-60s-dps
+    paths:
+      - 'js/combat-engine.js'
+      - 'js/damage-formulas.js'
+      - 'tests/**'
+      - '.github/workflows/combat-regression.yml'
+  pull_request:
+    paths:
+      - 'js/combat-engine.js'
+      - 'js/damage-formulas.js'
+      - 'tests/**'
+      - '.github/workflows/combat-regression.yml'
+jobs:
+  combat-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify combat engine
+        run: node tests/combat-engine.test.cjs
+      - name: Verify damage formulas
+        run: node tests/damage-formulas.test.cjs
