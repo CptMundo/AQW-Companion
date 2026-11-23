@@ -4,6 +4,7 @@ const fs=require("node:fs");
 const vm=require("node:vm");
 const path=require("node:path");
 const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+const siteCss=fs.readFileSync(path.join(__dirname,"../css/site.css"),"utf8");
 const noFragments=[
   'data-group="damage"',
   'data-tab="damage"',
@@ -34,9 +35,9 @@ for(const marker of [
   'function initClassBuildPlanner()',
   'function initForgeTracker()',
   'initClassBuildPlanner();initForgeTracker()',
-  'id="forge-list"',
-  '#forge .forge-tracker-items'
+  'id="forge-list"'
 ])assert.ok(html.includes(marker),"existing Build/Forge functionality was affected: "+marker);
+assert.ok(siteCss.includes("#forge .forge-tracker-items"),"Forge CSS was lost during extraction");
 const scripts=[...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
 assert.equal(scripts.filter(x=>!x[1].includes("src=")).length,1,"main inline application is preserved");
 assert.ok(!scripts.some(x=>/combat-engine|damage-simulator/.test(x[1])),"retired Damage Simulator scripts stay removed");
