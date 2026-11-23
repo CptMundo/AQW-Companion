@@ -1,0 +1,26 @@
+/* Extracted from index.html; preserve patch order and cascade.
+   Do not reorder CSS blocks without checking screenshots. */
+/* style: aqw-wishlist-type-icons */
+#unlocks .unlockhead h3{display:flex;align-items:center;gap:8px}
+#unlocks .unlockhead h3 .itemtypeicon{font-size:19px;line-height:1.15;flex-shrink:0}
+
+/* style: aqw-cape-illustration */
+.itemtypeicon.cape-item-icon{display:inline-block;width:24px;height:24px;object-fit:contain;vertical-align:middle;flex-shrink:0;line-height:1}
+#unlocks .unlockhead h3 .cape-item-icon{width:22px;height:22px}
+.wishlist-suggestion-item{display:inline-flex;align-items:center;gap:5px}
+.wishlist-suggestion-item .cape-item-icon{width:19px;height:19px}
+.discoveritem .cape-item-icon{width:25px;height:25px;min-height:25px}
+
+/* style: aqw-class-illustration */
+.itemtypeicon.class-item-icon{display:inline-block;width:24px;height:24px;object-fit:contain;vertical-align:middle;flex-shrink:0;line-height:1}
+#unlocks .unlockhead h3 .class-item-icon{width:22px;height:22px}
+.wishlist-suggestion-item .class-item-icon{width:19px;height:19px}
+.discoveritem .class-item-icon{width:25px;height:25px;min-height:25px}
+
+/* style: aqw-equipment-illustrations */
+.itemtypeicon.armor-item-icon,.itemtypeicon.helm-item-icon,.itemtypeicon.weapon-item-icon{
+ display:inline-block;width:24px;height:24px;object-fit:contain;vertical-align:middle;flex-shrink:0;line-height:1;
+}
+#unlocks .unlockhead h3 :is(.armor-item-icon,.helm-item-icon,.weapon-item-icon){width:22px;height:22px}
+.wishlist-suggestion-item :is(.armor-item-icon,.helm-item-icon,.weapon-item-icon){width:19px;height:19px}
+.discoveritem :is(.armor-item-icon,.helm-item-icon,.weapon-item-icon){width:25px;height:25px;min-height:25px}

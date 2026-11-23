@@ -4,6 +4,7 @@ const fs=require("node:fs");
 const vm=require("node:vm");
 const path=require("node:path");
 const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+const siteCss=fs.readFileSync(path.join(__dirname,"../css/site.css"),"utf8");
 const groups=[...html.matchAll(/<button\b[^>]*data-group="([^"]+)"/g)].map(m=>m[1]);
 const tabs=[...html.matchAll(/<button\b[^>]*data-tab="([^"]+)"[^>]*data-parent="([^"]+)"/g)].map(m=>({tab:m[1],group:m[2]}));
 const sections=[...html.matchAll(/<section\s+id="([^"]+)"\s+class="view\b/g)].map(m=>m[1]);
@@ -21,8 +22,8 @@ assert.equal((html.match(/id="forge-progress-label"/g)||[]).length,1,"Forge stat
 assert.ok(html.includes('function initForgeTracker()')&&html.includes('function loadForgeUnlocks()'));
 assert.ok(html.includes('function initClassBuildPlanner()'));
 assert.ok(html.includes("initClassBuildPlanner();initForgeTracker()"));
-assert.ok(html.includes("#forge .forge-tracker-items"),"Forge CSS must target its own section");
-assert.ok(!html.includes("#builds .forge-tracker-items"),"old selector cannot remain");
+assert.ok(siteCss.includes("#forge .forge-tracker-items"),"Forge CSS must target its own section");
+assert.ok(!siteCss.includes("#builds .forge-tracker-items"),"old selector cannot remain");
 assert.ok(html.includes("groupDefaults={")&&html.includes("builds:'builds'"),"normal tab navigation remains");
 for(const [i,m] of [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].entries()){
  if(m[1].trim())new vm.Script(m[1],{filename:"script-"+i});

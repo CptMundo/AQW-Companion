@@ -17,12 +17,13 @@ assert.equal(tabs.filter(x=>x.tab==="account-stats").length,1,"Stats appears exa
 assert.deepEqual(tabs.filter(x=>x.group==="inventory").map(x=>x.tab),
   ["inventory","account-stats","compare","history"],"Account Statistics belongs with the Inventory subviews");
 assert.ok(!html.includes('data-tab="overview"'),"Overview remains the Home main view, not a subtab");
-const navCssStart=html.indexOf('<style id="aqw-feedback-nav-v2">');
-const navCss=html.slice(navCssStart,html.indexOf("</style>",navCssStart));
+const siteCss=fs.readFileSync(path.join(__dirname,"../css/site.css"),"utf8");
+const navCssStart=siteCss.indexOf("/* style: aqw-feedback-nav-v2 */");
+const navCss=siteCss.slice(navCssStart,siteCss.indexOf("/* style:",navCssStart+1));
 assert.ok(navCssStart>=0,"Custom navigation CSS must be present");
 assert.ok(navCss.includes('.subnav button[data-parent="home"]'),"Home single-view secondary navigation must stay hidden");
 assert.ok(navCss.includes(':not([data-parent="home"])'),"Home is excluded from multi-view subnav");
-assert.ok(html.includes('.tabs.subnav button.group-visible{display:inline-flex}'),"Inventory secondary buttons remain visible");
+assert.ok(siteCss.includes('.tabs.subnav button.group-visible{display:inline-flex}'),"Inventory secondary buttons remain visible");
 assert.ok(html.includes("if(!b&&tab!=='overview')return"),"Home must navigate to Overview without a secondary tab");
 assert.ok(html.includes("const group=tab==='overview'?'home':b.dataset.parent"),"Home group derived even without a subtab");
 
