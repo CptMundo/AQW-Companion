@@ -1,0 +1,32 @@
+name: Optional analytics privacy checks
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'js/analytics-consent.js'
+      - 'css/analytics-consent.css'
+      - 'privacy.html'
+      - 'tests/analytics-consent.test.cjs'
+      - '.github/workflows/analytics-consent.yml'
+  push:
+    branches:
+      - feature/ga4-opt-in-analytics-20261123
+      - main
+    paths:
+      - 'index.html'
+      - 'js/analytics-consent.js'
+      - 'css/analytics-consent.css'
+      - 'privacy.html'
+      - 'tests/analytics-consent.test.cjs'
+      - '.github/workflows/analytics-consent.yml'
+jobs:
+  consent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check opt-in analytics and withdrawal behavior
+        run: node tests/analytics-consent.test.cjs
