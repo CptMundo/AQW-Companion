@@ -52,9 +52,9 @@ assert.ok(!classSvg.includes('href="http'),"Class asset must not fetch remote im
 for(const asset of ["armor-shield-icon","helm-icon","weapon-icon"]){
  const svg=fs.readFileSync(path.join(__dirname,"../assets/"+asset+".svg"),"utf8");
  assert.ok(svg.startsWith('<svg')&&svg.includes('viewBox="0 0 96 96"'),asset+" must be a scalable SVG");
- assert.ok((svg.match(/<path\\b/g)||[]).length>=6,asset+" must retain recognizable detail");
+ assert.ok(svg.split("<path").length-1>=6,asset+" must retain recognizable detail");
  assert.ok(svg.includes('<linearGradient')&&svg.includes('<radialGradient'),asset+" must use crisp layered vector shading");
- assert.ok(!/<script\\b|<foreignObject\\b|href="https?:/i.test(svg),asset+" must be self-contained without scripts or remote images");
+ assert.ok(!svg.includes("<script")&&!svg.includes("<foreignObject")&&!svg.includes('href="http'),asset+" must be self-contained without scripts or remote images");
 }
 const context=vm.createContext({
  document:{createElement(tag){return {tagName:tag.toUpperCase(),src:"",alt:"",className:"",width:0,height:0}}},
