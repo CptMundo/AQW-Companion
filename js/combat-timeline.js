@@ -10,7 +10,8 @@ const EPS=1e-7, WINDOW=60, MAX_EVENTS=2000;
 const effects={
   unshackle:[
     {id:"unshackled",duration:15,stat:"outgoingDamage",value:50},
-    {id:"soulVoid",duration:12,stat:"haste",value:30}
+    {id:"soulVoid",duration:12,stat:"haste",value:30},
+    {id:"soulVoidHotDot",duration:12,stat:"hotAndDotPower",value:30}
   ],
   shackle:[
     {id:"shackled",duration:15,stat:"damageResistance",value:50},
@@ -19,6 +20,7 @@ const effects={
   armageddon:[
     {id:"arbitersWrath",duration:12,stat:"critDamage",value:75},
     {id:"kneel",duration:12,stat:"outgoingDamage",value:50},
+    {id:"kneelResistance",duration:12,stat:"damageResistance",value:50},
     {id:"undyingHighlord",duration:20,stat:"incomingDamage",value:5,target:true,maxStacks:10}
   ]
 };
@@ -26,12 +28,15 @@ const model=Object.freeze({
   name:"Void Highlord",
   classModel:"Tank Melee",
   skills:Object.freeze({
-    unshackle:{cooldown:4,slot:"unshackle",button:4,label:"Unshackle",hpCostPct:20,effects:effects.unshackle},
-    shackle:{cooldown:4,slot:"shackle",button:2,label:"Shackle",hpCostPct:20,effects:effects.shackle},
+    unshackle:{cooldown:4,slot:"unshackle",button:4,label:"Unshackle",hpCostPct:20,coefficient:0.85,functionId:null,effects:effects.unshackle},
+    shackle:{cooldown:4,slot:"shackle",button:2,label:"Shackle",hpCostPct:20,coefficient:1.25,functionId:null,effects:effects.shackle},
     gaze:{cooldown:5,slot:"gaze",button:3,label:"Highlord's Gaze",manaCost:20,effects:[]},
-    armageddon:{cooldown:15,slot:"armageddon",button:5,label:"Armageddon",manaCost:50,effects:effects.armageddon}
+    armageddon:{cooldown:15,slot:"armageddon",button:5,label:"Armageddon",manaCost:50,coefficient:4.20,functionId:null,effects:effects.armageddon}
   }),
-  auto:Object.freeze({id:"contract",cooldown:2.3,label:"Contract"})
+  auto:Object.freeze({id:"contract",cooldown:2.3,button:1,label:"Contract",functionId:null}),
+  passives:Object.freeze({rank4HitChancePct:20,rank4CritChancePct:20,
+    rank4DamageResistancePct:20,rank10EndurancePct:50,
+    rank10InsolentFoolsChancePct:20})
 });
 // Forge procs are keyed to physical action bar positions 2/3/5.
 const buttons=Object.values(model.skills).map(skill=>skill.button);
@@ -88,7 +93,8 @@ function plan(options={}){
     Ravenous:{on:"third",cooldown:0,duration:10,effects:[
       {id:"ravenous",duration:10,stat:"outgoingDamage",value:10},
       {id:"ravenousCrit",duration:10,stat:"critChance",value:25},
-      {id:"consumed",duration:10,stat:"targetOutgoingDamageReduction",value:10,target:true}]},
+      {id:"consumed",duration:10,stat:"targetOutgoingDamageReduction",value:10,target:true,maxStacks:30},
+      {id:"consumedCrit",duration:10,stat:"targetCritChanceReduction",value:10,target:true,maxStacks:30}]},
     Lacerate:{on:"second",cooldown:2,effects:[{id:"laceration",duration:15,stat:"targetDodgeHitHasteReduction",value:10,target:true}]},
     Smite:{on:"fifth",cooldown:15,effects:[]}
   };
@@ -183,7 +189,8 @@ function plan(options={}){
       "Dauntless/Lacerate trigger only on button 2 (Shackle); Unshackle is button 4.",
       "Shackle and Unshackle have distinct cooldowns, but overwrite each other's postures.",
       "Nominal HP costs can exceed 100% maximum health; heals/lifesteal and survival are not implemented.",
-      "Contract may apply Soul Breach DoT or Soul Fend HoT; ticks/stack damage are not calculated."]};
+"Contract may apply Soul Breach DoT or Soul Fend HoT; ticks/stack damage are not calculated.",
+      "VHL skill coefficients are sourced, but internal base damage functions remain unknown."]};
 }
 root.AQWCombatTimeline=Object.freeze({version:"0.1.0-preview",WINDOW,model,plan});
 })(typeof window!=="undefined"?window:globalThis);
