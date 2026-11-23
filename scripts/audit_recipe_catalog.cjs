@@ -5,7 +5,7 @@
  * No external requests, no personal inventory/credentials, no silent database edits.
  */
 const fs=require("node:fs"),path=require("node:path"),crypto=require("node:crypto");
-const normalize=s=>String(s||"").trim().toLowerCase().replace(/[’‘]/g,"'");
+const normalize=s=>String(s||"").trim().toLowerCase().replace(/[’‘]/g,"'").replace(/\s*\((?:Class|Armor|Helm|Cape|Weapon|Pet|Misc|Sword|Dagger|Axe|Mace|Bow|Gun|0 AC|AC|Legend|Non-Legend|Merge)\)$/i,"");
 const safeName=s=>String(s||"").slice(0,180);
 const looksLikeWiki=s=>typeof s==="string"&&/^https:\/\/aqwwiki\.wikidot\.com\/[a-z0-9][a-z0-9-]*$/i.test(s);
 const record=(arr)=>Array.isArray(arr)&&arr.length===2&&typeof arr[0]==="string";
