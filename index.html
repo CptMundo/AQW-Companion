@@ -464,7 +464,7 @@ function catalogToProject(entry){return {name:entry.name,type:entry.type||'Other
 // AQWWiki uses category suffixes like "(Sword)" and an alternate apostrophe in
 // "Elders' Blood". A player's exported inventory need not use those labels.
 const inventoryRecipeKey=name=>String(name||'').toLowerCase().trim()
- .replace(/\\s*\\((?:sword|class|misc)\\)$/i,'')
+ .replace(/\s*\((?:sword|class|misc)\)$/i,'')
  .replace(/^elders' blood$/,"elder's blood");
 const stock=item=>items.filter(x=>inventoryRecipeKey(x.Name)===inventoryRecipeKey(item)).reduce((a,b)=>a+Number(b.Count||1),0);
 const owned=item=>items.some(x=>inventoryRecipeKey(x.Name)===inventoryRecipeKey(item));
