@@ -6,6 +6,8 @@ on:
     paths:
       - 'js/combat-engine.js'
       - 'js/combat-timeline.js'
+      - 'js/combat-engine-ui.js'
+      - 'index.html'
       - 'js/damage-formulas.js'
       - 'js/damage-kernel.js'
       - 'js/dps-calibration.js'
@@ -41,3 +43,5 @@ jobs:
         run: node tests/site-script-smoke.test.cjs
       - name: Verify 60s calibration and comparability
         run: node tests/dps-calibration.test.cjs
+      - name: Exercise combat UI interactions (mock DOM)
+        run: node tests/combat-ui-integration.test.cjs
