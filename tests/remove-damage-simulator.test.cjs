@@ -40,7 +40,7 @@ for(const marker of [
 const scripts=[...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
 assert.equal(scripts.filter(x=>!x[1].includes("src=")).length,1,"main inline application is preserved");
 assert.ok(!scripts.some(x=>/combat-engine|damage-simulator/.test(x[1])),"retired Damage Simulator scripts stay removed");
-assert.ok(scripts.filter(x=>x[1].includes("src=")).every(x=>x[1].includes("analytics-consent.js")),"only optional analytics external script is permitted");
+assert.ok(scripts.filter(x=>x[1].includes("src=")).every(x=>/analytics-consent\.js|account-statistics\.js/.test(x[1])),"only reviewed local scripts may load");
 for(const [index,script] of scripts.entries())if(script[2].trim())new vm.Script(script[2],{filename:"index:inline-"+index});
 assert.ok(html.includes("activateTab('overview')"),"home default navigation preserved");
-console.log("Navigation smoke passed: 8 groups, 13 views including Forge Tracker; simulator removed.");
+console.log("Navigation smoke passed: all primary sections, Forge and Account Statistics views; simulator removed.");
