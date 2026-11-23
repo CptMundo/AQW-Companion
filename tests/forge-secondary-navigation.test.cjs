@@ -1,0 +1,30 @@
+"use strict";
+const assert=require("node:assert/strict");
+const fs=require("node:fs");
+const vm=require("node:vm");
+const path=require("node:path");
+const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+const groups=[...html.matchAll(/<button\b[^>]*data-group="([^"]+)"/g)].map(m=>m[1]);
+const tabs=[...html.matchAll(/<button\b[^>]*data-tab="([^"]+)"[^>]*data-parent="([^"]+)"/g)].map(m=>({tab:m[1],group:m[2]}));
+const sections=[...html.matchAll(/<section\s+id="([^"]+)"\s+class="view\b/g)].map(m=>m[1]);
+assert.ok(groups.includes("builds"),"Class Builds main tab must remain");
+assert.ok(!groups.includes("forge"),"Forge belongs on secondary nav, not main nav");
+assert.equal(tabs.filter(t=>t.tab==="builds"&&t.group==="builds").length,1);
+assert.equal(tabs.filter(t=>t.tab==="forge"&&t.group==="builds").length,1);
+assert.ok(sections.includes("builds")&&sections.includes("forge"));
+for(const t of tabs)assert.ok(sections.includes(t.tab),"secondary tab missing view: "+t.tab);
+assert.ok(!html.includes("builds-tab-forge")&&!html.includes("builds-tab-planner"));
+assert.ok(!html.includes("builds-panel-forge")&&!html.includes("builds-panel-planner"));
+assert.ok(!html.includes("initBuildSubtabs"));
+assert.equal((html.match(/id="forge-list"/g)||[]).length,1,"Forge tracker must be unique");
+assert.equal((html.match(/id="forge-progress-label"/g)||[]).length,1,"Forge status must be preserved");
+assert.ok(html.includes('function initForgeTracker()')&&html.includes('function loadForgeUnlocks()'));
+assert.ok(html.includes('function initClassBuildPlanner()'));
+assert.ok(html.includes("initClassBuildPlanner();initForgeTracker()"));
+assert.ok(html.includes("#forge .forge-tracker-items"),"Forge CSS must target its own section");
+assert.ok(!html.includes("#builds .forge-tracker-items"),"old selector cannot remain");
+assert.ok(html.includes("groupDefaults={")&&html.includes("builds:'builds'"),"normal tab navigation remains");
+for(const [i,m] of [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].entries()){
+ if(m[1].trim())new vm.Script(m[1],{filename:"script-"+i});
+}
+console.log("Forge standard secondary-tab integration tests passed");
