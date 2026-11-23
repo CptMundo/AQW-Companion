@@ -17,7 +17,7 @@ const expected=[
  ["Totem of Nulgath",50]
 ];
 const recipe=api.getRecipe("Sin of the Abyss");
-assert.ok(recipe&&recipe.coverage==="reviewed-final-merge");
+assert.ok(recipe&&recipe.coverage==="reviewed-ingredients");
 assert.equal(recipe.steps.length,8,"All screenshot + AQWWiki components are present");
 assert.deepEqual(recipe.steps.map(x=>[x.item,x.target]),expected);
 assert.equal(recipe.steps.find(x=>x.item==="Nulgath Insignia").kind,"material");
@@ -90,7 +90,9 @@ assert.ok(!html.includes("Collect 50 Blood Gems of the Archfiend"),"Old hard-cod
 assert.ok(html.includes("window.AQWCRecipeIntegrity?.getRecipe(name)"),"Use reviewed recipes before starter catalog");
 assert.ok(html.includes("AQWCRecipeIntegrity?.upgradeUntouchedLegacy(p,freshStep)"),"Migrate old saved projects");
 assert.ok(html.includes("AQWCRecipeIntegrity.sync(project,freshStep)"),"Manual sync for edited projects");
-assert.ok(html.includes("complete recipe not independently verified"),"Clearly label other recipes");
+assert.ok(!html.includes("Starter checklist — complete recipe not independently verified"),"No repetitive unverified banners in Wishlist");
+assert.ok(!html.includes("Final merge checked against AQWWiki"),"No repetitive verification badges");
+assert.ok(html.includes("Recipe ingredients need updating"),"Only actionable recipe fixes surface a notice");
 assert.ok(html.includes("href=\"css/recipe-coverage.css\""));
 assert.ok(html.includes("src=\"js/recipe-integrity.js\""));
 assert.ok(html.includes("AQWCRecipeIntegrity?.reviewedNames"),"Reviewed recipe should remain searchable without community catalog");
@@ -100,4 +102,53 @@ assert.ok(html.indexOf("src=\"js/recipe-integrity.js\"")<html.indexOf("src=\"js/
 assert.ok(css.includes(".recipe-coverage-line"));
 for(const [i,m] of [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].entries())
  if(!m[1].includes("src=")&&m[2].trim())new vm.Script(m[2],{filename:"index-inline-"+i});
+
+const forgeMetalNames=[
+ "Almighty Aluminum of Destiny","Blessed Barium of Destiny","Celestial Copper of Destiny",
+ "Glorious Gold of Destiny","Immortal Iron of Destiny","Pious Platinum of Destiny",
+ "Sanctified Silver of Destiny","Accursed Arsenic of Doom","Baneful Beryllium of Doom",
+ "Calamitous Chromium of Doom","Malefic Mercury of Doom","Pernicious Palladium of Doom",
+ "Reprehensible Rhodium of Doom","Treacherous Thorium of Doom"
+];
+assert.equal(api.reviewedNames.length,15,"Sin + all 14 Forge Metal shop entries source reviewed");
+for(const name of forgeMetalNames){
+ const entry=api.getRecipe(name);
+ assert.equal(entry.steps.length,3,name+" needs the three Forge Metal ingredients");
+ assert.ok(!entry.steps.some(s=>s.item===name),"The target itself is not a recipe ingredient");
+ assert.ok(!entry.steps.some(s=>s.item==="Forge Key"),"Forge Key belongs to a later BLoD quest");
+ assert.equal(api.getAcquisition(name).wiki,"https://aqwwiki.wikidot.com/forge-metal");
+}
+const copper=api.getRecipe("Celestial Copper of Destiny");
+assert.deepEqual(copper.steps.map(s=>[s.item,s.target]),[
+ ["Loyal Spirit Orb",5],["Bright Aura",2],["Celestial Copper",1]
+]);
+let forgeId=0;
+const legacyForge={
+ id:"old-forge-goal",name:"Celestial Copper of Destiny",type:"Misc",
+ steps:[
+  {id:"self",label:"Celestial Copper of Destiny ×1",kind:"owned",item:"Celestial Copper of Destiny",target:1,status:"unknown"},
+  {id:"key",label:"Forge Key ×1",kind:"owned",item:"Forge Key",target:1,status:"unknown"},
+  {id:"quest",label:"Complete Celestial Copper of Destiny (confirm in game)",kind:"manual",status:"unknown"}
+ ]
+};
+assert.equal(api.isLegacyForge(legacyForge),true);
+assert.equal(api.upgradeUntouchedLegacy(legacyForge,step=>({id:"copper-"+ ++forgeId,...step,status:"unknown"})),true);
+assert.equal(legacyForge.id,"old-forge-goal","Saved wishlist goal ID persists");
+assert.deepEqual(legacyForge.steps.map(s=>[s.item,s.target]),[
+ ["Loyal Spirit Orb",5],["Bright Aura",2],["Celestial Copper",1]
+]);
+assert.equal(api.inspect(legacyForge).status,"reviewed");
+assert.equal(api.upgradeUntouchedLegacy(legacyForge,()=>{throw Error("must be idempotent")}),false);
+const customizedForge={name:"Celestial Copper of Destiny",steps:[
+  {id:"self",label:"Celestial Copper of Destiny ×1",kind:"owned",item:"Celestial Copper of Destiny",target:1,status:"unknown"},
+  {id:"key",label:"Forge Key ×1",kind:"owned",item:"Forge Key",target:1,status:"unknown"},
+  {id:"quest",label:"Complete Celestial Copper of Destiny (confirm in game)",kind:"manual",status:"done"},
+  {id:"my-note",kind:"manual",label:"My personal plan",status:"done"}
+]};
+assert.equal(api.upgradeUntouchedLegacy(customizedForge,()=>{throw Error("must not auto edit")}),false,"Custom project safe");
+assert.equal(api.inspect(customizedForge).status,"needs-sync");
+api.sync(customizedForge,step=>({id:"added-"+ ++forgeId,...step,status:"unknown"}));
+assert.equal(customizedForge.steps.length,4,"Three ingredients plus the custom note");
+assert.ok(customizedForge.steps.some(s=>s.id==="my-note"&&s.status==="done"),"Preserve customized step");
+
 console.log("Wishlist recipe integrity passed: 8 verified components, saved checklists, safe sync and incomplete-recipe warnings");
