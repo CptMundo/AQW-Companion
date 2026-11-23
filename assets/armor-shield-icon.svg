@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Silver and black theatrical armor shield"><defs>
+<radialGradient id="bg" cx="50%" cy="40%" r="65%"><stop stop-color="#29405a"/><stop offset=".7" stop-color="#061525"/><stop offset="1" stop-color="#010a13"/></radialGradient>
+<linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f6fdff"/><stop offset=".3" stop-color="#93a8c2"/><stop offset=".52" stop-color="#263951"/><stop offset=".8" stop-color="#e4f1fd"/><stop offset="1" stop-color="#6b7a8d"/></linearGradient>
+<linearGradient id="steel" x1=".05" y1=".05" x2=".95" y2="1"><stop stop-color="#fafcff"/><stop offset=".3" stop-color="#d0e3f5"/><stop offset=".65" stop-color="#7890ae"/><stop offset=".83" stop-color="#b6cbe2"/><stop offset="1" stop-color="#35465f"/></linearGradient>
+<linearGradient id="shadow" x1=".1" y1="0" x2=".9" y2="1"><stop stop-color="#8297b0"/><stop offset=".4" stop-color="#30465c"/><stop offset="1" stop-color="#0a1628"/></linearGradient>
+<linearGradient id="gold" x1=".1" y1="0" x2=".9" y2="1"><stop stop-color="#fff1ad"/><stop offset=".35" stop-color="#ffd040"/><stop offset=".64" stop-color="#ba7220"/><stop offset=".85" stop-color="#e9a02b"/><stop offset="1" stop-color="#71400c"/></linearGradient>
+</defs>
+<circle cx="48" cy="48" r="44" fill="url(#rim)" stroke="#0e2137" stroke-width="2.5"/>
+<circle cx="48" cy="48" r="37.5" fill="url(#bg)" stroke="#00a9f0" stroke-width="2"/>
+<circle cx="48" cy="48" r="34.6" fill="none" stroke="#194263" stroke-width="1.1"/>
+<path d="M27 22 Q48 17 69 22 L68 55 Q66 69 48 85 Q30 71 28 55Z" fill="#09111c" stroke="#ecf7ff" stroke-width="2.8" stroke-linejoin="round"/>
+<path d="M30 26 Q39 22 48 24 L48 79 Q34 68 31 55Z" fill="url(#steel)"/>
+<path d="M48 24 Q58 22 66 26 L65 55 Q62 69 48 79Z" fill="url(#shadow)"/>
+<path d="M48 24V80" fill="none" stroke="#f5fbff" stroke-width="1.8"/>
+<path d="M34 36 Q40 30 46 36 Q39 35 35 41Z" fill="#0b192b"/>
+<path d="M52 36 Q58 30 63 36 Q58 36 53 41Z" fill="#f8fcff"/>
+<path d="M35 48 Q39 45 45 48 L42 52 37 53Z" fill="#12243b"/>
+<path d="M52 48 Q59 43 63 48 L60 52 54 53Z" fill="#f0f8ff"/>
+<path d="M35 59 Q42 66 46 61 Q43 70 37 66Z" fill="#12233a"/>
+<path d="M52 60 Q59 66 63 58 Q63 70 55 67Z" fill="#f0f8ff"/>
+<path d="M32 29 Q40 26 45 28" fill="none" stroke="#fff" stroke-width="2" opacity=".75"/>
+</svg>

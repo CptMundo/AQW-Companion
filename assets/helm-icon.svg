@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Silver horned warrior helmet with golden visor"><defs>
+<radialGradient id="bg" cx="50%" cy="40%" r="65%"><stop stop-color="#29405a"/><stop offset=".7" stop-color="#061525"/><stop offset="1" stop-color="#010a13"/></radialGradient>
+<linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f6fdff"/><stop offset=".3" stop-color="#93a8c2"/><stop offset=".52" stop-color="#263951"/><stop offset=".8" stop-color="#e4f1fd"/><stop offset="1" stop-color="#6b7a8d"/></linearGradient>
+<linearGradient id="steel" x1=".05" y1=".05" x2=".95" y2="1"><stop stop-color="#fafcff"/><stop offset=".3" stop-color="#d0e3f5"/><stop offset=".65" stop-color="#7890ae"/><stop offset=".83" stop-color="#b6cbe2"/><stop offset="1" stop-color="#35465f"/></linearGradient>
+<linearGradient id="shadow" x1=".1" y1="0" x2=".9" y2="1"><stop stop-color="#8297b0"/><stop offset=".4" stop-color="#30465c"/><stop offset="1" stop-color="#0a1628"/></linearGradient>
+<linearGradient id="gold" x1=".1" y1="0" x2=".9" y2="1"><stop stop-color="#fff1ad"/><stop offset=".35" stop-color="#ffd040"/><stop offset=".64" stop-color="#ba7220"/><stop offset=".85" stop-color="#e9a02b"/><stop offset="1" stop-color="#71400c"/></linearGradient>
+</defs>
+<circle cx="48" cy="48" r="44" fill="url(#rim)" stroke="#0e2137" stroke-width="2.5"/>
+<circle cx="48" cy="48" r="37.5" fill="url(#bg)" stroke="#00a9f0" stroke-width="2"/>
+<circle cx="48" cy="48" r="34.6" fill="none" stroke="#194263" stroke-width="1.1"/>
+<path d="M31 35 Q17 33 13 17 Q9 29 14 38 Q21 47 33 49Z" fill="url(#steel)" stroke="#0b1a2e" stroke-width="3" stroke-linejoin="round"/>
+<path d="M65 35 Q79 33 83 17 Q87 29 82 38 Q75 47 63 49Z" fill="url(#steel)" stroke="#0b1a2e" stroke-width="3" stroke-linejoin="round"/>
+<path d="M16 30 Q21 39 30 41 M80 30 Q75 39 66 41" stroke="#eaf7ff" stroke-width="1.6" fill="none"/>
+<path d="M26 40 Q27 17 48 16 Q69 17 70 40 L68 69 58 79 38 79 28 69Z" fill="url(#steel)" stroke="#0e2035" stroke-width="3"/>
+<path d="M31 33 Q38 21 48 20 Q60 21 65 33Z" fill="#e6f4ff" opacity=".6"/>
+<path d="M31 48 37 49 39 75 32 69Z M65 48 59 49 57 75 64 69Z" fill="#60748d"/>
+<path d="M36 47H60L61 67 56 75H40L35 67Z" fill="#0b1524" stroke="#162539" stroke-width="2"/>
+<path d="M30 42H66L67 50 56 56V73L51 77V58H45V77L40 73V56L29 50Z" fill="url(#gold)" stroke="#925918" stroke-width="2.4" stroke-linejoin="round"/>
+<path d="M33 44H63" stroke="#fff3b2" stroke-width="2"/>
+<path d="M47 20 Q50 19 53 21" stroke="#fff" stroke-width="1.8" fill="none"/>
+</svg>
