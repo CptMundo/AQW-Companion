@@ -90,7 +90,8 @@ function plan(options={}){
   const forge=forgeSpecs[weaponForge];
   const forgeReady={time:0};
   let now=0,nextAction=0,nextAuto=includeAutos?autoStart:Infinity,turn=0,cursor=0;
-  const ready=new Map(),auras=new Map(),events=[],totals=Object.create(null),uptime=Object.create(null);
+  const ready=new Map(),auras=new Map(),events=[],totals=Object.create(null);
+  let spentMaxHpPct=0,spentManaNominal=0;
   function forgeTrigger(trigger,time){
     if(!forge||forge.on!==trigger||forgeReady.time>time+EPS)return;
     const snapshot=view(time);
@@ -114,8 +115,12 @@ function plan(options={}){
     // At a simultaneous timestamp, process auto first, then skill.
     if(nextAuto<=nextAction+EPS&&nextAuto<WINDOW-EPS){
       const snapshot=view(nextAuto);
+      const posture=snapshot.active.some(a=>a.id==="unshackled")?"unshackled":
+        snapshot.active.some(a=>a.id==="shackled")?"shackled":"neutral";
       events.push({time:+nextAuto.toFixed(5),type:"auto",id:"contract",label:"Contract",
-        hastePercent:snapshot.haste,auras:snapshot.active});
+        hastePercent:snapshot.haste,auras:snapshot.active,posture,
+        conditionalEffect:posture==="unshackled"?"Soul Breach DoT (5s; up to 5 stacks; tick formula unknown)":
+          posture==="shackled"?"Soul Fend HoT (5s; up to 5 stacks; heal formula unknown)":null});
       totals.contract=(totals.contract||0)+1;
       forgeTrigger("auto",nextAuto);
       nextAuto+=model.auto.cooldown*(1-snapshot.haste/100);
@@ -135,7 +140,9 @@ function plan(options={}){
         if(strategy==="cycle")cursor=(idx+1)%rotation.length;
         events.push({time:+now.toFixed(5),type:"skill",id:chosen,label:skill.label,
           hastePercent:before.haste,auras:before.active,hpCostPct:skill.hpCostPct||0,
-          manaCost:skill.manaCost||0});
+          manaCost:skill.manaCost||0,insolentFoolsProcChancePct:20});
+        spentMaxHpPct+=skill.hpCostPct||0;
+        spentManaNominal+=skill.manaCost||0;
         totals[chosen]=(totals[chosen]||0)+1;
         ready.set(skill.slot,now+skill.cooldown*(1-before.haste/100));
         applyEffects(auras,skill,now);
@@ -151,12 +158,15 @@ function plan(options={}){
   }
   return {status:"timeline-only",className:model.name,seconds:WINDOW,rotation:[...rotation],
     baseHastePercent:baseHaste,dynamicHaste,weaponForge,strategy,events,counts:{...totals},
+    nominalResourceCosts:{spentMaxHpPct,spentMana:spentManaNominal,modeledSurvival:false},
     damage:null,dps:null,
     caveats:["Cooldown is snapshotted when a skill is cast; retroactive haste changes are not modelled.",
       "Autoattacks are treated as independently timed; game animation/cast locks may delay them.",
       "HP costs, mana use, heal effects, passive procs and actual damage are not simulated.",
       "Forge proc triggers and buffs use published descriptions; proc hit damage and health-dependent multipliers remain unavailable.",
-      "Rotation choices and cast gap are model assumptions, not verified optimal play."]};
+      "Rotation choices and cast gap are model assumptions, not verified optimal play.",
+      "Nominal HP costs can exceed 100% maximum health; heals/lifesteal and survival are not implemented.",
+      "Contract may apply Soul Breach DoT or Soul Fend HoT; ticks/stack damage are not calculated."]};
 }
 root.AQWCombatTimeline=Object.freeze({version:"0.1.0-preview",WINDOW,model,plan});
 })(typeof window!=="undefined"?window:globalThis);
