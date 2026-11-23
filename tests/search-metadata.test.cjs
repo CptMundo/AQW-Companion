@@ -1,0 +1,27 @@
+"use strict";
+const assert=require("node:assert/strict");
+const fs=require("node:fs");
+const path=require("node:path");
+const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+function getTag(name,by="name"){
+  const regex=new RegExp('<meta\\s+'+by+'="'+name.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+'"\\s+content="([^"]*)"','i');
+  const found=html.match(regex);return found?.[1]||null;
+}
+const title=html.match(/<title>([^<]+)<\/title>/)?.[1];
+assert.ok(title.includes("AQW Companion")&&title.includes("AQWorlds"));
+const description=getTag("description");
+assert.ok(description&&description.includes("AdventureQuest Worlds"));
+assert.ok(description.length>=80&&description.length<=165);
+assert.ok(description.toLowerCase().includes("forge"));
+assert.equal(getTag("robots"),"index, follow");
+assert.equal(getTag("og:type","property"),"website");
+assert.equal(getTag("og:site_name","property"),"AQW Companion");
+assert.ok(getTag("og:title","property").includes("AQW Companion"));
+assert.ok(getTag("og:description","property").includes("AQWorlds"));
+assert.equal(getTag("twitter:card"),"summary");
+assert.ok(!/noindex|nofollow/i.test(html.slice(0,html.indexOf("</head>"))));
+assert.ok(!/rel="canonical"/i.test(html),"do not hardcode an unconfirmed public site URL");
+assert.ok(html.includes("Your data stays in this browser"),"privacy messaging must remain");
+assert.ok(html.includes('id="forge-list"'),"Forge Tracker preserved");
+assert.ok(html.includes('id="build-results"'),"Class Builds preserved");
+console.log("AQW Companion SEO and privacy metadata smoke passed");

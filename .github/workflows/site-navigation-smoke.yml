@@ -4,13 +4,16 @@ on:
     paths:
       - 'index.html'
       - 'tests/remove-damage-simulator.test.cjs'
+      - 'tests/search-metadata.test.cjs'
       - '.github/workflows/site-navigation-smoke.yml'
   push:
     branches:
-      - chore/remove-damage-simulator-20261123
+      - main
+      - feature/aqw-companion-search-visibility
     paths:
       - 'index.html'
       - 'tests/remove-damage-simulator.test.cjs'
+      - 'tests/search-metadata.test.cjs'
       - '.github/workflows/site-navigation-smoke.yml'
 jobs:
   test:
@@ -22,3 +25,4 @@ jobs:
         with:
           node-version: '22'
       - run: node tests/remove-damage-simulator.test.cjs
+      - run: node tests/search-metadata.test.cjs
