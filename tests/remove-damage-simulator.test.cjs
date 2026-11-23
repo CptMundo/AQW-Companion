@@ -38,7 +38,9 @@ for(const marker of [
   '#forge .forge-tracker-items'
 ])assert.ok(html.includes(marker),"existing Build/Forge functionality was affected: "+marker);
 const scripts=[...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
-assert.equal(scripts.length,1,"retired external scripts removed");
-for(const [index,script] of scripts.entries())new vm.Script(script[2],{filename:"index:inline-"+index});
+assert.equal(scripts.filter(x=>!x[1].includes("src=")).length,1,"main inline application is preserved");
+assert.ok(!scripts.some(x=>/combat-engine|damage-simulator/.test(x[1])),"retired Damage Simulator scripts stay removed");
+assert.ok(scripts.filter(x=>x[1].includes("src=")).every(x=>x[1].includes("analytics-consent.js")),"only optional analytics external script is permitted");
+for(const [index,script] of scripts.entries())if(script[2].trim())new vm.Script(script[2],{filename:"index:inline-"+index});
 assert.ok(html.includes("activateTab('overview')"),"home default navigation preserved");
 console.log("Navigation smoke passed: 8 groups, 13 views including Forge Tracker; simulator removed.");
