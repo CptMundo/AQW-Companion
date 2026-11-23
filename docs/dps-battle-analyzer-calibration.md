@@ -37,3 +37,18 @@ https://www.aqwhub.com/other-guides/do-ts-explained/
 ## Status
 No direct in-game Battle Analyzer samples have yet been obtained or validated in this branch.
 Therefore **not ready for automatic-DPS merge**.
+
+## First real observations — 23 Nov 2026
+
+Two **actual Battle Analyzer screenshots** supplied by the tester (60 seconds each) were transcribed in `data/combat/vhl-observed-baseline-2026-11-23.json`. They show:
+
+| Trial | Duration | Damage | Screenshot DPS | Healing | Damage taken |
+| --- | --- | ---: | ---: | ---: | ---: |
+| 1 | 60s | 393,842 | 6,564 | 30,772 | 30 |
+| 2 | 60s | 405,578 | 6,760 | 33,786 | 30 |
+
+Arithmetic mean = **399,710 damage / 60 seconds = 6,661.8333 observed DPS**. Sample-to-sample difference: 195.6 DPS (about 2.94% of the mean). Population standard deviation across the two runs: 97.8 DPS (about 1.47% CV). These facts describe **two observed runs only**; they do not establish the actual DPS distribution, correctness of any theoretical prediction or sustained DPS over other durations.
+
+The setup requested Full Lucky on VHL/NSoD, without Forge/potions/support and on the Class Hall dummy. **These details are not independently shown by the submitted Analyzer panels**: they remain *requested/test context, unconfirmed*, not certified equipment evidence. Do not infer the exact gear, target, player stats or skill rotation from the screenshots. No username or raw screenshot was committed to the repository.
+
+**The two runs are accepted as a useful preliminary baseline.** The user does not need to repeat them for the same preliminary calibration task. The pre-existing five-run release gate applies only to a claim of predictive model accuracy; it must not be misrepresented as a requirement for storing or computing these two observations. No automatic theoretical VHL DPS can yet be compared with this baseline because the current skill function mappings and damage pipeline are unresolved.
