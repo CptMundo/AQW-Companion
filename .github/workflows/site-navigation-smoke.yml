@@ -1,0 +1,24 @@
+name: Site navigation smoke
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'tests/remove-damage-simulator.test.cjs'
+      - '.github/workflows/site-navigation-smoke.yml'
+  push:
+    branches:
+      - chore/remove-damage-simulator-20261123
+    paths:
+      - 'index.html'
+      - 'tests/remove-damage-simulator.test.cjs'
+      - '.github/workflows/site-navigation-smoke.yml'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node tests/remove-damage-simulator.test.cjs
