@@ -415,7 +415,7 @@ function getSuggestions(q){
  if(!term)return [];
  const dictionary=new Map();
  for(const p of acquisitionCatalog)dictionary.set(normalizedName(p.name),{name:p.name,type:p.type,recipe:!!p.ingredients?.length});
- for(const p of communityItems.values())if(!dictionary.has(normalizedName(p.name)))dictionary.set(normalizedName(p.name),{name:p.name,type:p.type,recipe:!!communityAcquisition.get(communityKey(p.name))?.ingredients?.length});for(const p of communityAcquisition.values())if(!dictionary.has(normalizedName(p.name)))dictionary.set(normalizedName(p.name),{name:p.name,type:p.type||'Other',recipe:!!p.ingredients?.length});for(const p of catalog)if(!dictionary.has(normalizedName(p.name)))dictionary.set(normalizedName(p.name),{name:p.name,type:p.type,recipe:true});for(const name of (window.AQWCRecipeIntegrity?.reviewedNames||[])){const reviewed=window.AQWCRecipeIntegrity.getRecipe(name);if(reviewed&&!dictionary.has(normalizedName(name)))dictionary.set(normalizedName(name),{name,type:reviewed.type,recipe:true})}
+ for(const p of communityItems.values())if(!dictionary.has(normalizedName(p.name)))dictionary.set(normalizedName(p.name),{name:p.name,type:p.type,recipe:!!communityAcquisition.get(communityKey(p.name))?.ingredients?.length});for(const p of communityAcquisition.values())if(!dictionary.has(normalizedName(p.name)))dictionary.set(normalizedName(p.name),{name:p.name,type:p.type||'Other',recipe:!!p.ingredients?.length});for(const p of catalog)if(!dictionary.has(normalizedName(p.name)))dictionary.set(normalizedName(p.name),{name:p.name,type:p.type,recipe:true});for(const name of (window.AQWCRecipeIntegrity?.reviewedNames||[])){const reviewed=window.AQWCRecipeIntegrity.getRecipe(name);if(reviewed)dictionary.set(normalizedName(name),{name,type:reviewed.type,recipe:true})}
  for(const x of items){const key=normalizedName(x.Name);if(!dictionary.has(key))dictionary.set(key,{name:x.Name,type:x.Type,recipe:false})}
  return [...dictionary.values()].filter(x=>normalizedName(x.name).includes(term))
  .sort((a,b)=>Number(normalizedName(b.name).startsWith(term))-Number(normalizedName(a.name).startsWith(term))||Number(b.recipe)-Number(a.recipe)||a.name.localeCompare(b.name)).slice(0,12)
@@ -469,9 +469,20 @@ const inventoryRecipeKey=name=>String(name||'').toLowerCase().trim()
 const stock=item=>items.filter(x=>inventoryRecipeKey(x.Name)===inventoryRecipeKey(item)).reduce((a,b)=>a+Number(b.Count||1),0);
 const owned=item=>items.some(x=>inventoryRecipeKey(x.Name)===inventoryRecipeKey(item));
 function freshStep(raw){return {id:crypto.randomUUID(),label:raw.label,kind:raw.kind||'manual',item:raw.item||'',target:raw.target||1,status:'unknown'}}
-function newProject(p){return{id:crypto.randomUUID(),name:p.name,type:p.type||'Other',createdAt:new Date().toISOString(),steps:(p.steps||[]).map(freshStep)}}
+// Source-reviewed recipe category takes precedence over stale community or manually
+// selected Wishlist metadata; never infer an item's category from its ingredients.
+function canonicalWishlistType(name,type){
+ const verified=window.AQWCRecipeIntegrity?.getVerified(name);
+ return verified?.type||type||'Other';
+}
+function newProject(p){return{id:crypto.randomUUID(),name:p.name,type:canonicalWishlistType(p.name,p.type),createdAt:new Date().toISOString(),steps:(p.steps||[]).map(freshStep)}}
 
 function upgradeLegacyRecipes(){let changed=false;for(const p of unlocks){
+ // Fix pre-existing saved Wishlist categories (e.g. Necrotic Sword of the Abyss
+ // once displayed as Misc despite the reviewed recipe saying Weapon).
+ // Leave IDs, requirements and all player progress exactly as they were.
+ const verifiedType=window.AQWCRecipeIntegrity?.getVerified(p.name)?.type;
+ if(verifiedType&&p.type!==verifiedType){p.type=verifiedType;changed=true}
  // Only migrate an untouched Sin of the Abyss legacy template; retain custom entries.
  if(window.AQWCRecipeIntegrity?.upgradeUntouchedLegacy(p,freshStep))changed=true;
  // Migrate only the untouched, automatically generated 2-step placeholder.
@@ -506,7 +517,7 @@ function projectProgress(project){
  const complete=project.steps.filter(s=>stepStatus(s)==='done').length;
  return{materialPct,checkpointsPct,trackedTotal,complete,trackedPct:trackedTotal?complete/trackedTotal*100:0};
 }
-function renderUnlocks(){const list=$('unlocklist');list.replaceChildren();const columnCount=1;const columns=columnCount>1?Array.from({length:columnCount},()=>node('div',undefined,'unlock-column')):[];if(columns.length)list.append(...columns);const q=$('unlocksearch').value.toLowerCase().trim(),filter=$('unlockfilter').value;let projects=unlocks.filter(u=>u.name.toLowerCase().includes(q)).filter(u=>filter==='all'||(filter==='owned')===owned(u.name));if(!projects.length){let p=node('div',undefined,'placeholder');p.append(node('h2',unlocks.length?'No matching projects':'Start your first unlock project'),node('p','Click “Add starter projects” or create your own class, weapon or saga.'));list.append(p);return}for(const [projectIndex,project] of projects.entries()){const card=node('div',undefined,'unlockcard'),top=node('div',undefined,'unlockhead'),title=node('div');const heading=node('h3');heading.append(itemTypeNode(project.type),document.createTextNode(' '+project.name));title.append(heading,node('small',itemTypeLabel(project.type),'muted'));const rm=node('button','×','smallbutton wishlist-dismiss');rm.type='button';rm.title='Remove '+project.name+' from Wishlist';rm.setAttribute('aria-label','Remove '+project.name+' from Wishlist');rm.onclick=()=>{if(confirm('Remove this unlock project?')){unlocks=unlocks.filter(u=>u.id!==project.id);saveUnlocks();renderUnlocks()}};top.append(title,rm);card.append(top);
+function renderUnlocks(){const list=$('unlocklist');list.replaceChildren();const columnCount=1;const columns=columnCount>1?Array.from({length:columnCount},()=>node('div',undefined,'unlock-column')):[];if(columns.length)list.append(...columns);const q=$('unlocksearch').value.toLowerCase().trim(),filter=$('unlockfilter').value;let projects=unlocks.filter(u=>u.name.toLowerCase().includes(q)).filter(u=>filter==='all'||(filter==='owned')===owned(u.name));if(!projects.length){let p=node('div',undefined,'placeholder');p.append(node('h2',unlocks.length?'No matching projects':'Start your first unlock project'),node('p','Click “Add starter projects” or create your own class, weapon or saga.'));list.append(p);return}for(const [projectIndex,project] of projects.entries()){const card=node('div',undefined,'unlockcard'),top=node('div',undefined,'unlockhead'),title=node('div');const heading=node('h3');heading.append(itemTypeNode(canonicalWishlistType(project.name,project.type)),document.createTextNode(' '+project.name));title.append(heading,node('small',itemTypeLabel(canonicalWishlistType(project.name,project.type)),'muted'));const rm=node('button','×','smallbutton wishlist-dismiss');rm.type='button';rm.title='Remove '+project.name+' from Wishlist';rm.setAttribute('aria-label','Remove '+project.name+' from Wishlist');rm.onclick=()=>{if(confirm('Remove this unlock project?')){unlocks=unlocks.filter(u=>u.id!==project.id);saveUnlocks();renderUnlocks()}};top.append(title,rm);card.append(top);
  // Only show recipe coverage when there is an actual fix to apply.
  const recipeAudit=window.AQWCRecipeIntegrity?.inspect(project,acquisitionFor(project.name));
  if(recipeAudit?.reviewed&&recipeAudit.status==='needs-sync'){

@@ -35,9 +35,9 @@ assert.ok(html.includes("itemTypeGroup(x.type)===filter"),
  "Explore filter must use normalized types");
 assert.ok(html.includes(".slice(0,80);$('discoverytitle')"),
  "Filter before limiting results, so new types cannot be truncated away");
-assert.ok(html.includes("itemTypeNode(project.type)"),"Wishlist cards use shared Explore icons");
+assert.ok(html.includes("itemTypeNode(canonicalWishlistType(project.name,project.type))"),"Wishlist cards use shared Explore icons with reviewed category");
 assert.ok(html.includes("itemTypeNode(candidate.type)"),"Wishlist suggestions use shared Explore icons");
-assert.ok(html.includes("itemTypeLabel(project.type)"),"Wishlist headings use matching type labels");
+assert.ok(html.includes("itemTypeLabel(canonicalWishlistType(project.name,project.type))"),"Wishlist headings display the reviewed category");
 assert.ok(html.includes("<option>Helm</option><option>Cape</option>"),
  "Wishlist can preserve new equipment types");
 
