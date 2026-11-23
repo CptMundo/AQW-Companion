@@ -1,0 +1,65 @@
+"use strict";
+const assert=require("node:assert/strict");
+const fs=require("node:fs");
+const path=require("node:path");
+const vm=require("node:vm");
+const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+const css=fs.readFileSync(path.join(__dirname,"../css/analytics-consent.css"),"utf8");
+const analytics=fs.readFileSync(path.join(__dirname,"../js/analytics-consent.js"),"utf8");
+
+const noticeStart=html.indexOf('<div class="notice"><strong>🔒 Your game data stays in this browser.');
+assert.ok(noticeStart>=0,"Local data notice remains visible");
+const notice=html.slice(noticeStart,html.indexOf("</div>",noticeStart));
+assert.ok(notice.includes("Inventory, Wishlist and progress are stored locally."));
+assert.ok(!/Google Analytics|Backups|Use <b>Backup|Review your export/i.test(notice),"Top notice should be short and not discuss Analytics or backup");
+assert.ok(notice.includes('id="aqw-analytics-settings"'),"Consent preferences remain accessible");
+assert.ok(html.includes('id="aqw-analytics-banner"'));
+assert.ok(html.includes('id="aqw-analytics-accept"')&&html.includes('id="aqw-analytics-reject"'));
+assert.ok(html.includes('src="js/analytics-consent.js"'));
+assert.ok(analytics.includes("G-JF725WDHV1"),"Measurement ID is unchanged");
+assert.ok(css.includes("width:min(550px"),"Consent popup should be compact");
+assert.ok(css.includes("right:12px;left:auto"),"Consent popup should be in the bottom-right corner");
+assert.ok(css.includes("min-height:36px"),"Consent controls must remain accessible");
+assert.ok(css.includes("#aqw-analytics-banner[hidden]"),"Hidden state still works");
+
+const menu=html.match(/<select id="discoveryfilter">([\s\S]*?)<\/select>/);
+assert.ok(menu,"Explore category selector exists");
+for(const [value,label] of [["all","All types"],["Class","Classes"],["Weapon","Weapons"],
+["Armor","Armors"],["Helm","Helms"],["Cape","Capes"],["Other","Misc"]]){
+ assert.ok(menu[1].includes('<option value="'+value+'">'+label+'</option>'),"Missing explore option: "+label);
+}
+assert.ok(!menu[1].includes('>Other</option>'),"Visible menu label should use Misc");
+assert.ok(html.includes("if(q||filter==='Helm'||filter==='Cape'||filter==='Other')"),
+ "Helm/Cape/Misc can browse items without a typed search");
+assert.ok(html.includes("itemTypeGroup(x.type)===filter"),
+ "Explore filter must use normalized types");
+assert.ok(html.includes(".slice(0,80);$('discoverytitle')"),
+ "Filter before limiting results, so new types cannot be truncated away");
+assert.ok(html.includes("itemTypeIcon(project.type)"),"Wishlist cards use shared Explore icons");
+assert.ok(html.includes("itemTypeIcon(candidate.type)"),"Wishlist suggestions use shared Explore icons");
+assert.ok(html.includes("itemTypeLabel(project.type)"),"Wishlist headings use matching type labels");
+assert.ok(html.includes("<option>Helm</option><option>Cape</option>"),
+ "Wishlist can preserve new equipment types");
+
+const helperStart=html.indexOf("function itemTypeGroup(");
+const helperEnd=html.indexOf("function renderDiscover()",helperStart);
+assert.ok(helperStart>0&&helperEnd>helperStart);
+const context=vm.createContext({});
+vm.runInContext(html.slice(helperStart,helperEnd),context,{timeout:2000});
+for(const [raw,expected,icon] of [
+ ["Class","Class","⚔️"],["Sword","Weapon","🗡️"],
+ ["Weapon","Weapon","🗡️"],["Armor","Armor","🛡️"],
+ ["Helm","Helm","🪖"],["Helmet","Helm","🪖"],["Cape","Cape","🧥"],
+ ["Other","Other","📦"],["Misc","Other","📦"],["Pet","Other","🐾"],
+ ["House Item","Other","🏠"]
+]){
+ assert.equal(context.itemTypeGroup(raw),expected,"Type category mismatch for "+raw);
+ assert.equal(context.itemTypeIcon(raw),icon,"Type icon mismatch for "+raw);
+}
+assert.equal(context.itemTypeLabel("Other"),"Misc");
+assert.equal(context.itemTypeLabel("Misc"),"Misc");
+assert.equal(context.itemTypeLabel("Cape"),"Cape");
+
+const scripts=[...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
+for(const [i,m] of scripts.entries())if(!m[1].includes("src=")&&m[2].trim())new vm.Script(m[2],{filename:"index-inline-"+i});
+console.log("Privacy, compact consent, Wishlist icons, and Explore Helm/Cape/Misc regression tests passed");
