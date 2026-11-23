@@ -42,7 +42,7 @@ assert.ok(html.includes("Object.assign(starterBuilds,window.AQWCMetaBuilds?.buil
 const initialStart=html.indexOf("const starterBuilds={");
 const initialEnd=html.indexOf("\n};\nObject.assign(starterBuilds",initialStart);
 assert.ok(initialStart>=0&&initialEnd>initialStart,"Original 15-class catalog remains available");
-const originalClassKeys=[...html.slice(initialStart,initialEnd).matchAll(/^ "([^"]+)": \\{/gm)].map(m=>m[1]);
+const originalClassKeys=[...html.slice(initialStart,initialEnd).matchAll(/^ "([^"]+)": \{/gm)].map(m=>m[1]);
 assert.equal(originalClassKeys.length,15,"Do not delete or overwrite any preexisting build class");
 assert.equal(new Set([...originalClassKeys,...addon.classes]).size,27,"Dropdown should expose 27 unique names");
 
