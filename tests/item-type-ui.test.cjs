@@ -49,6 +49,13 @@ assert.ok(classSvg.includes('viewBox="0 0 96 96"'),"Class icon scales cleanly to
 assert.ok(classSvg.includes('<radialGradient')&&classSvg.includes('<linearGradient'),"Class icon uses layered vector detail");
 assert.ok((classSvg.match(/<path\b/g)||[]).length>=10,"Class armor has detailed vector elements");
 assert.ok(!classSvg.includes('href="http'),"Class asset must not fetch remote images");
+for(const asset of ["armor-shield-icon","helm-icon","weapon-icon"]){
+ const svg=fs.readFileSync(path.join(__dirname,"../assets/"+asset+".svg"),"utf8");
+ assert.ok(svg.startsWith('<svg')&&svg.includes('viewBox="0 0 96 96"'),asset+" must be a scalable SVG");
+ assert.ok((svg.match(/<path\\b/g)||[]).length>=6,asset+" must retain recognizable detail");
+ assert.ok(svg.includes('<linearGradient')&&svg.includes('<radialGradient'),asset+" must use crisp layered vector shading");
+ assert.ok(!/<script\\b|<foreignObject\\b|href="https?:/i.test(svg),asset+" must be self-contained without scripts or remote images");
+}
 const context=vm.createContext({
  document:{createElement(tag){return {tagName:tag.toUpperCase(),src:"",alt:"",className:"",width:0,height:0}}},
  node(tag,body,className){return {tagName:tag.toUpperCase(),textContent:body,className}}
@@ -79,13 +86,29 @@ assert.equal(cape.alt,"Cape");
 assert.equal(cape.width,24);
 assert.equal(cape.height,24);
 assert.ok(cape.className.includes("cape-item-icon"));
-const armor=context.itemTypeNode("Armor");
-assert.equal(armor.tagName,"SPAN");
-assert.equal(armor.textContent,"🛡️");
+for(const [raw,asset,category] of [
+ ["Armor","armor-shield-icon","Armor"],
+ ["Helm","helm-icon","Helm"],
+ ["Helmet","helm-icon","Helm"],
+ ["Weapon","weapon-icon","Weapon"],
+ ["Sword","weapon-icon","Weapon"],
+ ["Bow","weapon-icon","Weapon"]
+]){
+ const icon=context.itemTypeNode(raw);
+ assert.equal(icon.tagName,"IMG",raw+" should use high-resolution illustration");
+ assert.equal(icon.src,"assets/"+asset+".svg");
+ assert.equal(icon.alt,category);
+ assert.equal(icon.width,24);
+ assert.equal(icon.height,24);
+ assert.ok(icon.className.includes(category.toLowerCase()+"-item-icon"));
+}
+const misc=context.itemTypeNode("Other");
+assert.equal(misc.tagName,"SPAN");
+assert.equal(misc.textContent,"📦");
 assert.equal(context.itemTypeLabel("Other"),"Misc");
 assert.equal(context.itemTypeLabel("Misc"),"Misc");
 assert.equal(context.itemTypeLabel("Cape"),"Cape");
 
 const scripts=[...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
 for(const [i,m] of scripts.entries())if(!m[1].includes("src=")&&m[2].trim())new vm.Script(m[2],{filename:"index-inline-"+i});
-console.log("Item type icons including high-definition class armor plus privacy regression passed");
+console.log("Detailed Armor, Helm, Weapon, Class and Cape SVG rendering + privacy regressions passed");
