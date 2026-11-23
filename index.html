@@ -461,8 +461,13 @@ const acquisitionCatalog = [
 ];
 function acquisitionFor(name){return window.AQWCRecipeIntegrity?.getAcquisition(name)||acquisitionCatalog.find(x=>normalizedName(x.name)===normalizedName(name))||communityAcquisition.get(communityKey(name))||null}
 function catalogToProject(entry){return {name:entry.name,type:entry.type||'Other',steps:(entry.ingredients||[]).map(([item,target])=>({label:`${item} ×${target}`,kind:target===1?'owned':'material',item,target}))}}
-const stock=item=>items.filter(x=>x.Name.toLowerCase()===String(item).toLowerCase()).reduce((a,b)=>a+b.Count,0);
-const owned=item=>items.some(x=>x.Name.toLowerCase()===String(item).toLowerCase());
+// AQWWiki uses category suffixes like "(Sword)" and an alternate apostrophe in
+// "Elders' Blood". A player's exported inventory need not use those labels.
+const inventoryRecipeKey=name=>String(name||'').toLowerCase().trim()
+ .replace(/\\s*\\((?:sword|class|misc)\\)$/i,'')
+ .replace(/^elders' blood$/,"elder's blood");
+const stock=item=>items.filter(x=>inventoryRecipeKey(x.Name)===inventoryRecipeKey(item)).reduce((a,b)=>a+Number(b.Count||1),0);
+const owned=item=>items.some(x=>inventoryRecipeKey(x.Name)===inventoryRecipeKey(item));
 function freshStep(raw){return {id:crypto.randomUUID(),label:raw.label,kind:raw.kind||'manual',item:raw.item||'',target:raw.target||1,status:'unknown'}}
 function newProject(p){return{id:crypto.randomUUID(),name:p.name,type:p.type||'Other',createdAt:new Date().toISOString(),steps:(p.steps||[]).map(freshStep)}}
 
