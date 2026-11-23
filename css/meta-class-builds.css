@@ -1,0 +1,9 @@
+/* Class Builds 2026 additions. Keep the existing character/equipment layout. */
+.build-meta-identity{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:4px 0 8px}
+.build-meta-category{font-size:11px;font-weight:750;background:#193950;color:#91e5f5;border:1px solid #316885;padding:5px 9px;border-radius:999px}
+.build-meta-alias{font-size:11px;color:#c4d7e9}
+.build-meta-note{font-size:12px;line-height:1.55;color:#c6e2f4;margin:7px 0 12px}
+.build-meta-alternatives{font-size:12px;line-height:1.5;color:#d9e9f4;margin:10px 0 6px}
+.build-meta-sources{display:flex;flex-wrap:wrap;gap:12px;margin:10px 0 7px}
+.build-meta-sources a{font-size:12px;color:#8dddf5;text-decoration:underline;text-underline-offset:3px}
+.build-meta-sources a:hover,.build-meta-sources a:focus-visible{color:#fff}
