@@ -1,0 +1,36 @@
+name: Full catalog structural recipe audit
+on:
+  pull_request:
+    paths:
+      - 'scripts/audit_recipe_catalog.cjs'
+      - 'tests/audit_recipe_catalog.test.cjs'
+      - 'data/companion_database.json'
+      - '.github/workflows/full-recipe-audit.yml'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/audit_recipe_catalog.cjs'
+      - 'data/companion_database.json'
+      - '.github/workflows/full-recipe-audit.yml'
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Audit script unit tests
+        run: node tests/audit_recipe_catalog.test.cjs
+      - name: Audit every published public catalog entry
+        run: node scripts/audit_recipe_catalog.cjs data/companion_database.json review_output/recipe-audit
+      - name: Publish audit report in workflow summary
+        run: cat review_output/recipe-audit/catalog-audit.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload full candidate issue report
+        uses: actions/upload-artifact@v4
+        with:
+          name: recipe-structural-audit
+          path: review_output/recipe-audit/
+          retention-days: 30
