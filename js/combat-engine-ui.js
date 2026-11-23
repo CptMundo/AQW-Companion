@@ -27,11 +27,19 @@ function initCombatWindow() {
         <option value="shackle,gaze,armageddon">Defensive: 2 → 3 → 5</option>
         <option value="unshackle,armageddon,gaze">Offensive: 3 → 5 → 2</option>
       </select></label>
+      <label>Weapon Forge (verified triggers)<select id="combat-forge" style="display:block;width:100%;margin-top:5px">
+        <option value="None">None</option>
+        <option value="Dauntless">Dauntless — skill 2</option>
+        <option value="Valiance">Valiance — autoattack</option>
+        <option value="Ravenous">Ravenous — skill 3</option>
+        <option value="Lacerate">Lacerate — skill 2</option>
+        <option value="Smite">Smite — skill 5</option>
+      </select></label>
       <label>Base haste (%) <input id="combat-haste" type="number" min="0" max="50" step="1" value="0" style="display:block;width:100%;margin-top:5px"></label>
       <label>Cast spacing (seconds; calibration) <input id="combat-gap" type="number" min="0.1" max="5" step="0.1" value="0.5" style="display:block;width:100%;margin-top:5px"></label>
       <label style="align-self:center"><input id="combat-autos" type="checkbox"> Include autoattacks (unverified phase)</label>
     </div>
-    <p style="font-size:12px;color:#bad8e9">Haste entered below is your <strong>base haste</strong>; Soul Void adds 30% during its 12-second duration (up to 50% total). Cast gap and auto phase remain calibration assumptions.</p>
+    <p style="font-size:12px;color:#bad8e9">Haste entered below is your <strong>base haste</strong>; Soul Void adds 30%, and Dauntless adds 25% while active (capped at 50%). The timeline shows Forge proc <strong>occurrences</strong>, not their unverified damage. Cast gap and auto phase remain assumptions.</p>
     <p id="combat-summary" role="status" style="margin-top:12px;color:#b9f6dc"></p>
     <div id="combat-events" style="max-height:300px;overflow:auto;border:1px solid #345b77;border-radius:8px;padding:10px"></div>
     <details style="margin-top:14px"><summary>Detailed measurement — paste every recorded hit (optional)</summary>
@@ -40,7 +48,7 @@ function initCombatWindow() {
       <button type="button" id="combat-measure-button" style="margin-top:9px;padding:9px 13px;border:1px solid #71cafa;border-radius:8px;background:#174e70;color:#fff;cursor:pointer">Calculate observed 60s DPS</button>
       <p id="combat-measured-result" role="status"></p>
     </details>
-    <small style="display:block;color:#a2c5d8;margin-top:12px">Current limitations: cooldown retiming on auras, server cast lock, HP/mana, Forge procs, crit variance and actual damage functions are not yet reproduced. <a href="https://aqwwiki.wikidot.com/void-highlord-class" target="_blank" rel="noopener noreferrer" style="color:#8cdefa">VHL source ↗</a></small>`;
+    <small style="display:block;color:#a2c5d8;margin-top:12px">Current limitations: cooldown retiming on auras, server cast lock, HP/mana, Forge proc damage, crit variance and actual damage functions are not yet reproduced. <a href="https://aqwwiki.wikidot.com/void-highlord-class" target="_blank" rel="noopener noreferrer" style="color:#8cdefa">VHL source ↗</a> · <a href="https://www.aq.com/lore/guides/enhancementtraits" target="_blank" rel="noopener noreferrer" style="color:#8cdefa">Official Forge effects ↗</a></small>`;
   host.appendChild(container);
   const totalInput=container.querySelector("#combat-total-damage");
   const classInput=container.querySelector("#combat-class-name");
@@ -57,6 +65,7 @@ function initCombatWindow() {
   classInput.addEventListener("input",calculateTotal);
   const rotation=container.querySelector("#combat-rotation");
   const haste=container.querySelector("#combat-haste");
+  const forge=container.querySelector("#combat-forge");
   const gap=container.querySelector("#combat-gap");
   const autos=container.querySelector("#combat-autos");
   const summary=container.querySelector("#combat-summary");
@@ -67,7 +76,7 @@ function initCombatWindow() {
         actionGapSeconds:Number(gap.value),includeAuto:autos.checked});
       const plan=timeline?timeline.plan({seconds:60,rotation:rotation.value.split(","),
         baseHastePercent:Number(haste.value),actionGapSeconds:Number(gap.value),
-        includeAuto:autos.checked,dynamicHaste:true}):null;
+        includeAuto:autos.checked,weaponForge:forge.value,dynamicHaste:true}):null;
       summary.textContent=(plan?plan.events.length:report.events.length)+" planned events · dynamic haste enabled · theoretical DPS unavailable until skill functions are validated.";
       events.replaceChildren();
       const list=document.createElement("ol");list.style.cssText="padding-left:22px;margin:0;line-height:1.8";
@@ -81,7 +90,7 @@ function initCombatWindow() {
       events.appendChild(list);
     }catch(error){summary.textContent="Timeline input error: "+error.message;events.replaceChildren();}
   }
-  [rotation,haste,gap,autos].forEach(control=>control.addEventListener("change",draw));
+  [rotation,haste,forge,gap,autos].forEach(control=>control.addEventListener("change",draw));
   container.querySelector("#combat-measure-button").addEventListener("click",()=>{
     const output=container.querySelector("#combat-measured-result");
     try{
