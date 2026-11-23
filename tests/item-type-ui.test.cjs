@@ -44,6 +44,11 @@ assert.ok(html.includes("<option>Helm</option><option>Cape</option>"),
 const helperStart=html.indexOf("function itemTypeGroup(");
 const helperEnd=html.indexOf("function renderDiscover()",helperStart);
 assert.ok(helperStart>0&&helperEnd>helperStart);
+const classSvg=fs.readFileSync(path.join(__dirname,"../assets/class-armor-icon.svg"),"utf8");
+assert.ok(classSvg.includes('viewBox="0 0 96 96"'),"Class icon scales cleanly to high-DPI screens");
+assert.ok(classSvg.includes('<radialGradient')&&classSvg.includes('<linearGradient'),"Class icon uses layered vector detail");
+assert.ok((classSvg.match(/<path\b/g)||[]).length>=10,"Class armor has detailed vector elements");
+assert.ok(!classSvg.includes('href="http'),"Class asset must not fetch remote images");
 const context=vm.createContext({
  document:{createElement(tag){return {tagName:tag.toUpperCase(),src:"",alt:"",className:"",width:0,height:0}}},
  node(tag,body,className){return {tagName:tag.toUpperCase(),textContent:body,className}}
