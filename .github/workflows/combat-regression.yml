@@ -8,6 +8,7 @@ on:
       - 'js/combat-timeline.js'
       - 'js/damage-formulas.js'
       - 'js/damage-kernel.js'
+      - 'js/dps-calibration.js'
       - 'tests/**'
       - '.github/workflows/combat-regression.yml'
   pull_request:
@@ -16,6 +17,7 @@ on:
       - 'js/combat-timeline.js'
       - 'js/damage-formulas.js'
       - 'js/damage-kernel.js'
+      - 'js/dps-calibration.js'
       - 'tests/**'
       - '.github/workflows/combat-regression.yml'
 jobs:
@@ -37,3 +39,5 @@ jobs:
         run: node tests/damage-kernel.test.cjs
       - name: Verify website integration and scripts
         run: node tests/site-script-smoke.test.cjs
+      - name: Verify 60s calibration and comparability
+        run: node tests/dps-calibration.test.cjs
