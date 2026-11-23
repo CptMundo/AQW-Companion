@@ -10,6 +10,7 @@ on:
       - 'index.html'
       - 'js/damage-formulas.js'
       - 'js/damage-kernel.js'
+      - 'js/class-skill-import.js'
       - 'js/dps-calibration.js'
       - 'data/combat/**'
       - 'tests/**'
@@ -22,6 +23,7 @@ on:
       - 'index.html'
       - 'js/damage-formulas.js'
       - 'js/damage-kernel.js'
+      - 'js/class-skill-import.js'
       - 'js/dps-calibration.js'
       - 'data/combat/**'
       - 'tests/**'
@@ -45,6 +47,8 @@ jobs:
         run: node tests/combat-timeline-property.test.cjs
       - name: Cross-check class source evidence against the runtime
         run: node tests/vhl-evidence.test.cjs
+      - name: Validate local class skill evidence import
+        run: node tests/class-skill-import.test.cjs
       - name: Verify official item boost and critical model guards
         run: node tests/damage-kernel.test.cjs
       - name: Verify website integration and scripts
