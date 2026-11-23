@@ -5,6 +5,7 @@ const path=require("node:path");
 const vm=require("node:vm");
 const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
 const asset=fs.readFileSync(path.join(__dirname,"../assets/cape-icon.svg"),"utf8");
+const iconsCss=fs.readFileSync(path.join(__dirname,"../css/item-icons.css"),"utf8");
 const nav=html.match(/<nav class="primarynav"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
 assert.ok(nav,"Primary navigation exists");
 const groups=[...nav.matchAll(/data-group="([^"]+)"/g)].map(m=>m[1]);
@@ -25,7 +26,7 @@ for(const entry of [
  "Weapon:'assets/weapon-icon.svg'"
 ])assert.ok(html.includes(entry),"Category icon mapping missing: "+entry);
 assert.ok(html.includes("img.onerror=function()"),"Cape falls back to superhero emoji if asset fails");
-assert.ok(html.includes('id="aqw-cape-illustration"'),"Size and layout styling included");
+assert.ok(iconsCss.includes("/* style: aqw-cape-illustration */")&&iconsCss.includes(".itemtypeicon.cape-item-icon"),"Size and layout styling included");
 assert.ok(asset.includes("<svg")&&asset.includes("viewBox=\"0 0 40 40\""));
 const match=asset.match(/href="data:image\/png;base64,([A-Za-z0-9+/=]+)"/);
 assert.ok(match,"Cape illustration should contain bundled PNG with no network dependencies");
