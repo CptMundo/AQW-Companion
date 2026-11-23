@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="css/item-icons.css">
 
 <link rel="stylesheet" href="css/account-statistics.css">
+<link rel="stylesheet" href="css/meta-class-builds.css">
 <link rel="stylesheet" href="css/recipe-coverage.css">
 <link rel="stylesheet" href="css/ultra-quote-actions.css">
 </head><body><div class="wrap"><header class="top"><div class="brand"><div class="logo"><img src="assets/brand-logo.png" width="52" height="52" alt="AQW Companion Prometheus-inspired helmet logo"></div><div><h1>AQW Companion <span class="tag">ALPHA 0.9.9.24</span></h1><small>AdventureQuest Worlds Inventory & Farming · Created by CptMundo</small></div></div><div class="actions"><label class="upload primary">📂 Import JSON export<input id="file" type="file" accept=".json,application/json" multiple></label><button id="backup">⬇️ Backup</button><button id="clear">Clear data</button></div></header><div id="alert" class="alert"></div><div class="notice aqw-storage-diagnostics" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><strong id="inventory-storage-status" aria-live="polite">💾 Inventory: checking browser storage…</strong><button id="inventory-storage-diagnostic" class="smallbutton" type="button">📋 Copy storage diagnostic</button></div><div class="notice"><strong>🔒 Your game data stays in this browser.</strong> Inventory, Wishlist and progress are stored locally. <button id="aqw-analytics-settings" type="button">Privacy settings</button> <a href="privacy.html">Privacy details</a>.</div>
@@ -75,7 +76,8 @@
 <div class="new-task"><input id="customtask" maxlength="120" placeholder="Add your own task, e.g. Check Wheel of Doom"><select id="customfrequency"><option value="daily">Daily</option><option value="weekly">Weekly</option></select><input id="customjoin" placeholder="Optional /join" maxlength="80"><button id="addcustomtask" class="primary">+ Add task</button></div></div>
 </section><section id="compare" class="view"><div class="card"><h3 class="sectiontitle">Compare two snapshots</h3><p class="muted" style="font-size:13px">Import both snapshots into the same browser. Comparison uses <b>ID</b> and quantity; moving items between inventory and bank does not count as a new item.</p><div class="comparecontrols"><label>Older <select id="oldselect"></select></label><label>Newer <select id="newselect"></select></label><button id="comparebtn" class="primary">Compare</button></div><div id="compareresult" class="muted">Import at least two snapshots to get started.</div></div></section>
 <section id="history" class="view"><div class="card"><h3 class="sectiontitle">Local import history</h3><div id="historylist"></div><p class="muted" style="font-size:12px">Each imported file is validated and saved in your browser's IndexedDB. The Backup button downloads a JSON file you can import later to restore your data. Clear data removes snapshots, farming goals and unlock projects.</p></div></section><div class="foot">Created by <strong>CptMundo</strong> for the AQWorlds community · Unofficial fan project · Not affiliated with Artix Entertainment · v0.9.9.24</div></div>
-<div id="itemdetails" class="detailoverlay hidden" role="dialog" aria-modal="true" aria-label="Item acquisition details"><div class="detailpanel"><div class="detailhead"><div><small style="color:#7da5d1;font-weight:700">AQW COMPANION · ACQUISITION EXPLORER</small><h2 id="detailname"></h2></div><button type="button" class="smallbutton" id="closedetails" aria-label="Close details">✕ Close</button></div><div id="detailcontent"></div></div></div><script src="js/recipe-integrity.js"></script>
+<div id="itemdetails" class="detailoverlay hidden" role="dialog" aria-modal="true" aria-label="Item acquisition details"><div class="detailpanel"><div class="detailhead"><div><small style="color:#7da5d1;font-weight:700">AQW COMPANION · ACQUISITION EXPLORER</small><h2 id="detailname"></h2></div><button type="button" class="smallbutton" id="closedetails" aria-label="Close details">✕ Close</button></div><div id="detailcontent"></div></div></div><script src="js/meta-class-builds.js"></script>
+<script src="js/recipe-integrity.js"></script>
 <script src="js/ultra-quote-actions.js"></script>
 <script src="js/wishlist-finds.js"></script>
 <script src="js/account-statistics.js"></script>
@@ -1361,7 +1363,9 @@ const starterBuilds={
    "note": "Support choice varies by boss and party setup."
   }
  }
+// Add vetted 2026 meta/recent classes without rewriting existing 15×3 builds.
 };
+Object.assign(starterBuilds,window.AQWCMetaBuilds?.builds||{});
 function renderUltraDetail(b){
  const root=$('ultradetail');root.classList.remove('hidden');root.replaceChildren();if(!b)return;
  const quick=ultraBeginner101[b.id]||{},roleMap=new Map(b.roles);
@@ -1812,6 +1816,7 @@ const baseClassEnhancement={
  'Shaman':'Wizard','Blaze Binder':'Wizard','Verus DoomKnight':'Lucky',
  'Yami no Ronin':'Lucky',"King's Echo":'Lucky','LightCaster':'Wizard'
 };
+Object.assign(baseClassEnhancement,window.AQWCMetaBuilds?.base||{});
 function suggestedBaseEnhancement(cls,role,slot){
  const base=baseClassEnhancement[cls]||'Lucky';
  return base;
@@ -1879,6 +1884,7 @@ const classAlchemy={
  "King's Echo":['Fate Tonic','Potent Battle Elixir','Felicitous Philtre'],
  'LightCaster':['Sage Tonic','Potent Malevolence Elixir','Potent Honor Potion']
 };
+Object.assign(classAlchemy,window.AQWCMetaBuilds?.alchemy||{});
 function suggestedConsumables(cls,role){
  const selected=classAlchemy[cls]||['Fate Tonic','Potent Battle Elixir','Felicitous Philtre'];
  // Reorder to match the actual Tonic, Elixir, Potion categories.
@@ -1899,9 +1905,23 @@ const enhancementMiniDescriptions={
 function shortEnhancementEffect(name){return enhancementMiniDescriptions[name]||'Situational enhancement'}
 function renderClassBuild(){
  const cls=$('build-class')?.value,role=$('build-role')?.value,root=$('build-results');if(!root)return;root.replaceChildren();
- const build=starterBuilds[cls]?.[role];if(!build){root.append(node('div','No starter build available yet.','build-empty'));return}
+ const build=starterBuilds[cls]?.[role],meta=window.AQWCMetaBuilds?.metadata?.[cls];
+ if(!build){
+  const roleName={solo:'Solo / Boss',farm:'Farming',group:'Group / Ultras'}[role]||role;
+  const alternatives=role==='farm'?'Kathool Adept, ArchMage or Arcana Invoker':
+    role==='group'?'Lord of Order, Legion Revenant or ArchPaladin':'Void Highlord or Chaos Avenger';
+  root.append(node('div',meta?'No recommended '+roleName+' build for '+cls+'. This class specializes in other roles; try '+alternatives+'.':'No starter build available yet.','build-empty'));
+  return;
+ }
  const panel=node('div',undefined,'build-loadout build-full-layout');
  panel.append(node('h4',cls+' · '+({solo:'Solo / Boss',farm:'Farming',group:'Group / Ultras'}[role])));
+ if(meta){
+  const identity=node('div',undefined,'build-meta-identity');
+  identity.append(node('span',meta.category,'build-meta-category'));
+  if(meta.canonical!==cls)identity.append(node('span','Same skills as '+meta.canonical,'build-meta-alias'));
+  panel.append(identity);
+ }
+ if(build.note)panel.append(node('p',build.note,'build-meta-note'));
  const layout=node('div',undefined,'build-character-layout');
  const mannequin=node('div',undefined,'build-mannequin');
  mannequin.innerHTML='<img class="build-artix-image" src="assets/artix.png" alt="Artix, AQWorlds paladin" loading="lazy" onerror="this.style.display=\'none\';this.parentElement.classList.add(\'build-artix-missing\')"><span class="build-artix-fallback">Artix artwork pending — add assets/artix.png to this PR.</span>'
@@ -2001,7 +2021,23 @@ function renderClassBuild(){
   pots.append(line);
  }
  info.append(pots);
- layout.append(mannequin,info);panel.append(layout);root.append(panel)
+ layout.append(mannequin,info);panel.append(layout);
+ if(build.alternative){
+  const alt=node('p',undefined,'build-meta-alternatives');
+  alt.append(node('strong','Alternative: '),document.createTextNode(build.alternative));
+  panel.append(alt);
+ }
+ if(meta){
+  const references=node('div',undefined,'build-meta-sources');
+  for(const [label,url] of [['Class information',meta.guide],['Build reference',meta.source]]){
+   if(!/^https:\/\//i.test(url||''))continue;
+   const a=document.createElement('a');a.textContent=label+' ↗';a.href=url;
+   a.target='_blank';a.rel='noopener noreferrer';references.append(a);
+  }
+  panel.append(references);
+  panel.append(node('small','Community-informed setups · Review boss mechanics and balance patches before copying an Ultra build.','muted tiny'));
+ }
+ root.append(panel)
 }
 // Forge enhancement unlocks: manually confirmed quests, never inferred from inventory possession.
 const FORGE_PROGRESS_KEY='aqwc-forge-unlocks-v1';
