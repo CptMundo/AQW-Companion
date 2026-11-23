@@ -15,7 +15,8 @@ const effects={
   ],
   shackle:[
     {id:"shackled",duration:15,stat:"damageResistance",value:50},
-    {id:"soulVoid",duration:12,stat:"haste",value:30}
+    {id:"soulVoid",duration:12,stat:"haste",value:30},
+    {id:"soulVoidHotDot",duration:12,stat:"hotAndDotPower",value:30}
   ],
   armageddon:[
     {id:"arbitersWrath",duration:12,stat:"critDamage",value:75},
@@ -30,7 +31,7 @@ const model=Object.freeze({
   skills:Object.freeze({
     unshackle:{cooldown:4,slot:"unshackle",button:4,label:"Unshackle",hpCostPct:20,coefficient:0.85,functionId:null,effects:effects.unshackle},
     shackle:{cooldown:4,slot:"shackle",button:2,label:"Shackle",hpCostPct:20,coefficient:1.25,functionId:null,effects:effects.shackle},
-    gaze:{cooldown:5,slot:"gaze",button:3,label:"Highlord's Gaze",manaCost:20,effects:[]},
+    gaze:{cooldown:5,slot:"gaze",button:3,label:"Highlord's Gaze",manaCost:20,coefficient:1.30,functionId:null,effects:[]},
     armageddon:{cooldown:15,slot:"armageddon",button:5,label:"Armageddon",manaCost:50,coefficient:4.20,functionId:null,effects:effects.armageddon}
   }),
   auto:Object.freeze({id:"contract",cooldown:2.3,button:1,label:"Contract",functionId:null}),
@@ -93,8 +94,8 @@ function plan(options={}){
     Ravenous:{on:"third",cooldown:0,duration:10,effects:[
       {id:"ravenous",duration:10,stat:"outgoingDamage",value:10},
       {id:"ravenousCrit",duration:10,stat:"critChance",value:25},
-      {id:"consumed",duration:10,stat:"targetOutgoingDamageReduction",value:10,target:true,maxStacks:30},
-      {id:"consumedCrit",duration:10,stat:"targetCritChanceReduction",value:10,target:true,maxStacks:30}]},
+      {id:"consumed",duration:10,stat:"targetOutgoingDamageReduction",value:10,basePct:10,additionalPerStackPct:1,target:true,maxStacks:30},
+      {id:"consumedCrit",duration:10,stat:"targetCritChanceReduction",value:10,basePct:10,additionalPerStackPct:1,target:true,maxStacks:30}]},
     Lacerate:{on:"second",cooldown:2,effects:[{id:"laceration",duration:15,stat:"targetDodgeHitHasteReduction",value:10,target:true}]},
     Smite:{on:"fifth",cooldown:15,effects:[]}
   };
