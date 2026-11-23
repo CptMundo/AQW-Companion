@@ -17,7 +17,7 @@ assert.ok(html.includes('id="forge" class="view"'),"Forge Tracker preserved");
 assert.ok(html.includes("itemTypeNode(project.type)"),"Wishlist cards use image icon helper");
 assert.ok(html.includes("itemTypeNode(candidate.type)"),"Wishlist suggestions use image icon helper");
 assert.ok(html.includes("itemTypeNode(item.type)"),"Explore cards use image icon helper");
-assert.ok(html.includes("img.src='assets/cape-icon.svg'"),"Icon points to bundled asset");
+assert.ok(html.includes("group==='Class'?'assets/class-armor-icon.svg':'assets/cape-icon.svg'"),"Class and Cape icons point to separate bundled assets");
 assert.ok(html.includes("img.onerror=function()"),"Cape falls back to superhero emoji if asset fails");
 assert.ok(html.includes('id="aqw-cape-illustration"'),"Size and layout styling included");
 assert.ok(asset.includes("<svg")&&asset.includes("viewBox=\"0 0 40 40\""));
