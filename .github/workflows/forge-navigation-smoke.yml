@@ -1,0 +1,24 @@
+name: Forge navigation smoke
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'tests/forge-secondary-navigation.test.cjs'
+      - '.github/workflows/forge-navigation-smoke.yml'
+  push:
+    branches:
+      - feature/forge-tracker-standard-subtab
+    paths:
+      - 'index.html'
+      - 'tests/forge-secondary-navigation.test.cjs'
+      - '.github/workflows/forge-navigation-smoke.yml'
+jobs:
+  navigation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node tests/forge-secondary-navigation.test.cjs
