@@ -26,12 +26,16 @@
  // Destination metal is ONE ingredient. Forge Key is a different, later quest.
  const DESTINY=["Almighty Aluminum","Blessed Barium","Celestial Copper","Glorious Gold","Immortal Iron","Pious Platinum","Sanctified Silver"];
  const DOOM=["Accursed Arsenic","Baneful Beryllium","Calamitous Chromium","Malefic Mercury","Pernicious Palladium","Reprehensible Rhodium","Treacherous Thorium"];
+ const LIGHT_SOURCE="https://aqwwiki.wikidot.com/light-merge";
+ const LIGHT_MERGE=[["Blade of Destiny",[["Basic Weapon Kit",1],["Blessed Barium of Destiny",1],["Spirit Orb",15],["Loyal Spirit Orb",1],["Brilliant Aura",1]]],["Bright Blade of Destiny",[["Blade of Destiny",1],["Advanced Weapon Kit",1],["Brilliant Aura",1]]],["Blinding Blade of Destiny",[["Bright Blade of Destiny",1],["Ultimate Weapon Kit",1]]],["Broadsword of Destiny",[["Basic Weapon Kit",1],["Glorious Gold of Destiny",1],["Spirit Orb",20],["Loyal Spirit Orb",1],["Brilliant Aura",1]]],["Bright Broadsword of Destiny",[["Broadsword of Destiny",1],["Advanced Weapon Kit",1],["Bright Aura",1],["Undead Energy",25]]],["Blinding Broadsword of Destiny",[["Bright Broadsword of Destiny",1],["Ultimate Weapon Kit",1]]],["Daggers of Destiny",[["Basic Weapon Kit",1],["Almighty Aluminum of Destiny",1],["Spirit Orb",50]]],["Bright Daggers of Destiny",[["Undead Energy",50],["Daggers of Destiny",1],["Advanced Weapon Kit",1],["Spirit Orb",75]]],["Blinding Daggers of Destiny",[["Bright Daggers of Destiny",1],["Ultimate Weapon Kit",1]]],["Bow of Destiny",[["Basic Weapon Kit",1],["Sanctified Silver of Destiny",1],["Undead Energy",17],["Spirit Orb",13],["Loyal Spirit Orb",1],["Brilliant Aura",1]]],["Bright Bow of Destiny",[["Bow of Destiny",1],["Advanced Weapon Kit",1],["Loyal Spirit Orb",3]]],["Blinding Bow of Destiny",[["Bright Bow of Destiny",1],["Ultimate Weapon Kit",1]]],["Mace of Destiny",[["Basic Weapon Kit",1],["Celestial Copper of Destiny",1],["Undead Energy",7],["Spirit Orb",20],["Loyal Spirit Orb",1]]],["Bright Mace of Destiny",[["Mace of Destiny",1],["Advanced Weapon Kit",1],["Bright Aura",2]]],["Blinding Mace of Destiny",[["Bright Mace of Destiny",1],["Ultimate Weapon Kit",1]]],["Scythe of Destiny",[["Basic Weapon Kit",1],["Immortal Iron of Destiny",1],["Undead Energy",10],["Spirit Orb",10],["Loyal Spirit Orb",2]]],["Bright Scythe of Destiny",[["Scythe of Destiny",1],["Advanced Weapon Kit",1],["Brilliant Aura",2]]],["Blinding Scythe of Destiny",[["Bright Scythe of Destiny",1],["Ultimate Weapon Kit",1]]],["Bright Aura",[["Loyal Spirit Orb",50]]],["Brilliant Aura",[["Bright Aura",25]]],["Loyal Spirit Orb",[["Spirit Orb",100]]],["Spirit Orb",[["Undead Energy",50]]]];
  const reviewed=[
   {name:"Sin of the Abyss",type:"Weapon",source:SIN_SOURCE,sourceKind:"final-merge",reviewedOn:"2026-11-23",ingredients:SIN},
   ...DESTINY.map(metal=>({name:metal+" of Destiny",type:"Misc",source:FORGE_SOURCE,sourceKind:"forge-metal",reviewedOn:"2026-11-23",ingredients:[["Loyal Spirit Orb",5],["Bright Aura",2],[metal,1]]})),
-  ...DOOM.map(metal=>({name:metal+" of Doom",type:"Misc",source:FORGE_SOURCE,sourceKind:"forge-metal",reviewedOn:"2026-11-23",ingredients:[["Corrupt Spirit Orb",5],["Ominous Aura",2],[metal,1]]}))
+  ...DOOM.map(metal=>({name:metal+" of Doom",type:"Misc",source:FORGE_SOURCE,sourceKind:"forge-metal",reviewedOn:"2026-11-23",ingredients:[["Corrupt Spirit Orb",5],["Ominous Aura",2],[metal,1]]})),
+  ...LIGHT_MERGE.map(([name,ingredients])=>({name,type:/^(?:Bright Aura|Brilliant Aura|Loyal Spirit Orb|Spirit Orb)$/.test(name)?"Misc":"Weapon",source:LIGHT_SOURCE,sourceKind:"light-merge",reviewedOn:"2026-11-23",ingredients}))
  ];
  const indexed=new Map(reviewed.map(entry=>[normalize(entry.name),entry]));
+ indexed.set("spirit orb (misc)",indexed.get("spirit orb"));
  function getVerified(name){return indexed.get(normalize(name))||null}
  function toSteps(entry){
   return entry.ingredients.map(([item,target])=>({label:item+" ×"+target,kind:target===1?"owned":"material",item,target}));
@@ -45,8 +49,8 @@
   return {
    name:entry.name,type:entry.type,origin:"reviewed",wiki:entry.source,
    complete:"final-merge",ingredients:entry.ingredients.map(row=>[...row]),
-   methods:[{type:"Merge/Shop",title:entry.sourceKind==="forge-metal"?"Forge Metal — Geopetal, Dwarfhold Keep":"Nulgath's Merge Shop (Ultra Nulgath)",
-    url:entry.source,join:entry.sourceKind==="forge-metal"?"/join dwarfhold":"/join ultranulgath",
+   methods:[{type:"Merge/Shop",title:entry.sourceKind==="forge-metal"?"Forge Metal — Geopetal, Dwarfhold Keep":entry.sourceKind==="light-merge"?"Light Merge — Artix, Necropolis":"Nulgath's Merge Shop (Ultra Nulgath)",
+    url:entry.source,join:entry.sourceKind==="forge-metal"?"/join dwarfhold":entry.sourceKind==="light-merge"?"/join necropolis":"/join ultranulgath",
     details:"These are the ingredients for this merge, not prerequisites of a later quest."}]
   };
  }
