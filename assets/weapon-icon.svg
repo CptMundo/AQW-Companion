@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Silver sword with golden hilt"><defs>
+<radialGradient id="bg" cx="50%" cy="40%" r="65%"><stop stop-color="#29405a"/><stop offset=".7" stop-color="#061525"/><stop offset="1" stop-color="#010a13"/></radialGradient>
+<linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f6fdff"/><stop offset=".3" stop-color="#93a8c2"/><stop offset=".52" stop-color="#263951"/><stop offset=".8" stop-color="#e4f1fd"/><stop offset="1" stop-color="#6b7a8d"/></linearGradient>
+<linearGradient id="steel" x1=".05" y1=".05" x2=".95" y2="1"><stop stop-color="#fafcff"/><stop offset=".3" stop-color="#d0e3f5"/><stop offset=".65" stop-color="#7890ae"/><stop offset=".83" stop-color="#b6cbe2"/><stop offset="1" stop-color="#35465f"/></linearGradient>
+<linearGradient id="shadow" x1=".1" y1="0" x2=".9" y2="1"><stop stop-color="#8297b0"/><stop offset=".4" stop-color="#30465c"/><stop offset="1" stop-color="#0a1628"/></linearGradient>
+<linearGradient id="gold" x1=".1" y1="0" x2=".9" y2="1"><stop stop-color="#fff1ad"/><stop offset=".35" stop-color="#ffd040"/><stop offset=".64" stop-color="#ba7220"/><stop offset=".85" stop-color="#e9a02b"/><stop offset="1" stop-color="#71400c"/></linearGradient>
+</defs>
+<circle cx="48" cy="48" r="44" fill="url(#rim)" stroke="#0e2137" stroke-width="2.5"/>
+<circle cx="48" cy="48" r="37.5" fill="url(#bg)" stroke="#00a9f0" stroke-width="2"/>
+<circle cx="48" cy="48" r="34.6" fill="none" stroke="#194263" stroke-width="1.1"/>
+<g transform="rotate(-44 48 48)">
+<path d="M42 9 48 3 54 9 55 55 41 55Z" fill="url(#steel)" stroke="#0d1e33" stroke-width="3" stroke-linejoin="round"/>
+<path d="M48 8V52" stroke="#f8fcff" stroke-width="2"/>
+<path d="M43 13 46 9 46 48 43 51Z" fill="#c7e0f8" opacity=".65"/>
+<path d="M50 12 52 11 53 49 50 52Z" fill="#435a77" opacity=".5"/>
+<path d="M36 52 Q48 61 60 52 L65 60 Q57 67 52 65V69H44V65Q39 67 31 60Z" fill="url(#gold)" stroke="#714216" stroke-width="2.7" stroke-linejoin="round"/>
+<path d="M36 56Q48 63 60 56" stroke="#fff4c9" stroke-width="1.5" fill="none"/>
+<rect x="44" y="66" width="8" height="17" rx="2" fill="#402b25" stroke="#8b633c" stroke-width="1.8"/>
+<path d="M44 69 52 73M44 74 52 78M44 79 51 82" stroke="#b78261" stroke-width="1.4"/>
+<circle cx="48" cy="86" r="6" fill="url(#gold)" stroke="#71440f" stroke-width="2.5"/>
+<circle cx="48" cy="86" r="2.7" fill="#211b1c"/>
+</g>
+</svg>
