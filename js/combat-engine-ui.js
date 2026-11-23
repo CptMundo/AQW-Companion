@@ -73,19 +73,18 @@ function initCombatWindow() {
   const events=container.querySelector("#combat-events");
   function draw(){
     try{
-      const report=engine.simulate({seconds:60,rotation:rotation.value.split(","),hastePercent:Number(haste.value),
-        actionGapSeconds:Number(gap.value),includeAuto:autos.checked});
-      const plan=timeline?timeline.plan({seconds:60,rotation:rotation.value.split(","),
+      if(!timeline)throw new Error("Combat timeline module is missing; cannot show a forecast.");
+      const plan=timeline.plan({seconds:60,rotation:rotation.value.split(","),
         baseHastePercent:Number(haste.value),actionGapSeconds:Number(gap.value),
-        includeAuto:autos.checked,weaponForge:forge.value,dynamicHaste:true}):null;
-      summary.textContent=(plan?plan.events.length:report.events.length)+
+        includeAuto:autos.checked,weaponForge:forge.value,dynamicHaste:true});
+      summary.textContent=plan.events.length+
         " planned events · dynamic haste · nominal HP cost "+
-        (plan?plan.nominalResourceCosts.spentMaxHpPct:"?")+
+        plan.nominalResourceCosts.spentMaxHpPct+
         "% of max HP (not an actual HP forecast) · theoretical DPS unavailable."+
-        (plan&&plan.warnings.length?" ⚠ "+plan.warnings.join(" "):"");
+        (plan.warnings.length?" ⚠ "+plan.warnings.join(" "):"");
       events.replaceChildren();
       const list=document.createElement("ol");list.style.cssText="padding-left:22px;margin:0;line-height:1.8";
-      for(const event of (plan?plan.events:report.events)){
+      for(const event of plan.events){
         const item=document.createElement("li");
         item.textContent=event.time.toFixed(2)+"s — "+(event.label||event.id)+
           " · haste "+(event.hastePercent??0).toFixed(0)+"%"+
