@@ -1,3 +1,5 @@
+> **Historical PR #85 reference.** The UI and audit registry were extended in PR #87. The current implementation is documented in [WISHLIST_RECIPE_AND_FINDS.md](WISHLIST_RECIPE_AND_FINDS.md): 37 reviewed merges; no routine coverage banners; recent Wishlist finds in Account Statistics. The original description below remains for historical context only.
+
 # Wishlist recipe coverage — reviewed sources and limits
 
 Reviewed: **2026-11-23**. This is a targeted source-verified fix with systematic warnings, not an exhaustive audit of the 43k-item community catalog.
