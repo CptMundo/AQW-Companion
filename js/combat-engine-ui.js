@@ -77,7 +77,7 @@ function initCombatWindow() {
       const plan=timeline?timeline.plan({seconds:60,rotation:rotation.value.split(","),
         baseHastePercent:Number(haste.value),actionGapSeconds:Number(gap.value),
         includeAuto:autos.checked,weaponForge:forge.value,dynamicHaste:true}):null;
-      summary.textContent=(plan?plan.events.length:report.events.length)+" planned events · dynamic haste enabled · theoretical DPS unavailable until skill functions are validated.";
+      summary.textContent=(plan?plan.events.length:report.events.length)+" planned events · dynamic haste enabled · VHL HP spending "+(plan?plan.nominalResourceCosts.spentMaxHpPct:"?")+"% of max HP before healing (survival not simulated) · theoretical DPS unavailable.";
       events.replaceChildren();
       const list=document.createElement("ol");list.style.cssText="padding-left:22px;margin:0;line-height:1.8";
       for(const event of (plan?plan.events:report.events)){
