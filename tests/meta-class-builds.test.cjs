@@ -39,6 +39,13 @@ assert.ok(html.includes('src="js/meta-class-builds.js"'),"Meta data module loade
 assert.ok(html.includes('href="css/meta-class-builds.css"'),"Meta styling linked");
 assert.ok(html.indexOf('src="js/meta-class-builds.js"')<html.indexOf('<script>'),"Meta data loads before main app");
 assert.ok(html.includes("Object.assign(starterBuilds,window.AQWCMetaBuilds?.builds||{})"));
+const initialStart=html.indexOf("const starterBuilds={");
+const initialEnd=html.indexOf("\n};\nObject.assign(starterBuilds",initialStart);
+assert.ok(initialStart>=0&&initialEnd>initialStart,"Original 15-class catalog remains available");
+const originalClassKeys=[...html.slice(initialStart,initialEnd).matchAll(/^ "([^"]+)": \\{/gm)].map(m=>m[1]);
+assert.equal(originalClassKeys.length,15,"Do not delete or overwrite any preexisting build class");
+assert.equal(new Set([...originalClassKeys,...addon.classes]).size,27,"Dropdown should expose 27 unique names");
+
 assert.ok(html.includes("Object.assign(baseClassEnhancement,window.AQWCMetaBuilds?.base||{})"));
 assert.ok(html.includes("Object.assign(classAlchemy,window.AQWCMetaBuilds?.alchemy||{})"));
 assert.ok(html.includes('<option value="group">Group / Ultras</option>'),"Group role selector must be accessible");
