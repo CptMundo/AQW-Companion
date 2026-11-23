@@ -1651,14 +1651,14 @@ function addProjectByName(name){name=canonicalItemName(name);let p=getRecipe(nam
  const item=items.find(x=>normalizedName(x.Name)===normalizedName(name));const type=p?.type||item?.Type||communityItems.get(communityKey(name))?.type||acquisitionFor(name)?.type||'Other';unlocks.push(newProject(p||{name,type,steps:[{label:'Own '+name,kind:'owned',item:name},{label:'Acquisition route not yet in the catalog',kind:'manual'}]}));saveUnlocks();selectTab('unlocks');$('unlocksearch').value=name;renderUnlocks();message(p?'Goal added with starter steps.':'Goal added; detailed recipe is not yet in the catalog.')}
 function itemTypeGroup(type){
  const k=String(type||'').trim().toLowerCase();
- if(k==='class')return 'Class';
- if(k==='armor')return 'Armor';
- if(k==='helm'||k==='helmet')return 'Helm';
- if(k==='cape')return 'Cape';
+ if(k==='class'||k==='classes')return 'Class';
+ if(k==='armor'||k==='armors')return 'Armor';
+ if(['helm','helmet','helms','helmets'].includes(k))return 'Helm';
+ if(k==='cape'||k==='capes')return 'Cape';
  if(/sword|dagger|axe|mace|staff|polearm|gun|bow|weapon/.test(k))return 'Weapon';
  return 'Other';
 }
-function itemTypeLabel(type){return itemTypeGroup(type)==='Other'?'Misc':String(type||'Weapon')}
+function itemTypeLabel(type){return itemTypeGroup(type)==='Other'?'Misc':String(type||'Misc')}
 function itemTypeIcon(type){
  const k=String(type||'').toLowerCase();
  switch(itemTypeGroup(type)){
@@ -1675,7 +1675,7 @@ function itemTypeIcon(type){
 function renderDiscover(){const area=$('discoveryitems');if(!area)return;area.replaceChildren();const q=normalizedName($('discoverysearch').value),filter=$('discoveryfilter').value,hide=$('hideowned').checked;let results=[];
  if(q||filter==='Helm'||filter==='Cape'||filter==='Other'){const candidates=new Map();for(const f of featuredGoals)candidates.set(normalizedName(f[0]),{name:f[0],type:f[1],tag:f[2]});for(const p of acquisitionCatalog)if(!candidates.has(normalizedName(p.name)))candidates.set(normalizedName(p.name),{name:p.name,type:p.type,tag:'Verified source'});for(const p of communityItems.values())if(!candidates.has(normalizedName(p.name)))candidates.set(normalizedName(p.name),{name:p.name,type:p.type,tag:p.flags?.length?p.flags.join(' · '):'Community database'});for(const p of communityAcquisition.values())if(!candidates.has(normalizedName(p.name)))candidates.set(normalizedName(p.name),{name:p.name,type:p.type||'Other',tag:'Community acquisition'});for(const p of catalog)if(!candidates.has(normalizedName(p.name)))candidates.set(normalizedName(p.name),{name:p.name,type:p.type,tag:'Starter project'});for(const i of items)if(!candidates.has(normalizedName(i.Name)))candidates.set(normalizedName(i.Name),{name:i.Name,type:i.Type,tag:'Imported inventory'});results=[...candidates.values()].filter(x=>!q||normalizedName(x.name).includes(q))}else results=featuredGoals.map(([name,type,tag])=>({name,type,tag}));
  results=results.filter(x=>filter==='all'||itemTypeGroup(x.type)===filter).filter(x=>!hide||!owned(x.name)).slice(0,80);$('discoverytitle').textContent=q?'Search results ('+results.length+')':filter==='Helm'?'Helms ('+results.length+')':filter==='Cape'?'Capes ('+results.length+')':filter==='Other'?'Misc ('+results.length+')':'Featured goals';
- for(const item of results){const btn=node('button',undefined,'discoveritem');btn.type='button';btn.append(node('span',itemTypeIcon(item.type),'itemtypeicon'),node('strong',item.name),node('small',itemTypeLabel(item.type)+' · '+item.tag));const tag=node('span',owned(item.name)?'✓ Owned':'View details','pill');btn.append(tag);btn.onclick=()=>showDiscoverDetail(item);area.append(btn)}if(!results.length)area.append(node('p',q?'No matches in the local catalog or current imported inventory.':'No featured matches. Try another filter.','muted'))}
+ for(const item of results){const btn=node('button',undefined,'discoveritem');btn.type='button';btn.append(node('span',itemTypeIcon(item.type),'itemtypeicon'),node('strong',item.name),node('small',itemTypeLabel(item.type)+' · '+item.tag));const tag=node('span',owned(item.name)?'✓ Owned':'View details','pill');btn.append(tag);btn.onclick=()=>showDiscoverDetail(item);area.append(btn)}if(!results.length)area.append(node('p',q?'No matches in the local catalog or current imported inventory.':filter!=='all'?'No matching items in the current catalog or inventory. Try searching by name.':'No featured matches. Try another filter.','muted'))}
 function showDiscoverDetail(item){const box=$('discoverydetail');box.classList.remove('hidden');box.replaceChildren(node('h3',item.name),node('p',owned(item.name)?'✓ Owned in your latest inventory snapshot.':'Not found in your latest inventory snapshot.','muted tiny'));const recipe=getRecipe(item.name);box.append(node('p',acquisitionFor(item.name)?'Acquisition methods are available. Open details for sources and linked ingredients.':recipe?'A starter checklist is available; it may not include every prerequisite.':'Detailed acquisition route is not yet catalogued. You can still track ownership.','muted tiny'));const add=node('button',unlocks.some(x=>normalizedName(x.name)===normalizedName(item.name))?'Open tracked project':'+ Add to My Projects','primary');add.onclick=()=>addProjectByName(item.name);box.append(add);const how=node('button','🔎 How to obtain / View sources','smallbutton');how.onclick=()=>openItemDetails(item.name);box.append(how);box.scrollIntoView({behavior:'smooth',block:'nearest'})}
 
 let lastDetailFocus=null;
