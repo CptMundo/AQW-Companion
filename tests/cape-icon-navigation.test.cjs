@@ -15,7 +15,7 @@ assert.ok(html.includes('data-tab="ultras" data-parent="ultras"'),"Ultras subtab
 assert.ok(html.includes('id="ultras" class="view"'),"Ultras content preserved");
 assert.ok(html.includes('id="builds" class="view"'),"Class Builds preserved");
 assert.ok(html.includes('id="forge" class="view"'),"Forge Tracker preserved");
-assert.ok(html.includes("itemTypeNode(project.type)"),"Wishlist cards use image icon helper");
+assert.ok(html.includes("itemTypeNode(canonicalWishlistType(project.name,project.type))"),"Wishlist cards use reviewed category with image icon helper");
 assert.ok(html.includes("itemTypeNode(candidate.type)"),"Wishlist suggestions use image icon helper");
 assert.ok(html.includes("itemTypeNode(item.type)"),"Explore cards use image icon helper");
 for(const entry of [
