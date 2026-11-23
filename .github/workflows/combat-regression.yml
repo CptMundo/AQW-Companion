@@ -11,6 +11,7 @@ on:
       - 'js/damage-formulas.js'
       - 'js/damage-kernel.js'
       - 'js/dps-calibration.js'
+      - 'data/combat/**'
       - 'tests/**'
       - '.github/workflows/combat-regression.yml'
   pull_request:
@@ -22,6 +23,7 @@ on:
       - 'js/damage-formulas.js'
       - 'js/damage-kernel.js'
       - 'js/dps-calibration.js'
+      - 'data/combat/**'
       - 'tests/**'
       - '.github/workflows/combat-regression.yml'
 jobs:
@@ -41,6 +43,8 @@ jobs:
         run: node tests/combat-timeline.test.cjs
       - name: Check 648 rotation and Forge combinations
         run: node tests/combat-timeline-property.test.cjs
+      - name: Cross-check class source evidence against the runtime
+        run: node tests/vhl-evidence.test.cjs
       - name: Verify official item boost and critical model guards
         run: node tests/damage-kernel.test.cjs
       - name: Verify website integration and scripts
