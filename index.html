@@ -16,6 +16,8 @@
 <link rel="stylesheet" href="css/item-icons.css">
 
 <link rel="stylesheet" href="css/account-statistics.css">
+<link rel="stylesheet" href="css/recipe-coverage.css">
+<link rel="stylesheet" href="css/ultra-quote-actions.css">
 </head><body><div class="wrap"><header class="top"><div class="brand"><div class="logo"><img src="assets/brand-logo.png" width="52" height="52" alt="AQW Companion Prometheus-inspired helmet logo"></div><div><h1>AQW Companion <span class="tag">ALPHA 0.9.9.24</span></h1><small>AdventureQuest Worlds Inventory & Farming · Created by CptMundo</small></div></div><div class="actions"><label class="upload primary">📂 Import JSON export<input id="file" type="file" accept=".json,application/json" multiple></label><button id="backup">⬇️ Backup</button><button id="clear">Clear data</button></div></header><div id="alert" class="alert"></div><div class="notice aqw-storage-diagnostics" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><strong id="inventory-storage-status" aria-live="polite">💾 Inventory: checking browser storage…</strong><button id="inventory-storage-diagnostic" class="smallbutton" type="button">📋 Copy storage diagnostic</button></div><div class="notice"><strong>🔒 Your game data stays in this browser.</strong> Inventory, Wishlist and progress are stored locally. <button id="aqw-analytics-settings" type="button">Privacy settings</button> <a href="privacy.html">Privacy details</a>.</div>
 <aside id="aqw-analytics-banner" role="region" aria-label="Optional analytics consent" hidden>
   <div class="aqw-analytics-copy">
@@ -73,7 +75,9 @@
 <div class="new-task"><input id="customtask" maxlength="120" placeholder="Add your own task, e.g. Check Wheel of Doom"><select id="customfrequency"><option value="daily">Daily</option><option value="weekly">Weekly</option></select><input id="customjoin" placeholder="Optional /join" maxlength="80"><button id="addcustomtask" class="primary">+ Add task</button></div></div>
 </section><section id="compare" class="view"><div class="card"><h3 class="sectiontitle">Compare two snapshots</h3><p class="muted" style="font-size:13px">Import both snapshots into the same browser. Comparison uses <b>ID</b> and quantity; moving items between inventory and bank does not count as a new item.</p><div class="comparecontrols"><label>Older <select id="oldselect"></select></label><label>Newer <select id="newselect"></select></label><button id="comparebtn" class="primary">Compare</button></div><div id="compareresult" class="muted">Import at least two snapshots to get started.</div></div></section>
 <section id="history" class="view"><div class="card"><h3 class="sectiontitle">Local import history</h3><div id="historylist"></div><p class="muted" style="font-size:12px">Each imported file is validated and saved in your browser's IndexedDB. The Backup button downloads a JSON file you can import later to restore your data. Clear data removes snapshots, farming goals and unlock projects.</p></div></section><div class="foot">Created by <strong>CptMundo</strong> for the AQWorlds community · Unofficial fan project · Not affiliated with Artix Entertainment · v0.9.9.24</div></div>
-<div id="itemdetails" class="detailoverlay hidden" role="dialog" aria-modal="true" aria-label="Item acquisition details"><div class="detailpanel"><div class="detailhead"><div><small style="color:#7da5d1;font-weight:700">AQW COMPANION · ACQUISITION EXPLORER</small><h2 id="detailname"></h2></div><button type="button" class="smallbutton" id="closedetails" aria-label="Close details">✕ Close</button></div><div id="detailcontent"></div></div></div><script src="js/account-statistics.js"></script>
+<div id="itemdetails" class="detailoverlay hidden" role="dialog" aria-modal="true" aria-label="Item acquisition details"><div class="detailpanel"><div class="detailhead"><div><small style="color:#7da5d1;font-weight:700">AQW COMPANION · ACQUISITION EXPLORER</small><h2 id="detailname"></h2></div><button type="button" class="smallbutton" id="closedetails" aria-label="Close details">✕ Close</button></div><div id="detailcontent"></div></div></div><script src="js/recipe-integrity.js"></script>
+<script src="js/ultra-quote-actions.js"></script>
+<script src="js/account-statistics.js"></script>
 <script>
 (()=>{'use strict';const $=id=>document.getElementById(id);const fmt=n=>Number(n||0).toLocaleString('en-US');let snapshots=[],current=null,items=[],page=0,filtered=[],goals=[];let unlocks=[];let storyStatuses={};let db;const DB='AQWCompanion_local',STORE='snapshots',ACTIVE_SNAPSHOT_KEY='aqwc-active-snapshot-v1',INVENTORY_RECOVERY_KEY='aqwc-inventory-recovery-v1';
 let inventoryStorageMode='not checked',inventoryStorageError='';
@@ -255,7 +259,7 @@ const starterProjects=[
 ];
 const catalogExtras=[
  {name:'Blinding Light of Destiny',type:'Weapon',steps:[{label:'Collect Spirit Orbs (check actual recipe requirements)',kind:'manual'},{label:'Acquire and craft Destiny metal / weapon chain',kind:'manual'},{label:'Complete final BLoD crafting steps',kind:'manual'}]},
- {name:'Sin of the Abyss',type:'Weapon',steps:[{label:'Collect 50 Blood Gems of the Archfiend',kind:'material',item:'Blood Gem of the Archfiend',target:50},{label:'Collect 50 Totems of Nulgath',kind:'material',item:'Totem of Nulgath',target:50},{label:'Verify full Nulgath Insignia and component requirements',kind:'manual'}]},
+
  {name:'Malgor’s ShadowFlame Blade',type:'Weapon',steps:[{label:'Own ShadowFlame Dragon Blade',kind:'owned',item:'ShadowFlame Dragon Blade'},{label:'Complete 20 Elemental Cores (confirm consumed items manually)',kind:'manual'},{label:'Collect Malgor Insignias through Ultra Speaker',kind:'material',item:'Malgor Insignia',target:20}]},
  {name:'Verus DoomKnight',type:'Class',steps:[{label:'Reach Level 40',kind:'manual'},{label:'Body, Soul and, Domination — /join terminatemple',kind:'manual'},{label:'Of the Same Cloak — Level 50',kind:'manual'},{label:'Refracted Light — Level 60',kind:'manual'},{label:'Life Carve — Level 70 & Evil Rank 10',kind:'manual'},{label:'Soul Fracture — defeat target bosses',kind:'manual'},{label:'Doom Spikes — Level 80',kind:'manual'},{label:'Necrotic Blade — collect required Doom gear',kind:'manual'},{label:'Unleash Doom — final quest',kind:'manual'},{label:'Claim Verus DoomKnight from the shop in /join terminatemple',kind:'manual'}]},
  {name:"King's Echo",type:'Class',steps:[{label:'Reach Level 80',kind:'manual'},{label:'Reach Good Reputation Rank 10',kind:'manual'},{label:'Complete Tell-Tale Heart prerequisite and Familial Blessing',kind:'manual'},{label:"Own Alteon's Reforged Armor",kind:'owned',item:"Alteon's Reforged Armor"},{label:"Own King Alteon's Crown",kind:'owned',item:"King Alteon's Crown"},{label:'Own Royal Dragon Sword',kind:'owned',item:'Royal Dragon Sword'},{label:"Own Alden's Mace",kind:'owned',item:"Alden's Mace"},{label:'Complete Echo of the King — Queen Victoria Alteon in /join terminatemple',kind:'manual'},{label:"Claim King's Echo from Alteon's Gear",kind:'manual'}]},
@@ -386,13 +390,13 @@ async function loadPublicCatalog(){
 }
 $('communityfiles').onchange=async e=>{const files=[...e.target.files||[]];if(!files.length)return;try{const parsed=[];for(const f of files){if(f.size>50000000)throw Error(f.name+' exceeds 50 MB limit');parsed.push({name:f.name,data:JSON.parse(await f.text())})}for(const f of parsed)normalizeCommunityData(f.data,f.name);finishCommunityIndexes();await saveCommunity();message('Community database indexed: '+fmt(communityItems.size)+' items. Check individual wiki sources before crafting.','success')}catch(err){message('Community import error: '+err.message,'error')}finally{e.target.value=''}};
 $('clearcommunity').onclick=async()=>{if(!confirm('Clear the community item catalog? Your account snapshots and project lists will not be changed.'))return;communityItems.clear();communityAcquisition.clear();communityLocations.clear();communityMeta={};await saveCommunity();finishCommunityIndexes();message('Community catalog cleared. Personal inventory and projects were preserved.','success')};
-function getRecipe(name){name=canonicalItemName(name);const verified=acquisitionFor(name);const curated=catalog.find(p=>normalizedName(p.name)===normalizedName(name));if(curated)return curated;const cp=communityProject(name);if(cp)return cp;return verified?.ingredients?.length?catalogToProject(verified):null} 
+function getRecipe(name){name=canonicalItemName(name);const reviewed=window.AQWCRecipeIntegrity?.getRecipe(name);if(reviewed)return reviewed;const verified=acquisitionFor(name);const curated=catalog.find(p=>normalizedName(p.name)===normalizedName(name));if(curated)return curated;const cp=communityProject(name);if(cp)return cp;return verified?.ingredients?.length?catalogToProject(verified):null} 
 function getSuggestions(q){
  const term=normalizedName(canonicalItemName(q));
  if(!term)return [];
  const dictionary=new Map();
  for(const p of acquisitionCatalog)dictionary.set(normalizedName(p.name),{name:p.name,type:p.type,recipe:!!p.ingredients?.length});
- for(const p of communityItems.values())if(!dictionary.has(normalizedName(p.name)))dictionary.set(normalizedName(p.name),{name:p.name,type:p.type,recipe:!!communityAcquisition.get(communityKey(p.name))?.ingredients?.length});for(const p of communityAcquisition.values())if(!dictionary.has(normalizedName(p.name)))dictionary.set(normalizedName(p.name),{name:p.name,type:p.type||'Other',recipe:!!p.ingredients?.length});for(const p of catalog)if(!dictionary.has(normalizedName(p.name)))dictionary.set(normalizedName(p.name),{name:p.name,type:p.type,recipe:true});
+ for(const p of communityItems.values())if(!dictionary.has(normalizedName(p.name)))dictionary.set(normalizedName(p.name),{name:p.name,type:p.type,recipe:!!communityAcquisition.get(communityKey(p.name))?.ingredients?.length});for(const p of communityAcquisition.values())if(!dictionary.has(normalizedName(p.name)))dictionary.set(normalizedName(p.name),{name:p.name,type:p.type||'Other',recipe:!!p.ingredients?.length});for(const p of catalog)if(!dictionary.has(normalizedName(p.name)))dictionary.set(normalizedName(p.name),{name:p.name,type:p.type,recipe:true});for(const name of (window.AQWCRecipeIntegrity?.reviewedNames||[])){const reviewed=window.AQWCRecipeIntegrity.getRecipe(name);if(reviewed&&!dictionary.has(normalizedName(name)))dictionary.set(normalizedName(name),{name,type:reviewed.type,recipe:true})}
  for(const x of items){const key=normalizedName(x.Name);if(!dictionary.has(key))dictionary.set(key,{name:x.Name,type:x.Type,recipe:false})}
  return [...dictionary.values()].filter(x=>normalizedName(x.name).includes(term))
  .sort((a,b)=>Number(normalizedName(b.name).startsWith(term))-Number(normalizedName(a.name).startsWith(term))||Number(b.recipe)-Number(a.recipe)||a.name.localeCompare(b.name)).slice(0,12)
@@ -436,7 +440,7 @@ const acquisitionCatalog = [
 {name:'Corrupt Spirit Orb',type:'Item',wiki:'https://aqwwiki.wikidot.com/vayle-s-quests',methods:[{type:'Quest Reward',title:'Pinpoint the Pieces with Necrotic Bow',join:'/join necropolis',npc:'Vayle',details:'25 Corrupt Spirit Orbs and 50 Dark Spirit Orbs per quest; requires Necrotic Bow of the Shadow and completed DoomKnight Weapon Kit.',url:'https://aqwwiki.wikidot.com/vayle-s-quests'}]},
 {name:'Experimental Dark Item',type:'Item',wiki:'https://aqwwiki.wikidot.com/vayle-s-quests',methods:[{type:'Quest Reward',title:"Sepulchure's Armor",join:'/join necropolis',npc:'Vayle',details:'Quest reward; check required DoomKnight Hood and Dark Spirit Orbs in the wiki.',url:'https://aqwwiki.wikidot.com/vayle-s-quests'}]}
 ];
-function acquisitionFor(name){return acquisitionCatalog.find(x=>normalizedName(x.name)===normalizedName(name))||communityAcquisition.get(communityKey(name))||null}
+function acquisitionFor(name){return window.AQWCRecipeIntegrity?.getAcquisition(name)||acquisitionCatalog.find(x=>normalizedName(x.name)===normalizedName(name))||communityAcquisition.get(communityKey(name))||null}
 function catalogToProject(entry){return {name:entry.name,type:entry.type||'Other',steps:(entry.ingredients||[]).map(([item,target])=>({label:`${item} ×${target}`,kind:target===1?'owned':'material',item,target}))}}
 const stock=item=>items.filter(x=>x.Name.toLowerCase()===String(item).toLowerCase()).reduce((a,b)=>a+b.Count,0);
 const owned=item=>items.some(x=>x.Name.toLowerCase()===String(item).toLowerCase());
@@ -444,6 +448,8 @@ function freshStep(raw){return {id:crypto.randomUUID(),label:raw.label,kind:raw.
 function newProject(p){return{id:crypto.randomUUID(),name:p.name,type:p.type||'Other',steps:(p.steps||[]).map(freshStep)}}
 
 function upgradeLegacyRecipes(){let changed=false;for(const p of unlocks){
+ // Only migrate an untouched Sin of the Abyss legacy template; retain custom entries.
+ if(window.AQWCRecipeIntegrity?.upgradeUntouchedLegacy(p,freshStep))changed=true;
  // Migrate only the untouched, automatically generated 2-step placeholder.
  if(['soul forge hammer','soulforge hammer'].includes(normalizedName(p.name))&&p.steps.length===2&&
  p.steps.some(s=>s.label==='Acquisition route not yet in the catalog')&&
@@ -476,7 +482,37 @@ function projectProgress(project){
  const complete=project.steps.filter(s=>stepStatus(s)==='done').length;
  return{materialPct,checkpointsPct,trackedTotal,complete,trackedPct:trackedTotal?complete/trackedTotal*100:0};
 }
-function renderUnlocks(){const list=$('unlocklist');list.replaceChildren();const columnCount=1;const columns=columnCount>1?Array.from({length:columnCount},()=>node('div',undefined,'unlock-column')):[];if(columns.length)list.append(...columns);const q=$('unlocksearch').value.toLowerCase().trim(),filter=$('unlockfilter').value;let projects=unlocks.filter(u=>u.name.toLowerCase().includes(q)).filter(u=>filter==='all'||(filter==='owned')===owned(u.name));if(!projects.length){let p=node('div',undefined,'placeholder');p.append(node('h2',unlocks.length?'No matching projects':'Start your first unlock project'),node('p','Click “Add starter projects” or create your own class, weapon or saga.'));list.append(p);return}for(const [projectIndex,project] of projects.entries()){const card=node('div',undefined,'unlockcard'),top=node('div',undefined,'unlockhead'),title=node('div');const heading=node('h3');heading.append(itemTypeNode(project.type),document.createTextNode(' '+project.name));title.append(heading,node('small',itemTypeLabel(project.type)+' · '+(owned(project.name)?'Owned in latest snapshot':'Not detected in snapshot'),'muted'));const rm=node('button','Remove','smallbutton');rm.onclick=()=>{if(confirm('Remove this unlock project?')){unlocks=unlocks.filter(u=>u.id!==project.id);saveUnlocks();renderUnlocks()}};top.append(title,rm);card.append(top);const browse=node('button','⌕ How to obtain','smallbutton');browse.onclick=()=>openItemDetails(project.name,project.id);card.append(browse);
+function renderUnlocks(){const list=$('unlocklist');list.replaceChildren();const columnCount=1;const columns=columnCount>1?Array.from({length:columnCount},()=>node('div',undefined,'unlock-column')):[];if(columns.length)list.append(...columns);const q=$('unlocksearch').value.toLowerCase().trim(),filter=$('unlockfilter').value;let projects=unlocks.filter(u=>u.name.toLowerCase().includes(q)).filter(u=>filter==='all'||(filter==='owned')===owned(u.name));if(!projects.length){let p=node('div',undefined,'placeholder');p.append(node('h2',unlocks.length?'No matching projects':'Start your first unlock project'),node('p','Click “Add starter projects” or create your own class, weapon or saga.'));list.append(p);return}for(const [projectIndex,project] of projects.entries()){const card=node('div',undefined,'unlockcard'),top=node('div',undefined,'unlockhead'),title=node('div');const heading=node('h3');heading.append(itemTypeNode(project.type),document.createTextNode(' '+project.name));title.append(heading,node('small',itemTypeLabel(project.type)+' · '+(owned(project.name)?'Owned in latest snapshot':'Not detected in snapshot'),'muted'));const rm=node('button','Remove','smallbutton');rm.onclick=()=>{if(confirm('Remove this unlock project?')){unlocks=unlocks.filter(u=>u.id!==project.id);saveUnlocks();renderUnlocks()}};top.append(title,rm);card.append(top);
+ const recipeAudit=window.AQWCRecipeIntegrity?.inspect(project,acquisitionFor(project.name));
+ if(recipeAudit){
+  const coverage=node('div',undefined,'recipe-coverage-line '+recipeAudit.status);
+  let caption;
+  if(recipeAudit.reviewed){
+   caption=recipeAudit.status==='reviewed'
+    ?'✓ Final merge checked against AQWWiki · '+recipeAudit.expectedCount+' components'
+    :'⚠ Saved checklist differs from reviewed final merge ('+recipeAudit.missing.length+' missing, '+recipeAudit.wrongQuantity.length+' wrong quantities'+(recipeAudit.duplicates.length?', '+recipeAudit.duplicates.length+' duplicates':'')+')';
+  }else{
+   caption='⚠ Starter checklist — complete recipe not independently verified';
+   if(recipeAudit.communityExtra.length)
+    caption+=' · Community data lists '+recipeAudit.communityExtra.length+' possible additional ingredients';
+  }
+  coverage.append(node('span',caption));
+  if(recipeAudit.source&&/^https:\/\/aqwwiki\.wikidot\.com\/[a-z0-9-]+$/i.test(recipeAudit.source)){
+   const link=document.createElement('a');link.href=recipeAudit.source;link.target='_blank';link.rel='noopener noreferrer';link.textContent='AQWWiki ↗';coverage.append(link);
+  }
+  if(recipeAudit.reviewed&&recipeAudit.status==='needs-sync'&&
+     (recipeAudit.missing.length||recipeAudit.wrongQuantity.length)){
+   const fix=node('button','Sync reviewed recipe','smallbutton');fix.type='button';
+   fix.onclick=()=>{
+    if(!confirm('Update '+project.name+' from the reviewed final merge? Custom steps and existing IDs will be preserved.'))return;
+    const result=window.AQWCRecipeIntegrity.sync(project,freshStep);
+    if(result.changed){saveUnlocks();renderUnlocks();message('Reviewed recipe synchronized: '+result.added+' materials added, '+result.updated+' corrected.','success')}
+   };
+   coverage.append(fix);
+  }
+  card.append(coverage);
+ }
+ const browse=node('button','⌕ How to obtain','smallbutton');browse.onclick=()=>openItemDetails(project.name,project.id);card.append(browse);
  const matchedTasks=relevantProjectTasks(project);
  if(matchedTasks.length){const plannerActions=node('div',undefined,'project-planner');const pbtn=node('button','▣ Pin '+matchedTasks.length+' relevant daily / weekly task'+(matchedTasks.length>1?'s':''),'smallbutton');pbtn.onclick=()=>{let added=0;for(const t of matchedTasks){const existing=pinnedTasks.find(x=>x.id===t.id);if(!existing){pinnedTasks.push({...t,sourceProjects:[project.name]});added++}else{existing.sourceProjects=[...new Set([...(existing.sourceProjects||[]),project.name])] }}savePlanner();renderPlanner();message(added+' task(s) pinned from '+project.name+'. Review availability in game.')};plannerActions.append(pbtn);const go=node('button','Daily / Weekly ↗','smallbutton');go.onclick=()=>selectTab('planner');plannerActions.append(go);card.append(plannerActions)}
  if(project.parentName){const backrow=node('div',undefined,'recipecontext');backrow.append(node('span','↳ Sub-branch of '+project.parentName+' '));const back=node('button','← Back to '+project.parentName,'smallbutton');back.onclick=()=>{$('unlocksearch').value=project.parentName;$('unlockfilter').value='all';renderUnlocks();const target=$('unlocklist');target.scrollIntoView({behavior:'smooth',block:'start'})};backrow.append(back);card.append(backrow)}if(owned(project.name))card.append(node('div','✓ Item owned — crafting materials may already have been consumed.','recipecontext'));const pr=projectProgress(project);card.append(progressLabel('Checklist progress',pr.trackedPct,'overallbar'));card.append(node('div',`${pr.complete} / ${pr.trackedTotal} steps complete · Progress covers listed requirements, not necessarily the full recipe.`,'muted tiny wishlist-progress-note'));const totalMaterials=new Map(),visitedBranches=new Set();
@@ -651,7 +687,7 @@ function openItemDetails(name,parentId=null){lastDetailFocus=document.activeElem
  const actions=node('div',undefined,'methodbuttons');
  if(m.url){const wikiBtn=node('button','↗ Source on AQWWiki','smallbutton');wikiBtn.onclick=()=>window.open(m.url,'_blank','noopener,noreferrer');actions.append(wikiBtn)}card.append(actions);section.append(card)}root.append(section);
  if(data?.questRoutes?.length){const panel=node('section',undefined,'detailsection');panel.append(node('h3','Quest unlock requirements (community data)'));if(data.questRoutes.length>1)panel.append(node('p','Multiple possible quest routes found. Requirements below belong to individual quests and are not all mandatory.','muted tiny'));for(const route of data.questRoutes.slice(0,8)){const box=node('div',undefined,'unlockstep');box.append(node('strong',route.quest));for(const req of route.prerequisites||[])box.append(node('div','• '+req.label,'muted tiny'));if(!(route.prerequisites||[]).length)box.append(node('div','No explicit quest prerequisites detected in imported data.','muted tiny'));if(route.source){const a=document.createElement('a');a.href=route.source;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Check source ↗';box.append(a)}panel.append(box)}root.append(panel)}
- if(data?.ingredients?.length){const section=node('section',undefined,'detailsection');section.append(node('h3',data.complete==='final-merge'?'Verified final merge requirements':data.complete==='final-quest'?'Final quest item requirements':data.origin==='community'?'Community listed requirements — verify':'Verified merge ingredients'));
+ if(data?.ingredients?.length){const section=node('section',undefined,'detailsection');section.append(node('h3',window.AQWCRecipeIntegrity?.getVerified(name)?'Source-reviewed final merge requirements':data.complete==='final-merge'?'Recorded final merge ingredients — verify':data.complete==='final-quest'?'Recorded final quest ingredients — verify':data.origin==='community'?'Community listed requirements — verify':'Curated merge ingredients — verify'));
  if(ownedItem)section.append(node('div','You already own the reward. Ingredients may have been used during crafting; low stock does not mean the completed item is incomplete.','recipecontext'));
  for(const [ingredient,amount] of data.ingredients){const row=node('div',undefined,'recipeingredient');const link=node('button',ingredient,'itemlink');link.onclick=()=>openItemDetails(ingredient,parentId);const left=node('div');left.append(link,node('div',`${fmt(stock(ingredient))} currently in stock · Required ×${fmt(amount)}`,'muted tiny'));const add=node('button','Explore ↗','smallbutton');add.onclick=()=>openItemDetails(ingredient,parentId);row.append(left,add);section.append(row)}root.append(section)}
  const actions=node('div',undefined,'detailactions');const add=node('button','+ Add / open project','primary');add.onclick=()=>{closeItemDetails();addProjectByName(name)};actions.append(add);
@@ -1340,7 +1376,8 @@ function renderUltraDetail(b){
  setup.append(node('h3','⚔️ Your loadout'));
  const selectorRow=node('div',undefined,'ultra-focus-selector');
  const select=node('select',undefined,'ultra-role-select');
- for(const cls of b.team){const option=node('option',cls);option.value=cls;select.append(option)}
+ // Alternate-team class picks must show their own relevant role-specific cue reactions too.
+ for(const cls of [...new Set([...b.team,...(b.alternate||[]).filter(x=>ultraRolePlaybooks[b.id]?.[x]||window.AQWUltraQuoteActions?.forRole(b.id,x)?.length)])]){const option=node('option',cls);option.value=cls;select.append(option)}
  select.value=b.team.find(ultraOwned)||b.team[0];
  selectorRow.append(node('span','Class'),select);setup.append(selectorRow);
  const gear=node('div',undefined,'ultra-focus-gear');
@@ -1438,6 +1475,16 @@ function renderUltraDetail(b){
   const tips=uniqueSteps.length?uniqueSteps:[roleMap.get(cls)||'Confirm your assigned team responsibilities before pulling.'];
   roleName.textContent=cls;
   sequence.replaceChildren();
+  // Only show quote reactions applicable to this specific class/assigned role.
+  for(const cue of (window.AQWUltraQuoteActions?.forRole(b.id,cls)||[])){
+   const card=node('div',undefined,'ultra-role-quote');
+   card.append(node('strong','📣 “'+cue.quote+'”'),node('p',cue.response));
+   if(/^https:\/\/[a-z0-9.-]+\/[a-z0-9/?#-]*$/i.test(cue.source)){
+    const source=document.createElement('a');source.href=cue.source;source.target='_blank';source.rel='noopener noreferrer';
+    source.className='ultra-role-quote-source';source.textContent='Mechanics source ↗';card.append(source);
+   }
+   sequence.append(card);
+  }
   for(const [i,tip] of tips.slice(0,5).entries()){
    const step=node('div',undefined,'ultra-role-step');
    step.append(node('span',String(i+1).padStart(2,'0'),'ultra-step-number'),node('p',tip));

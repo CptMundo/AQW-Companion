@@ -1,0 +1,7 @@
+/* Compact source/coverage notice for Wishlist recipes. */
+.recipe-coverage-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 8px;padding:8px 10px;border-radius:9px;border:1px solid #315a72;background:#132b3f;color:#c9e1ef;font-size:12px;line-height:1.45}
+.recipe-coverage-line.reviewed{border-color:#326f62;background:#123331;color:#b4ead9}
+.recipe-coverage-line.needs-sync{border-color:#94713b;background:#37291c;color:#ffe3a2}
+.recipe-coverage-line.not-reviewed{border-color:#52677d;background:#1b2937;color:#c7d6e6}
+.recipe-coverage-line .smallbutton{min-height:28px;padding:4px 9px;font-size:11px}
+.recipe-coverage-line a{color:#8ce0ff;text-decoration:underline;text-underline-offset:2px}

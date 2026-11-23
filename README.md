@@ -54,3 +54,12 @@ A CI pass is not a substitute for testing a real import/reload, Home, Wishlist, 
 The repository root is deployed to GitHub Pages on pushes to `main` by `.github/workflows/static.yml`. The site is at https://cptmundo.github.io/AQW-Companion/. Verify the GitHub Actions deployment after every approved merge.
 
 **Continuity rule:** after every PR, provide a downloadable Markdown handoff containing PR URL, branch, exact head/base, changes, tests, known risks, merge status and next task so another conversation can continue without guessing.
+
+## Recipe verification and Ultra boss cue modules (PR #85–86)
+
+- `js/recipe-integrity.js` and `css/recipe-coverage.css`: audited final merge ingredients for Sin of the Abyss; migration of old untouched Wishlist checklists, explicit sync for customized steps, notices when a community recipe is not independently verified.
+- `js/ultra-quote-actions.js` and `css/ultra-quote-actions.css`: reaction instructions to boss quotes, conditional on selected class and assigned role in Ultras.
+- `scripts/audit_recipe_catalog.cjs`: read-only structural scan across every public catalog item and acquisition entry. Its CI report is a **review queue**, not proof that thousands of game recipes are wrong or that they have been checked against live AQWWiki.
+- `docs/RECIPE_COVERAGE.md` and `docs/ULTRA_QUOTES_RECIPE_AUDIT.md`: limitations, sources, migration details and review workflow.
+
+These modules load after the extracted legacy CSS; recipe/ultra JS is linked before the main inline application. This extraction does not alter any player data.
