@@ -1,69 +1,47 @@
-# Combat Engine — fixed 20-second VHL window
+# Combat DPS — standard 60-second comparison window
 
-**Status:** Research preview integrated in the Damage Simulator; not validated as theoretical game DPS.
+**Status: measured-DPS support implemented; automatic theoretical DPS is NOT implemented.**
 
-## Why 20 seconds?
+## Design decision
 
-The VHL Armageddon skill has a base 15-second cooldown. A 20-second burst window can capture a second use with a reasonable opening rotation. This is a **product-design choice**, not a scientifically universal benchmark: long fights and sustained DPS should ultimately use longer windows.
+The common benchmark for offensive / solo classes is **60 seconds** of combat, beginning at combat start. DPS = damage dealt within [0,60) / 60. This is a common *product comparison window*, **not an official Artix standard or a promise that every class completes an equal number of rotations**. Very long ramp-up classes and unusual 60+ second cooldown skills may still need separate sustained or ramp-up analysis in the future.
 
-Source: https://aqwwiki.wikidot.com/void-highlord-class (class skills, cooldowns and buffs). Also see https://www.aq.com/lore/guides/stats and https://www.aq.com/lore/guides/enhancementtraits.
+A 20-second window overweights burst/nuke classes relative to sustained damage. A 60-second window is a practical first comparable baseline.
 
-## UI
+## What now works in the Damage Simulator
 
-The Damage Simulator now includes a separate `Combat Window — VHL` section:
-- **Fixed duration: 20s**, no window-length toggle.
-- Offensive and defensive rotation presets; adjustable effective haste and cast spacing (calibration parameters, not certified server timing).
-- Optional autoattacks with unverified starting phase.
-- Timeline and snapshots of previously active auras.
-- Measured DPS input `time,skill,damage` one hit per line, returning sum of observed damage / 20 only when observations exist.
+- The **Measured DPS** card accepts a class name and **total damage dealt during a complete 60-second recording**; as soon as the user enters the total, the UI calculates DPS.
+- Example: 600000 observed damage in 60s = 10000 measured DPS.
+- The detailed optional event mode accepts `time,skill,damage` lines; all events must be between 0 and <60s. DoTs/procs must be included, not just skill button hits.
+- This measurement mode works with **any class**, since it only computes damage / duration.
+- VHL has a **separate, research-only action timeline** of cooldowns, buffs and autoattack estimates. It explicitly reports damage and theoretical DPS as unavailable until proper skill functions and stats are validated.
 
-The measured DPS is only as accurate as the completeness of the entered event log. Enter DoT ticks and Forge proc hits as separate events where relevant.
+## Honest limitations
 
-## Engine API
+1. **No automatic predicted DPS from equipped class/gear/Forge** exists yet. The current available skill coefficients and combat stat inputs are not sufficient for certified base-damage functions.
+2. A class name in measured mode does not select a researched model: it only labels the observation.
+3. A total measured damage input is reliable as DPS only if it is a genuinely complete 60-second combat measurement, including all damaging events and the exact start time.
+4. The VHL timeline uses static user-provided haste and action gap; it does not reliably model live dynamic haste, server casting rules, Forge procs, crit randomness, mana/health, opponent defense or DoTs.
+5. Do not promote measured DPS as *predicted* or *verified game formula*.
+6. No browser end-to-end or real AQW combat calibration has yet been completed.
 
-```js
-AQWCombatEngine.simulate({
-  seconds:20,
-  rotation:["unshackle","gaze","armageddon"],
-  actionGapSeconds:0.5,
-  hastePercent:0,
-  includeAuto:false
-});
-// resultStatus: incomplete; dps: null
+## Code
 
-AQWCombatEngine.simulate({
-  observedEvents:[
-    {time:0.3,id:"unshackle",damage:1000},
-    {time:1.2,id:"armageddon",damage:2500}
-  ]
-});
-// resultStatus: observed-window; fullDamage:3500; dps:175
-```
+- `js/combat-engine.js` — `AQWCombatEngine.simulate({observedTotalDamage: 600000, className:"Legion Revenant"})` -> 10000 DPS for 60 seconds.
+- `js/combat-engine-ui.js` — measured DPS card above VHL research timeline.
+- `tests/combat-engine.test.cjs` — duration, observed total, event list, invalid inputs, no invented damage.
+- `index.html` already loads both scripts.
 
-No gear or class multipliers are applied again to recorded hits.
+## Next phase — truly automatic DPS
 
-## Main limitations
+1. Source and verify each class/skill's server damage function and effects, starting with VHL.
+2. Model action cadence, dynamic haste, passive/buff stacks, crit & dodge, weapon range, damage boosts, caps, enemy defenses, DoTs and Forge procs.
+3. Record full real 60-second fight traces under controlled conditions for comparison/calibration.
+4. Provide predicted DPS and uncertainty only for models validated against those traces.
 
-- No verified per-skill server base damage functions; theoretical combat DPS remains **unavailable**.
-- Server GCD, cast lock, animation time, client/server latency, autoattack phase and skill replacement semantics uncalibrated.
-- Haste applied as static user-supplied value, not as dynamic Soul Void/Forge proc timing; VHL mana and HP costs unmodeled.
-- Timed buffs captured as events, but they do **not** modify damage.
-- Crit distribution, weapon variance, Forge procs, DoT/HoT tick modelling and target defense unimplemented.
-- Timeline rotation is algorithmic and not a claim of optimal VHL play.
-- In the "measuredHits" fallback, hit magnitude is constant for each skill; those numbers are **not** a trustworthy combat simulation during changing buffs. Prefer `observedEvents`.
+## References
 
-## Validation
-
-Verified via isolated JavaScript execution on 2026-11-23:
-- Engine and UI pass JavaScript syntax compilation.
-- 20-second example produces 11 skill events, Armageddon at 1s and 16s.
-- Unknown damage -> `dps:null`.
-- Two observed events totalling 400 over 20s -> 20 DPS.
-- 15s windows rejected; optional autoattack events present.
-- `index.html` includes the engine and UI scripts.
-
-The repository regression script is `node tests/combat-engine.test.cjs`; the test script is committed but no CI runner execution has been confirmed. Browser end-to-end and actual AQW combat measurements still pending.
-
-## Next
-
-Record a full VHL 20-second battle (timestamps, hits, DoTs, procs, buffs, equipped enhancements) and calibrate timings. Then implement verified base damage / crit / target functions, followed by comparisons to observed sample results.
+- https://aqwwiki.wikidot.com/void-highlord-class
+- https://www.aq.com/lore/guides/stats
+- https://www.aq.com/gamedesignnotes/AQW-Balance-PatchNotes-9515
+- https://www.aqwhub.com/other-guides/do-ts-explained/
