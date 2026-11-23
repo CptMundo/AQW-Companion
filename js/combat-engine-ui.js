@@ -1,4 +1,4 @@
-/* Combat engine UI: fixed 20-second VHL research preview */
+/* Combat engine UI: standardized 60-second research preview */
 (function () {
 "use strict";
 function initCombatWindow() {
@@ -9,10 +9,18 @@ function initCombatWindow() {
   container.style.cssText="margin-top:24px;padding:20px;border:1px solid #426e8c;border-radius:12px;background:#10283e;color:#e6f5ff";
   container.innerHTML=`
     <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px">
-      <h3 style="margin:0">⚔️ Combat Window — VHL</h3>
-      <span style="padding:6px 10px;border-radius:20px;background:#1d4563;color:#aee8ff;font-weight:700">Fixed 20 seconds · Research preview</span>
+      <h3 style="margin:0">⚔️ Combat DPS — 60-second benchmark</h3>
+      <span style="padding:6px 10px;border-radius:20px;background:#1d4563;color:#aee8ff;font-weight:700">60 seconds · Standard comparison</span>
     </div>
-    <p style="color:#b1d4e8;line-height:1.5">Shows planned casts and cooldowns. This is <strong>not real DPS</strong> until the timings and damage have been validated in AQW.</p>
+    <p style="color:#b1d4e8;line-height:1.5">Use the quick calculator for measured DPS from <strong>any offensive class</strong>. Below it, the VHL timeline remains a research preview and cannot predict theoretical DPS yet.</p>
+    <div style="border:1px solid #4b7896;border-radius:10px;padding:14px;margin:15px 0;background:#0c2033">
+      <h4 style="margin:0 0 8px">📊 Measured DPS — any offensive class</h4>
+      <p style="color:#bad8e9">Enter the <strong>total damage recorded in a complete 60-second fight</strong>. This gives an immediate measured DPS without entering every hit. This does not predict damage from your build.</p>
+      <label>Class name <input id="combat-class-name" type="text" placeholder="e.g. Void Highlord" value="Void Highlord" style="display:block;width:100%;margin:5px 0 10px"></label>
+      <label>Total damage in 60 seconds <input id="combat-total-damage" type="number" min="0" step="1" placeholder="e.g. 600000" style="display:block;width:100%;margin:5px 0 10px"></label>
+      <p id="combat-total-result" role="status" aria-live="polite" style="font-weight:800;color:#a3f6d5">Enter measured total damage to calculate DPS.</p>
+    </div>
+    <h4 style="margin:14px 0 7px">VHL rotation timeline (timing preview, not DPS prediction)</h4>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:12px">
       <label>Rotation <select id="combat-rotation" style="display:block;width:100%;margin-top:5px">
         <option value="unshackle,gaze,armageddon">Offensive: 3 → 2 → 5</option>
@@ -25,14 +33,27 @@ function initCombatWindow() {
     </div>
     <p id="combat-summary" role="status" style="margin-top:12px;color:#b9f6dc"></p>
     <div id="combat-events" style="max-height:300px;overflow:auto;border:1px solid #345b77;border-radius:8px;padding:10px"></div>
-    <details style="margin-top:14px"><summary>Measured DPS — paste real hit events (optional)</summary>
-      <p style="color:#afd0e1">One event per line: <code>time,skill,damage</code> (e.g. <code>1.2,armageddon,24500</code>). Include every hit, DoT and Forge proc within 20 seconds. No predictions or automatic gear multipliers are applied.</p>
+    <details style="margin-top:14px"><summary>Detailed measurement — paste every recorded hit (optional)</summary>
+      <p style="color:#afd0e1">One event per line: <code>time,skill,damage</code> (e.g. <code>1.2,armageddon,24500</code>). Include every hit, DoT and Forge proc within 60 seconds. No predictions or automatic gear multipliers are applied.</p>
       <textarea id="combat-measured" rows="5" spellcheck="false" placeholder="0.2,unshackle,1000&#10;1.0,armageddon,4200" style="display:block;width:100%;background:#081a2b;color:#eafaff;border:1px solid #48708a;border-radius:8px;padding:9px"></textarea>
-      <button type="button" id="combat-measure-button" style="margin-top:9px;padding:9px 13px;border:1px solid #71cafa;border-radius:8px;background:#174e70;color:#fff;cursor:pointer">Calculate observed 20s DPS</button>
+      <button type="button" id="combat-measure-button" style="margin-top:9px;padding:9px 13px;border:1px solid #71cafa;border-radius:8px;background:#174e70;color:#fff;cursor:pointer">Calculate observed 60s DPS</button>
       <p id="combat-measured-result" role="status"></p>
     </details>
     <small style="display:block;color:#a2c5d8;margin-top:12px">Current limitations: dynamic haste, server cast lock, HP/mana, Forge procs, crit variance and actual damage functions are not yet reproduced. <a href="https://aqwwiki.wikidot.com/void-highlord-class" target="_blank" rel="noopener noreferrer" style="color:#8cdefa">VHL source ↗</a></small>`;
   host.appendChild(container);
+  const totalInput=container.querySelector("#combat-total-damage");
+  const classInput=container.querySelector("#combat-class-name");
+  const totalResult=container.querySelector("#combat-total-result");
+  function calculateTotal(){
+    const raw=totalInput.value.trim();
+    if(!raw){totalResult.textContent="Enter measured total damage to calculate DPS.";return;}
+    try {
+      const result=engine.simulate({seconds:60,className:classInput.value.trim(),observedTotalDamage:Number(raw)});
+      totalResult.textContent="Measured DPS: "+result.dps.toLocaleString(undefined,{maximumFractionDigits:2})+" · Total: "+result.fullDamage.toLocaleString()+" / 60s";
+    }catch(error){totalResult.textContent="Invalid total damage: "+error.message;}
+  }
+  totalInput.addEventListener("input",calculateTotal);
+  classInput.addEventListener("input",calculateTotal);
   const rotation=container.querySelector("#combat-rotation");
   const haste=container.querySelector("#combat-haste");
   const gap=container.querySelector("#combat-gap");
@@ -41,7 +62,7 @@ function initCombatWindow() {
   const events=container.querySelector("#combat-events");
   function draw(){
     try{
-      const report=engine.simulate({seconds:20,rotation:rotation.value.split(","),hastePercent:Number(haste.value),
+      const report=engine.simulate({seconds:60,rotation:rotation.value.split(","),hastePercent:Number(haste.value),
         actionGapSeconds:Number(gap.value),includeAuto:autos.checked});
       summary.textContent=report.events.length+" timeline events · damage unknown · DPS unavailable until measurement.";
       events.replaceChildren();
@@ -65,8 +86,8 @@ function initCombatWindow() {
         if(fields.length!==3||!fields[0]||!fields[1]||!fields[2])throw Error("Line "+(index+1)+": expected time,skill,damage");
         return {time:Number(fields[0]),id:fields[1],damage:Number(fields[2])};
       });
-      const report=engine.simulate({seconds:20,observedEvents});
-      output.textContent=report.dps===null?"No hits supplied; observed DPS unavailable.":"Observed sample: "+report.fullDamage.toLocaleString()+" damage / 20 seconds = "+report.dps.toLocaleString(undefined,{maximumFractionDigits:2})+" DPS. Only accurate if the event list is complete.";
+      const report=engine.simulate({seconds:60,observedEvents});
+      output.textContent=report.dps===null?"No hits supplied; observed DPS unavailable.":"Observed sample: "+report.fullDamage.toLocaleString()+" damage / 60 seconds = "+report.dps.toLocaleString(undefined,{maximumFractionDigits:2})+" DPS. Only accurate if the event list is complete.";
     }catch(error){output.textContent="Measurement error: "+error.message;}
   });
   draw();
