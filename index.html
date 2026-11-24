@@ -1544,6 +1544,44 @@ const starterBuilds={
 // Add vetted 2026 meta/recent classes without rewriting existing 15×3 builds.
 };
 Object.assign(starterBuilds,window.AQWCMetaBuilds?.builds||{});
+
+// Encounter-specific recommendations, separate from general class builds.
+// Community strategies are examples, not mandatory or universal BiS.
+const ultraReviewedSources={
+ dage:[['AQW App — Dage mechanics','https://aqw.app/monsters/ultradage']],
+ drakath:[['AQWG — Drakath strategy','https://sites.google.com/view/aqwg-net/ultra-bosses']],
+ ezrajal:[['AQW App — Ezrajal mechanics','https://aqw.app/monsters/ultraezrajal']],
+ warden:[['AQW App — Warden mechanics','https://aqw.app/monsters/ultrawarden']],
+ engineer:[['AQW App — Engineer mechanics','https://aqw.app/monsters/ultraengineer']],
+ darkon:[['Solaris — Darkon gear and phases','https://solarisaqw.lol/guides/ultra-weeklies/ultradarkon']],
+ gramiel:[['AQW App — Gramiel strategy','https://aqw.app/monsters/ultragramiel'],['AQWorlds Wiki — Gramiel mechanics','https://aqwwiki.wikidot.com/gramiel-the-graceful']],
+ speaker:[['AQW App — three-taunter rotation','https://aqw.app/monsters/ultraspeaker'],['AQW Hub — alternate strategies','https://www.aqwhub.com/ultra-guides/ultra-speaker/']]
+};
+const ultraEncounterBuilds={
+ darkon:{
+  'Lord of Order':{weapon:'Awe Blast',helm:'Forge',cape:'Absolution',base:'Lucky',note:'Coordinate healing and your assigned Elegy taunt. Example setup from Solaris.'},
+  'Legion Revenant':{weapon:'Arcana Concerto',helm:'Pneuma',cape:'Lament',base:'Wizard',note:'Example for the standard healer composition; adjust for survival.'},
+  'StoneCrusher':{weapon:'Valiance',helm:'Anima',cape:'Absolution',base:'Fighter',note:'Support and coordinate healing windows.'},
+  'ArchPaladin':{weapon:'Praxis',helm:'Forge',cape:'Lament',base:'Lucky',note:'Healer alternative; do not overlap direct heals with LoO.'}
+ },
+ gramiel:{
+  'StoneCrusher':{weapon:'Valiance',helm:'Anima',cape:'Absolution',base:'Fighter',consumable:'Scroll of Enrage'},
+  'Legion Revenant':{weapon:'Mana Vamp',helm:'Wizard',cape:'Penitence',base:'Wizard',consumable:'Scroll of Enrage'},
+  'Lord of Order':{weapon:'Awe Blast',helm:'Forge',cape:'Penitence',base:'Lucky',consumable:'Scroll of Enrage'},
+  'Shaman':{weapon:'Elysium',helm:'Wizard',cape:'Vainglory',base:'Wizard',consumable:'Scroll of Enrage'}
+ }
+};
+function encounterUltraBuild(id,cls,generic){
+ if(id==='dage')return {weapon:'Health Vamp / Dauntless',helm:generic?.helm||'Choose defensive setup',cape:generic?.cape||'Choose defensive setup',note:'Use sustain through lifesteal instead of ordinary healing skills during Noxious Decay.',consumable:cls==='Chaos Avenger'?'Scroll of Enrage if loop-taunting':null};
+ return ultraEncounterBuilds[id]?.[cls]||null;
+}
+const ultraReviewedTactics={
+ drakath:[['Prepare taunts','Bring seven Enrage scrolls if using scrolls for every HP blast. Hold damage before each threshold until the taunter confirms readiness.']],
+ darkon:[['Phase 1 DPS check','Reach the transition at about 15.56M HP before 72 seconds.'],['Phase 2 taunt discipline','Alternate Elegy taunts. Two consecutive Elegies on one player can invert crits and healing; a third is lethal. Coordinate direct heals.'],['Phase 3','After Darkon restores HP for the final phase, plan around the stronger autos and mana pressure rather than assuming phase 2 timing still applies.']],
+ gramiel:[['Crystal assignments','Suggested pairs: SC + LR left; LoO + Shaman right. Alternate taunts within each pair, balance crystal HP, and switch to Gramiel to break the drain shield. LR avoids Decay during this phase.'],['Vendetta rotation','In the referenced method, the order is DPS, LoO, SC, LR. All four need Vendetta or Death’s Door before threshold damage.'],['Threshold checks','At 70%, 40% and 10% HP, verify the required protection before pushing damage. Five Vendetta stacks are fatal. Pause if protection or the rotation is not ready.']],
+ engineer:[['Drone counter','If the Defense Drone starts reflecting damage, stop hitting it until reflection ends. Resume the Defense Drone → Attack Drone → Engineer priority.']]
+};
+
 function renderUltraDetail(b){
  const root=$('ultradetail');root.classList.remove('hidden');root.replaceChildren();if(!b)return;
  const quick=ultraBeginner101[b.id]||{},roleMap=new Map(b.roles);
@@ -1590,6 +1628,11 @@ function renderUltraDetail(b){
  const comp=node('div',undefined,'ultracomp');
  for(const cls of b.team){const box=node('div',undefined,'ultra-team-member');box.append(node('strong',cls),node('span',ultraOwned(cls)?'✓ Owned':'✕ Not owned',ultraOwned(cls)?'ultra-owned':'ultra-missing'));comp.append(box)}
  team.append(comp);inner.append(team);
+ const phases=node('section');phases.append(node('h4','Fight phases'));
+ for(const [label,description] of b.phases||[]){const p=node('p');p.append(node('strong',label+' — '),node('span',description));phases.append(p)}
+ inner.append(phases);
+ const reviewed=ultraReviewedTactics[b.id]||[];
+ if(reviewed.length){const tactics=node('section');tactics.append(node('h4','Additional encounter checks'));for(const [label,description] of reviewed){const p=node('p');p.append(node('strong',label+' — '),node('span',description));tactics.append(p)}inner.append(tactics)}
  const cues=ultraBattleCues[b.id]||[];
  const uniqueCallouts=[];
  const seenCallouts=new Set();
@@ -1627,17 +1670,19 @@ function renderUltraDetail(b){
  if(others.children.length>1)inner.append(others);
  details.append(inner);root.append(details);
  const footer=node('div',undefined,'ultra-focus-footer');
- const link=node('a','↗ Full community strategy');link.href=b.source;link.target='_blank';link.rel='noopener noreferrer';footer.append(link,node('span','Team ownership ≠ boss access · verify encounter-specific gear','muted tiny'));root.append(footer);
+ const link=node('a','↗ Full community strategy');link.href=b.source;link.target='_blank';link.rel='noopener noreferrer';footer.append(link,node('span','Team ownership ≠ boss access · verify encounter-specific gear','muted tiny'));for(const [label,url] of ultraReviewedSources[b.id]||[]){const a=node('a',label+' ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';footer.append(a)}root.append(footer);
  function updateRole(){
   const cls=select.value,play=ultraRolePlaybooks[b.id]?.[cls];
   // Bard is a Kathool support class. Official guidance endorses Healer/Wizard/Lucky;
   // Awe Blast + defensive Forge is a suggested group utility setup, not a hard requirement.
   const bardSupport={weapon:'Awe Blast',helm:'Forge',cape:'Absolution',
     note:'Healer base/armor for safer support; Wizard or Lucky are alternatives. Penitence is a defensive cape option.'};
-  const build=starterBuilds[cls]?.group||(cls==='Bard'?bardSupport:null);
+  const generic=starterBuilds[cls]?.group||(cls==='Bard'?bardSupport:null);
+  const encounter=encounterUltraBuild(b.id,cls,generic);
+  const build=encounter||generic;
   gear.replaceChildren();
   if(build){
-   for(const [label,value] of [['Weapon',build.weapon],['Helm',build.helm],['Cape',build.cape]]){
+   for(const [label,value] of [['Weapon',build.weapon],['Helm',build.helm],['Cape',build.cape],['Base',build.base],['Consumable',build.consumable]].filter(([,v])=>v)){
     const cell=node('div',undefined,'ultra-focus-gear-cell');cell.append(node('small',label),node('strong',value));gear.append(cell)
    }
    if(cls==='Bard'){
@@ -1645,7 +1690,7 @@ function renderUltraDetail(b){
     source.href='https://www.aq.com/lore/classes/bard';source.target='_blank';source.rel='noopener noreferrer';gear.append(source);
    }
   }else gear.append(node('span','No reviewed class-specific gear preset; consult the encounter guide.','muted tiny'));
-  job.textContent=cls==='Bard'?bardSupport.note:(roleMap.get(cls)||'Coordinate your role with the team.');
+  job.textContent=[cls==='Bard'?bardSupport.note:(roleMap.get(cls)||'Coordinate your role with the team.'),encounter?'Encounter-specific recommendation. '+(encounter.note||''):build?'General group preset — adapt to this fight.':''].filter(Boolean).join(' ');
   roleName.textContent=cls;
   sequence.replaceChildren();
   const tips=[...new Set((play?.steps||[]).map(step=>String(step).trim()).filter(Boolean))];
