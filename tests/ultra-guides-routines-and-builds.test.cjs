@@ -332,15 +332,15 @@ assert.ok(tree109.some(n=>n.text==="50000 Gold"));assert.ok(tree109.some(n=>n.te
 assert.ok(tree109.some(n=>n.text==="/join accept"));
 assert.ok(tree109.some(n=>n.text==="/join farm"));
 assert.ok(tree109.some(n=>n.tag==="details"));
-const complete109=tree109.find(n=>n.text==="✓");assert.equal(complete109.title,"Mark complete");assert.equal(complete109["aria-pressed"],"false");complete109.onclick();
+const complete109=tree109.find(n=>n.tag==="button"&&n.text==="✓");assert.equal(complete109.title,"Mark complete");assert.equal(complete109["aria-pressed"],"false");complete109.onclick();
 assert.equal(completed,true);
 tree109=flatten109(renderCard(task109,true));
 assert.ok(tree109[0].cls.includes("done"));
-status.value="completed";const undo109=tree109.find(n=>n.text==="✓");assert.equal(undo109.title,"Undo completion");assert.equal(undo109["aria-pressed"],"true");assert.ok(undo109.cls.includes("is-complete"));undo109.onclick();
+status.value="completed";const undo109=tree109.find(n=>n.tag==="button"&&n.text==="✓");assert.equal(undo109.title,"Undo completion");assert.equal(undo109["aria-pressed"],"true");assert.ok(undo109.cls.includes("is-complete"));undo109.onclick();
 assert.equal(completed,false);assert.equal(status.value,"all");assert.equal(toggles,2);
 tree109.find(n=>n.text==="×").onclick();assert.equal(unpins,1);
 conflict={name:"Other weekly"};tree109=flatten109(renderCard(task109,true));
-assert.ok(tree109.find(n=>n.text==="✓").disabled);
+assert.ok(tree109.find(n=>n.tag==="button"&&n.text==="✓").disabled);
 conflict=null;flatten109(renderCard(task109,false)).find(n=>n.text==="+ Pin").onclick();assert.equal(pins,1);
 assert.ok(html.includes("const grid=node('div',undefined,'planner-quest-grid')"));
 assert.ok(plannerCSS.includes("max(235px,calc((100% - 44px)/5))"));
