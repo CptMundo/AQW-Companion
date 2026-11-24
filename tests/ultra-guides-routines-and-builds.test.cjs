@@ -45,7 +45,7 @@ assert.ok(html.includes("planner-show-all"),"Extended catalog must remain usable
 assert.ok(html.includes("name:'Mine Crafting',group:'Metals',freq:'daily',join:'/join stalagbite'"));
 assert.ok(html.includes("name:'Hard Core Metals',group:'Metals',freq:'daily',join:'/join stalagbite'"));
 assert.ok(plannerCSS.includes("column-gap:14px"));
-assert.ok(html.includes('href="css/planner-routines.css?v=109"'));
+assert.ok(html.includes('href="css/planner-routines.css?v=110"'));
 assert.ok(html.includes('src="js/ultra-guide-rows.js"'));
 for(const [i,m] of [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].entries())
  if(!m[1].includes("src=")&&m[2].trim())new vm.Script(m[2],{filename:"index-inline-"+i});
@@ -67,7 +67,7 @@ assert.ok(html.includes('id="plannercategory"'));
 assert.ok(html.includes('id="plannerpinfilter"'));
 assert.ok(html.includes('Undo completion'));
 assert.ok(html.includes('toggleTask(t,!done)'));
-assert.ok(html.includes("['Completed',true]"));
+assert.ok(html.includes("status==='all'||taskDone(t)===(status==='completed')"),"Completed tasks remain filterable in the same quest grid");
 assert.ok(html.includes("taskSearchText(x).includes(query)"));
 assert.ok(html.includes("const plannerKey='aqw-companion-planner-v09'"));
 
@@ -319,7 +319,7 @@ assert.ok(ultraCSS.includes("@container (max-width:900px)"));
 assert.ok(ultraCSS.includes("@container (max-width:480px)"));
 console.log("Ultra layout: right gutter removed, four enhancement slots, responsive controls and no bottom footer.");
 
-const plannerCardCode=html.slice(html.indexOf("function taskCard(t,pinned)"),html.indexOf("$('resetultradaily')",html.indexOf("function taskCard(t,pinned)")));
+const plannerCardCode=html.slice(html.indexOf("const plannerBossArt="),html.indexOf("$('resetultradaily')",html.indexOf("const plannerBossArt=")));
 let completed=false,unpins=0,pins=0,toggles=0,conflict=null;
 const makeNode=(tag,text,cls)=>({tag,text,cls,children:[],append(...nodes){this.children.push(...nodes)},setAttribute(k,v){this[k]=v}});
 const status={value:"all"};
@@ -328,19 +328,19 @@ const task109={id:"test",name:"Test Quest",freq:"daily",group:"Legion",rewards:[
 const flatten109=n=>[n,...n.children.flatMap(flatten109)];
 let tree109=flatten109(renderCard(task109,true));
 assert.ok(tree109.some(n=>n.text==="Material ×1"));
-assert.ok(tree109.some(n=>n.text==="50000 Gold · 50000 XP"));
+assert.ok(tree109.some(n=>n.text==="50000 Gold"));assert.ok(tree109.some(n=>n.text==="50000 XP"));
 assert.ok(tree109.some(n=>n.text==="/join accept"));
 assert.ok(tree109.some(n=>n.text==="/join farm"));
 assert.ok(tree109.some(n=>n.tag==="details"));
-const complete109=tree109.find(n=>n.text==="✓");assert.equal(complete109.title,"Mark complete");assert.equal(complete109["aria-pressed"],"false");complete109.onclick();
+const complete109=tree109.find(n=>n.tag==="button"&&n.text==="✓");assert.equal(complete109.title,"Mark complete");assert.equal(complete109["aria-pressed"],"false");complete109.onclick();
 assert.equal(completed,true);
 tree109=flatten109(renderCard(task109,true));
 assert.ok(tree109[0].cls.includes("done"));
-status.value="completed";const undo109=tree109.find(n=>n.text==="✓");assert.equal(undo109.title,"Undo completion");assert.equal(undo109["aria-pressed"],"true");assert.ok(undo109.cls.includes("is-complete"));undo109.onclick();
+status.value="completed";const undo109=tree109.find(n=>n.tag==="button"&&n.text==="✓");assert.equal(undo109.title,"Undo completion");assert.equal(undo109["aria-pressed"],"true");assert.ok(undo109.cls.includes("is-complete"));undo109.onclick();
 assert.equal(completed,false);assert.equal(status.value,"all");assert.equal(toggles,2);
 tree109.find(n=>n.text==="×").onclick();assert.equal(unpins,1);
 conflict={name:"Other weekly"};tree109=flatten109(renderCard(task109,true));
-assert.ok(tree109.find(n=>n.text==="✓").disabled);
+assert.ok(tree109.find(n=>n.tag==="button"&&n.text==="✓").disabled);
 conflict=null;flatten109(renderCard(task109,false)).find(n=>n.text==="+ Pin").onclick();assert.equal(pins,1);
 assert.ok(html.includes("const grid=node('div',undefined,'planner-quest-grid')"));
 assert.ok(plannerCSS.includes("max(235px,calc((100% - 44px)/5))"));
@@ -349,3 +349,24 @@ console.log("Tracker 3.0 tiles: rewards, distinct joins, completion, undo, pin/u
 
 assert.ok(plannerCSS.includes(".planner-quest-actions .planner-complete-action.is-complete"));
 assert.ok(html.includes("actions.append(action)"));
+
+const portraitCode=html.slice(html.indexOf("const plannerBossArt="),html.indexOf("$('resetultradaily')",html.indexOf("const plannerBossArt=")));
+const portrait=vm.runInNewContext(portraitCode+"\n({taskCard,plannerArt,plannerCategory,plannerRewardParts,plannerTitle})",{node:makeNode,taskDone:()=>completed,routineConflict:()=>null,taskRoutes:{},taskCategories:t=>t.categories||[t.group||"Other"],makeCopyJoin:join=>makeNode("button",join),unpinTask:()=>{},pinTask:()=>{},toggleTask:()=>{},$:()=>status});
+const boss110={name:"Ultra Ezrajal",sourceName:"Ultra Ezrajal",group:"Ultra Boss",freq:"daily",join:"/join ultraezrajal",acceptJoin:"/join timeinn",rewards:["Ezrajal Insignia ×1","250000 Gold","500000 XP"]};
+assert.equal(portrait.plannerTitle(boss110),"Ultra Ezrajal");
+assert.equal(portrait.plannerCategory(boss110),"Ultras");
+assert.equal(portrait.plannerRewardParts(boss110).main,"Ezrajal Insignia ×1");
+assert.match(portrait.plannerArt(boss110).url,/XynsWFk\.png$/);
+assert.equal(portrait.plannerArt({...boss110,name:"Unrelated quest",sourceName:"",group:"Materials"}),null);
+const portraitTree=flatten109(portrait.taskCard(boss110,true));
+assert.ok(portraitTree.some(n=>n.tag==="img"&&n.referrerPolicy==="no-referrer"));
+assert.ok(portraitTree.some(n=>n.cls==="planner-reward-preview"&&n.text==="Ezrajal Insignia ×1"));
+assert.ok(portraitTree.some(n=>n.cls==="planner-quest-actions"&&n.children.some(c=>c.text==="/join timeinn")));
+assert.ok(portraitTree.some(n=>n.tag==="details"&&flatten109(n).some(c=>c.text==="/join ultraezrajal")));
+assert.ok(html.includes('id="plannertotalcount"'));
+assert.ok(html.includes('data-planner-frequency="daily"'));
+assert.ok(html.includes('id="planner-my-categories"'));
+assert.ok(html.includes("const total=routineProgress(pinnedActive)"));
+assert.ok(plannerCSS.includes(".planner-quest-art img[hidden]"));
+assert.ok(plannerCSS.includes("calc((100% - 55px)/6)"));
+console.log("Tracker portrait cards: verified image map, main reward, full details, separate joins, category and summary wiring.");

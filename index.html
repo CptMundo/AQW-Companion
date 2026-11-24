@@ -21,7 +21,7 @@
 
 <link rel="stylesheet" href="css/account-statistics.css?v=97">
 <link rel="stylesheet" href="css/meta-class-builds.css">
-<link rel="stylesheet" href="css/planner-routines.css?v=109">
+<link rel="stylesheet" href="css/planner-routines.css?v=110">
 <link rel="stylesheet" href="css/recipe-coverage.css">
 <link rel="stylesheet" href="css/stack-alerts.css?v=95">
 <link rel="stylesheet" href="css/ultra-quote-actions.css?v=108">
@@ -75,8 +75,13 @@
  <p class="muted tiny forge-tracker-disclaimer">Completion is manual: inventory exports cannot prove a Forge quest was completed. Basic requirements are summaries; the AQWWiki quest page has the full recipe. Saves on this browser only.</p>
  </div></section>
 <section id="planner" class="view"><div class="card" style="margin-bottom:15px"><div class="unlocktop"><div><h3 class="sectiontitle">📅 Daily / Weekly Tracker</h3><p class="muted tiny">Pin your quests and mark them complete after turning them in.</p></div><span class="pill">Local · Optional · Manual</span></div>
-<div class="planner-controls"><div class="planner-metric"><strong id="dailycount">0 / 0</strong><span>Daily tasks</span><strong class="planner-timer" id="dailyreset">--</strong><small id="dailyresetlocal"></small><div class="planner-progress"><div id="dailybar"></div></div></div><div class="planner-metric"><strong id="weeklycount">0 / 0</strong><span>Weekly tasks</span><strong class="planner-timer" id="weeklyreset">--</strong><small id="weeklyresetlocal"></small><div class="planner-progress"><div id="weeklybar"></div></div></div></div>
-<p class="muted tiny" id="plannerperiod"></p></div><div class="card"><div class="goalhead"><h3 class="sectiontitle">My Tasks</h3><span class="pill">Changes saved automatically</span></div><div class="toolbar planner-my-toolbar"><label>Show <select id="plannerstatus"><option value="all">All tasks</option><option value="pending">Pending</option><option value="completed">Completed</option></select></label><button id="plannerbrowse" class="smallbutton">+ Discover & pin tasks</button></div><div id="planner-my-tasks" class="task-grid"></div><p class="muted tiny">Checks reset automatically; previous periods remain in backup.</p></div></section><section id="planner-discover" class="view"><div class="card"><h3 class="sectiontitle">Discover Tasks</h3><div class="toolbar"><input id="plannersearch" placeholder="Search quests, maps, factions, items…" type="search"><select id="plannerfilter"><option value="all">Daily &amp; weekly</option><option value="daily">Daily only</option><option value="weekly">Weekly only</option></select><select id="plannercategory" aria-label="Task category"><option value="all">All categories</option></select><select id="plannerpinfilter" aria-label="Pinned status"><option value="all">All tasks</option><option value="unpinned">Not pinned</option><option value="pinned">Pinned</option></select></div>
+<div class="planner-controls planner-compact-summary">
+<div class="planner-metric planner-total"><span>Tracker progress</span><div class="planner-metric-line"><strong id="plannertotalcount">0 / 0</strong><small id="plannertotalpercent">0%</small></div><div class="planner-progress"><div id="plannertotalbar"></div></div></div>
+<div class="planner-metric"><div class="planner-metric-line"><span>☀️ Dailies</span><strong id="dailycount">0 / 0</strong></div><strong class="planner-timer" id="dailyreset">--</strong><small id="dailyresetlocal"></small><div class="planner-progress"><div id="dailybar"></div></div></div>
+<div class="planner-metric"><div class="planner-metric-line"><span>📅 Weeklies</span><strong id="weeklycount">0 / 0</strong></div><strong class="planner-timer" id="weeklyreset">--</strong><small id="weeklyresetlocal"></small><div class="planner-progress"><div id="weeklybar"></div></div></div>
+</div><p class="muted tiny" id="plannerperiod"></p></div>
+<div class="card planner-board"><div class="planner-my-toolbar"><div class="planner-frequency-controls" role="group" aria-label="Quest frequency"><button type="button" data-planner-frequency="all" aria-pressed="true" class="active">All</button><button type="button" data-planner-frequency="daily" aria-pressed="false">☀️ Dailies</button><button type="button" data-planner-frequency="weekly" aria-pressed="false">📅 Weeklies</button></div><div class="planner-board-actions"><label>Show <select id="plannerstatus"><option value="all">All tasks</option><option value="pending">Pending</option><option value="completed">Completed</option></select></label><button id="plannerbrowse" class="primary">+ Quest Library</button></div></div>
+<div id="planner-my-categories" class="planner-category-controls" role="group" aria-label="Quest category"></div><div id="planner-my-tasks" class="task-grid"></div><p class="muted tiny planner-reset-note">Checks reset automatically; history remains available.</p></div></section><section id="planner-discover" class="view"><div class="card"><h3 class="sectiontitle">Discover Tasks</h3><div class="toolbar"><input id="plannersearch" placeholder="Search quests, maps, factions, items…" type="search"><select id="plannerfilter"><option value="all">Daily &amp; weekly</option><option value="daily">Daily only</option><option value="weekly">Weekly only</option></select><select id="plannercategory" aria-label="Task category"><option value="all">All categories</option></select><select id="plannerpinfilter" aria-label="Pinned status"><option value="all">All tasks</option><option value="unpinned">Not pinned</option><option value="pinned">Pinned</option></select></div>
 <div class="packrow"><button class="smallbutton" data-pack="essentials">+ Starter routines</button><button class="smallbutton" data-pack="legion">+ Legion</button><button class="smallbutton" data-pack="nulgath">+ Nulgath</button><button class="smallbutton" data-pack="shadowfall">+ Shadowfall / Doom</button><button class="smallbutton" data-pack="ultras">+ Ultra weeklies</button></div><p class="muted tiny">Recurring quests indexed from AQWWiki community data, the Daily Quest Board and curated Ultra guides. Some require unlocks, membership or seasonal availability. Data attribution: AQWikiTools / AQWorlds Wiki (CC BY-SA 3.0). <a href="https://aqwwiki.wikidot.com/daily-quest-board-s-quests" target="_blank" rel="noopener noreferrer">Daily Quest Board ↗</a> · <a href="https://aqwwiki.wikidot.com/sort-by-all-quests" target="_blank" rel="noopener noreferrer">All AQW quests ↗</a></p><h4 class="sectiontitle" style="margin-top:14px">Quest Library <small id="plannerresultcount" class="muted"></small></h4><div id="planner-suggestions" class="task-grid"></div><details class="task-route" id="planner-source-details"><summary>Quest library coverage &amp; source pages</summary><p id="planner-coverage" class="muted tiny"></p><div id="planner-source-pages"></div></details>
 <div class="new-task"><input id="customtask" maxlength="120" placeholder="Add your own task, e.g. Check Wheel of Doom"><select id="customfrequency"><option value="daily">Daily</option><option value="weekly">Weekly</option></select><input id="customjoin" placeholder="Optional /join" maxlength="80"><button id="addcustomtask" class="primary">+ Add task</button></div></div>
 </section><section id="planner-history" class="view"><div class="card"><h3 class="sectiontitle">Task History</h3><div id="planner-task-history"></div></div></section><section id="compare" class="view"><div class="card"><h3 class="sectiontitle">Compare two snapshots</h3><p class="muted" style="font-size:13px">Import both snapshots into the same browser. Comparison uses <b>ID</b> and quantity; moving items between inventory and bank does not count as a new item.</p><div class="comparecontrols"><label>Older <select id="oldselect"></select></label><label>Newer <select id="newselect"></select></label><button id="comparebtn" class="primary">Compare</button></div><div id="compareresult" class="muted">Import at least two snapshots to get started.</div></div></section>
@@ -2617,50 +2622,96 @@ function toggleTask(t,done){if(!routineIsRecurring(t))return;const conflict=done
 function pinTask(t){if(!routineIsRecurring(t)||pinnedTasks.some(x=>x.id===t.id))return;pinnedTasks.push({...t});savePlanner();renderPlanner()}
 function unpinTask(t){pinnedTasks=pinnedTasks.filter(x=>x.id!==t.id);savePlanner();renderPlanner()}
 function copyJoin(txt){if(!txt)return;if(navigator.clipboard?.writeText)navigator.clipboard.writeText(txt).then(()=>message(txt+' copied')).catch(()=>message('Copy '+txt));else message('Copy '+txt)}
+// Static public boss illustrations from the linked AQWorlds Wiki monster pages.
+// Only use a verified encounter name/map association; never guess an image.
+const plannerBossArt={
+ ultradage:['zWsbpo2','dage-the-dark-lord'],
+ ultranulgath:['GdeB3eq','nulgath-the-archfiend'],
+ championdrakath:['aYr37HB','champion-drakath-monster'],
+ ultraspeaker:['Ons3QgA','the-first-speaker'],
+ ultraezrajal:['XynsWFk','ultra-ezrajal-monster'],
+ ultraengineer:['5nA2bzC','ultra-engineer-monster'],
+ ultrawarden:['OT8aKxQ','ultra-warden-monster'],
+ ultratyndarius:['DHcUlqt','ultra-avatar-tyndarius-monster'],
+ kathooldepths:['unFk86E','god-of-the-depths'],
+ ultradarkon:['hLe6GMx','darkon-the-conductor'],
+ ultradrago:['iGMPbvQ','king-drago-monster'],
+ ultragramiel:['PS5HxB3','gramiel-the-graceful'],
+ judgement:['iSbwXVX','ultra-aeacus'],
+ frozenlair:['YHf4M7P','legion-lich-lord-monster'],
+ deimos:['mPkiQre','devastator-deimos']
+};
+function plannerArt(t){
+ const map=String(t.join||'').trim().toLowerCase().replace(/^\/join\s+/,'');
+ // Generic map quests can target unrelated monsters. Match the named boss or
+ // explicit Ultra group, with the known Legion exercise and Frenzy Feast exceptions.
+ const name=String(t.name||'')+' '+String(t.sourceName||'');
+ const known=plannerBossArt[map];
+ const match=known&&(t.group==='Ultra Boss'||/Daily Exercise [12456]:|Frenzy Feast|Ultra (?:Dage|Nulgath|Speaker|Ezrajal|Warden|Engineer|Avatar Tyndarius|Darkon|Drago|Gramiel)|Champion Drakath|God of the Depths/i.test(name));
+ return match?{url:'https://i.imgur.com/'+known[0]+'.png',source:'https://aqwwiki.wikidot.com/'+known[1]}:null;
+}
+function plannerCategory(t){
+ const tags=taskCategories(t);
+ if(tags.includes('Ultras')||t.group==='Ultra Boss')return 'Ultras';
+ if(tags.includes('Legion'))return 'Legion';
+ if(tags.includes('Nulgath'))return 'Nulgath';
+ if(tags.some(x=>/reputation/i.test(x)))return 'Reputation';
+ if(tags.some(x=>/material|metal|endgame/i.test(x)))return 'Materials';
+ if(tags.includes('Factions'))return 'Factions';
+ return t.group==='Custom'?'Custom':'Other';
+}
+function plannerTitle(t){return t.name||'Quest'}
+function plannerRewardParts(t){
+ const all=t.rewards||[];
+ const items=all.filter(x=>!/^([\d,.]+\s*(Gold|XP)|(?:Gold|XP)\s*[:×x])/i.test(x));
+ return {main:items.find(x=>/Insignia|Token|Relic/i.test(x))||items[0]||all[0]||'',all};
+}
 function taskCard(t,pinned){const done=taskDone(t),conflict=routineConflict(t);
  const card=node('article',undefined,'task-card planner-quest-card'+(done?' done':''));
- const header=node('div',undefined,'planner-quest-head');
- const name=node('div',undefined,'planner-quest-name');
- name.append(node('strong',t.searchName||t.name,'task-title'),node('small',(t.freq==='daily'?'Daily':'Weekly')+' · '+(t.group||'Custom'),'planner-quest-meta'));
- const button=node('button',pinned?'×':'+ Pin','smallbutton planner-pin-action');
- button.type='button';button.title=pinned?'Unpin '+t.name:'Pin '+t.name;button.setAttribute('aria-label',button.title);
- button.onclick=()=>pinned?unpinTask(t):pinTask(t);
- const actions=node('div',undefined,'planner-quest-actions');
- if(pinned){const action=node('button','✓','smallbutton planner-complete-action'+(done?' is-complete':''));
- action.type='button';action.disabled=!!conflict;
- action.title=conflict?'Alternative already completed':done?'Undo completion':'Mark complete';
- action.setAttribute('aria-label',(done?'Undo completion of ':'Complete ')+t.name);
- action.setAttribute('aria-pressed',String(done));
- action.onclick=()=>{if(done&&$('plannerstatus').value==='completed')$('plannerstatus').value='all';toggleTask(t,!done)};
- actions.append(action)}
- actions.append(button);header.append(name,actions);card.append(header);
- if(pinned&&Array.isArray(t.sourceProjects)&&t.sourceProjects.length)card.append(node('small','🎯 '+t.sourceProjects.join(' · '),'task-project'));
- const rewards=node('div',undefined,'planner-quest-rewards');
- if(t.rewards?.length){rewards.append(node('small','Rewards','planner-quest-label'));
- const items=t.rewards.filter(x=>!/^([\d,.]+\s*(Gold|XP)|(?:Gold|XP)\s*[:×x])/i.test(x));
- const currency=t.rewards.filter(x=>!items.includes(x));
- for(const reward of items)rewards.append(node('div',reward,'planner-reward-item'));
- if(currency.length)rewards.append(node('small',currency.join(' · '),'planner-reward-currency'));
- card.append(rewards)}
+ const category=plannerCategory(t),art=plannerArt(t);
+ const visual=node('div',undefined,'planner-quest-art');
+ const fallback=node('span',({'Ultras':'⚔️','Legion':'☠️','Nulgath':'◆','Materials':'⛏️','Reputation':'★','Factions':'⚑','Custom':'✦','Other':'📜'})[category]||'📜','planner-quest-art-fallback');
+ visual.append(fallback);
+ if(art){const img=node('img');img.alt='';img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';img.src=art.url;img.onerror=()=>{img.hidden=true};visual.append(img)}
+ if(pinned&&done){const mark=node('span','✓','planner-art-complete');mark.setAttribute('aria-label','Completed');visual.append(mark)}
+ card.append(visual);
+ const header=node('div',undefined,'planner-quest-head'),name=node('div',undefined,'planner-quest-name');
+ name.append(node('strong',plannerTitle(t),'task-title'),node('small',(t.freq==='daily'?'Daily':'Weekly')+' · '+(t.group||'Custom'),'planner-quest-meta'));
+ header.append(name);card.append(header);
+ const reward=plannerRewardParts(t);
+ if(reward.main){const preview=node('div',reward.main,'planner-reward-preview');preview.title=reward.all.join(' · ');card.append(preview)}
+ const info=taskRoutes[t.id],details=node('details',undefined,'task-route planner-quest-details');details.append(node('summary','Quest details'));
+ if(reward.all.length){const rewards=node('div',undefined,'planner-quest-rewards');rewards.append(node('small','Rewards','planner-quest-label'));for(const x of reward.all)rewards.append(node('div',x,'planner-reward-item'));details.append(rewards)}
+ if(pinned&&Array.isArray(t.sourceProjects)&&t.sourceProjects.length)details.append(node('small','🎯 '+t.sourceProjects.join(' · '),'task-project'));
+ if(t.note)details.append(node('small',t.note,'task-unverified'));
  const routes=node('div',undefined,'planner-quest-routes');
  const route=(label,join)=>{const row=node('div',undefined,'planner-quest-route');row.append(node('small',label,'planner-quest-label'),makeCopyJoin(join));routes.append(row)};
  if(t.acceptJoin&&t.acceptJoin!==t.join)route('Accept quest',t.acceptJoin);
  if(t.join)route(t.acceptJoin===t.join?'Quest / farm':t.acceptJoin?'Farm / boss':'Location',t.join);
- if(routes.children.length)card.append(routes);
- const info=taskRoutes[t.id],details=node('details',undefined,'task-route planner-quest-details');details.append(node('summary','Quest details'));
- if(t.note)details.append(node('small',t.note,'task-unverified'));
+ if(routes.children.length)details.append(routes);
  if(!pinned){const tags=node('div',undefined,'planner-tags');for(const tag of taskCategories(t))tags.append(node('span',tag,'pill'));details.append(tags)}
  if(info){details.append(node('div',info.npc.replace(/\s*·\s*\/join\s+[a-z0-9-]+/gi,''),'task-location'));
  for(const target of info.targets){const line=node('div',undefined,'task-target');line.append(node('strong',target[0]),node('small',target[1]));if(target[2])line.append(makeCopyJoin(target[2]));else line.append(node('small','Map not yet verified','task-unverified'));details.append(line)}
  }else if(t.targets?.length||t.npc||t.location){if(t.npc||t.location)details.append(node('div',[t.npc,t.location].filter(Boolean).join(' · '),'task-location'));for(const target of t.targets||[])details.append(node('div',target,'task-target'))}
  else details.append(node('small','Open the quest in-game to confirm its current objectives.','task-unverified'));
  const wiki=node('a','Quest source ↗','task-wiki');wiki.href=info?.wiki||t.wiki||'https://aqwwiki.wikidot.com/daily-quest-board-s-quests';wiki.target='_blank';wiki.rel='noopener noreferrer';details.append(wiki);
+ if(art){const credit=node('a','Boss image: AQWorlds Wiki / Artix ↗','task-wiki');credit.href=art.source;credit.target='_blank';credit.rel='noopener noreferrer';details.append(credit)}
  card.append(details);
  if(conflict)card.append(node('small','Alternative already completed: '+conflict.name,'task-unverified'));
+ const actions=node('div',undefined,'planner-quest-actions');
+ const mainJoin=t.acceptJoin||t.join;if(mainJoin){const join=makeCopyJoin(mainJoin);join.title='Copy '+mainJoin+(t.acceptJoin&&t.acceptJoin!==t.join?' · Accept quest':'');actions.append(join)}
+ if(pinned){const action=node('button','✓','smallbutton planner-complete-action'+(done?' is-complete':''));
+ action.type='button';action.disabled=!!conflict;action.title=conflict?'Alternative already completed':done?'Undo completion':'Mark complete';
+ action.setAttribute('aria-label',(done?'Undo completion of ':'Complete ')+t.name);action.setAttribute('aria-pressed',String(done));
+ action.onclick=()=>{if(done&&$('plannerstatus').value==='completed')$('plannerstatus').value='all';toggleTask(t,!done)};
+ actions.append(action)}
+ const button=node('button',pinned?'×':'+ Pin','smallbutton planner-pin-action');
+ button.type='button';button.title=pinned?'Unpin '+t.name:'Pin '+t.name;button.setAttribute('aria-label',button.title);
+ button.onclick=()=>pinned?unpinTask(t):pinTask(t);actions.append(button);card.append(actions);
  return card
 }
 $('resetultradaily').onclick=()=>resetUltraChecks('daily');$('resetultraweekly').onclick=()=>resetUltraChecks('weekly');
-let plannerShowAll=false;
+let plannerShowAll=false,plannerMyFrequency='all',plannerMyCategory='all';
 const coverage=window.AQWCRoutineLibrary?.coverage;if(coverage){$('planner-coverage').textContent=coverage.quests.toLocaleString()+' quest records across '+coverage.pages.toLocaleString()+' source pages scanned. '+coverage.daily+' daily and '+coverage.weekly+' weekly source entries identified (raw index, not the deduplicated active library). Some source pages do not specify individual quest frequency in the export; check the Wiki before treating unclassified quests as recurring.';for(const p of window.AQWCRoutineLibrary.sourcePages||[]){const a=node('a',p.name+' ↗','task-wiki');a.href=p.url;a.target='_blank';a.rel='noopener noreferrer';const line=node('div');line.append(a);$('planner-source-pages').append(line)}}
 function taskCategories(t){const tags=new Set([t.group||'General',...(t.categories||[])]);if(t.group==='Ultra Boss')tags.add('Ultras');if(t.group==='Legion'||t.group==='Nulgath'||t.group==='Shadowfall')tags.add('Factions');if(t.group==='Metals')tags.add('Materials');if(String(t.group).includes('End game'))tags.add('Endgame');for(const r of projectRoutines)if(r.ids.includes(t.id))tags.add('Endgame projects');return [...tags]}
 function taskSearchText(t){return [t.name,t.searchName,t.group,t.join,t.acceptJoin,...taskCategories(t),...(t.rewards||[]),...(t.targets||[]),t.npc,t.location,t.sourceName,t.note,...projectRoutines.filter(r=>r.ids.includes(t.id)).flatMap(r=>r.terms),...(taskRoutes[t.id]?.targets||[]).flat()].join(' ').toLowerCase()}
@@ -2682,7 +2733,24 @@ function renderPlanner(){const suggested=$('planner-suggestions'),my=$('planner-
  if(!matches.length)suggested.append(node('div','No tasks match your filters.','planner-empty'));
  const reference=taskCatalog.filter(t=>!routineIsRecurring(t)&&(!query||taskSearchText(t).includes(query))&&(freq==='all'||t.freq===freq));
  if(reference.length&&pinFilter!=='unpinned'&&pinFilter!=='pinned'&&cat.value==='all'){const box=node('details',undefined,'task-route');box.append(node('summary','Progression / retired / legacy references · '+reference.length));for(const t of reference){const line=node('div',undefined,'task-card');const name=node('div');name.append(node('strong',t.name),node('small',routineReviewReason(t),'task-unverified'));if(t.wiki){const link=node('a','Quest source ↗','task-wiki');link.href=t.wiki;link.target='_blank';link.rel='noopener noreferrer';name.append(link)}line.append(name);box.append(line)}suggested.append(box)}
- my.replaceChildren();for(const freq of ['daily','weekly']){const group=node('div',undefined,'planner-task-group');group.append(node('h3',freq==='daily'?'☀️ My Dailies':'📅 My Weeklies'));const tasks=pinnedTasks.filter(t=>routineIsRecurring(t)&&t.freq===freq).sort((a,b)=>Number(taskDone(a))-Number(taskDone(b))||a.name.localeCompare(b.name));const status=$('plannerstatus').value;for(const [title,done] of [['Pending',false],['Completed',true]]){if(status!=='all'&&status!==(done?'completed':'pending'))continue;const subset=tasks.filter(t=>taskDone(t)===done);group.append(node('h4',title+' · '+subset.length,'planner-state-heading'));const grid=node('div',undefined,'planner-quest-grid');for(const t of subset)grid.append(taskCard(t,true));if(subset.length)group.append(grid);else group.append(node('p',done?'Nothing completed yet.':'No pending tasks.','muted tiny planner-group-empty'))}my.append(group)}
+ const pinnedActive=pinnedTasks.filter(routineIsRecurring);
+ const relevant=pinnedActive.filter(t=>plannerMyFrequency==='all'||t.freq===plannerMyFrequency);
+ const categoryBar=$('planner-my-categories');categoryBar.replaceChildren();
+ const cats=['all',...new Set(relevant.flatMap(t=>[plannerCategory(t),...(taskCategories(t).includes('Legion')?['Legion']:[])]))];
+ if(!cats.includes(plannerMyCategory))plannerMyCategory='all';
+ for(const category of cats){const btn=node('button',category==='all'?'All categories':category,'planner-category-chip'+(category===plannerMyCategory?' active':''));btn.type='button';btn.setAttribute('aria-pressed',String(category===plannerMyCategory));btn.onclick=()=>{plannerMyCategory=category;renderPlanner()};categoryBar.append(btn)}
+ my.replaceChildren();
+ for(const freq of ['daily','weekly']){
+ if(plannerMyFrequency!=='all'&&plannerMyFrequency!==freq)continue;
+ const group=node('section',undefined,'planner-task-group');
+ const allTasks=pinnedActive.filter(t=>t.freq===freq),progress=routineProgress(allTasks);
+ const heading=node('div',undefined,'planner-section-heading');heading.append(node('h3',freq==='daily'?'☀️ Daily Quests':'📅 Weekly Quests'),node('span',progress.done+' / '+progress.total+' complete','planner-section-progress'));group.append(heading);
+ const status=$('plannerstatus').value;
+ const tasks=allTasks.filter(t=>(plannerMyCategory==='all'||plannerCategory(t)===plannerMyCategory||taskCategories(t).includes(plannerMyCategory))&&(status==='all'||taskDone(t)===(status==='completed'))).sort((a,b)=>Number(taskDone(a))-Number(taskDone(b))||a.name.localeCompare(b.name));
+ const grid=node('div',undefined,'planner-quest-grid');for(const t of tasks)grid.append(taskCard(t,true));if(tasks.length)group.append(grid);else group.append(node('p','No quests match this view. Add quests from the Quest Library.','muted tiny planner-group-empty'));my.append(group);
+ }
+ const total=routineProgress(pinnedActive),percent=total.total?Math.round(total.done*100/total.total):0;
+ $('plannertotalcount').textContent=total.done+' / '+total.total;$('plannertotalpercent').textContent=percent+'%';$('plannertotalbar').style.width=percent+'%';
  const review=pinnedTasks.filter(t=>!routineIsRecurring(t));if(review.length){const box=node('details',undefined,'task-route');box.append(node('summary','Saved tasks needing review · '+review.length));for(const t of review){const line=node('div',undefined,'task-card');line.append(node('div',t.name+' — '+routineReviewReason(t)));const remove=node('button','Unpin','smallbutton');remove.onclick=()=>unpinTask(t);line.append(remove);box.append(line)}my.append(box)}
  const history=$('planner-task-history');history.replaceChildren();const entries=Object.entries(taskChecks).filter(([,done])=>done===true).sort(([a],[b])=>b.localeCompare(a));for(const [id] of entries){const [period,...parts]=id.split('|');const taskId=parts.join('|');const t=pinnedTasks.find(x=>x.id===taskId)||taskCatalog.find(x=>x.id===taskId);history.append(node('div',period+' · '+(t?.name||taskId),'planner-history-row'));}if(!entries.length)history.append(node('p','No completed tasks recorded yet.','muted tiny'));if(!pinnedTasks.length)my.append(node('div','Pin a starter pack, a suggestion, or add your own task.','planner-empty'));
  for(const freq of ['daily','weekly']){const t=pinnedTasks.filter(x=>routineIsRecurring(x)&&x.freq===freq),progress=routineProgress(t);$(freq+'count').textContent=progress.done+' / '+progress.total;$(freq+'bar').style.width=(progress.total?100*progress.done/progress.total:0)+'%'}
@@ -2695,6 +2763,7 @@ let lastPlannerPeriod=taskPeriod('daily')+'|'+taskPeriod('weekly');
 function refreshPlannerClock(){const key=taskPeriod('daily')+'|'+taskPeriod('weekly');if(lastPlannerPeriod&&key!==lastPlannerPeriod){renderPlanner();renderHomeInsights()}lastPlannerPeriod=key;updatePlannerTimers()}
 setInterval(refreshPlannerClock,1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshPlannerClock()});
 $('plannersearch').addEventListener('input',renderPlanner);for(const id of ['plannerfilter','plannercategory','plannerpinfilter','plannerstatus'])$(id).addEventListener('change',renderPlanner);$('plannerbrowse').onclick=()=>selectTab('planner-discover');
+document.querySelectorAll('[data-planner-frequency]').forEach(btn=>btn.addEventListener('click',()=>{plannerMyFrequency=btn.dataset.plannerFrequency;document.querySelectorAll('[data-planner-frequency]').forEach(x=>{const active=x===btn;x.classList.toggle('active',active);x.setAttribute('aria-pressed',String(active))});renderPlanner()}));
 document.querySelectorAll('[data-pack]').forEach(btn=>btn.addEventListener('click',()=>{const pack=btn.dataset.pack;for(const t of taskCatalog.filter(t=>routineIsRecurring(t)&&t.packs.includes(pack)))if(!pinnedTasks.some(x=>x.id===t.id))pinnedTasks.push({...t});savePlanner();renderPlanner();message('Starter pack pinned. Customize your checklist anytime.')}));
 $('addcustomtask').onclick=()=>{const name=$('customtask').value.trim();if(!name){message('Enter a task name first.');return}let join=$('customjoin').value.trim();if(join&&!/^\/join [a-z0-9_-]+$/i.test(join)){message('Use /join mapname or leave the field empty.');return}const freq=$('customfrequency').value;pinnedTasks.push({id:'user-'+crypto.randomUUID(),name:name.slice(0,120),group:'Custom',freq,join,packs:[]});$('customtask').value='';$('customjoin').value='';savePlanner();renderPlanner()};
 const groupDefaults={home:'overview',explore:'discover',projects:'unlocks',story:'story',inventory:'account-stats',ultras:'ultras',planner:'planner',builds:'builds'};
