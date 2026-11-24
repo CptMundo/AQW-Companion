@@ -95,7 +95,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.11.8');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
+ assert.equal(manifest.version,'0.11.9');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -385,7 +385,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  
  // Existing worker integration tests cover typed lookups; static UI safeguards.
  assert.ok(read('extension/wiki-list-ownership.js').includes("find.addEventListener('click'"));
- assert.ok(read('extension/wiki-quest-shop.js').includes("type:'routine-queue-add'"));
+ assert.ok(read('extension/wiki-quest-shop.js').includes("type:'quest-pin-add'"));
  assert.ok(read('index.html').includes("if(entry.quest)"));
 }
 
@@ -476,7 +476,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.equal(api.questScope(content,[tab('First','#quest1')],'First'),panel);
  assert.equal(api.questScope(content,[tab('First','#other')],'First'),null);
  assert.equal(api.questScope(content,[tab('First','#quest1'),tab('First','#quest1')],'First'),null);
- assert.ok(read('extension/wiki-quest-shop.js').includes('Page-wide stock (not an individual quest)'));
+ assert.ok(!read('extension/wiki-quest-shop.js').includes('Page-wide stock (not an individual quest)'));
  assert.ok(read('extension/wiki-quest-shop.js').includes('revision!==scopeRevision'));
 }
 
@@ -573,4 +573,18 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.ok(read('extension/wiki-quest-shop.js').includes('questCards(panel,content,title)'));
  assert.ok(read('extension/wiki-theme.js').includes('target.style.setProperty(bannerProps[i]'));
  assert.ok(read('extension/wiki-theme.js').includes('restoreInline()'));
+}
+
+{
+ const api=vm.runInNewContext(read('extension/wiki-quest-shop.js')+'\nAQWCQuestShop',{URL});
+ const a={textContent:'Rotten to the Corps',getAttribute:()=> 'javascript:;'},b={textContent:'A Fighting Chance',getAttribute:()=> 'javascript:;'};
+ const classList=k=>({contains:v=>v===k}),p1={tagName:'DIV'},p2={tagName:'DIV'},nav={classList:classList('yui-nav'),children:[{tagName:'LI',querySelector:()=>a},{tagName:'LI',querySelector:()=>b}]},panes={classList:classList('yui-content'),children:[p1,p2]},group={children:[nav,panes]};
+ a.closest=b.closest=()=>nav;nav.closest=()=>group;
+ const content={contains:x=>[group,p1,p2].includes(x),ownerDocument:{getElementById:()=>null}};
+ assert.equal(api.questScope(content,[a,b],'Rotten to the Corps'),p1);
+ assert.equal(api.questScope(content,[a,b],'A Fighting Chance'),p2);
+ panes.children.pop();assert.equal(api.questScope(content,[a,b],'A Fighting Chance'),null);
+ assert.ok(!read('extension/wiki-quest-shop.js').includes('Open Daily / Weekly Tracker'));
+ assert.ok(read('index.html').includes('aqwc-pinned-wiki-quests-v1'));assert.ok(read('index.html').includes('entry.quest.pin===true'));
+ assert.ok(read('extension/wiki-theme.js').includes('aqwc-prometheus-artwork'));
 }
