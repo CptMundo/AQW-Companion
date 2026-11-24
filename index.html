@@ -1118,9 +1118,9 @@ const ultraBattleCues={
  ]
 };
 let selectedUltra='drakath';
-function ultraOwned(name){return items.some(x=>x.Type.toLowerCase()==='class'&&x.Name.toLowerCase()===name.toLowerCase())}
-function ultraTeamReady(b){return b.team.every(ultraOwned)}
-function renderUltras(){renderUltraCatalog();const term=$('ultrasearch').value.toLowerCase().trim(),filter=$('ultrafilter').value;const all=ultraGuides.filter(b=>(filter!=='ready'||ultraTeamReady(b))&&(!term||[b.name,b.description,...b.team].join(' ').toLowerCase().includes(term))).sort((a,b)=>(a.type==='Daily'?0:a.type==='Weekly'?1:2)-(b.type==='Daily'?0:b.type==='Weekly'?1:2)||a.name.localeCompare(b.name));
+function ultraOwned(name){return items.some(x=>x.Type.toLowerCase()==='class'&&sameUltraClass(x.Name,name))}
+function ultraTeamReady(b){return b.team.every(ultraOwned)||!!simplifiedProfiles[b.id]?.team?.length&&simplifiedProfiles[b.id].team.every(x=>ultraOwned(x.cls))}
+function renderUltras(){renderUltraCatalog();const term=$('ultrasearch').value.toLowerCase().trim(),filter=$('ultrafilter').value;const all=ultraGuides.filter(b=>(filter!=='ready'||ultraTeamReady(b))&&(!term||[b.name,b.description,...b.team,...(simplifiedProfiles[b.id]?.team||[]).map(x=>x.cls)].join(' ').toLowerCase().includes(term))).sort((a,b)=>(a.type==='Daily'?0:a.type==='Weekly'?1:2)-(b.type==='Daily'?0:b.type==='Weekly'?1:2)||a.name.localeCompare(b.name));
  const cards=$('ultracards');cards.replaceChildren();let currentGroup='';for(const b of all){const group=b.type==='Daily'?'☀️ Daily Ultras':b.type==='Weekly'?'📆 Weekly Ultras':b.type==='Challenge'?'🐙 Challenge Bosses':'Other Ultras';if(group!==currentGroup){currentGroup=group;cards.append(node('div',group,'ultra-group-label'))}const btn=node('button',undefined,'ultracard'+(b.id===selectedUltra?' active':''));btn.type='button';btn.append(node('small',b.type+' · '+b.difficulty),node('strong',ultraEmojiFor(b)+' '+b.name),node('small',b.description));btn.onclick=()=>{selectedUltra=b.id;renderUltras()};cards.append(btn)}
  const chosen=ultraGuides.find(x=>x.id===selectedUltra);renderUltraDetail(chosen);}
 const ultraBeginner101={
@@ -1698,15 +1698,89 @@ function simplifiedRoleRatings(key,index){
  if(!role||!scores)return [];
  return role[1].map((name,i)=>({name,rating:Number(scores[i])})).filter(x=>Number.isInteger(x.rating)&&x.rating>=0&&x.rating<=5).sort((a,b)=>b.rating-a.rating);
 }
-function appendSimplifiedRatings(content,key){
- if(!simplifiedRatings[key])return;
- const details=node('details');details.append(node('summary','Class suitability by role (community ratings)'));
- const pick=node('select');for(const [i,[name]] of simplifiedRatingRoles.entries())pick.append(new Option(name,String(i)));
- const list=node('div',undefined,'ultra-flow-list');
- const draw=()=>{list.replaceChildren();for(const row of simplifiedRoleRatings(key,Number(pick.value))){const owned=ultraOwned(row.name)||ultraOwned(row.name==='Light Caster'?'LightCaster':row.name);const line=node('div',undefined,'ultra-role-step');line.append(node('span',row.rating+'/5','ultra-step-number'),node('strong',row.name),node('small',owned?'✓ Owned':'Not owned','muted tiny'));list.append(line)}};
- pick.onchange=draw;details.append(node('p','Source author’s subjective ratings, not measured DPS or guaranteed success.','muted tiny'),pick,list);draw();content.append(details);
-}
 
+/* Compact guide: one class selector, per-encounter score and loadout.
+   A rated alternative is not automatically a verified role/gear strategy. */
+function ultraClassKey(name){return String(name||'').toLowerCase().replace(/[^a-z0-9]/g,'')}
+function sameUltraClass(a,b){return ultraClassKey(a)===ultraClassKey(b)}
+function ultraSelectedRating(key,cls){
+ for(let i=0;i<simplifiedRatingRoles.length;i++){
+  const row=simplifiedRoleRatings(key,i).find(x=>sameUltraClass(x.name,cls));
+  if(row)return {role:simplifiedRatingRoles[i][0],rating:row.rating};
+ }
+ return null;
+}
+function ultraWorkbookBuild(profile,cls){return (profile?.team||[]).find(x=>sameUltraClass(x.cls,cls))||null}
+function ultraClassOptions(key,profile,original=[]){
+ const used=new Set(),groups=[];
+ const add=(label,names)=>{
+  const unique=[];
+  for(const name of names){const id=ultraClassKey(name);if(id&&!used.has(id)){used.add(id);unique.push(name)}}
+  if(unique.length)groups.push({label,names:unique});
+ };
+ add('Guide lineup',(profile?.team||[]).map(x=>x.cls));
+ add('Other existing guide classes',original);
+ for(let i=0;i<simplifiedRatingRoles.length;i++)add(simplifiedRatingRoles[i][0]+' — community ratings',simplifiedRoleRatings(key,i).map(x=>x.name));
+ add('Other class options',[...(profile?.classes||[]),...(profile?.premium||[])]);
+ return groups;
+}
+function fillUltraClassSelect(select,key,profile,original=[]){
+ const groups=ultraClassOptions(key,profile,original);
+ for(const group of groups){const optgroup=node('optgroup');optgroup.label=group.label;
+  for(const name of group.names){const score=ultraSelectedRating(key,name);
+   const option=new Option((ultraOwned(name)?'✓ ':'')+name+(score?' · '+score.rating+'/5':''),name);optgroup.append(option)}
+  select.append(optgroup);
+ }
+ const names=groups.flatMap(x=>x.names);
+ select.value=groups[0]?.names.find(ultraOwned)||names.find(ultraOwned)||names[0]||'';
+}
+function renderUltraSelectedRating(target,key,cls){
+ const score=ultraSelectedRating(key,cls);
+ target.replaceChildren();
+ target.append(node('span',ultraOwned(cls)?'✓ Owned':'Not owned',ultraOwned(cls)?'ultra-owned':'ultra-missing'));
+ if(score){
+  const value=node('strong',score.rating+'/5 · '+score.role,'ultra-rating-value');
+  value.title='Source author’s subjective ratings; not measured DPS or guaranteed success.';
+  target.append(value);
+ }else target.append(node('span','Not rated in the guide','muted tiny'));
+}
+function appendUltraGearCells(gear,build){
+ if(!build){gear.append(node('span','No reviewed class-specific gear preset; consult the encounter guide.','muted tiny'));return}
+ for(const [label,value] of [['Weapon',build.weapon],['Helm',build.helm],['Cape',build.cape],['Base',build.base],['Consumable',build.consumable]].filter(([,v])=>v)){
+  const cell=node('div',undefined,'ultra-focus-gear-cell');cell.append(node('small',label),node('strong',value));gear.append(cell);
+ }
+}
+// Add only useful source guidance for the selected class; conditional on the
+// workbook variant when the existing party or taunt rotation is different.
+const ultraCompactTipRules={
+ kathool:[{roles:['Support','Healer'],tip:'In the workbook lineup, help clear newly spawned tendrils while maintaining support; agree the target split.'}],
+ ezrajal:[{all:true,tip:'Workbook survival target: at least 3,175 HP before pulling.'}],
+ warden:[{classes:['Lord of Order'],tip:'Time skill 5 around Berserk to protect the party; coordinate healing immediately afterwards.'}],
+ engineer:[{classes:['ArchPaladin'],tip:'With AP assigned to Defense Drone, the workbook suggests a 2–4–5 burst.'},{classes:['Lord of Order'],tip:'The workbook assigns LoO skill 5 to Attack Drone.'},{all:true,tip:'Check HP before equipping reduced-HP helms; the workbook cautions against sacrificing survival.'}],
+ tyndarius:[{classes:['ArchPaladin','Lord of Order'],tip:'If the group is slow, AP and LoO can agree a loop-taunt plan; do not mix it with another assigned taunt rotation.'}],
+ drakath:[{all:true,tip:'Workbook HP targets: about 3,500 buffed HP for the assigned taunter, 3,000 for other players.'},{roles:['Healer'],tip:'Coordinate direct heals so that both healers do not heal at the same time.'}],
+ dage:[{all:true,tip:'Health Vamp, Dauntless or Scroll of Life Steal can provide sustain; avoid ordinary healing while it is inverted.'},{classes:['ArchFiend','Verus DoomKnight','Chrono ShadowHunter'],tip:'In the workbook damage-focused lineup, agree who supplies Decay and taunts; follow the safe-zone cues.'}],
+ nulgath:[{classes:['Lord of Order','Legion Revenant'],tip:'Only in the workbook LoO/LR rotation: alternate Nulgath taunts, with the second on “Behold the power of the Abyss!”. Confirm the team plan before pull.'}],
+ drago:[{classes:['Legion Revenant'],tip:'In the workbook lineup, LR controls Bowmaster.'},{classes:['ArchPaladin'],tip:'In the workbook lineup, AP controls Executioner; if using LoO, agree the loop-taunt variant.'},{roles:['Chrono DPS','Early DPS','Endgame DPS'],tip:'Workbook target priority: Bowmaster, Executioner, then Drago.'}],
+ darkon:[{classes:['Lord of Order'],tip:'In the workbook variant, preserve LoO skill 5 for the nuke near 4.5–4.6M HP.'},{classes:['Legion Revenant'],tip:'Only in the workbook LoO/LR variant, alternate taunts with LoO on the tentacle animation; coordinate loop taunts after the HP refill.'},{roles:['Healer'],tip:'Coordinate healing windows; avoid overlapping direct heals.'}],
+ gramiel:[{all:true,tip:'The workbook recommends killing the two crystals within five seconds of each other.'},{classes:['Lord of Order','Legion Revenant','StoneCrusher','Shaman'],tip:'Agree crystal pairs and the four-player Vendetta rotation before pull; the workbook uses DPS + LoO on one side, LR + healer on the other.'}],
+ speaker:[{classes:['StoneCrusher'],tip:'The workbook SC lineup is different from the LoO-based rotation charts. Do not follow a LoO chart unchanged when replacing LoO with SC.'},{classes:['Glaceran Warlord'],tip:'Use only the dedicated Glaceran Warlord rotation if the team agrees to replace AP with GW.'}]
+};
+function ultraCompactTips(key,cls,existing=[]){
+ const rating=ultraSelectedRating(key,cls);
+ const additions=(ultraCompactTipRules[key]||[]).filter(r=>r.all||r.classes?.some(x=>sameUltraClass(x,cls))||r.roles?.includes(rating?.role)).map(r=>r.tip);
+ const normalize=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+ const out=[...existing];
+ for(const tip of additions){const n=normalize(tip);if(n&&!out.some(x=>{const k=normalize(x);return k&&(k===n||k.includes(n)||n.includes(k))}))out.push(tip)}
+ return out;
+}
+function appendSpeakerRotations(content){
+ const pick=node('select');pick.setAttribute('aria-label','Speaker rotation');
+ for(const [i,p] of simplifiedSpeakerPatterns.entries())pick.append(new Option(p.name,String(i)));const rotation=node('div');
+ const draw=()=>{const pattern=simplifiedSpeakerPatterns[Number(pick.value)]||simplifiedSpeakerPatterns[0];rotation.replaceChildren(node('p',pattern.note));const rows=node('div',undefined,'ultra-flow-list');
+ for(const [i,event] of (pattern.events||simplifiedSpeakerEvents).entries()){const line=node('div',undefined,'ultra-role-step');line.append(node('span',String(i+1).padStart(2,'0'),'ultra-step-number'),node('div',event+' · '+(pattern.roles[i]||(event.startsWith('Zone')?'Confirm assignment':event==='Auto'||event==='Start'?'No taunt specified':'No assigned taunt'))+(pattern.skills[i]?' · '+pattern.skills[i]:''),'ultra-role-step-body'));rows.append(line)}rotation.append(rows)};
+ pick.onchange=draw;content.append(node('h4','Choose ONE rotation — confirm required lineup'),pick,rotation);draw();
+}
 
 const arenaOptions={
  'Celestial Arena':[['Master Ranger','StoneCrusher','Legion DoomKnight','Rogue','Dragonslayer','Dragonslayer General','ArchFiend'],['Sentinel','Legendary Hero','Chrono ShadowSlayer','Phantom Chronomancer','Elemental Warrior','Other Chronomancers'],[]],
@@ -1728,23 +1802,22 @@ simplifiedSpeakerPatterns.push(
  ])
 );
 
-function appendSimplifiedProfile(root,profile,includeSpeaker=false,ratingKey=profile.name){
+function appendSimplifiedProfile(root,profile){
  const detail=node('details',undefined,'ultra-extra-details');
- detail.append(node('summary',includeSpeaker?'Community workbook — loadouts & Speaker rotations':'Community workbook — suggested strategy'));
+ detail.append(node('summary','Combat guide'));
  const content=node('div',undefined,'ultra-extra-content');
- content.append(node('p','Simplified Bosses Guide · '+profile.sheet+' · separate example strategy, not universal BiS. Agree the team plan before using it.','muted tiny'));
- if(profile.team?.length){const grid=node('div',undefined,'ultracomp');
- for(const row of profile.team){const card=node('div',undefined,'ultra-team-member');card.append(node('strong',row.cls),node('span',ultraOwned(row.cls)?'✓ Owned':'✕ Not owned',ultraOwned(row.cls)?'ultra-owned':'ultra-missing'),node('small',row.weapon+' · '+row.base),node('small',row.helm+' · '+row.cape));grid.append(card)}content.append(grid)}
+ const key=profile.name;
+ if(profile.team?.length||profile.classes?.length||simplifiedRatings[key]){
+  const label=node('label','Your loadout','muted tiny'),select=node('select',undefined,'ultra-role-select');select.setAttribute('aria-label',profile.name+' class');
+  fillUltraClassSelect(select,key,profile);
+  const rating=node('div',undefined,'ultra-selected-rating'),gear=node('div',undefined,'ultra-focus-gear');
+  const draw=()=>{renderUltraSelectedRating(rating,key,select.value);gear.replaceChildren();const build=ultraWorkbookBuild(profile,select.value);appendUltraGearCells(gear,build);};
+  label.append(select);content.append(label,rating,gear);select.onchange=draw;draw();
+ }
  for(const tip of profile.tips||[])content.append(node('p',tip));
  if(profile.potions?.length)content.append(node('p','Suggested consumables: '+profile.potions.join(' · ')));
- if(profile.classes?.length)content.append(node('p','F2P class options: '+profile.classes.join(' · ')));
- if(profile.premium?.length)content.append(node('p','Paid / premium class options: '+profile.premium.join(' · ')));
- appendSimplifiedRatings(content,ratingKey);
- if(includeSpeaker){const pick=node('select');for(const [i,p] of simplifiedSpeakerPatterns.entries())pick.append(new Option(p.name,String(i)));const rotation=node('div');
- const draw=()=>{const pattern=simplifiedSpeakerPatterns[Number(pick.value)]||simplifiedSpeakerPatterns[0];rotation.replaceChildren(node('p',pattern.note));const rows=node('div',undefined,'ultra-flow-list');
- for(const [i,event] of (pattern.events||simplifiedSpeakerEvents).entries()){const line=node('div',undefined,'ultra-role-step');line.append(node('span',String(i+1).padStart(2,'0'),'ultra-step-number'),node('div',event+' · '+(pattern.roles[i]||(event.startsWith('Zone')?'Confirm assignment':event==='Auto'||event==='Start'?'No taunt specified':'No assigned taunt'))+(pattern.skills[i]?' · '+pattern.skills[i]:''),'ultra-role-step-body'));rows.append(line)}rotation.append(rows)};
- pick.onchange=draw;content.append(node('h4','Choose ONE rotation — confirm required lineup'),pick,rotation);draw()}
- const link=node('a','↗ Original guide discussion');link.href=simplifiedGuideSource;link.target='_blank';link.rel='noopener noreferrer';content.append(link);detail.append(content);root.append(detail);
+ if(profile.team?.length)content.append(node('p','Example team: '+profile.team.map(r=>r.cls).join(' · '),'muted tiny'));
+ const link=node('a','↗ Simplified Bosses Guide — '+profile.sheet);link.href=simplifiedGuideSource;link.target='_blank';link.rel='noopener noreferrer';content.append(link);detail.append(content);root.append(detail);
 }
 function renderSimplifiedExtras(root,term){
  const entries=simplifiedExtraEncounters.filter(x=>[x.name,x.group,x.join,...(x.team||[]).map(t=>t.cls),...(x.classes||[])].join(' ').toLowerCase().includes(term));
@@ -1756,7 +1829,7 @@ function renderSimplifiedExtras(root,term){
 
 function renderUltraDetail(b){
  const root=$('ultradetail');root.classList.remove('hidden');root.replaceChildren();if(!b)return;
- const quick=ultraBeginner101[b.id]||{},roleMap=new Map(b.roles);
+ const quick=ultraBeginner101[b.id]||{},roleMap=new Map(b.roles),profile=simplifiedProfiles[b.id];
  const titleBar=node('div',undefined,'goalhead ultra-title-row');
  const actions=node('div',undefined,'ultra-title-actions');
  actions.append(makeCopyJoin(b.join),node('span',b.type,'quick-pill'),node('span',b.difficulty,'pill'));
@@ -1766,13 +1839,12 @@ function renderUltraDetail(b){
  setup.append(node('h3','⚔️ Your loadout'));
  const selectorRow=node('div',undefined,'ultra-focus-selector');
  const select=node('select',undefined,'ultra-role-select');
- // Alternate-team class picks must show their own relevant role-specific cue reactions too.
- for(const cls of [...new Set([...b.team,...(b.alternate||[]).filter(x=>ultraRolePlaybooks[b.id]?.[x]||window.AQWUltraQuoteActions?.forRole(b.id,x)?.length)])]){const option=node('option',cls);option.value=cls;select.append(option)}
- select.value=b.team.find(ultraOwned)||b.team[0];
+ fillUltraClassSelect(select,b.id,profile,[...b.team,...(b.alternate||[])]);
  selectorRow.append(node('span','Class'),select);setup.append(selectorRow);
  const gear=node('div',undefined,'ultra-focus-gear');
+ const rating=node('div',undefined,'ultra-selected-rating');
  const job=node('p',undefined,'ultra-focus-job');
- setup.append(gear,job);
+ setup.append(rating,gear,job);
  const summary=node('section',undefined,'ultra-focus-card ultra-quickstart');
  summary.append(node('h3','🎯 Fight at a glance'));
  const focus=node('div',undefined,'ultra-focus-grid');
@@ -1785,7 +1857,6 @@ function renderUltraDetail(b){
  focus.append(focusCard('⛔','AVOID',quick.avoid||b.mistakes[0]||'Avoid damage spikes','ultra-focus-danger'));
  summary.append(focus);
  compact.append(setup,summary);root.append(compact);
- if(simplifiedProfiles[b.id])appendSimplifiedProfile(root,simplifiedProfiles[b.id],b.id==='speaker',b.id);
  const mechanics=node('section',undefined,'ultra-focus-card ultra-mechanics ultra-class-guide');
  mechanics.append(node('h3','👤 Role-specific Tips'));
  const roleContext=node('div',undefined,'ultra-role-context');
@@ -1800,7 +1871,8 @@ function renderUltraDetail(b){
  const team=node('section');team.append(node('h4','Party composition'));
  const comp=node('div',undefined,'ultracomp');
  for(const cls of b.team){const box=node('div',undefined,'ultra-team-member');box.append(node('strong',cls),node('span',ultraOwned(cls)?'✓ Owned':'✕ Not owned',ultraOwned(cls)?'ultra-owned':'ultra-missing'));comp.append(box)}
- team.append(comp);inner.append(team);
+ team.append(comp);if(profile?.team?.length&&profile.team.map(r=>r.cls).join('|')!==b.team.join('|'))team.append(node('p','Workbook example team: '+profile.team.map(r=>r.cls).join(' · '),'muted tiny'));inner.append(team);
+ if(b.id==='speaker')appendSpeakerRotations(inner);
  const phases=node('section');phases.append(node('h4','Fight phases'));
  for(const [label,description] of b.phases||[]){const p=node('p');p.append(node('strong',label+' — '),node('span',description));phases.append(p)}
  inner.append(phases);
@@ -1843,33 +1915,36 @@ function renderUltraDetail(b){
  if(others.children.length>1)inner.append(others);
  details.append(inner);root.append(details);
  const footer=node('div',undefined,'ultra-focus-footer');
- const link=node('a','↗ Full community strategy');link.href=b.source;link.target='_blank';link.rel='noopener noreferrer';footer.append(link,node('span','Team ownership ≠ boss access · verify encounter-specific gear','muted tiny'));for(const [label,url] of ultraReviewedSources[b.id]||[]){const a=node('a',label+' ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';footer.append(a)}root.append(footer);
+ const link=node('a','↗ Full community strategy');link.href=b.source;link.target='_blank';link.rel='noopener noreferrer';footer.append(link,node('span','Team ownership ≠ boss access · verify encounter-specific gear','muted tiny'));for(const [label,url] of ultraReviewedSources[b.id]||[]){const a=node('a',label+' ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';footer.append(a)}if(profile){const a=node('a','↗ Simplified Bosses Guide');a.href=simplifiedGuideSource;a.target='_blank';a.rel='noopener noreferrer';footer.append(a)}root.append(footer);
  function updateRole(){
-  const cls=select.value,play=ultraRolePlaybooks[b.id]?.[cls];
+  const cls=select.value,playKey=Object.keys(ultraRolePlaybooks[b.id]||{}).find(x=>sameUltraClass(x,cls)),play=ultraRolePlaybooks[b.id]?.[playKey];
+  const roleKey=[...roleMap.keys()].find(x=>sameUltraClass(x,cls)),role=roleMap.get(roleKey);
+  const workbook=ultraWorkbookBuild(profile,cls);
   // Bard is a Kathool support class. Official guidance endorses Healer/Wizard/Lucky;
   // Awe Blast + defensive Forge is a suggested group utility setup, not a hard requirement.
   const bardSupport={weapon:'Awe Blast',helm:'Forge',cape:'Absolution',
     note:'Healer base/armor for safer support; Wizard or Lucky are alternatives. Penitence is a defensive cape option.'};
   const generic=starterBuilds[cls]?.group||(cls==='Bard'?bardSupport:null);
   const encounter=encounterUltraBuild(b.id,cls,generic);
-  const build=encounter||generic;
+  const build=workbook||encounter||generic;
+  renderUltraSelectedRating(rating,b.id,cls);
   gear.replaceChildren();
   if(build){
-   for(const [label,value] of [['Weapon',build.weapon],['Helm',build.helm],['Cape',build.cape],['Base',build.base],['Consumable',build.consumable]].filter(([,v])=>v)){
-    const cell=node('div',undefined,'ultra-focus-gear-cell');cell.append(node('small',label),node('strong',value));gear.append(cell)
-   }
+   appendUltraGearCells(gear,build);
    if(cls==='Bard'){
     const source=node('a','Bard enhancement reference ↗','ultra-gear-source');
     source.href='https://www.aq.com/lore/classes/bard';source.target='_blank';source.rel='noopener noreferrer';gear.append(source);
    }
   }else gear.append(node('span','No reviewed class-specific gear preset; consult the encounter guide.','muted tiny'));
-  job.textContent=[cls==='Bard'?bardSupport.note:(roleMap.get(cls)||'Coordinate your role with the team.'),encounter?'Encounter-specific recommendation. '+(encounter.note||''):build?'General group preset — adapt to this fight.':''].filter(Boolean).join(' ');
+  job.textContent=[workbook?'Workbook loadout · agree your party strategy.':encounter?'Encounter-specific recommendation. '+(encounter.note||''):build?'General group preset — adapt to this fight.':'No class-specific loadout verified.',cls==='Bard'?bardSupport.note:role||''].filter(Boolean).join(' ');
   roleName.textContent=cls;
   sequence.replaceChildren();
-  const tips=[...new Set((play?.steps||[]).map(step=>String(step).trim()).filter(Boolean))];
-  const callouts=window.AQWUltraQuoteActions?.forRole(b.id,cls)||[];
+  const baseTips=[...new Set((play?.steps||[]).map(step=>String(step).trim()).filter(Boolean))];
+  const tips=ultraCompactTips(b.id,cls,baseTips);
+  if(!play&&!role)tips.unshift('No complete class-specific rotation in the guide. Agree your role and follow the party plan.');
+  const callouts=window.AQWUltraQuoteActions?.forRole(b.id,playKey||cls)||[];
   const rows=window.AQWCGuideRows?.rows({tips,quotes:callouts,warning:play?.warning,
-   fallback:roleMap.get(cls)||'Confirm your assigned responsibilities before pulling.'})||[];
+   fallback:role||'Confirm your assigned responsibilities before pulling.'})||[];
   for(const part of rows){
    const step=node('div',undefined,'ultra-role-step');
    const body=node('div',undefined,'ultra-role-step-body');
