@@ -33,6 +33,7 @@
   }
   save.addEventListener('click',e=>{if(e.isTrusted&&!save.disabled)persist({background:bg.value,banner:banner.value,panel:panel.value})});
   reset.addEventListener('click',e=>{if(e.isTrusted&&!reset.disabled)persist({background:'original',banner:'original',panel:'integrated'})});
+  const quick=document.getElementById('appearance-prometheus');if(quick)quick.addEventListener('click',e=>{if(e.isTrusted&&!save.disabled)persist({background:bg.value,banner:'prometheus',panel:panel.value})});
   load();
  }
  send('inventory-summary');
