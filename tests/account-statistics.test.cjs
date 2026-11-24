@@ -79,8 +79,8 @@ assert.equal(activeView(),"overview");
 assert.equal(statsRenderCount,1,"Returning Home should not reopen statistics");
 
 assert.ok(html.includes('<section id="account-stats" class="view">'));
-assert.ok(html.includes('href="css/account-statistics.css?v=96"'));
-assert.ok(html.includes('src="js/account-statistics.js?v=96"'));
+assert.ok(html.includes('href="css/account-statistics.css?v=97"'));
+assert.ok(html.includes('src="js/account-statistics.js?v=97"'));
 assert.ok(html.includes("if(tab==='account-stats'||tab==='milestones')renderAccountStatistics()"),"Statistics should refresh when selected");
 assert.ok(html.includes("current,snapshots,projects"),"Runtime must use real browser state");
 assert.ok(html.includes("metadataLookup:name=>communityItems.get(communityKey(name))"),"Rarity data is community metadata");
@@ -219,3 +219,10 @@ assert.ok(flatten(root).some(x=>x.textContent==="Next milestones"));
 assert.ok(!flatten(root).some(x=>x.tagName==="TABLE"||x.tagName==="SVG"));
 assert.ok(html.includes("window.AQWAccountStatistics.renderMilestones(root,stats"));
 assert.ok(css.includes("#milestones .aqwm-card.is-unlocked"));
+
+assert.equal(new Set(data.milestones.map(m=>m.id)).size,data.milestones.length);
+assert.ok(data.milestones.length>=50);
+assert.equal(data.milestones.find(m=>m.id==="rare25").value,1);
+assert.equal(data.milestones.find(m=>m.id==="class75").value,1);
+assert.ok(data.milestones.every(m=>m.group&&m.percent>=0&&m.percent<=100));
+assert.ok(data.milestones.find(m=>m.id==="forge-all").goal===21);
