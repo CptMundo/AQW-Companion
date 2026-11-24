@@ -166,3 +166,16 @@ async function handle(message,sender){
  return {ok:false,error:'Unsupported request.'};
 }
 chrome.runtime.onMessage.addListener((message,sender,respond)=>{handle(message,sender).then(respond,error=>respond({ok:false,error:String(error?.message||error)}));return true});
+
+// Optional fallback for browsers that fail to restore dynamically registered scripts.
+// No account data is read here: capture still requires a trusted button click.
+chrome.tabs?.onUpdated?.addListener((tabId,change,tab)=>{
+ if(change.status!=='complete')return;
+ let u;try{u=new URL(tab.url)}catch{return}
+ if(u.origin!=='https://account.aq.com'||!/^\/AQW\/Inventory\/?$/i.test(u.pathname))return;
+ (async()=>{
+  if(!await chrome.permissions.contains({origins:['https://account.aq.com/*']}))return;
+  const check=await chrome.scripting.executeScript({target:{tabId},func:()=>!!document.getElementById('aqwc-account-export')});
+  if(!check?.[0]?.result)await chrome.scripting.executeScript({target:{tabId},files:['account-capture.js','account-page.js']});
+ })().catch(()=>{});
+});

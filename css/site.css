@@ -1088,15 +1088,14 @@ body{background:#0a1420!important}
 #builds svg.build-body-connectors{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;transform:none!important;pointer-events:none;overflow:visible}
 #builds svg.build-body-connectors>path{fill:none!important;stroke-dasharray:5 4;stroke-width:2;vector-effect:non-scaling-stroke}
 
-/* Inventory actions: main import + secondary tools in the header. */
-.top .inventory-header-actions{justify-content:flex-end;align-items:center;max-width:100%;position:relative}
-.inventory-tools{position:relative}
-.inventory-tools summary{cursor:pointer;list-style:none;border:1px solid var(--line);border-radius:9px;background:var(--panel2);padding:10px 14px;color:var(--txt);white-space:nowrap}
-.inventory-tools summary::-webkit-details-marker{display:none}
-.inventory-tools-menu{position:absolute;right:0;top:calc(100% + 7px);z-index:100;min-width:220px;max-width:calc(100vw - 40px);display:grid;gap:6px;padding:9px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);box-shadow:0 8px 22px #0006}
-.inventory-tools-menu button,.inventory-tools-menu label,.inventory-tools-menu a{width:100%;box-sizing:border-box;justify-content:flex-start;padding:8px 10px;text-align:left;font-size:12px}
-.inventory-tools-menu a{display:block;color:var(--cyan);text-decoration:none}
-.inventory-tools-menu #clear{color:#ffc2a8}
-.inventory-header-status{flex-basis:100%;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px 12px;max-width:520px;text-align:right}
+
+/* Inventory tools — stable right-aligned action strip, independent status row. */
+.top .inventory-header-actions{display:grid;grid-template-columns:minmax(0,1fr);justify-items:end;align-content:center;gap:5px;margin-left:auto;min-width:0;max-width:100%;flex:0 1 auto}
+.top .inventory-tools{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:3px;padding:4px;border:1px solid var(--line);border-radius:10px;background:var(--panel);max-width:100%}
+.top .inventory-tools button,.top .inventory-tools .upload,.top .inventory-tools a{display:inline-flex;align-items:center;justify-content:center;gap:4px;border:1px solid transparent;border-radius:6px;padding:7px 9px;min-height:32px;font-size:12px;font-weight:600;line-height:1.2;white-space:nowrap;text-decoration:none;color:var(--txt);background:transparent;cursor:pointer}
+.top .inventory-tools .primary{background:#235680;border-color:#67bcdf;color:#fff}
+.top .inventory-tools button:hover:not(:disabled),.top .inventory-tools .upload:hover,.top .inventory-tools a:hover{background:var(--panel2);border-color:var(--cyan)}
+.top .inventory-tools #clear{color:#ffc2a8}
+.top .inventory-header-status{display:grid;grid-template-columns:minmax(0,1fr);width:100%;min-width:0;text-align:right;gap:2px;line-height:1.25;contain:inline-size}
 .inventory-header-status span{overflow-wrap:anywhere}
-@media(max-width:700px){.top .inventory-header-actions{justify-content:flex-start;width:100%}.inventory-header-status{justify-content:flex-start;text-align:left}.inventory-tools-menu{right:auto;left:0;min-width:200px}}
+@media(max-width:700px){.top .inventory-header-actions{width:100%;justify-items:end}.top .inventory-tools{max-width:100%;justify-content:flex-end}}
