@@ -89,7 +89,7 @@
   const panel=document.createElement('section');panel.className='aqwc-section';panel.style.cssText='min-width:0;max-width:100%;';
   const heading=document.createElement('strong');heading.textContent='Required Materials';panel.append(heading);card.append(panel);
   const note=text=>{const n=document.createElement('div');n.textContent=text;n.style.cssText='font-size:11px;color:#b6cddd;margin:5px 0;font-weight:400';return n};
-  panel.append(note('Direct merge ingredients · synced Inventory + Bank. Expand missing materials to view their own merge recipes. Stock is reserved once per option; alternative root recipes are independent.'));
+  panel.append(note('Inventory + Bank · expand a missing material to see its recipe.'));const help=document.createElement('details');const summary=document.createElement('summary');summary.textContent='How progress is calculated';summary.style.cssText='font-size:11px;color:#a9c4d8;cursor:pointer';help.append(summary,note('Stock is reserved once per option; alternative root recipes are independent. Unrecognized rows require manual verification.'));panel.append(help);
   if(incomplete)panel.append(note('Some recipe rows could not be read; check the original Wiki requirements.'));
   if(!groups.length)return;
   const tree=document.createElement('div'),statusLine=note('Checking synced inventory…');statusLine.setAttribute('role','status');panel.append(tree,statusLine);
@@ -130,7 +130,7 @@
     if(groups.length>1){const label=note('Merge option '+(i+1)+' (separate recipe)');label.style.color='#a9ddff';tree.append(label)}
     if(!busy){const ready=p.root.filter(n=>n.missing===0).length;tree.append(note(ready+' / '+p.root.length+' direct ingredients ready · nested progress below'));const track=document.createElement('div'),fill=document.createElement('div');track.style.cssText='height:6px;background:#0a1926;border-radius:6px;overflow:hidden';fill.style.cssText='height:100%;background:#53c7e6;width:'+(p.root.length?ready/p.root.length*100:0)+'%';track.setAttribute('aria-label',ready+' of '+p.root.length+' direct ingredients ready');track.append(fill);tree.append(track)}
     function drawNode(n,container){
-     const row=document.createElement('div');row.style.cssText='margin-top:8px;min-width:0;padding:9px;border:1px solid #2c485d;border-radius:8px;background:#101e2d';
+     const row=document.createElement('div');row.style.cssText='margin-top:8px;min-width:0;padding:12px;border:1px solid #2c485d;border-radius:9px;background:#101e2d';
      const top=document.createElement('div');top.style.cssText='display:flex;align-items:baseline;justify-content:space-between;gap:8px';
      const nameBox=document.createElement('div');nameBox.style.cssText='display:flex;align-items:center;gap:5px;min-width:0';
      const s=states.get(n.path);
