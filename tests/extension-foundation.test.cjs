@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'), fs=require('node:fs'), path=require(
 const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
 const manifest=JSON.parse(read('extension/manifest.json'));
 assert.equal(manifest.manifest_version,3);
-assert.deepEqual(manifest.content_scripts[0].matches,['https://cptmundo.github.io/AQW-Companion/extension-connect.html','https://aqwwiki.wikidot.com/*']);
+assert.deepEqual(manifest.content_scripts[0].matches,['https://cptmundo.github.io/AQW-Companion/extension-connect.html']);
 assert.deepEqual(manifest.permissions,['storage']);assert.equal(manifest.background.service_worker,'worker.js');assert.deepEqual(manifest.content_scripts[1].matches,['https://cptmundo.github.io/AQW-Companion/','https://cptmundo.github.io/AQW-Companion/index.html']);assert.equal(manifest.host_permissions,undefined);
 const origin='https://cptmundo.github.io', pathname='/AQW-Companion/extension-connect.html';
 const sent=[],listeners={};const win={addEventListener(k,f){listeners[k]=f},postMessage(msg,target){sent.push({msg,target})}};
@@ -71,11 +71,11 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal((await api.handle(msg,{url:'https://aqwwiki.wikidot.com/void-aura',frameId:1})).ok,false);
  const result=await api.handle(msg,{url:'https://aqwwiki.wikidot.com/void-aura',frameId:0});
  assert.equal(result.total,775);assert.equal(result.items,undefined);
- const runWiki=(crumbs,body='Sellback: 0 AC; Description: item',response=result)=>{
+ const runWiki=(crumbs,body='Sellback: 0 AC; Description: item',response=result,name='Void Aura',tags=[])=>{
   let request,inserted,closed;
   function el(){return {style:{},children:[],append(...x){this.children.push(...x)},attachShadow({mode}){closed=mode;return el()}}}
-  const title={textContent:'Void Aura',insertAdjacentElement(_,host){inserted=host}},content={textContent:body},crumb={querySelectorAll(){return crumbs.map(x=>({href:'https://aqwwiki.wikidot.com/'+x}))}};
-  const doc={getElementById:id=>({'page-title':title,'page-content':content,'breadcrumbs':crumb}[id]||null),createElement:el};
+  const title={textContent:name,insertAdjacentElement(_,host){inserted=host}},content={textContent:body},crumb=crumbs===null?null:{querySelectorAll(){return crumbs.map(x=>typeof x==='string'?{href:'https://aqwwiki.wikidot.com/'+x}:{href:'https://aqwwiki.wikidot.com/'+x.slug,textContent:x.label})}};
+  const doc={getElementById:id=>({'page-title':title,'page-content':content,'breadcrumbs':crumb}[id]||null),createElement:el,querySelectorAll:()=>tags.map(textContent=>({textContent}))};
   vm.runInNewContext(read('extension/wiki-items.js'),{URL,location:{origin:'https://aqwwiki.wikidot.com',pathname:'/void-aura',href:'https://aqwwiki.wikidot.com/void-aura'},document:doc,chrome:{runtime:{sendMessage(m,cb){request=m;cb(response)}}}});
   return {request,inserted,closed};
  };
@@ -84,7 +84,15 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops']).request,undefined);
  assert.equal(runWiki(['items','weapons'],'List of swords').request,undefined);
  assert.equal(runWiki(['items','swords'],'Void Aura usually refers to:').request,undefined);
- assert.equal(runWiki(['items','misc-items'],'Sellback: 0 AC; Description: item',{ok:true,state:'unsupported'}).inserted,undefined);
- assert.equal(manifest.version,'0.3.0');assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
+ assert.ok(runWiki(['items','misc-items'],'Sellback: 0 AC; Description: item',{ok:true,state:'unsupported'}).inserted);
+ assert.ok(runWiki(['items','misc-items'],'Sellback: 0 AC; Description: item',{ok:false}).inserted);
+ assert.equal(runWiki(null,'Sellback: 0 AC\nType: Item\nDescription: Material').request.query.category,'misc-items');
+ assert.equal(runWiki(null,'Sellback: 0 AC\nBase Damage: 27-33\nDescription: Sword',result,'Necrotic Sword of Doom (Sword)').request.query.category,'swords');
+ assert.equal(runWiki([{slug:'items',label:'Items'},{slug:'category-alias',label:'Misc. Items'}]).request.query.category,'misc-items');
+ assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Gear',result,'Sword',['sword']).request.query.category,'swords');
+ assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
+ assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
+ assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
+ assert.equal(manifest.version,'0.3.1');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wiki-items.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
