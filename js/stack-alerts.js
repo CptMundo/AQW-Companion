@@ -64,6 +64,8 @@
    const manual=validCap(overrides?.[row.key]);
    const exportCap=row.exportCaps.size===1?[...row.exportCaps][0]:null;
    const wiki=caps.get(row.key);
+   // Ordinary equipment with an exported MaxStack:1 is not a material alert.
+   if(!row.material&&!wiki&&!manual)continue;
    const cap=manual??exportCap??wiki?.cap??null;
    if(!cap){if(row.material)unknown++;continue}
    known++;
