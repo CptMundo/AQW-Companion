@@ -74,11 +74,12 @@
    if(!r.body||Number(r.headers.get('content-length'))>1500000)throw Error('Wiki page too large');
    const reader=r.body.getReader(),decoder=new TextDecoder();let html='',size=0;
    try{while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>1500000){await reader.cancel();throw Error('Wiki page too large')}html+=decoder.decode(value,{stream:true})}html+=decoder.decode()}finally{reader.releaseLock()}
-   const doc=new DOMParser().parseFromString(html,'text/html'),content=doc.getElementById('page-content');
+   const template=document.createElement('template');template.innerHTML=html;
+   const doc=template.content,content=doc.querySelector('#page-content');
    const body=String(content?.textContent||'');
-   const crumb=doc.getElementById('breadcrumbs')||doc.querySelector('.breadcrumbs, #breadcrumb, .breadcrumb');
+   const crumb=doc.querySelector('#breadcrumbs')||doc.querySelector('.breadcrumbs, #breadcrumb, .breadcrumb');
    const links=[...(crumb?.querySelectorAll('a[href]')||[])];
-   if(!content||!doc.getElementById('page-title')||!/\bSellback\s*:/i.test(body)||!/\bDescription\s*:/i.test(body)||/\busually refers to\s*:/i.test(body)||links.length&&!links.some(a=>{try{return new URL(a.getAttribute('href'),url).pathname.replace(/^\/|\/$/g,'')==='items'}catch{return false}}))return {groups:[],incomplete:true};
+   if(!content||!doc.querySelector('#page-title')||!/\bSellback\s*:/i.test(body)||!/\bDescription\s*:/i.test(body)||/\busually refers to\s*:/i.test(body)||links.length&&!links.some(a=>{try{return new URL(a.getAttribute('href'),url).pathname.replace(/^\/|\/$/g,'')==='items'}catch{return false}}))return {groups:[],incomplete:true};
    return parse(content,origin);
   }finally{clearTimeout(timer)}
  }
@@ -152,7 +153,7 @@
       const select=document.createElement('select');select.setAttribute('aria-label','Recipe option for '+n.name);select.disabled=busy;select.style.cssText='max-width:100%;background:#19334a;color:#e5f5ff;border:1px solid #466781;border-radius:4px;font:12px system-ui';
       const first=document.createElement('option');first.value='-1';first.textContent='Choose merge option';select.append(first);
       s.groups.forEach((g,j)=>{const opt=document.createElement('option');opt.value=String(j);opt.textContent='Option '+(j+1)+' · '+g.map(x=>x.name+' ×'+x.target).join(', ');select.append(opt)});
-      select.value=String(s.choice);select.addEventListener('change',e=>{if(!e.isTrusted||busy)return;s.choice=Number(select.value);draw()});nested.append(select);
+      select.value=String(s.choice);select.addEventListener('change',e=>{if(!e.isTrusted||busy)return;const choice=Number(select.value);if(choice!==s.choice){for(const key of states.keys())if(key.startsWith(n.path+'.'))states.delete(key);s.choice=choice}draw()});nested.append(select);
      }
      if(s.choice>=0){nested.append(note('Ingredients for '+n.missing.toLocaleString()+' missing · '+n.children.filter(c=>c.missing===0).length+' / '+n.children.length+' ready'));n.children.forEach(c=>drawNode(c,nested))}
     }
