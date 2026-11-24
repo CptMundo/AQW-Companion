@@ -209,11 +209,13 @@
     if(!root)return;
     root.replaceChildren();
     handlers=handlers||{};
+    if(handlers.milestonesOnly){renderMilestones(root,stats);return;}
+
     const hero=element('div','aqws-hero');
     const intro=element('div');
     intro.append(element('h2','aqws-title','📊 Your AQW Journey'),
-      element('p','aqws-note','Your collection, personal milestones and Wishlist progress — calculated privately from saved exports.'));
-    hero.append(intro,element('span','pill','Local data · Companion milestones'));
+      element('p','aqws-note','Your collection and Wishlist progress — calculated privately from saved exports.'));
+    hero.append(intro,element('span','pill','Local data'));
     root.append(hero);
     if(!stats.available){
       const empty=section('📦 Start your collection history','Import your AQWorlds inventory JSON to see collection statistics. A second saved snapshot unlocks the growth chart and change history.');
@@ -316,6 +318,8 @@
     wins.append(button('Open Wishlist ↗',()=>handlers.onWishlist?.()));
     root.append(wins);
 
+  }
+  function renderMilestones(root,stats){
     const badges=section('🏆 Companion Milestones','Personal collection challenges calculated by AQW Companion, not official AQWorlds achievements or character badges.');
     const badgeGrid=element('div','aqws-milestones');
     for(const m of stats.milestones){
