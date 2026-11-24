@@ -1117,12 +1117,13 @@ const ultraBattleCues={
   {quote:'I possess the full power of the Legion at my disposal.',action:'LEGION MAGES: Dage gains strong regeneration; your party needs Decay coverage and must prepare for the following burst.'}
  ]
 };
-let selectedUltra='drakath';
+let selectedUltra='drakath';const selectedUltraClasses=new Map();
 function ultraOwned(name){return items.some(x=>x.Type.toLowerCase()==='class'&&sameUltraClass(x.Name,name))}
 function ultraTeamReady(b){return b.team.every(ultraOwned)||!!simplifiedProfiles[b.id]?.team?.length&&simplifiedProfiles[b.id].team.every(x=>ultraOwned(x.cls))}
-function renderUltras(){renderUltraCatalog();const term=$('ultrasearch').value.toLowerCase().trim(),filter=$('ultrafilter').value;const all=ultraGuides.filter(b=>(filter!=='ready'||ultraTeamReady(b))&&(!term||[b.name,b.description,...b.team,...(simplifiedProfiles[b.id]?.team||[]).map(x=>x.cls)].join(' ').toLowerCase().includes(term))).sort((a,b)=>(a.type==='Daily'?0:a.type==='Weekly'?1:2)-(b.type==='Daily'?0:b.type==='Weekly'?1:2)||a.name.localeCompare(b.name));
+function renderUltras(){renderUltraCatalog();const term=$('ultrasearch').value.toLowerCase().trim(),filter=$('ultrafilter').value;const all=ultraGuides.filter(b=>(filter!=='ready'||ultraTeamReady(b))&&(!term||[b.name,b.description,b.join,...ultraClassOptions(b.id,simplifiedProfiles[b.id],[...b.team,...(b.alternate||[])]).flatMap(g=>g.names)].join(' ').toLowerCase().includes(term))).sort((a,b)=>(a.type==='Daily'?0:a.type==='Weekly'?1:2)-(b.type==='Daily'?0:b.type==='Weekly'?1:2)||a.name.localeCompare(b.name));
+ if(!all.some(x=>x.id===selectedUltra))selectedUltra=all[0]?.id||'';
  const cards=$('ultracards');cards.replaceChildren();let currentGroup='';for(const b of all){const group=b.type==='Daily'?'☀️ Daily Ultras':b.type==='Weekly'?'📆 Weekly Ultras':b.type==='Challenge'?'🐙 Challenge Bosses':'Other Ultras';if(group!==currentGroup){currentGroup=group;cards.append(node('div',group,'ultra-group-label'))}const btn=node('button',undefined,'ultracard'+(b.id===selectedUltra?' active':''));btn.type='button';btn.append(node('small',b.type+' · '+b.difficulty),node('strong',ultraEmojiFor(b)+' '+b.name),node('small',b.description));btn.onclick=()=>{selectedUltra=b.id;renderUltras()};cards.append(btn)}
- const chosen=ultraGuides.find(x=>x.id===selectedUltra);renderUltraDetail(chosen);}
+ const chosen=all.find(x=>x.id===selectedUltra);renderUltraDetail(chosen);}
 const ultraBeginner101={
  kathool:{
   priority:'ALL 7 players use Vigil at “You cannot resist.” (3-second charge). Control the two Sacrosanct Tendrils and keep party mana stable.',
@@ -1625,6 +1626,7 @@ const simplifiedSpeakerPatterns=[
 ];
 const sgVoidTeam=(night=false,xyfrag=false)=>[sgLoO(),sgLR(night||xyfrag?'Arcana Concerto':'Ravenous'),sgVDK(night?'Ravenous':'Dauntless','Anima',night?'Penitence':'Vainglory'),sgLH(),sgAF('Ravenous',night?'Penitence':'Vainglory'),sgCSH(night?'Health Vamp':'Arcana Concerto','Examen',night?'Penitence':'Vainglory'),sgCSH(night?'Health Vamp':'Arcana Concerto','Examen',night?'Penitence':'Vainglory')];
 const simplifiedExtraEncounters=[
+ {name:'Fourth Lynaria',group:'Seasonal challenges',join:'/join murdermoon',wiki:'murder-moon',sheet:'Fourth Lynaria',classes:['Lord of Order','Legion Revenant','StoneCrusher','Verus DoomKnight'],tips:['Seasonal encounter; no daily/weekly recurrence assumed.','Keep LoO/LR/SC/VDK core support and debuffs in the workbook team. Watch The Fourth Sense: extreme dodge lasts 3 seconds. Fourth Repel removes 80% of current HP and stacks haste reduction. Heal and maintain haste support.','At 50% HP, Meditate increases boss damage, defense and DoT resistance. Tricked briefly reduces INT by 99%; magical classes can be at a disadvantage. The workbook has no exact loadout rows for this boss.']},
  {name:'Void Flibbi',group:'Void Bosses',join:'/join voidflibbi',wiki:'void-flibbitiestgibbet',sheet:'Void Bosses',team:sgVoidTeam(),tips:['Workbook warns Shaman users not to use skill 5.']},
  {name:'Void Nightbane',group:'Void Bosses',join:'/join voidnightbane',wiki:'void-nightbane',sheet:'Void Bosses',team:sgVoidTeam(true),tips:['Avoid Vainglory because healing is heavily reduced. Favor rapid sustained hits rather than large individual nukes. Decay is ineffective.']},
  {name:'Void Xyfrag',group:'Void Bosses',join:'/join voidxyfrag',wiki:'void-xyfrag',sheet:'Void Bosses',team:sgVoidTeam(false,true),tips:['Assign LR or VDK to taunt the BLEEEECH cue. Favor fast sustained damage. Finish promptly before the encounter becomes invulnerable.']},
@@ -1670,6 +1672,7 @@ const simplifiedRatingRoles=[
  ['Endgame DPS',['Arcana Invoker',"King's Echo",'Hollowborn Vindicator','Dragon of Time','Martial Artist','Lich','Legion Paladin','Immortal DarkCaster','Timeless DarkCaster','Ultra OmniKnight','Chaos Shaper','Unundead Goat','Chaos Avenger','Void HighLord','Sentinel']]
 ];
 const simplifiedRatings={
+ 'Fourth Lynaria':'5534543 544324- 5542254 4222331 554244344444333',
  'Void Flibbi':'5545555 552334- 5542454 4433331 544554455554243',
  'Void Nightbane':'5535544 551234- 5542454 3422221 533544455444142',
  'Void Xyfrag':'5535544 551234- 5542454 3422221 533544455444142',
@@ -1846,7 +1849,7 @@ function appendSimplifiedProfile(root,profile){
  const link=node('a','↗ Simplified Bosses Guide — '+profile.sheet);link.href=simplifiedGuideSource;link.target='_blank';link.rel='noopener noreferrer';content.append(link);detail.append(content);root.append(detail);
 }
 function renderSimplifiedExtras(root,term){
- const entries=simplifiedExtraEncounters.filter(x=>[x.name,x.group,x.join,...(x.team||[]).map(t=>t.cls),...(x.classes||[])].join(' ').toLowerCase().includes(term));
+ const entries=simplifiedExtraEncounters.filter(x=>[x.name,x.group,x.join,...(x.team||[]).map(t=>t.cls),...(x.classes||[]),...ultraClassOptions(x.name,x).flatMap(g=>g.names)].join(' ').toLowerCase().includes(term));
  if(!entries.length)return 0;
  const section=node('section',undefined,'ultra-catalog-group');section.append(node('h4','More boss guides · '+entries.length));
  for(const e of entries){const card=node('div',undefined,'ultra-catalog-card');card.append(node('strong',e.name),node('small',e.group));const actions=node('div',undefined,'ultra-catalog-actions');actions.append(makeCopyJoin(e.join));const link=node('a','Wiki location ↗');link.href='https://aqwwiki.wikidot.com/'+e.wiki;link.target='_blank';link.rel='noopener noreferrer';actions.append(link);card.append(actions);appendSimplifiedProfile(card,e);section.append(card)}
@@ -1854,7 +1857,7 @@ function renderSimplifiedExtras(root,term){
 }
 
 function renderUltraDetail(b){
- const root=$('ultradetail');root.classList.remove('hidden');root.replaceChildren();if(!b)return;
+ const root=$('ultradetail');root.classList.toggle('hidden',!b);root.replaceChildren();if(!b)return;
  const quick=ultraBeginner101[b.id]||{},roleMap=new Map(b.roles),profile=simplifiedProfiles[b.id];
  const titleBar=node('div',undefined,'goalhead ultra-title-row');
  const actions=node('div',undefined,'ultra-title-actions');
@@ -1866,6 +1869,7 @@ function renderUltraDetail(b){
  const selectorRow=node('div',undefined,'ultra-focus-selector');
  const select=node('select',undefined,'ultra-role-select');
  fillUltraClassSelect(select,b.id,profile,[...b.team,...(b.alternate||[])]);
+ const savedClass=selectedUltraClasses.get(b.id);if(savedClass&&Array.from(select.options).some(o=>o.value===savedClass))select.value=savedClass;
  selectorRow.append(node('span','Class'),select);setup.append(selectorRow);
  const gear=node('div',undefined,'ultra-focus-gear');
  const rating=node('div',undefined,'ultra-selected-rating');
@@ -1943,7 +1947,8 @@ function renderUltraDetail(b){
  const footer=node('div',undefined,'ultra-focus-footer');
  const link=node('a','↗ Full community strategy');link.href=b.source;link.target='_blank';link.rel='noopener noreferrer';footer.append(link,node('span','Team ownership ≠ boss access · verify encounter-specific gear','muted tiny'));for(const [label,url] of ultraReviewedSources[b.id]||[]){const a=node('a',label+' ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';footer.append(a)}if(profile){const a=node('a','↗ Simplified Bosses Guide');a.href=simplifiedGuideSource;a.target='_blank';a.rel='noopener noreferrer';footer.append(a)}root.append(footer);
  function updateRole(){
-  const cls=select.value,playKey=Object.keys(ultraRolePlaybooks[b.id]||{}).find(x=>sameUltraClass(x,cls)),play=ultraRolePlaybooks[b.id]?.[playKey];
+  const cls=select.value;selectedUltraClasses.set(b.id,cls);
+  const playKey=Object.keys(ultraRolePlaybooks[b.id]||{}).find(x=>sameUltraClass(x,cls)),play=ultraRolePlaybooks[b.id]?.[playKey];
   const roleKey=[...roleMap.keys()].find(x=>sameUltraClass(x,cls)),role=roleMap.get(roleKey);
   const workbook=ultraWorkbookBuild(profile,cls);
   // Bard is a Kathool support class. Official guidance endorses Healer/Wizard/Lucky;
@@ -1953,7 +1958,8 @@ function renderUltraDetail(b){
   const genericKey=Object.keys(starterBuilds).find(x=>sameUltraClass(x,cls));
   const generic=starterBuilds[genericKey]?.group||(cls==='Bard'?bardSupport:null);
   const encounter=encounterUltraBuild(b.id,cls,generic);
-  const build=workbook||encounter||generic;
+  const baseBuild=workbook||encounter||generic;
+  const build=b.id==='kathool'?{...(baseBuild||{}),consumable:'Vigil'}:baseBuild;
   renderUltraSelectedRating(rating,b.id,cls);
   gear.replaceChildren();
   if(build){
@@ -2030,11 +2036,58 @@ for(const boss of ultraGuides){
   join:boss.join,packs:freq==='weekly'?['ultras']:[],wiki:boss.source});
 }
 // Expand the existing catalog without changing pinned task IDs.
-const routineAliases={'Experiment 107: Elder\'s Blood Potion':'ex107','Experiment 231: Sparrow Blood Potion':'ex231','Dage, Lord of the Undead Legion':'ultra-dage','Nulgath, the Archfiend':'ultra-nulgath','Drakath, Champion of Chaos':'drakath','Malgor, The First Speaker':'ultra-speaker'};
+const routineAliases={'Experiment 107: Elder\'s Blood Potion':'ex107','Experiment 231: Sparrow Blood Potion':'ex231','Dage, Lord of the Undead Legion':'ultra-dage','Nulgath, the Archfiend':'ultra-nulgath','Drakath, Champion of Chaos':'drakath','Malgor, The First Speaker':'ultra-speaker','Drago, Tyrant of Astravia':'guide-ultra-drago','Darkon, the Conductor':'guide-ultra-darkon','Resuscitated Hope':'guide-ultra-gramiel'};
+const routineIdAliases={};
 for(const entry of window.AQWCRoutineLibrary?.indexedEntries||[]){
- const match=taskCatalog.find(t=>t.id===routineAliases[entry.name]||t.name.toLowerCase().replace(/\s*\((daily|weekly)( quest| bonus)?\)$/i,'')===entry.name.toLowerCase().replace(/\s*\((daily|weekly)( quest| bonus)?\)$/i,''));
- if(match){Object.assign(match,{rewards:entry.rewards,categories:[...new Set([...(match.categories||[]),...entry.categories])],targets:entry.targets,npc:entry.npc,location:entry.location,note:entry.note||match.note,wiki:entry.wiki,sourceName:entry.name});if(!match.join)match.join=entry.join}
- else taskCatalog.push({...entry});
+ const match=taskCatalog.find(t=>t.freq===entry.freq&&(t.id===routineAliases[entry.name]||t.name.toLowerCase().replace(/\s*\((daily|weekly)( quest| bonus)?\)$/i,'')===entry.name.toLowerCase().replace(/\s*\((daily|weekly)( quest| bonus)?\)$/i,'')));
+ if(match){if(entry.id!==match.id)routineIdAliases[entry.id]=match.id;Object.assign(match,{rewards:entry.rewards,categories:[...new Set([...(match.categories||[]),...entry.categories])],targets:entry.targets,npc:entry.npc,location:entry.location,note:entry.note||match.note,wiki:entry.wiki,sourceName:entry.name,acceptJoin:entry.join});if(!match.join)match.join=entry.join}
+ else taskCatalog.push({...entry,acceptJoin:entry.join});
+}
+
+// The two old aggregate checks are not evidence that any individual quest was turned in.
+function routineReviewReason(t){
+ if(t.id==='guide-ultra-kathool')return 'Legacy boss check — pin Frenzy Feast and/or Daily Exercise 5 separately.';
+ if(t.id==='legion-ex')return 'Legacy aggregate — choose the individual Daily Exercise quests.';
+ if(/one-time chain stage/i.test(t.note||''))return 'One-time progression stage, not a repeating routine.';
+ if(/retired event quest|legacy or retired quest/i.test(t.note||''))return 'Retired or unverified availability — keep as historical reference.';
+ return '';
+}
+function routineIsRecurring(t){return !routineReviewReason(t)}
+function routineCanonicalId(id){return routineIdAliases[id]||id}
+function reconcileRoutineState(pins,checks){
+ const byId=new Map(),newChecks={...checks};let changed=false;
+ for(const old of pins){
+  const id=routineCanonicalId(old.id),entry=taskCatalog.find(x=>x.id===id);
+  const next=entry?{...old,...entry,sourceProjects:old.sourceProjects}:old;
+  if(id!==old.id)changed=true;
+  if(byId.has(id)){const prev=byId.get(id);prev.sourceProjects=[...new Set([...(prev.sourceProjects||[]),...(next.sourceProjects||[])])];changed=true}
+  else byId.set(id,next);
+ }
+ for(const [key,value] of Object.entries(checks)){
+  const sep=key.indexOf('|');if(sep<0)continue;const id=key.slice(sep+1),canonical=routineCanonicalId(id);
+  if(id===canonical)continue;
+  const newKey=key.slice(0,sep+1)+canonical;
+  newChecks[newKey]=newChecks[newKey]===true||value===true;delete newChecks[key];changed=true;
+ }
+ return {pins:[...byId.values()],checks:newChecks,changed};
+}
+// Verify accept/farm distinction for the common farm and Legion routes.
+const routineAcceptOverrides={odd:'/join yulgar',mining:'/join yulgar',hardcore:'/join yulgar',encroach:'/join shadowfall',glimpse:'/join shadowfall',wrongturn:'/join originul',ex107:'/join arcangrove',ex231:'/join arcangrove',chaos:'/join yulgar','seal-light':'/join yulgar','seal-dark':'/join yulgar'};
+const legionFarmMaps=['/join judgement','/join frozenlair','/join sevencircleswar','/join deimos','/join kathooldepths','/join ultradage'];
+const legionBossNames=['Ultra Aeacus','Legion Lich Lord','The Beast','Devastator Deimos','God of the Depths','Dage the Dark Lord'];
+const legionObjectives=['Sparred with Ultra Aeacus','Sparred With the Legion Lich Lord','The Beast Subdued','Sparred With Devastator Deimos','God of The Depths Subdued','Sparred With Dage the Dark Lord'];
+for(const t of taskCatalog){
+ if(routineAcceptOverrides[t.id])t.acceptJoin=routineAcceptOverrides[t.id];
+ const m=t.name.match(/^Daily Exercise ([1-6]):/);
+ if(m&&t.wiki==='https://aqwwiki.wikidot.com/dage-the-evil-s-champion-quests'){
+  const n=Number(m[1])-1;
+  Object.assign(t,{join:legionFarmMaps[n],acceptJoin:'/join underworld',group:'Legion',npc:'Dage the Evil',categories:[...new Set([...(t.categories||[]),'Legion','Endgame','Materials'])],packs:[...new Set([...(t.packs||[]),'legion'])],targets:[legionObjectives[n]+' ×1 — '+legionBossNames[n]],note:'Requires Legion Promotion'+(n===4?' and level 80':'')+'.',farmJoin:legionFarmMaps[n]});
+ }
+ if(t.id==='mining'||t.id==='hardcore')t.farmJoin='/join stalagbite';
+ if(t.id==='guide-ultra-ezrajal'||t.id==='guide-ultra-warden'||t.id==='guide-ultra-engineer')t.acceptJoin='/join timeinn';
+ if(t.sourceName&&t.group==='Ultra Boss')t.searchName=t.name+' · '+t.sourceName;
+ if(t.id==='gramiel-echoes-weekly'||t.id==='gramiel-weekly')t.exclusiveGroup='gramiel-hub-weekly';
+ if(routineIsRecurring(t)&&t.group==='Ultra Boss'&&t.freq==='weekly'&&!t.exclusiveGroup)t.packs=[...new Set([...(t.packs||[]),'ultras'])];
 }
 // Curated acquisition instructions. Missing destinations deliberately stay unverified.
 const taskRoutes={
@@ -2048,8 +2101,8 @@ const taskRoutes={
  'tyndarius':{npc:'Galanoth · /join ultratyndarius',targets:[['Ultra Avatar Tyndarius','Ultra Avatar Tyndarius Defeated ×1','/join ultratyndarius']],wiki:'https://aqwwiki.wikidot.com/galanoth-s-quests'},
  'encroach':{npc:'Braeus · /join shadowfall',targets:[['Warlord Icewing','Glacial Pinion','/join icewing'],['Mobius Hydra','Hydra Eyeball ×3','/join mobius'],['Flibbitiestgibbet','Flibbitigiblets','/join voidflibbi']],wiki:'https://aqwwiki.wikidot.com/braeus-quests'},
  'glimpse':{npc:'Braeus · /join shadowfall',targets:[['Chaos Kraken','Kraken Doubloon ×13','/join chaoskraken'],['Ancient Trigoras','Ancient Trigora’s Horns ×3','/join ancienttrigoras'],['Graveclaw the Destroyer','Graveclaw’s Broken Axe','/join gravechallenge']],wiki:'https://aqwwiki.wikidot.com/braeus-quests'},
- 'hardcore':{npc:'Vayle · /join necropolis',targets:[['Ore Balboa','Axe of the Prospector; Raw Ore ×30','/join mountainpath']],wiki:'https://aqwwiki.wikidot.com/vayle-s-quests'},
- 'mining':{npc:'Artix · check quest availability',targets:[['Ore Balboa','Raw Ore ×30; Axe of the Prospector','/join mountainpath']],wiki:'https://aqwwiki.wikidot.com/artix-s-quests'},
+ 'hardcore':{npc:'Daily Quest Board or Vayle',targets:[['Stalagbite','Raw Ore ×30; also need Axe of the Prospector','/join stalagbite']],wiki:'https://aqwwiki.wikidot.com/vayle-s-quests'},
+ 'mining':{npc:'Daily Quest Board or Artix',targets:[['Stalagbite','Raw Ore ×30; also need Axe of the Prospector','/join stalagbite']],wiki:'https://aqwwiki.wikidot.com/artix-s-quests'},
  'wrongturn':{npc:'Memory of Nulgath · /join originul',targets:[['Flibbitiestgibbet','??? Essence','/join voidflibbi'],['Nightbane','??? Essence','/join voidnightbane'],['Xyfrag','??? Essence','/join voidxyfrag']],wiki:'https://aqwwiki.wikidot.com/memory-of-nulgath-s-quests'},
  'ultra-dage':{npc:'Weekly Ultra Boss',targets:[['Dage the Evil','Defeat boss','/join ultradage']],wiki:'https://aqwwiki.wikidot.com/dage-the-evil-monster-2'},
  'ultra-nulgath':{npc:'Weekly Ultra Boss',targets:[['Nulgath','Defeat boss','/join ultranulgath']],wiki:'https://aqwwiki.wikidot.com/ultra-nulgath'},
@@ -2060,6 +2113,7 @@ const taskRoutes={
 // location and a Wiki link for the current level/membership prerequisites.
 for(const entry of (window.AQWCRoutineLibrary?.entries||[]))
  taskRoutes[entry.id]={npc:'Daily Quest Board · /join yulgar',targets:[],wiki:entry.wiki};
+for(const t of taskCatalog){const m=t.name.match(/^Daily Exercise ([1-6]):/);if(m&&t.wiki==='https://aqwwiki.wikidot.com/dage-the-evil-s-champion-quests'){const i=Number(m[1])-1;taskRoutes[t.id]={npc:'Dage the Evil · /join underworld',targets:[[legionBossNames[i],legionObjectives[i]+' ×1',legionFarmMaps[i]]],wiki:t.wiki}}}
 for(const boss of ultraGuides){
  const id='guide-ultra-'+boss.id;
  if(!taskCatalog.some(t=>t.id===id))continue;
@@ -2073,7 +2127,7 @@ const projectRoutines=[
  {terms:['blinding light of destiny','spirit orb','destiny'],ids:['mining']},
  {terms:["sepulchure's doomknight armor","doomknight armor",'sdka'],ids:['hardcore']},
  {terms:['sin of the abyss','nulgath','sin of revontheus'],ids:['wrongturn','ultra-nulgath']},
- {terms:['legion revenant','legion token','exalted crown','dage'],ids:['legion-ex','ultra-dage']},
+ {terms:['legion revenant','legion token','exalted crown','dage'],ids:['ultra-dage',...taskCatalog.filter(t=>/^Daily Exercise [1-6]:/.test(t.name)&&t.group==='Legion').map(t=>t.id)]},
  {terms:['chaos avenger','drakath'],ids:['drakath']},
  {terms:['malgor','shadowflame blade','speaker'],ids:['ultra-speaker']},
  {terms:['lich','bone dust'],ids:[]}
@@ -2081,7 +2135,7 @@ const projectRoutines=[
 function relevantProjectTasks(project){
  const names=[project.name,...(project.steps||[]).flatMap(s=>[s.item||'',s.label||''])].join(' ').toLowerCase();
  const found=new Set();for(const rel of projectRoutines){if(rel.terms.some(t=>names.includes(t)))rel.ids.forEach(x=>found.add(x))}
- return taskCatalog.filter(t=>found.has(t.id))
+ return taskCatalog.filter(t=>routineIsRecurring(t)&&found.has(t.id))
 }
 let pinnedTasks=[],taskChecks={};const plannerKey='aqw-companion-planner-v09';
 function loadPlanner(){try{const v=JSON.parse(localStorage.getItem(plannerKey)||'{}');pinnedTasks=Array.isArray(v.pinned)?v.pinned.filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string').slice(0,250):[];taskChecks=v.checks&&typeof v.checks==='object'?v.checks:{}}catch{pinnedTasks=[];taskChecks={}}}
@@ -2239,7 +2293,7 @@ function renderAccountStatistics(){
 function renderHomeInsights(){
  const activity=$('homeactivities'),projectList=$('homeprojectslist');if(!activity||!projectList)return;
  activity.replaceChildren();projectList.replaceChildren();
- const records=[...pinnedTasks].map(t=>({task:t,done:taskDone(t)}));
+ const records=pinnedTasks.filter(routineIsRecurring).map(t=>({task:t,done:taskDone(t)}));
  const daily=records.filter(x=>x.task.freq==='daily'),weekly=records.filter(x=>x.task.freq==='weekly');
  const pending=records.filter(x=>!x.done);
  activity.append(node('div',
@@ -2283,7 +2337,7 @@ function taskPeriod(freq,now=new Date()){const day=aqwServerDay(freq==='weekly'?
 function taskKey(t){return taskPeriod(t.freq)+'|'+t.id}
 function taskDone(t){return taskChecks[taskKey(t)]===true}
 function resetUltraChecks(freq){
- const matches=pinnedTasks.filter(t=>t.freq===freq&&(t.group==='Ultra Boss'||ultraGuides.some(b=>b.join===t.join)));
+ const matches=pinnedTasks.filter(t=>routineIsRecurring(t)&&t.freq===freq&&t.group==='Ultra Boss');
  const done=matches.filter(taskDone);
  if(!done.length){message('No completed '+freq+' Ultra tasks to reset for the current tracking period.');return}
  if(!confirm('Reset '+done.length+' completed '+freq+' Ultra check(s) for this tracking period? This does not reset game quests.'))return;
@@ -2291,33 +2345,36 @@ function resetUltraChecks(freq){
  savePlanner();renderPlanner();renderHomeInsights();message('Reset '+done.length+' local Ultra check(s).');
 }
 
-function toggleTask(t,done){taskChecks[taskKey(t)]=done;savePlanner();renderPlanner();renderHomeInsights()}
-function pinTask(t){if(pinnedTasks.some(x=>x.id===t.id))return;pinnedTasks.push({...t});savePlanner();renderPlanner()}
+function toggleTask(t,done){if(!routineIsRecurring(t))return;taskChecks[taskKey(t)]=done;savePlanner();renderPlanner();renderHomeInsights()}
+function pinTask(t){if(!routineIsRecurring(t)||pinnedTasks.some(x=>x.id===t.id))return;pinnedTasks.push({...t});savePlanner();renderPlanner()}
 function unpinTask(t){pinnedTasks=pinnedTasks.filter(x=>x.id!==t.id);savePlanner();renderPlanner()}
 function copyJoin(txt){if(!txt)return;if(navigator.clipboard?.writeText)navigator.clipboard.writeText(txt).then(()=>message(txt+' copied')).catch(()=>message('Copy '+txt));else message('Copy '+txt)}
-function taskCard(t,pinned){const card=node('div',undefined,'task-card'+(taskDone(t)?' done':''));const inner=node('div',undefined,'task-main');if(pinned){const input=node('input');input.type='checkbox';input.checked=taskDone(t);input.setAttribute('aria-label','Completed '+t.name);input.onchange=()=>toggleTask(t,input.checked);inner.append(input)}const name=node('div');name.append(node('strong',t.name,'task-title'));name.append(node('small',(t.freq==='daily'?'Daily':'Weekly')+' · '+(t.group||'Custom')));
+function taskCard(t,pinned){const card=node('div',undefined,'task-card'+(taskDone(t)?' done':''));const inner=node('div',undefined,'task-main');if(pinned){const input=node('input');input.type='checkbox';input.checked=taskDone(t);input.setAttribute('aria-label','Completed '+t.name);input.onchange=()=>toggleTask(t,input.checked);inner.append(input)}const name=node('div');name.append(node('strong',t.searchName||t.name,'task-title'));name.append(node('small',(t.freq==='daily'?'Daily':'Weekly')+' · '+(t.group||'Custom')));
  if(pinned&&Array.isArray(t.sourceProjects)&&t.sourceProjects.length){name.append(node('small','🎯 Project: '+t.sourceProjects.join(' · '),'task-project'))}
- if(!pinned){const tags=node('div',undefined,'planner-tags');for(const tag of taskCategories(t))tags.append(node('span',tag,'pill'));name.append(tags);if(t.rewards?.length)name.append(node('small','Rewards: '+t.rewards.join(' · '),'planner-rewards'))}
+ if(!pinned){const tags=node('div',undefined,'planner-tags');for(const tag of taskCategories(t))tags.append(node('span',tag,'pill'));name.append(tags)}
+ if(t.rewards?.length)name.append(node('small','Rewards: '+t.rewards.join(' · '),'planner-rewards'));
+ if(t.acceptJoin&&t.acceptJoin!==t.join){const route=node('div',undefined,'task-location');route.append(node('small','Accept quest: '),makeCopyJoin(t.acceptJoin));name.append(route)}
  if(t.note)name.append(node('small',t.note,'task-unverified'));
  const info=taskRoutes[t.id];
  if(info){const details=node('details',undefined,'task-route');const summary=node('summary','📍 Where / what to defeat');details.append(summary);details.append(node('div',info.npc.replace(/\s*·\s*\/join\s+[a-z0-9-]+/gi,''),'task-location'));
  for(const target of info.targets){const line=node('div',undefined,'task-target');line.append(node('strong',target[0]),node('small',target[1]));if(target[2]){line.append(makeCopyJoin(target[2]))}else{line.append(node('small','Map not yet verified','task-unverified'))}details.append(line)}
- if(t.join)name.append(makeCopyJoin(t.join));
+ if(t.join){const route=node('div',undefined,'task-location');route.append(node('small',t.acceptJoin===t.join?'Quest / farm: ':t.acceptJoin?'Farm / boss: ':'Location: '),makeCopyJoin(t.join));name.append(route)}
  const wiki=node('a','Verify on AQWWiki','task-wiki');wiki.href=info.wiki;wiki.target='_blank';wiki.rel='noopener noreferrer';details.append(wiki);name.append(details);
- }else{if(t.join){const link=makeCopyJoin(t.join);link.style.marginTop='6px';name.append(link)}if(t.targets?.length||t.npc||t.location){const details=node('details',undefined,'task-route');details.append(node('summary','📍 Quest requirements'));if(t.npc||t.location)details.append(node('div',[t.npc,t.location].filter(Boolean).join(' · '),'task-location'));for(const target of t.targets||[])details.append(node('div',target,'task-target'));name.append(details)}else name.append(node('small','Open the quest in-game to confirm its current objectives.','task-unverified'));const quick=node('a','Quest source (AQWWiki) ↗','task-wiki');quick.href=t.wiki||'https://aqwwiki.wikidot.com/daily-quest-board-s-quests';quick.target='_blank';quick.rel='noopener noreferrer';name.append(quick)}
+ }else{if(t.join){const route=node('div',undefined,'task-location');route.append(node('small',t.acceptJoin===t.join?'Quest location: ':t.acceptJoin?'Farm / boss: ':'Location: '),makeCopyJoin(t.join));name.append(route)}if(t.targets?.length||t.npc||t.location){const details=node('details',undefined,'task-route');details.append(node('summary','📍 Quest requirements'));if(t.npc||t.location)details.append(node('div',[t.npc,t.location].filter(Boolean).join(' · '),'task-location'));for(const target of t.targets||[])details.append(node('div',target,'task-target'));name.append(details)}else name.append(node('small','Open the quest in-game to confirm its current objectives.','task-unverified'));const quick=node('a','Quest source (AQWWiki) ↗','task-wiki');quick.href=t.wiki||'https://aqwwiki.wikidot.com/daily-quest-board-s-quests';quick.target='_blank';quick.rel='noopener noreferrer';name.append(quick)}
  inner.append(name);card.append(inner);if(pinned&&taskDone(t)){const undo=node('button','Undo completion','smallbutton planner-undo');undo.type='button';undo.onclick=()=>{if($('plannerstatus').value==='completed')$('plannerstatus').value='all';toggleTask(t,false)};name.append(undo)}const button=node('button',pinned?'Unpin':'+ Pin','smallbutton');button.onclick=()=>pinned?unpinTask(t):pinTask(t);card.append(button);return card}
 $('resetultradaily').onclick=()=>resetUltraChecks('daily');$('resetultraweekly').onclick=()=>resetUltraChecks('weekly');
 let plannerShowAll=false;
 const coverage=window.AQWCRoutineLibrary?.coverage;if(coverage){$('planner-coverage').textContent=coverage.quests.toLocaleString()+' quest records across '+coverage.pages.toLocaleString()+' source pages scanned. '+coverage.daily+' daily and '+coverage.weekly+' weekly source entries identified. Some source pages do not specify individual quest frequency in the export; check the Wiki before treating unclassified quests as recurring.';for(const p of window.AQWCRoutineLibrary.sourcePages||[]){const a=node('a',p.name+' ↗','task-wiki');a.href=p.url;a.target='_blank';a.rel='noopener noreferrer';const line=node('div');line.append(a);$('planner-source-pages').append(line)}}
 function taskCategories(t){const tags=new Set([t.group||'General',...(t.categories||[])]);if(t.group==='Ultra Boss')tags.add('Ultras');if(t.group==='Legion'||t.group==='Nulgath'||t.group==='Shadowfall')tags.add('Factions');if(t.group==='Metals')tags.add('Materials');if(String(t.group).includes('End game'))tags.add('Endgame');for(const r of projectRoutines)if(r.ids.includes(t.id))tags.add('Endgame projects');return [...tags]}
-function taskSearchText(t){return [t.name,t.group,t.join,...taskCategories(t),...(t.rewards||[]),...(t.targets||[]),t.npc,t.location,t.sourceName,t.note,...projectRoutines.filter(r=>r.ids.includes(t.id)).flatMap(r=>r.terms),...(taskRoutes[t.id]?.targets||[]).flat()].join(' ').toLowerCase()}
+function taskSearchText(t){return [t.name,t.searchName,t.group,t.join,t.acceptJoin,...taskCategories(t),...(t.rewards||[]),...(t.targets||[]),t.npc,t.location,t.sourceName,t.note,...projectRoutines.filter(r=>r.ids.includes(t.id)).flatMap(r=>r.terms),...(taskRoutes[t.id]?.targets||[]).flat()].join(' ').toLowerCase()}
 
 function renderPlanner(){const suggested=$('planner-suggestions'),my=$('planner-my-tasks');if(!suggested||!my)return;
  // Refresh library metadata without resetting completion history or custom tasks.
- let updated=false;for(const t of pinnedTasks){const entry=taskCatalog.find(x=>x.id===t.id);if(!entry)continue;if(t.id==='tyndarius'&&t.freq!==entry.freq){t.freq=entry.freq;updated=true}for(const k of ['rewards','categories','targets','npc','location','note','wiki','sourceName'])if(entry[k]!==undefined)t[k]=entry[k];if(!t.join&&entry.join)t.join=entry.join}if(updated)savePlanner();
+ const reconciled=reconcileRoutineState(pinnedTasks,taskChecks);pinnedTasks=reconciled.pins;taskChecks=reconciled.checks;if(reconciled.changed)savePlanner();
+ const activeCatalog=taskCatalog.filter(routineIsRecurring);
  const query=$('plannersearch').value.trim().toLowerCase(),freq=$('plannerfilter').value;
- const cat=$('plannercategory'),pinFilter=$('plannerpinfilter').value;const selected=cat.value;const categories=[...new Set(taskCatalog.flatMap(taskCategories))].sort();cat.replaceChildren(new Option('All categories','all'),...categories.map(c=>new Option(c,c)));cat.value=categories.includes(selected)?selected:'all';
- const matches=taskCatalog.filter(x=>(freq==='all'||x.freq===freq)&&(cat.value==='all'||taskCategories(x).includes(cat.value))&&(pinFilter==='all'||(pinFilter==='pinned')===pinnedTasks.some(y=>y.id===x.id))&&(!query||taskSearchText(x).includes(query)));suggested.replaceChildren();$('plannerresultcount').textContent=' · '+matches.length+' of '+taskCatalog.length+' tasks';
+ const cat=$('plannercategory'),pinFilter=$('plannerpinfilter').value;const selected=cat.value;const categories=[...new Set(activeCatalog.flatMap(taskCategories))].sort();cat.replaceChildren(new Option('All categories','all'),...categories.map(c=>new Option(c,c)));cat.value=categories.includes(selected)?selected:'all';
+ const matches=activeCatalog.filter(x=>(freq==='all'||x.freq===freq)&&(cat.value==='all'||taskCategories(x).includes(cat.value))&&(pinFilter==='all'||(pinFilter==='pinned')===pinnedTasks.some(y=>y.id===x.id))&&(!query||taskSearchText(x).includes(query)));suggested.replaceChildren();$('plannerresultcount').textContent=' · '+matches.length+' of '+activeCatalog.length+' tasks';
  const visible=(plannerShowAll||query)?matches:matches.slice(0,36);
  for(const t of visible)suggested.append(taskCard(pinnedTasks.find(p=>p.id===t.id)||t,pinnedTasks.some(p=>p.id===t.id)));
  if(visible.length<matches.length){
@@ -2325,9 +2382,10 @@ function renderPlanner(){const suggested=$('planner-suggestions'),my=$('planner-
   more.type='button';more.onclick=()=>{plannerShowAll=true;renderPlanner()};suggested.append(more);
  }
  if(!matches.length)suggested.append(node('div','No tasks match your filters.','planner-empty'));
- my.replaceChildren();for(const freq of ['daily','weekly']){const group=node('div',undefined,'planner-task-group');group.append(node('h3',freq==='daily'?'Daily Tasks':'Weekly Tasks'));const tasks=pinnedTasks.filter(t=>t.freq===freq).sort((a,b)=>Number(taskDone(a))-Number(taskDone(b))||a.name.localeCompare(b.name));const status=$('plannerstatus').value;for(const [title,done] of [['Pending',false],['Completed',true]]){if(status!=='all'&&status!==(done?'completed':'pending'))continue;const subset=tasks.filter(t=>taskDone(t)===done);group.append(node('h4',title+' · '+subset.length,'planner-state-heading'));for(const t of subset)group.append(taskCard(t,true));if(!subset.length)group.append(node('p',done?'Nothing completed yet.':'No pending tasks.','muted tiny'))}my.append(group)}
+ my.replaceChildren();for(const freq of ['daily','weekly']){const group=node('div',undefined,'planner-task-group');group.append(node('h3',freq==='daily'?'Daily Tasks':'Weekly Tasks'));const tasks=pinnedTasks.filter(t=>routineIsRecurring(t)&&t.freq===freq).sort((a,b)=>Number(taskDone(a))-Number(taskDone(b))||a.name.localeCompare(b.name));const status=$('plannerstatus').value;for(const [title,done] of [['Pending',false],['Completed',true]]){if(status!=='all'&&status!==(done?'completed':'pending'))continue;const subset=tasks.filter(t=>taskDone(t)===done);group.append(node('h4',title+' · '+subset.length,'planner-state-heading'));for(const t of subset)group.append(taskCard(t,true));if(!subset.length)group.append(node('p',done?'Nothing completed yet.':'No pending tasks.','muted tiny'))}my.append(group)}
+ const review=pinnedTasks.filter(t=>!routineIsRecurring(t));if(review.length){const box=node('details',undefined,'task-route');box.append(node('summary','Saved tasks needing review · '+review.length));for(const t of review){const line=node('div',undefined,'task-card');line.append(node('div',t.name+' — '+routineReviewReason(t)));const remove=node('button','Unpin','smallbutton');remove.onclick=()=>unpinTask(t);line.append(remove);box.append(line)}my.append(box)}
  const history=$('planner-task-history');history.replaceChildren();const entries=Object.entries(taskChecks).filter(([,done])=>done===true).sort(([a],[b])=>b.localeCompare(a));for(const [id] of entries){const [period,...parts]=id.split('|');const taskId=parts.join('|');const t=pinnedTasks.find(x=>x.id===taskId)||taskCatalog.find(x=>x.id===taskId);history.append(node('div',period+' · '+(t?.name||taskId),'planner-history-row'));}if(!entries.length)history.append(node('p','No completed tasks recorded yet.','muted tiny'));if(!pinnedTasks.length)my.append(node('div','Pin a starter pack, a suggestion, or add your own task.','planner-empty'));
- for(const freq of ['daily','weekly']){const t=pinnedTasks.filter(x=>x.freq===freq),done=t.filter(taskDone).length;$(freq+'count').textContent=done+' / '+t.length;$(freq+'bar').style.width=(t.length?100*done/t.length:0)+'%'}
+ for(const freq of ['daily','weekly']){const t=pinnedTasks.filter(x=>routineIsRecurring(x)&&x.freq===freq),done=t.filter(taskDone).length;$(freq+'count').textContent=done+' / '+t.length;$(freq+'bar').style.width=(t.length?100*done/t.length:0)+'%'}
  $('plannerperiod').textContent='AQW server day: '+taskPeriod('daily').slice(2)+' (EST) · Weekly reset: Friday 00:01 EST';
  updatePlannerTimers();
 }
@@ -2337,7 +2395,7 @@ let lastPlannerPeriod=taskPeriod('daily')+'|'+taskPeriod('weekly');
 function refreshPlannerClock(){const key=taskPeriod('daily')+'|'+taskPeriod('weekly');if(lastPlannerPeriod&&key!==lastPlannerPeriod){renderPlanner();renderHomeInsights()}lastPlannerPeriod=key;updatePlannerTimers()}
 setInterval(refreshPlannerClock,1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshPlannerClock()});
 $('plannersearch').addEventListener('input',renderPlanner);for(const id of ['plannerfilter','plannercategory','plannerpinfilter','plannerstatus'])$(id).addEventListener('change',renderPlanner);$('plannerbrowse').onclick=()=>selectTab('planner-discover');
-document.querySelectorAll('[data-pack]').forEach(btn=>btn.addEventListener('click',()=>{const pack=btn.dataset.pack;for(const t of taskCatalog.filter(t=>t.packs.includes(pack)))if(!pinnedTasks.some(x=>x.id===t.id))pinnedTasks.push({...t});savePlanner();renderPlanner();message('Starter pack pinned. Customize your checklist anytime.')}));
+document.querySelectorAll('[data-pack]').forEach(btn=>btn.addEventListener('click',()=>{const pack=btn.dataset.pack;for(const t of taskCatalog.filter(t=>routineIsRecurring(t)&&t.packs.includes(pack)))if(!pinnedTasks.some(x=>x.id===t.id))pinnedTasks.push({...t});savePlanner();renderPlanner();message('Starter pack pinned. Customize your checklist anytime.')}));
 $('addcustomtask').onclick=()=>{const name=$('customtask').value.trim();if(!name){message('Enter a task name first.');return}let join=$('customjoin').value.trim();if(join&&!/^\/join [a-z0-9_-]+$/i.test(join)){message('Use /join mapname or leave the field empty.');return}const freq=$('customfrequency').value;pinnedTasks.push({id:'user-'+crypto.randomUUID(),name:name.slice(0,120),group:'Custom',freq,join,packs:[]});$('customtask').value='';$('customjoin').value='';savePlanner();renderPlanner()};
 const groupDefaults={home:'overview',explore:'discover',projects:'unlocks',story:'story',inventory:'account-stats',ultras:'ultras',planner:'planner',builds:'builds'};
 let lastTabByGroup={};
