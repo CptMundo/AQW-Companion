@@ -94,7 +94,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.4.0');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-items.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
+ assert.equal(manifest.version,'0.5.0');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -117,3 +117,35 @@ assert.ok(review.includes('add.onclick=()=>{'));assert.ok(review.includes('addPr
 assert.ok(site.includes('extension/wishlist-link.js?v=126'));assert.ok(site.includes('showWikiWishlistReview();window.addEventListener'));
 assert.ok(read('js/umami-analytics.js').includes("url:'/AQW-Companion/'"));
 console.log('Wiki Wishlist: scoped links, category suffixes, variant guard and explicit confirmation checked.');
+
+(async()=>{
+ const origin='https://aqwwiki.wikidot.com',ctx={URL};
+ vm.runInNewContext(read('extension/wiki-materials.js'),ctx);
+ const api=ctx.AQWCWikiMaterials;
+ const row=(name,slug,count)=>({tagName:'LI',textContent:name+' x'+count,querySelector:()=>null,querySelectorAll:()=>[{href:origin+'/'+slug,textContent:name}]});
+ const group=rows=>({tagName:'UL',children:rows,textContent:rows.map(r=>r.textContent).join(' ')});
+ const marker=rows=>{const ul=group(rows);return {tagName:'LI',childNodes:[{nodeType:3,textContent:'Merge the following:'},{nodeType:1,tagName:'UL',textContent:ul.textContent}],children:[ul]}};
+ const blocks=[marker([row("Necrotic Sword's Blade",'necrotic-sword-s-blade',1),row('Void Aura','void-aura',800)]),marker([row('Dual Necrotic Swords of Doom','dual-necrotic-swords-of-doom',1)])];
+ const parsed=api.parse({querySelectorAll:()=>blocks},origin);
+ assert.equal(parsed.groups.length,2);assert.equal(parsed.groups[0][1].target,800);assert.equal(parsed.groups[1].length,1);
+ assert.equal(api.parse({querySelectorAll:()=>[marker([row('Void Aura','void-aura','7,500')])]},origin).groups[0][0].target,7500);
+ assert.equal(api.parse({querySelectorAll:()=>[marker([row('Bad','bad','1 or 2')])]},origin).incomplete,true);
+ assert.equal(api.parse({querySelectorAll:()=>[marker([row('A','a',1),row('A','a',2)])]},origin).groups.length,0);
+ assert.equal(api.parse({querySelectorAll:()=>[]},origin).groups.length,0);
+ const stored={items:[{ID:'1',Name:'Void Aura',Type:'Item',Count:12,Bank:0},{ID:'1',Name:'Void Aura',Type:'Item',Count:8,Bank:1},{ID:'2',Name:'Necrotic Sword of Doom',Type:'Sword',Count:1,Bank:0},{ID:'3',Name:'Same',Type:'Item',Count:1,Bank:0},{ID:'4',Name:'Same',Type:'Sword',Count:1,Bank:1}],syncedAt:'2026-11-24'};
+ const chromeMock={runtime:{onMessage:{addListener(){}},getURL:x=>'chrome-extension://test/'+x},storage:{local:{async get(k){return {[k]:stored}}}}};
+ const worker=vm.runInNewContext(read('extension/worker.js')+'\n({matchWikiMaterial,handle})',{chrome:chromeMock,URL,TextEncoder});
+ assert.equal(worker.matchWikiMaterial(stored,'Void Aura').total,20);
+ assert.equal(worker.matchWikiMaterial(stored,'Void Aura').bank,8);
+ assert.equal(worker.matchWikiMaterial(stored,'Necrotic Sword of Doom (Sword)').total,1);
+ assert.equal(worker.matchWikiMaterial(stored,'Same').state,'ambiguous');
+ assert.equal(worker.matchWikiMaterial(stored,'Absent').state,'not-found');
+ assert.equal(worker.matchWikiMaterial(null,'Void Aura').state,'unsynced');
+ const msg={type:'wiki-material-lookup',names:['Void Aura','Absent']},sender={url:origin+'/necrotic-sword-of-doom-sword',frameId:0};
+ const response=await worker.handle(msg,sender);assert.equal(response.matches[0].total,20);assert.equal(response.matches[1].state,'not-found');assert.equal(response.items,undefined);
+ assert.equal((await worker.handle(msg,{...sender,frameId:1})).ok,false);
+ assert.equal((await worker.handle(msg,{url:'https://example.org/item',frameId:0})).ok,false);
+ assert.equal((await worker.handle({...msg,names:Array(81).fill('x')},sender)).ok,false);
+ assert.ok(read('extension/wiki-items.js').includes('AQWCWikiMaterials?.render'));
+ console.log('Direct material progress: separate merge lists, strict counts, bounded local lookup and ambiguity passed.');
+})().catch(error=>{console.error(error);process.exitCode=1});
