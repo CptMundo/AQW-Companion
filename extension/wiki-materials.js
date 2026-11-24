@@ -87,7 +87,7 @@
   const {groups,incomplete}=parse(content,origin);
   if(!groups.length&&!incomplete)return;
   const panel=document.createElement('section');panel.className='aqwc-section';panel.style.cssText='min-width:0;max-width:100%;';
-  const heading=document.createElement('strong');heading.textContent='Required Materials';panel.append(heading);card.append(panel);
+  const heading=document.createElement('strong');heading.textContent='Farming Progress';panel.append(heading);card.append(panel);
   const note=text=>{const n=document.createElement('div');n.textContent=text;n.style.cssText='font-size:11px;color:#b6cddd;margin:5px 0;font-weight:400';return n};
   panel.append(note('Inventory + Bank · expand a missing material to see its recipe.'));const help=document.createElement('details');const summary=document.createElement('summary');summary.textContent='How progress is calculated';summary.style.cssText='font-size:11px;color:#a9c4d8;cursor:pointer';help.append(summary,note('Stock is reserved once per option; alternative root recipes are independent. Unrecognized rows require manual verification.'));panel.append(help);
   if(incomplete)panel.append(note('Some recipe rows could not be read; check the original Wiki requirements.'));
@@ -100,7 +100,7 @@
    const r=await chrome.runtime.sendMessage({type:'wiki-material-lookup',names:list});
    if(!r?.ok||!Array.isArray(r.matches)||r.matches.length!==list.length)throw Error('Inventory unavailable; refresh after syncing');
    matches=new Map(list.map((name,i)=>[name,r.matches[i]]));
-   statusLine.textContent=r.syncedAt?'Inventory synced: '+new Date(r.syncedAt).toLocaleString():'No inventory synced yet.';
+   statusLine.textContent=r.syncedAt?'':'No inventory synced yet.';
   }
   function button(text){
    const b=document.createElement('button');b.type='button';b.textContent=text;b.disabled=busy;
@@ -140,7 +140,7 @@
      status.textContent=(known?(done?'✓ ':n.allocated?'◐ ':'✕ ')+n.allocated.toLocaleString():'?')+' / '+n.target.toLocaleString();
      status.style.color=done?'#90edb5':!known||n.allocated?'#ffdb93':'#ffc2a8';
      if(known)status.title='Synced stock: '+n.stock.toLocaleString()+' · allocated to this requirement: '+n.allocated.toLocaleString();
-     top.append(nameBox,status);row.append(top);
+     top.append(nameBox,status);row.append(top);if(known&&n.missing>0)row.append(note(n.missing.toLocaleString()+' remaining'));
      const track=document.createElement('div'),fill=document.createElement('div');track.style.cssText='height:6px;border-radius:6px;background:#091622;overflow:hidden;margin-top:7px';fill.style.cssText='height:100%;width:'+(known?Math.min(100,n.allocated/n.target*100):0)+'%;background:'+(done?'#57ca91':n.allocated?'#e9b958':'#e58b7c');track.append(fill);row.append(track);container.append(row);
      if(n.reason)row.append(note(n.reason));
      if(!s?.open||!n.missing)return;

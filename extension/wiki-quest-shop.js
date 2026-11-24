@@ -96,46 +96,62 @@ function labels(group,matches){
   return {item,text:'Stock '+allocated.toLocaleString()+'/'+item.target.toLocaleString(),color:allocated>=item.target?'#90edb5':allocated?'#ffdb93':'#ffc2a8'};
  });
 }
+function questScope(content,tabs,name){
+ const candidates=tabs.filter(a=>clean(a.textContent)===name);
+ if(candidates.length!==1)return null;
+ const a=candidates[0],raw=a.getAttribute('aria-controls')||a.getAttribute('href')||'';
+ const id=raw.startsWith('#')?raw.slice(1):a.getAttribute('aria-controls')?raw:'';
+ if(!id||!/^[a-zA-Z0-9_:. -]{1,160}$/.test(id))return null;
+ const panel=content.ownerDocument?.getElementById(id);
+ return panel&&panel!==content&&content.contains(panel)?panel:null;
+}
 function init(){
  if(location.origin!==origin||!/^\/[a-z0-9][a-z0-9-]*\/?$/.test(location.pathname))return;
  const content=document.getElementById('page-content'),title=document.getElementById('page-title'),crumb=document.getElementById('breadcrumbs')||document.querySelector('.breadcrumbs, #breadcrumb, .breadcrumb');
  const kind=pageKind(crumb);if(!content||!title||!kind||document.getElementById('aqwc-quest-shop'))return;
- const {groups,skipped}=collect(content,kind);if(!groups.length&&!skipped&&kind!=='quest')return;
+ const initial=kind==='shop'?collect(content,kind):null;if(initial&&!initial.groups.length&&!initial.skipped)return;
+ let select=null,tabs=[],scopeRevision=0;
  const host=document.createElement('div');host.id='aqwc-quest-shop';host.style.cssText='margin:8px 0';const shadow=host.attachShadow({mode:'closed'});
  const panel=document.createElement('div');panel.style.cssText='display:inline-block;padding:8px 12px;border:1px solid #38566d;border-radius:8px;background:#142b3e;color:#e5f5ff;font:600 13px/1.5 system-ui';
  const label=document.createElement('strong');label.textContent=kind==='quest'?'Quest inventory check':'Shop inventory check';
- const note=document.createElement('small');note.style.cssText='display:block;color:#b6cddd;font-weight:400';note.textContent='Synced Inventory + Bank only. No quest completion, temporary counters, access requirements, currency or purchase eligibility checked.';
- const b=document.createElement('button');b.type='button';b.textContent='Show inventory status';b.style.cssText='margin-top:6px;padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;cursor:pointer';
+ const note=document.createElement('small');note.style.cssText='display:block;color:#b6cddd;font-weight:400';note.textContent=kind==='quest'?'Select a quest to check its linked requirements and rewards. Stock is not proof of quest completion.':'Check linked shop costs against your synced stock. Purchase eligibility is not checked.';
+ const b=document.createElement('button');b.type='button';b.textContent=kind==='quest'?'Check quest materials':'Show inventory status';b.style.cssText='margin-top:6px;padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;cursor:pointer';
  const status=document.createElement('small');status.setAttribute('role','status');status.style.cssText='display:block;color:#b6cddd;font-weight:400;margin-top:4px';
  const ui=globalThis.AQWCWikiUI;ui?.decorate(shadow,panel,kind==='quest'?'Quest tools':'Shop tools');if(ui)panel.style.cssText='';b.className='aqwc-primary';
- panel.append(label,note,b,status);
+ const summary=document.createElement('section');summary.className='aqwc-section';summary.hidden=true;
+ panel.append(label,note);
  if(kind==='quest'){
   const link=document.createElement('a');link.href='https://cptmundo.github.io/AQW-Companion/#aqwc-routines?source='+encodeURIComponent(location.pathname.replace(/^\/|\/$/g,''));
   link.target='_blank';link.rel='noopener noreferrer';link.textContent='View daily / weekly quests in Companion ↗';link.style.cssText='display:block;margin-top:6px;color:#a9ddff;font:600 12px system-ui';panel.append(link);
-  const select=document.createElement('select');select.setAttribute('aria-label','Select quest');select.style.cssText='display:block;max-width:100%;margin-top:6px;background:#19334a;color:#e5f5ff';
-  const tabs=[...content.querySelectorAll('.yui-nav li a,[role="tab"],.yui-navset .yui-nav a')].filter(a=>a.getClientRects().length);
+  select=document.createElement('select');select.setAttribute('aria-label','Select quest');select.style.cssText='display:block;max-width:100%;margin-top:6px;background:#19334a;color:#e5f5ff';
+  tabs=[...content.querySelectorAll('.yui-nav li a,[role="tab"],.yui-navset .yui-nav a')].filter(a=>a.getClientRects().length);
   const names=[...new Set(tabs.map(a=>clean(a.textContent)).filter(n=>n&&n.length<=350))];
   for(const name of names){const opt=document.createElement('option');opt.value=name;opt.textContent=name;select.append(opt)}
   const add=document.createElement('button');add.type='button';add.textContent='+ Add quest to Tracker';add.style.cssText=b.style.cssText;add.disabled=!names.length;
   const feedback=document.createElement('small');feedback.style.cssText='display:block;color:#b6cddd';
-  function current(){const active=tabs.find(a=>a.getAttribute('aria-selected')==='true'||a.closest('li.selected,li.active'));if(active&&names.includes(clean(active.textContent)))select.value=clean(active.textContent)}
-  current();content.addEventListener('click',e=>{if(e.target.closest('.yui-nav a,[role="tab"]'))setTimeout(current,0)});
+  function invalidate(){scopeRevision++;summary.hidden=true;summary.replaceChildren();status.textContent='';b.textContent='Check quest materials';content.querySelectorAll('[data-aqwc-quest-shop-status]').forEach(x=>x.remove())}
+  function current(){const active=tabs.find(a=>a.getAttribute('aria-selected')==='true'||a.closest('li.selected,li.active'));if(active&&names.includes(clean(active.textContent))&&select.value!==clean(active.textContent)){select.value=clean(active.textContent);invalidate()}}
+  current();select.addEventListener('change',invalidate);content.addEventListener('click',e=>{if(e.target.closest('.yui-nav a,[role="tab"]'))setTimeout(current,0)});
   add.addEventListener('click',async e=>{if(!e.isTrusted||!select.value||add.disabled)return;add.disabled=true;try{const r=await chrome.runtime.sendMessage({type:'routine-queue-add',quest:{source:location.pathname.replace(/^\/|\/$/g,''),name:select.value}});if(!r?.ok)throw Error(r?.error||'Could not save');feedback.textContent='✓ Saved locally: '+select.value+'. Companion will pin it if the recurring quest matches its library.'}catch(err){feedback.textContent=String(err?.message||err)}finally{add.disabled=false}});
   if(names.length)panel.append(select,add,feedback);else{feedback.textContent='No quest tabs detected. Use the library link above.';panel.append(feedback)}
-  if(!groups.length){b.disabled=true;status.textContent='No supported linked inventory requirements detected.'}
  }
+ panel.append(b,status,summary);
  shadow.append(panel);if(ui)ui.mount(host,content,title);else (document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);
  b.addEventListener('click',async e=>{
-  if(!e.isTrusted||b.disabled)return;b.disabled=true;status.textContent='Checking…';
+  if(!e.isTrusted||b.disabled)return;b.disabled=true;status.textContent='Checking…';summary.hidden=true;summary.replaceChildren();const revision=scopeRevision;
   try{
+   const scoped=kind==='quest'&&select?.value?questScope(content,tabs,select.value):null;
+   const {groups,skipped}=initial||collect(scoped||content,kind);if(!groups.length)throw Error('No supported linked requirements detected.');
    const names=[...new Set(groups.flatMap(g=>g.items.map(x=>x.name)))],selected=names,matches=new Map();let syncedAt=null;
    for(let i=0;i<selected.length;i+=80){
     const chunk=selected.slice(i,i+80),r=await chrome.runtime.sendMessage({type:'wiki-material-lookup',names:chunk});
+    if(revision!==scopeRevision)return;
     if(!r?.ok||!Array.isArray(r.matches)||r.matches.length!==chunk.length)throw Error('Inventory lookup unavailable');
     if(i&&r.syncedAt!==syncedAt)throw Error('Inventory changed during lookup; retry');
     syncedAt=r.syncedAt;chunk.forEach((name,j)=>matches.set(name,r.matches[j]));
     if(i+80<selected.length)await new Promise(resolve=>setTimeout(resolve,0));
    }
+   if(revision!==scopeRevision)return;
    if(!syncedAt)throw Error('Inventory not synced; import in Companion first.');
    content.querySelectorAll('[data-aqwc-quest-shop-status]').forEach(x=>x.remove());
    for(const g of groups)for(const {item,text,color} of labels(g,matches)){
@@ -143,11 +159,18 @@ function init(){
     const badge=document.createElement('span');badge.setAttribute('data-aqwc-quest-shop-status','');const label=document.createElement('span');label.textContent=' ['+text+']';label.title='AQW Companion local snapshot; not proof of quest or shop eligibility';badge.attachShadow({mode:'closed'}).append(label);
     label.style.cssText='display:inline-block;margin-left:4px;padding:0 4px;border-radius:4px;background:#142b3e;color:'+color+';font:600 11px/1.5 system-ui';item.anchor.insertAdjacentElement('afterend',badge);
    }
-   status.textContent='Snapshot: '+new Date(syncedAt).toLocaleString()+' · '+selected.length+' names checked'+(skipped?' · '+skipped+' unsupported rows/price cells skipped':'');b.textContent='Refresh inventory status';
+   if(kind==='quest'){
+    const heading=document.createElement('strong');heading.textContent=scoped?select.value:'Page-wide stock (not an individual quest)';summary.append(heading);
+    for(const g of groups){const h=document.createElement('small');h.textContent=g.role==='requirement'?'Required materials':'Rewards already owned';h.style.cssText='display:block;color:#a9c4d8;margin-top:10px';summary.append(h);
+     for(const {item,text,color} of labels(g,matches)){const row=document.createElement('div');row.style.cssText='display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid #304559';const a=document.createElement('a');a.href=origin+'/'+item.slug;a.textContent=item.name;const v=document.createElement('span');v.textContent=text;v.style.color=color;row.append(a,v);summary.append(row)}
+    }
+    summary.hidden=false;
+   }
+   status.textContent='Snapshot: '+new Date(syncedAt).toLocaleString()+' · '+selected.length+' names checked'+(skipped?' · '+skipped+' unsupported rows/price cells skipped':'');b.textContent=kind==='quest'?'Refresh quest materials':'Refresh inventory status';
   }catch(err){status.textContent=String(err?.message||err)}
   finally{b.disabled=false}
  });
 }
-globalThis.AQWCQuestShop=Object.freeze({pageKind,quantity,questQuantity,linkedRow,shopCosts,collect,labels});
+globalThis.AQWCQuestShop=Object.freeze({pageKind,quantity,questQuantity,linkedRow,shopCosts,collect,labels,questScope});
 if(typeof document!=='undefined')init();
 })();
