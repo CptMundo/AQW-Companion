@@ -519,3 +519,14 @@ assert.ok(html.includes("if(tip.source!=='Community guide')body.append"));
 assert.ok(bossDetail121.includes("Simplified Bosses Guide — "));
 assert.ok(bossDetail121.includes("Wiki location"));
 console.log("Boss Guide cleanup preserves class selection, source links and concise suggested-loadout distinction.");
+
+const deadmoor126=active.filter(t=>t.join==='/join deadmoor'&&t.wiki==='https://aqwwiki.wikidot.com/cysero-s-quests');
+assert.equal(deadmoor126.length,4);
+for(const name of ['Nightmare Fire','Naturally Unlucky','Links To The Past','Spooky Lint']){
+ const t=deadmoor126.find(x=>x.name===name);assert.ok(t);assert.equal(t.freq,'daily');assert.equal(t.npc,'Cysero');assert.equal(t.group,"Cysero's Gear");assert.ok(t.note.includes('The Confrontation'));assert.ok(t.categories.includes("Cysero's Gear"));
+ assert.equal(t.categories.includes('Legend'),['Naturally Unlucky','Spooky Lint'].includes(name));
+ assert.equal(t.note.includes('Mad Weaponsmith'),['Links To The Past','Spooky Lint'].includes(name));
+}
+const moglins126=active.filter(t=>t.name==='Moglin Companions');
+assert.equal(moglins126.length,1);assert.equal(moglins126[0].id,'board-moglin-companions');assert.equal(moglins126[0].farmJoin,'/join nexus');assert.ok(moglins126[0].note.includes("Aria's Pet Shoppe"));assert.ok(moglins126[0].rewards.includes('Moglin MEAL ×1'));assert.ok(moglins126[0].categories.includes('Moglin Pets'));
+console.log('Community feedback: all four Deadmoor dailies and single shared Moglin Companions daily verified.');
