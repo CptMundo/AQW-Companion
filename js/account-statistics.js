@@ -103,6 +103,34 @@
       {id:'wishlist5',name:'Wish Granted',detail:'5 Wishlist targets owned',value:ownedCount,goal:5}
     ];
     if(forgeTotal)milestoneList.push({id:'forge5',name:'Forge Apprentice',detail:'5 manually confirmed Forge unlocks',value:forgeUnlocked,goal:5});
+    // Collection thresholds measure the selected export, not lifetime acquisitions.
+    const addTier=(prefix,group,value,tiers,description,icon)=>{
+      for(const [goal,name] of tiers)milestoneList.push({id:prefix+goal,name,group,value,goal,detail:description(goal),icon});
+    };
+    const countTag=tag=>[...tagCounts].filter(([name])=>key(name)===key(tag)).reduce((n,[,count])=>n+count,0);
+    addTier('class','Classes',classes,[[10,'Class Initiate'],[75,'Class Master'],[100,'Class Legend'],[150,'Class Archivist']],n=>fmt(n)+' unique Classes','🛡️');
+    addTier('items','Collection',uniqueCount,[[100,'First Treasures'],[500,'Growing Collection'],[3000,'Grand Collector'],[5000,'Living Archive'],[10000,'Legendary Collection']],n=>fmt(n)+' unique item IDs','💎');
+    for(const [type,prefix,icon,names] of [
+      ['Weapon','weapon','⚔️',['Arms Collector','Arsenal Keeper','Master of Arms','Legendary Arsenal']],
+      ['Armor','armor','🛡️',['Wardrobe Explorer','Armor Collector','Armory Master','Legendary Wardrobe']],
+      ['Helm','helm','👑',['Helm Hunter','Crown Collector','Helm Master','Hall of Crowns']],
+      ['Cape','cape','🧥',['Cape Collector','Cloak Keeper','Cape Master','Legendary Cloaks']],
+      ['Misc','misc','📦',['Resource Collector','Resource Keeper','Stockpile Master','Grand Stockpile']]
+    ])addTier(prefix,'Equipment & items',perType[type],[[50,names[0]],[100,names[1]],[250,names[2]],[500,names[3]]],n=>fmt(n)+' unique '+LABELS[type]+' IDs',icon);
+    for(const [tag,prefix,icon,names] of [
+      ['Rare','rare','✨',['Rare Hunter','Rare Collector','Rare Curator']],
+      ['Seasonal','seasonal','📅',['Seasonal Explorer','Seasonal Collector','Seasonal Veteran']],
+      ['AC','ac','💠',['AC Collector','AC Vault','AC Archivist']],
+      ['Legend','legend','🌟',['Legend Collector','Legend Vault','Legend Archivist']],
+      ['Pseudo Rare','pseudo','🔮',['Hidden Treasures','Pseudo Rare Collector','Pseudo Rare Curator']]
+    ])addTier(prefix,'Collection tags',countTag(tag),[[25,names[0]],[100,names[1]],[250,names[2]]],n=>fmt(n)+' unique items tagged '+tag+' in the community catalog',icon);
+    addTier('snapshots','Companion journey',history.length,[[5,'Journey Journal'],[10,'Dedicated Adventurer'],[25,'Chronicle Keeper'],[50,'Living Chronicle']],n=>fmt(n)+' saved inventory snapshots','📖');
+    if(forgeTotal){
+      addTier('forge','Forge',forgeUnlocked,[[1,'First Forging'],[10,'Forge Adept'],[20,'Forge Master']].filter(([n])=>n<=forgeTotal),n=>fmt(n)+' manually confirmed Forge unlocks','🔨');
+      milestoneList.push({id:'forge-all',name:'Master of the Forge',group:'Forge',value:forgeUnlocked,goal:forgeTotal,detail:'All currently tracked Forge unlocks confirmed',icon:'🔨'});
+    }
+    const groups={import:'Companion journey',class25:'Classes',class50:'Classes',items1000:'Collection',items2000:'Collection',wishlist5:'Wishlist',forge5:'Forge'};
+    for(const m of milestoneList)if(!m.group)m.group=groups[m.id]||'Collection';
     return {
       available:!!current,
       selectedName:current?String(current.fileName||'Selected export'):'',
@@ -337,16 +365,21 @@
       const panel=element('section','aqwm-section');
       const heading=element('div','aqwm-section-head');heading.append(element('h3','',title),element('span','aqwm-count',fmt(list.length)));panel.append(heading);
       if(!list.length){panel.append(element('p','aqws-note',title==='Unlocked milestones'?'Your journey is just beginning.':'You have unlocked every currently available milestone!'));root.append(panel);continue}
+      const grouped=new Map();
+      for(const m of list){if(!grouped.has(m.group))grouped.set(m.group,[]);grouped.get(m.group).push(m);}
+      for(const [group,members] of grouped){
+      panel.append(element('h4','aqwm-group-title',group));
       const grid=element('div','aqwm-grid');
-      for(const m of list){
+      for(const m of members){
         const card=element('article','aqwm-card'+(m.unlocked?' is-unlocked':''));
         const top=element('div','aqwm-card-top');
-        top.append(element('span','aqwm-icon',icons[m.id]||'🏆'),element('span','aqwm-status',m.unlocked?'✓ Unlocked':'In progress'));card.append(top);
+        top.append(element('span','aqwm-icon',m.icon||icons[m.id]||'🏆'),element('span','aqwm-status',m.unlocked?'✓ Unlocked':'In progress'));card.append(top);
         card.append(element('h4','',m.name),element('p','aqws-note',m.detail));
         const line=element('div','aqwm-progress');line.append(element('span','',fmt(Math.min(m.value,m.goal))+' / '+fmt(m.goal)),element('strong','',m.percent+'%'));card.append(line);
         const track=element('div','aqws-bar-track');const bar=element('div','aqws-bar-fill');bar.style.width=m.percent+'%';track.append(bar);card.append(track);grid.append(card);
       }
-      panel.append(grid);root.append(panel);
+      panel.append(grid);}
+      root.append(panel);
     }
     root.append(element('p','aqwm-footnote','Personal Companion milestones based on your selected inventory and tracker data. These are not official AQWorlds badges.'));
   }
