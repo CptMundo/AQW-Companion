@@ -1643,7 +1643,71 @@ const simplifiedExtraEncounters=[
  {name:"Azalith's Scythe",group:'Solo arenas',join:'/join infernalarena',wiki:'infernal-arena',sheet:'Infernal Arena',tips:['Level 90 section. Recover promptly after nukes and choose classes with reliable hit mechanics. Scroll of Chaos Fog may help members.']},
  {name:"Na'al",group:'Solo arenas',join:'/join infernalarena',wiki:'infernal-arena',sheet:'Infernal Arena',tips:['Level 95 section. Apply damage debuffs at Vidi, heal after the hit, and consider Barrier Potion and Revitalize Elixir. Lower-survival classes particularly benefit from barriers.']}
 ];
-function appendSimplifiedProfile(root,profile,includeSpeaker=false){
+
+const sgGaolClasses=['Dragon of Time','Chaos Avenger',"King's Echo",'Hollowborn Vindicator','Verus DoomKnight','Void Highlord','Lich'];
+const sgGaolPremium=['Sentinel','Chrono ShadowSlayer','Phantom Chronomancer','Dragon Knight','Infinity Knight','Elemental Warrior','Legendary Hero'];
+const sgGaol=(name,tips,shield,potions,classes=sgGaolClasses,premium=sgGaolPremium)=>({name,group:'Grim Gaol',join:'/join gaolcell',wiki:'the-gaol-of-eternal-torment-and-misery',sheet:'Grim Gaol',tips:[shield+' boss shield. Enter the dungeon from Gaol Cell; leaving resets progress.',...tips],potions,classes,premium});
+simplifiedExtraEncounters.push(
+ sgGaol('Grimskull?',['On the punching-bag cue, stop attacking for seven seconds unless you can finish safely within the window. Lich and King’s Echo are recommended.'],'10k',['Barrier Potion']),
+ sgGaol('Grim Bomb',['Defeat all three bombs within one minute.'],'50k',['Felicitous Philtre']),
+ sgGaol('Empress Angler',['Restore full HP at the Heal up cue. Health Vamp can help maintain health.'],'50k',['Revitalize Elixir','Health Potion']),
+ sgGaol('Treasure Chest — first',['Clear the chest and proceed.'],'5k',[]),
+ sgGaol('Reinforced Shelleton',['Survive until the turtle stuns itself, then attack the stunned target. High resistance or healing helps.'],'5k',['Revitalize Elixir','Health Potion / Potent Honor Potion'],['Dragon of Time','ArchMage','Blaze Binder'],['Dragon Knight','Infinity Knight']),
+ sgGaol('Fell Statue',['Swap targets after dealing 5k damage to a statue; pause or switch if health becomes unsafe.'],'1k',['Revitalize Elixir','Health Potion'],['StoneCrusher','Dragon of Time','Hollowborn Vindicator','Verus DoomKnight','Void Highlord','ArchMage'],['Dragon Knight','Infinity Knight','Phantom Chronomancer','Chrono ShadowSlayer']),
+ sgGaol('Emperor Angler',['Heal to full on the Heal up cue; steady sustain is useful.'],'50k',['Revitalize Elixir','Health Potion']),
+ sgGaol('Treasure Chest — second',['Start at full health, then defeat the chest.'],'5k',[]),
+ sgGaol('Rick, Grim Soldier',['Sufficient damage prevents repeated recovery.'],'50k',['Revitalize Elixir','Health Potion']),
+ sgGaol('Rampaging Cyborg',['Kill summons first; use enough sustain to survive while keeping damage high.'],'50k',['Revitalize Elixir','Damage potions'],['Dragon of Time','Hollowborn Vindicator','Verus DoomKnight','Void Highlord','ArchMage'],['Sentinel','Chrono ShadowSlayer','Phantom Chronomancer','Dragon Knight','Infinity Knight']),
+ sgGaol('Mechabinky & Raxborg',['At 90% HP healing is inverted briefly. Avoid healing-over-time until the debuff expires. Account for variable buffs and debuffs.'],'50k',['Damage potions'],['Dragon of Time','Hollowborn Vindicator','Verus DoomKnight','Void Highlord','Lich','Chaos Avenger',"King's Echo"],['Sentinel','Chrono ShadowSlayer','Phantom Chronomancer','Dragon Knight','Infinity Knight','Elemental Warrior'])
+);
+// The workbook rates five different party roles. Keep these subjective ratings
+// separate from the Companion's own class recommendations and ownership checks.
+const simplifiedRatingRoles=[
+ ['Support',['Legion Revenant','Verus DoomKnight','ArchPaladin','ArchFiend','Arachnomancer','Glaceran Warlord','Scion of Flames']],
+ ['Healer',['Lord of Order','Legendary Hero','StoneCrusher','Paladin Chronomancer','Frostval Barbarian','Master of Moglins']],
+ ['Chrono DPS',['Chrono ShadowHunter','Great Thief','Phantom Chronomancer','Quantum Chronomancer','Infinity Knight','Guardian','Archivist of Time']],
+ ['Early DPS',['Light Caster','Elemental Warrior','Chaos Slayer','Yami no Ronin','Legion DoomKnight','Shaman','Alpha Omega']],
+ ['Endgame DPS',['Arcana Invoker',"King's Echo",'Hollowborn Vindicator','Dragon of Time','Martial Artist','Lich','Legion Paladin','Immortal DarkCaster','Timeless DarkCaster','Ultra OmniKnight','Chaos Shaper','Unundead Goat','Chaos Avenger','Void HighLord','Sentinel']]
+];
+const simplifiedRatings={
+ 'Void Flibbi':'5545555 552334- 5542454 4433331 544554455554243',
+ 'Void Nightbane':'5535544 551234- 5542454 3422221 533544455444142',
+ 'Void Xyfrag':'5535544 551234- 5542454 3422221 533544455444142',
+ 'Void NerfKitten':'5545544 551234- 5542454 3433331 544554455554344',
+ 'Kasuko & Whirlpool':'5435445 544335- 5542454 3322351 544454444444242',
+ 'Temple Shrine — Left':'5524234 531312- 5534252 1333321 432242422244333',
+ 'Temple Shrine — Right':'5424335 531213- 4353544 3222241 543544344333233',
+ 'Temple Shrine — Middle':'5354335 521213- 3333443 1222251 533433322222222',
+ 'Astral Empyrean':'5545554 552434- 5543354 3433341 553344444444243',
+ kathool:'5535544 553234- 5533554 2323250 533433343443333',
+ 'Mechabinky & Raxborg 2.0':'5545453 552323- 5543454 4323340 553353344444232',
+ ezrajal:'5554445 552435- 5554555 4444443 555555454555343',
+ warden:'5334345 552534- 5554555 4444443 555555454555243',
+ engineer:'5354245 532224- 5554455 3444432 555555453555344',
+ tyndarius:'5454344 532314- 5553555 2433331 555555453555344',
+ drakath:'5333245 523523- 5553555 1254230 553444344444334',
+ dage:'5445340 210001- 5533413 1433311 115154421444433',
+ nulgath:'5534444 531213- 5553554 2333321 554555455444344',
+ drago:'5054004 500203- 5050054 1400000 550305053050304',
+ darkon:'5232142 543534- 5442154 3323333 445134433333233',
+ gramiel:'5234225 534323- 4332344 2112151 522231233332121',
+ speaker:'5454242 520301- 5523153 1334411 332053312134334'
+};
+function simplifiedRoleRatings(key,index){
+ const role=simplifiedRatingRoles[index],scores=simplifiedRatings[key]?.split(' ')[index];
+ if(!role||!scores)return [];
+ return role[1].map((name,i)=>({name,rating:Number(scores[i])})).filter(x=>Number.isInteger(x.rating)&&x.rating>=0&&x.rating<=5).sort((a,b)=>b.rating-a.rating);
+}
+function appendSimplifiedRatings(content,key){
+ if(!simplifiedRatings[key])return;
+ const details=node('details');details.append(node('summary','Class suitability by role (community ratings)'));
+ const pick=node('select');for(const [i,[name]] of simplifiedRatingRoles.entries())pick.append(new Option(name,String(i)));
+ const list=node('div',undefined,'ultra-flow-list');
+ const draw=()=>{list.replaceChildren();for(const row of simplifiedRoleRatings(key,Number(pick.value))){const owned=ultraOwned(row.name)||ultraOwned(row.name==='Light Caster'?'LightCaster':row.name);const line=node('div',undefined,'ultra-role-step');line.append(node('span',row.rating+'/5','ultra-step-number'),node('strong',row.name),node('small',owned?'✓ Owned':'Not owned','muted tiny'));list.append(line)}};
+ pick.onchange=draw;details.append(node('p','Source author’s subjective ratings, not measured DPS or guaranteed success.','muted tiny'),pick,list);draw();content.append(details);
+}
+
+function appendSimplifiedProfile(root,profile,includeSpeaker=false,ratingKey=profile.name){
  const detail=node('details',undefined,'ultra-extra-details');
  detail.append(node('summary',includeSpeaker?'Community workbook — loadouts & Speaker rotations':'Community workbook — suggested strategy'));
  const content=node('div',undefined,'ultra-extra-content');
@@ -1651,6 +1715,10 @@ function appendSimplifiedProfile(root,profile,includeSpeaker=false){
  if(profile.team?.length){const grid=node('div',undefined,'ultracomp');
  for(const row of profile.team){const card=node('div',undefined,'ultra-team-member');card.append(node('strong',row.cls),node('span',ultraOwned(row.cls)?'✓ Owned':'✕ Not owned',ultraOwned(row.cls)?'ultra-owned':'ultra-missing'),node('small',row.weapon+' · '+row.base),node('small',row.helm+' · '+row.cape));grid.append(card)}content.append(grid)}
  for(const tip of profile.tips||[])content.append(node('p',tip));
+ if(profile.potions?.length)content.append(node('p','Suggested consumables: '+profile.potions.join(' · ')));
+ if(profile.classes?.length)content.append(node('p','F2P class options: '+profile.classes.join(' · ')));
+ if(profile.premium?.length)content.append(node('p','Paid / premium class options: '+profile.premium.join(' · ')));
+ appendSimplifiedRatings(content,ratingKey);
  if(includeSpeaker){const pick=node('select');for(const [i,p] of simplifiedSpeakerPatterns.entries())pick.append(new Option(p.name,String(i)));const rotation=node('div');
  const draw=()=>{const pattern=simplifiedSpeakerPatterns[Number(pick.value)]||simplifiedSpeakerPatterns[0];rotation.replaceChildren(node('p',pattern.note));const rows=node('div',undefined,'ultra-flow-list');
  for(const [i,event] of simplifiedSpeakerEvents.entries()){const line=node('div',undefined,'ultra-role-step');line.append(node('span',String(i+1).padStart(2,'0'),'ultra-step-number'),node('div',event+' · '+(pattern.roles[i]||(event.startsWith('Zone')?'Confirm assignment':'No assigned taunt'))+(pattern.skills[i]?' · '+pattern.skills[i]:''),'ultra-role-step-body'));rows.append(line)}rotation.append(rows)};
@@ -1658,7 +1726,7 @@ function appendSimplifiedProfile(root,profile,includeSpeaker=false){
  const link=node('a','↗ Original guide discussion');link.href=simplifiedGuideSource;link.target='_blank';link.rel='noopener noreferrer';content.append(link);detail.append(content);root.append(detail);
 }
 function renderSimplifiedExtras(root,term){
- const entries=simplifiedExtraEncounters.filter(x=>[x.name,x.group,x.join,...(x.team||[]).map(t=>t.cls)].join(' ').toLowerCase().includes(term));
+ const entries=simplifiedExtraEncounters.filter(x=>[x.name,x.group,x.join,...(x.team||[]).map(t=>t.cls),...(x.classes||[])].join(' ').toLowerCase().includes(term));
  if(!entries.length)return 0;
  const section=node('section',undefined,'ultra-catalog-group');section.append(node('h4','More boss guides · '+entries.length));
  for(const e of entries){const card=node('div',undefined,'ultra-catalog-card');card.append(node('strong',e.name),node('small',e.group));const actions=node('div',undefined,'ultra-catalog-actions');actions.append(makeCopyJoin(e.join));const link=node('a','Wiki location ↗');link.href='https://aqwwiki.wikidot.com/'+e.wiki;link.target='_blank';link.rel='noopener noreferrer';actions.append(link);card.append(actions);appendSimplifiedProfile(card,e);section.append(card)}
@@ -1696,7 +1764,7 @@ function renderUltraDetail(b){
  focus.append(focusCard('⛔','AVOID',quick.avoid||b.mistakes[0]||'Avoid damage spikes','ultra-focus-danger'));
  summary.append(focus);
  compact.append(setup,summary);root.append(compact);
- if(simplifiedProfiles[b.id])appendSimplifiedProfile(root,simplifiedProfiles[b.id],b.id==='speaker');
+ if(simplifiedProfiles[b.id])appendSimplifiedProfile(root,simplifiedProfiles[b.id],b.id==='speaker',b.id);
  const mechanics=node('section',undefined,'ultra-focus-card ultra-mechanics ultra-class-guide');
  mechanics.append(node('h3','👤 Role-specific Tips'));
  const roleContext=node('div',undefined,'ultra-role-context');
