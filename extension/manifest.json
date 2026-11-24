@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AQW Companion",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Local AQW Companion inventory lookup on AQWorlds Wiki item pages.",
   "action": {
     "default_title": "AQW Companion",
@@ -35,6 +35,7 @@
       ],
       "js": [
         "bridge.js",
+        "wishlist-link.js",
         "wiki-items.js"
       ],
       "run_at": "document_idle",
