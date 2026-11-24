@@ -143,14 +143,14 @@
   {name:"Wheel of Bacon Token",kind:"situational",note:"Used for the Legend Wheel of Bacon quest. Consider banking if you are not using it.",url:"https://aqwwiki.wikidot.com/wheel-of-bacon-token"}
  ];
  function cleanup(items=[],{reviewed=[],wishlist=[],community=[],routines=[],knownCaps:protectCaps=true}={}){
-  const known=new Set(),tracked=new Set(),owned=new Set(),notes=new Map(cleanupNotes.map(x=>[normalize(x.name),x]));
+  const known=new Set(),usesByName=new Map(),tracked=new Set(),owned=new Set(),notes=new Map(cleanupNotes.map(x=>[normalize(x.name),x]));
   const add=(set,value)=>{if(typeof value==="string"&&normalize(value))set.add(normalize(value))};
-  const addIngredients=(set,ingredients)=>{for(const x of Array.isArray(ingredients)?ingredients:[])if(Array.isArray(x))add(set,x[0])};
-  for(const p of reviewed)addIngredients(known,p?.ingredients);
-  for(const p of community){addIngredients(known,p?.ingredients);for(const r of p?.questRoutes||[])addIngredients(known,r?.ingredients)}
+  const addIngredients=(ingredients,title)=>{for(const x of Array.isArray(ingredients)?ingredients:[])if(Array.isArray(x)&&typeof x[0]==="string"){const k=normalize(x[0]);add(known,x[0]);if(!usesByName.has(k))usesByName.set(k,new Set());usesByName.get(k).add(normalize(title)||"unknown route")}};
+  for(const p of reviewed)addIngredients(p?.ingredients,p?.name);
+  for(const p of community){addIngredients(p?.ingredients,p?.name);for(const r of Array.isArray(p?.questRoutes)?p.questRoutes:[])addIngredients(r?.ingredients,r?.quest||p?.name)}
   for(const p of wishlist){add(tracked,p?.name);for(const step of p?.steps||[])if(["material","owned"].includes(step?.kind))add(tracked,step.item)}
   const routineText=routines.flatMap(r=>[r?.name,r?.note,...(r?.rewards||[]),...(r?.targets||[])]).map(x=>normalize(Array.isArray(x)?x.join(" "):x)).join("\n");
-  for(const x of items)if(Number(x?.Count)>0&&x?.Name)add(owned,x.Name);
+  for(const x of items)if(Number(x?.Count)>0&&x?.Name&&/^(?:sword|weapon)$/i.test(String(x.Type)))add(owned,x.Name);
   const rows=[],seen=new Set();
   for(const x of items){
    if(!x||Number(x.Bank)!==0||!Number.isFinite(Number(x.Count))||Number(x.Count)<=0||!x.Name||!/(?:^item$|^misc(?:ellaneous| item)?$|^resource$|^quest item$|^material$)/i.test(String(x.Type).trim()))continue;
@@ -158,7 +158,7 @@
    const n=notes.get(key),trackedUse=tracked.has(key)||routineText.includes(key);
    let status="unknown",reason="No confirmed use in the current catalog. Review on the Wiki; absence of data does not mean unnecessary.",url=null,questUrl=null;
    if(trackedUse){status="protected";reason="Referenced by a tracked goal or routine."}
-   else if(n?.kind==="goal"&&owned.has(normalize(n.goal))){status="review";reason=n.note;url=n.url}
+   else if(n?.kind==="goal"&&owned.has(normalize(n.goal))&&[...(usesByName.get(key)||[])].every(use=>use===normalize(n.goal))){status="review";reason=n.note;url=n.url}
    else if(known.has(key)||protectCaps&&caps.has(key)||n?.kind==="goal"){status="protected";reason="Known recipe, stack-tracked material or unfinished target. Keep until reviewed."}
    else if(n){status=n.kind==="situational"?"situational":"review";reason=n.note;url=n.url;questUrl=n.questUrl||null}
    rows.push({id,name:x.Name,quantity:Number(x.Count),status,reason,url,questUrl});
