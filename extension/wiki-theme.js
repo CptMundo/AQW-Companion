@@ -65,7 +65,9 @@ function normalizeAppearance(value){
  }
  chrome.runtime.onMessage.addListener((message,sender,respond)=>{
   if(sender.id!==chrome.runtime.id||sender.url!==chrome.runtime.getURL('popup.html')||message?.type!=='aqwc-appearance-preview')return;
-  revision++;apply(message.appearance);const target=document.getElementById('container-wrap');let applied=false;try{applied=normalizeAppearance(message.appearance).banner==='original'||!!target&&getComputedStyle(target).backgroundImage.includes(normalizeAppearance(message.appearance).banner==='prometheus'?chrome.runtime.getURL('image_2026-11-24_232002011.png'):'data:image/svg+xml')}catch{}if(typeof respond==='function')respond({ok:true,bannerTarget:!!target,applied});return false;
+  revision++;apply(message.appearance);const target=document.getElementById('container-wrap');let applied=false;try{applied=normalizeAppearance(message.appearance).banner==='original'||!!target&&getComputedStyle(target).backgroundImage.includes(normalizeAppearance(message.appearance).banner==='prometheus'?chrome.runtime.getURL('image_2026-11-24_232002011.png'):'data:image/svg+xml')}catch{}if(typeof respond!=='function')return false;
+  if(artwork){const img=artwork;let done=false;const finish=()=>{if(done)return;done=true;respond({ok:true,bannerTarget:!!target,applied,artworkLoaded:!!img.naturalWidth})};if(img.complete){finish();return false}img.addEventListener('load',finish,{once:true});img.addEventListener('error',finish,{once:true});setTimeout(finish,3000);return true}
+  respond({ok:true,bannerTarget:!!target,applied});return false;
  });
  const start=revision;
  chrome.runtime.sendMessage({type:'wiki-appearance-read'},response=>{
