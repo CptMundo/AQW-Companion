@@ -6,3 +6,22 @@
 #planner .task-grid{align-content:start}
 @media(max-width:940px){#planner .new-task{grid-template-columns:minmax(180px,1fr) minmax(120px,.6fr)!important}}
 @media(max-width:570px){#planner .new-task{grid-template-columns:1fr!important}}
+
+#planner.view.active{display:flex!important;flex-direction:column;gap:14px;grid-template-columns:none!important}
+#planner .planner-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#planner .planner-metric{display:flex;flex-direction:column;gap:7px;padding:16px;background:#102335;border:1px solid #36556c;border-radius:12px}
+#planner .planner-timer{font-size:clamp(18px,2.5vw,27px);color:#74d9f5;font-variant-numeric:tabular-nums}
+#planner .planner-metric small{color:#b7cddd;font-size:11px}
+#planner #planner-my-tasks{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.planner-task-group{display:grid;align-content:start;gap:8px;min-width:0}
+.planner-task-group h3{font-size:15px;margin:8px 0;color:#c8eaff}
+#planner .task-card.done{background:#153630;border-color:#397965}
+#planner-discover .task-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+#planner-discover .new-task{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.planner-history-row{padding:12px;border-bottom:1px solid #30465b;color:#cce3ee;overflow-wrap:anywhere}
+@media(max-width:680px){#planner #planner-my-tasks,#planner .planner-controls,#planner-discover .new-task{grid-template-columns:1fr}}
+
+#planner.view.active>.card{position:static!important;width:100%;margin:0!important;min-width:0}
+#planner.view.active #planner-my-tasks{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#planner.view.active #planner-my-tasks .task-card{display:flex!important;justify-content:space-between}
+@media(max-width:680px){#planner.view.active #planner-my-tasks{grid-template-columns:1fr!important}}
