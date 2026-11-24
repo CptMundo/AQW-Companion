@@ -549,7 +549,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.ok(bridge.includes('Math.min(560,Math.max(380,Math.floor(width*.38)),Math.floor(width-590))'));
  assert.ok(bridge.includes('max-width:560px'));
  assert.ok(bridge.includes("host.id==='aqwc-item-status'&&width>=1180"));assert.ok(bridge.includes('data-aqwc-layout'));assert.ok(bridge.includes('.aqwc-quest-choice[aria-pressed'));
- assert.ok(theme.includes('aqwc-showcase-image'));assert.ok(read('extension/wiki-items.js').includes('img.naturalWidth>=200'));
+ assert.ok(read('extension/wiki-theme.js').includes('aqwc-showcase-image'));assert.ok(read('extension/wiki-items.js').includes('img.naturalWidth>=200'));
  assert.ok(items.includes('heading.append(itemTitle,line)'));
  assert.ok(bridge.includes('.aqwc-item-heading .aqwc-state'));
  assert.ok(bridge.includes('.aqwc-meta[hidden]{display:none!important}'));
