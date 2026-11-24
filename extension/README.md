@@ -89,3 +89,6 @@ Keep Farming Progress open even for owned gear; compact source typography, direc
 
 ### v0.12.2
 Responsive wide item panel with horizontal material rows (compact on narrower pages), restrained charcoal quest styling and improved native menu. Large item illustrations receive a CSS frame in custom appearance modes; originals and credits remain intact. No new permissions or fetches. Live Opera and Enhanced coexistence testing remains required.
+
+### v0.12.3
+Restore native top menu geometry; move the existing farming panel after the recognized Price line (fallback to sidebar if the Wiki layout cannot be matched); compact right item status, objectives first with narrow location/rewards column. No new permissions, requests or changes to recipe allocation. Original banner retained pending a verified game helm reference. Live Opera QA required.
