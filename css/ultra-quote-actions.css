@@ -152,3 +152,21 @@ nav.tabs.subnav[aria-label="Section navigation"]:has(button[data-parent="ultras"
 #ultras #ultracards .ultracard:focus-visible,
 #boss-guides .boss-guide-list .boss-guide-item:focus-visible{outline:2px solid #b9efff;outline-offset:-3px}
 @media(prefers-reduced-motion:reduce){#ultras #ultracards .ultracard,#boss-guides .boss-guide-list .boss-guide-item{transition:none}}
+
+/* PR 120 — prevent vertical flex compression; readable boss names and separate role guidance. */
+#boss-guides .boss-guide-list{min-height:0;max-height:min(72vh,780px);overflow-y:auto;overflow-x:hidden;scrollbar-gutter:stable;align-items:stretch}
+#boss-guides .boss-guide-list>*{flex-shrink:0}
+#boss-guides .boss-guide-list .boss-guide-item{flex:0 0 auto;display:block;min-height:48px!important;height:auto!important;max-height:none!important;box-sizing:border-box;white-space:normal;text-align:left;overflow-wrap:anywhere;background:#152b3d;border-color:#38566d}
+#boss-guides .boss-guide-list .boss-guide-item.active{background:linear-gradient(105deg,#234e70,#1b344b);border-color:#82d5f8}
+#boss-guides .boss-guide-list .boss-guide-item strong{display:block;margin:0!important;line-height:1.4!important}
+#boss-guides .boss-guide-list .boss-guide-item .boss-guide-pending{display:block!important;margin-top:4px;color:#aabfd0;font-size:10px!important}
+#boss-guides .boss-guide-list .ultra-group-label{flex:0 0 auto;white-space:normal}
+#boss-guides .boss-guide-loadout .boss-class-search,#boss-guides .boss-guide-loadout .ultra-role-select{display:block;width:100%!important;max-width:none!important;min-width:0;box-sizing:border-box;margin:0 0 8px!important}
+#boss-guides .boss-class-search-status:empty{display:none}
+#boss-guides .boss-class-search-status{margin:0 0 8px}
+#boss-guides .boss-guide-role-panel{margin-top:16px}
+#boss-guides .boss-guide-role-panel h3{text-align:left}
+#boss-guides .boss-guide-role-context{color:#a9d9f2;margin:0 0 12px;font-size:13px}
+#boss-guides .boss-guide-role-panel .boss-guide-step strong{display:block;color:#a6e5ff;font-size:13px;margin-bottom:4px}
+#boss-guides .boss-guide-role-panel .boss-guide-step small{display:block;margin-top:5px;font-size:10px}
+@media(max-width:700px){#boss-guides .boss-guide-list{display:grid;grid-auto-rows:max-content;max-height:260px}#boss-guides .boss-guide-list .boss-guide-item{min-height:48px!important}}
