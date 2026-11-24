@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "AQW Companion",
+  "version": "0.1.0",
+  "description": "Experimental connection between AQW Companion and the AQWorlds Wiki. No account access or inventory sync yet.",
+  "action": {
+    "default_title": "AQW Companion",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://cptmundo.github.io/AQW-Companion/extension-connect.html",
+        "https://aqwwiki.wikidot.com/*"
+      ],
+      "js": [
+        "bridge.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ]
+}
