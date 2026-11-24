@@ -167,3 +167,10 @@ assert.ok(css.includes("#unlocks #unlocklist .wishlist-completion-remove"));
  assert.ok(html.includes('My banking shortlist'));assert.ok(html.includes('fingerprint(r)===key'));assert.ok(html.includes('No item will be moved.'));
  assert.ok(css.includes('.cleanup-group-header'));
 }
+
+{
+ const rows=api.cleanup([{ID:'sigil',Name:'Ancient Sigil',Type:'Item',Count:15,Bank:0},{ID:'blood',Name:'Enchanted Dark Blood',Type:'Item',Count:1,Bank:0},{ID:'pot',Name:'Potent Battle Elixir',Type:'Item',Count:20,Bank:0}]).rows;
+ assert.ok(rows.every(r=>r.status==='protected'&&api.safeWiki(r.url)));
+ assert.ok(html.includes('AQW_Unclassified_Materials.json'));
+ assert.ok(html.includes("filter(r=>r.status==='unknown').map(r=>({name:r.name,quantity:r.quantity,acTagged:r.acTagged}))"));
+}
