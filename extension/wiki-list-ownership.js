@@ -83,118 +83,42 @@ async function checkAll(groups,category,send,onChunk,yieldFrame=()=>new Promise(
   if(offset<groups.length)await yieldFrame();
  }
 }
+// Category pages only offer an explicit name search for Wishlist links.
+// No ownership checks, snapshot lookups, inline badges or full-list annotation.
 function init(){
  const category=categoryFor(location.pathname);
- if(location.origin!==origin||!category||document.getElementById('aqwc-list-ownership')||document.getElementById('aqwc-item-status')||document.getElementById('aqwc-quest-shop'))return;
+ if(location.origin!==origin||!category||document.getElementById('aqwc-list-wishlist'))return;
  const content=document.getElementById('page-content'),title=document.getElementById('page-title');if(!content||!title)return;
- const crumb=document.getElementById('breadcrumbs')||document.querySelector('.breadcrumbs,#breadcrumb,.breadcrumb');
- if(crumb){const links=[...crumb.querySelectorAll('a[href]')];if(links.length&&!links.some(a=>{try{return new URL(a.getAttribute('href'),origin).pathname.replace(/^\/|\/$/g,'')==='items'}catch{return false}}))return}
- let groups=null,parseMs=null;
- function getGroups(){if(groups===null){const started=performance.now();groups=groupRows(collect(content,category,location.pathname.startsWith('/sort-by-')));parseMs=Math.round(performance.now()-started)}return groups}
- const host=document.createElement('div');host.id='aqwc-list-ownership';host.style.cssText='margin:8px 0';
- const shadow=host.attachShadow({mode:'closed'}),panel=document.createElement('div');
- panel.style.cssText='display:inline-block;padding:8px 12px;border:1px solid #38566d;border-radius:8px;background:#142b3e;color:#e5f5ff;font:600 13px/1.5 system-ui;max-width:100%;box-sizing:border-box';
- const titleLine=document.createElement('strong');titleLine.textContent='Ownership Everywhere';
- const note=document.createElement('small');note.style.cssText='display:block;color:#b6cddd;font-weight:400';note.textContent='On demand · search a name or check the entire list. No background checks.';
- const controls=document.createElement('div');controls.style.cssText='display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:5px';
- const search=document.createElement('input');search.type='search';search.placeholder='Item name (optional)';search.setAttribute('aria-label','Filter item names for ownership check');search.style.cssText='max-width:100%;padding:5px;background:#101d2c;border:1px solid #466781;border-radius:4px;color:#e5f5ff';
+ const host=document.createElement('div');host.id='aqwc-list-wishlist';host.style.cssText='margin:8px 0';
+ const shadow=host.attachShadow({mode:'closed'}),panel=document.createElement('div');panel.style.cssText='display:inline-block;padding:8px 12px;border:1px solid #38566d;border-radius:8px;background:#142b3e;color:#e5f5ff;font:600 13px/1.5 system-ui;max-width:100%;box-sizing:border-box';
+ const heading=document.createElement('strong');heading.textContent='Wishlist search';
+ const note=document.createElement('small');note.style.cssText='display:block;font-weight:400;color:#b6cddd';note.textContent='Find an item on this page and add it directly. No ownership scan.';
+ const controls=document.createElement('div');controls.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-top:5px';
+ const search=document.createElement('input');search.type='search';search.placeholder='Item name';search.setAttribute('aria-label','Find item for Wishlist');search.style.cssText='padding:5px;background:#101d2c;border:1px solid #466781;border-radius:4px;color:#e5f5ff';
  function btn(text){const b=document.createElement('button');b.type='button';b.textContent=text;b.style.cssText='padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;cursor:pointer';return b}
- const show=btn('Check ownership'),clear=btn('Clear labels'),cancel=btn('Cancel');cancel.hidden=true;clear.hidden=true;
- const status=document.createElement('small');status.setAttribute('role','status');status.style.cssText='display:block;color:#b6cddd;font-weight:400;margin-top:4px';
- const diagnostics=document.createElement('details');diagnostics.style.cssText='font-size:11px;color:#b6cddd;margin-top:5px';const diagnosticTitle=document.createElement('summary');diagnosticTitle.textContent='Navigation diagnostics';const diagnosticBody=document.createElement('div');diagnostics.append(diagnosticTitle,diagnosticBody);
- function report(scanMs=null){const n=performance.getEntriesByType('navigation')[0],waiting=n&&n.responseStart>=n.requestStart&&n.requestStart>0?Math.round(n.responseStart-n.requestStart):null;diagnosticBody.textContent='Document response wait: '+(waiting===null?'unavailable':waiting+' ms')+' · list parsing: '+(parseMs===null?'not started':parseMs+' ms')+' · local scan: '+(scanMs===null?'not finished':scanMs+' ms')+'. Response wait includes network and server time; timings stay on this page.'}
- report();
- controls.append(search,show,cancel,clear);panel.append(titleLine,note,controls,status,diagnostics);shadow.append(panel);(document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);
- status.textContent='Ready. Nothing has been scanned.';
- let busy=false,owned=0,unknown=0,absent=0,activeScan=0,departing=false;
- const labels=new Set(),pendingAnchors=new Map();
- const observer=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{
-  if(departing)return;
-  for(const entry of entries)if(entry.isIntersecting){const a=entry.target,data=pendingAnchors.get(a);observer.unobserve(a);pendingAnchors.delete(a);if(data&&a.isConnected)renderAnchor(a,data.group,data.match)}
- },{rootMargin:'300px 0px'}):null;
- function reset(){observer?.disconnect();pendingAnchors.clear();for(const el of labels)el.remove();labels.clear();owned=0;unknown=0;absent=0;clear.hidden=true}
- const results=document.createElement('div');results.style.cssText='max-height:240px;overflow:auto;margin-top:6px';results.hidden=true;panel.append(results);
- const matched=new Map(),queued=new Set();
- function makeAdd(data){
-  const b=btn(queued.has(data.slug)?'✓':'+');b.disabled=queued.has(data.slug);b.title='Add to Wishlist without leaving Wiki';b.setAttribute('aria-label','Add '+data.name+' to Wishlist');b.style.cssText='display:inline-block;margin-left:4px;padding:0 5px;border:1px solid #466781;border-radius:4px;background:#19334a;color:#a9ddff;cursor:pointer;font:600 12px system-ui';
-  b.addEventListener('click',async e=>{if(!e.isTrusted||b.disabled)return;b.disabled=true;try{const r=await chrome.runtime.sendMessage({type:'wishlist-queue-add',item:data});if(!r?.ok)throw Error(r?.error||'Could not save');queued.add(data.slug);b.textContent='✓';b.title='Saved locally; imported automatically when Companion is open.'}catch(err){b.disabled=false;b.title=String(err?.message||err);status.textContent=b.title}});
-  return b;
- }
+ const find=btn('Find item'),results=document.createElement('div');results.style.cssText='max-height:240px;overflow:auto;margin-top:6px';
+ const status=document.createElement('small');status.setAttribute('role','status');status.style.cssText='display:block;color:#b6cddd;font-weight:400';
+ controls.append(search,find);panel.append(heading,note,controls,status,results);shadow.append(panel);(document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);
+ let groups=null;const queued=new Set();
  function renderSearch(){
-  const query=clean(search.value).toLowerCase();results.replaceChildren();results.hidden=!query;if(!query)return;
-  if(groups===null){results.textContent='Press Enter or Check ownership to search this page.';return}
-  const hits=groups.filter(g=>g.name.toLowerCase().includes(query));
-  if(!hits.length){results.textContent='No items found on this page.';return}
-  const note=document.createElement('small');note.textContent=hits.length+' matching items'+(hits.length>40?' · first 40':'');results.append(note);
+  results.replaceChildren();const query=clean(search.value).toLowerCase();if(query.length<2){status.textContent='Enter at least 2 characters.';return}
+  if(groups===null)groups=groupRows(collect(content,category,location.pathname.startsWith('/sort-by-')));
+  const hits=groups.filter(g=>g.name.toLowerCase().includes(query));status.textContent=hits.length?hits.length+' matching items'+(hits.length>40?' · first 40':''):groups.length?'No matching items.':'No supported item links detected on this index.';
   for(const g of hits.slice(0,40)){
    const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:6px;margin:4px 0';
-   const a=document.createElement('a');a.href=origin+'/'+[...g.slugs][0];a.textContent=g.name;a.style.color='#a9ddff';row.append(a);
-   const m=matched.get(g.name),s=document.createElement('small');s.textContent=m?label(m,g.slugs.size!==1).text:busy?'Checking…':'Not checked';row.append(s);
-   const data={name:g.name,slug:[...g.slugs][0],category},target=globalThis.AQWCWikiWishlist?.target(data);
-   if(g.slugs.size===1&&target&&!target.variant)row.append(makeAdd(data));results.append(row);
-  }
- }
- search.addEventListener('input',renderSearch);
- search.addEventListener('keydown',e=>{if(e.isTrusted&&e.key==='Enter'){e.preventDefault();scan()}});
- function annotate(group,m){
-  matched.set(group.name,m);
-  const l=label(m,group.slugs.size!==1);
-  if(group.slugs.size!==1||!m||!['owned','not-found'].includes(m.state))unknown++;
-  else if(m.state==='owned')owned++;else absent++;
-  for(const a of group.anchors){
-   if(!a.isConnected)continue;
-   if(observer){pendingAnchors.set(a,{group,match:m});observer.observe(a)}
-   else renderAnchor(a,group,m)
-  }
- }
- function renderAnchor(a,group,m){
-   const l=label(m,group.slugs.size!==1);
-   const el=document.createElement('span');el.setAttribute('data-aqwc-list-ownership','');el.style.cssText='display:inline;white-space:nowrap';
-   const text=document.createElement('span');text.textContent=' '+l.text;text.title=m?.possible?.length?'Possible inventory variant: '+m.possible.join(', ')+' — exact variant not verified':'AQW Companion local snapshot; name/category match, not a live account check';
-   text.style.cssText='display:inline-block;margin-left:4px;padding:0 4px;border-radius:4px;background:#142b3e;color:'+l.color+';font:600 11px/1.5 system-ui';
-   const shadow=el.attachShadow({mode:'closed'});shadow.append(text);
-   if(group.slugs.size===1){
-    const data={name:group.name,slug:[...group.slugs][0],category},target=globalThis.AQWCWikiWishlist?.target(data);
-    if(target&&!target.variant){
-     const plus=makeAdd(data);shadow.append(plus)
-    }
+   const data={name:g.name,slug:[...g.slugs][0],category},a=document.createElement('a');a.href=origin+'/'+data.slug;a.textContent=g.name;a.style.color='#a9ddff';row.append(a);
+   const target=globalThis.AQWCWikiWishlist?.target(data);
+   if(g.slugs.size===1&&target&&!target.variant){
+    const b=btn(queued.has(data.slug)?'✓':'+');b.disabled=queued.has(data.slug);b.title='Add to Wishlist without leaving Wiki';b.setAttribute('aria-label','Add '+data.name+' to Wishlist');
+    b.addEventListener('click',async e=>{if(!e.isTrusted||b.disabled)return;b.disabled=true;try{const r=await chrome.runtime.sendMessage({type:'wishlist-queue-add',item:data});if(!r?.ok)throw Error(r?.error||'Could not save');queued.add(data.slug);b.textContent='✓';status.textContent='Saved locally; Companion imports it when open.'}catch(err){b.disabled=false;status.textContent=String(err?.message||err)}});
+    row.append(b);
    }
-   a.insertAdjacentElement('afterend',el);labels.add(el)
+   results.append(row);
+  }
  }
- async function scan(){
-  if(busy||departing)return;
-  const token=++activeScan,started=performance.now();
-  report();
-  reset();matched.clear();busy=true;show.disabled=clear.disabled=search.disabled=true;cancel.hidden=false;
-  status.textContent='Reading item list…';
-  await new Promise(resolve=>setTimeout(resolve,0));
-  if(departing||token!==activeScan)return;
-  let selected;
-  try{const all=getGroups(),query=clean(search.value).toLowerCase();selected=query?all.filter(g=>g.name.toLowerCase().includes(query)):all;note.textContent=all.length.toLocaleString()+' candidate names · on-demand checks only';if(!selected.length){status.textContent=all.length?'No matching candidate names.':'No supported item links detected on this index.';renderSearch();report();return}}catch(err){status.textContent='Could not read item list.';return}finally{if(!selected?.length&&token===activeScan){busy=false;show.disabled=clear.disabled=search.disabled=false;cancel.hidden=true}}
-  status.textContent='Checking 0 / '+selected.length.toLocaleString()+' local inventory names…';
-  try{
-   await checkAll(selected,category,msg=>chrome.runtime.sendMessage(msg),(chunk,matches,progress)=>{
-    chunk.forEach((g,i)=>annotate(g,matches[i]));
-    status.textContent=progress.offset.toLocaleString()+' / '+selected.length.toLocaleString()+' checked · '+owned+' owned · '+absent+' not in snapshot · '+unknown+' unknown · synced '+new Date(progress.syncedAt).toLocaleString();
-   },()=>new Promise(resolve=>setTimeout(resolve,20)),()=>departing||token!==activeScan);
-   if(departing||token!==activeScan)return;
-   clear.hidden=false;renderSearch();report(Math.round(performance.now()-started));
-  }catch(err){if(!departing&&token===activeScan){reset();matched.clear();renderSearch();status.textContent=String(err?.message||err)}}
-  finally{if(token===activeScan){busy=false;show.disabled=clear.disabled=search.disabled=false;cancel.hidden=true}}
- }
- function stop(message){
-  activeScan++;busy=false;show.disabled=clear.disabled=search.disabled=false;cancel.hidden=true;
-  reset();matched.clear();results.replaceChildren();results.hidden=true;report();status.textContent=message;
- }
- show.addEventListener('click',e=>{if(e.isTrusted&&!busy)scan()});
- cancel.addEventListener('click',e=>{if(e.isTrusted&&busy)stop('Check cancelled. Nothing is running.')});
- clear.addEventListener('click',e=>{if(e.isTrusted&&!busy)stop('Labels cleared. Nothing is running.')});
- document.addEventListener('visibilitychange',()=>{if(document.hidden&&busy)stop('Check cancelled while tab was hidden. Check manually to restart.')});
- window.addEventListener('pagehide',()=>{departing=true;activeScan++;observer?.disconnect()});
- window.addEventListener('pageshow',e=>{if(e.persisted){departing=false;stop('Ready. Check manually to restart.')}});
- // No list parsing, storage read, lookup or automatic scan on page entry.
-
- 
+ // Never enumerate the page on entry or while typing. Only explicit search.
+ find.addEventListener('click',e=>{if(e.isTrusted)renderSearch()});
+ search.addEventListener('keydown',e=>{if(e.isTrusted&&e.key==='Enter'){e.preventDefault();renderSearch()}});
 }
 globalThis.AQWCListOwnership=Object.freeze({categoryFor,candidate,sectionMarker,collect,groupRows,label,checkAll});
 if(typeof document!=='undefined')init();
