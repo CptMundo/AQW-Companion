@@ -94,7 +94,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.6.2');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
+ assert.equal(manifest.version,'0.6.3');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -206,6 +206,16 @@ const header129=read('index.html').split('</header>')[0];
 for(const id of ['aqwc-account-import','aqwc-sync-inventory','aqwc-sync-status','aqwc-account-status','file','backup','clear'])assert.equal((header129.match(new RegExp('id="'+id+'"','g'))||[]).length,1);
 assert.ok(header129.includes('Inventory tools'));assert.ok(header129.includes('Import JSON file'));
 const accountPage129=read('extension/account-page.js');assert.ok(accountPage129.includes('if(!e.isTrusted||button.disabled)return'));assert.ok(accountPage129.includes("type:'account-stage',snapshot"));
-assert.ok(read('extension/account-permission.js').includes("matches=['https://account.aq.com/AQW/Inventory','https://account.aq.com/AQW/Inventory/*']"));
+assert.ok(read('extension/account-permission.js').includes("matches=['https://account.aq.com/AQW/Inventory*']"));
 assert.ok(read('extension/account-permission.js').includes('chrome.permissions.request'));assert.ok(read('extension/account-permission.js').includes('chrome.permissions.remove'));
 console.log('Inventory UX: header actions, optional permission, exact-page export scope and fallback checks passed.');
+
+const header130=read('index.html').split('</header>')[0],css130=read('css/site.css');
+assert.ok(header130.includes('role="group" aria-label="Inventory tools"'));
+assert.ok(!header130.includes('<details class="inventory-tools"'));
+assert.ok(css130.includes('contain:inline-size'));assert.ok(css130.includes('margin-left:auto'));
+assert.ok(read('extension/account-page.js').includes("grid.parentElement.insertBefore(host,grid)"));
+assert.ok(read('extension/account-permission.js').includes('Button not detected after injection.'));
+assert.ok(read('extension/popup.html').includes('id="repair-account-button"'));
+assert.ok(read('extension/worker.js').includes('chrome.tabs?.onUpdated?.addListener'));
+console.log('Stable header strip and Account Manager injection diagnostics checked.');
