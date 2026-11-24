@@ -101,41 +101,65 @@ function init(){
  let busy=false,owned=0,unknown=0,absent=0;
  const labels=new Set();
  function reset(){for(const el of labels)el.remove();labels.clear();owned=0;unknown=0;absent=0;clear.hidden=true}
+ const results=document.createElement('div');results.style.cssText='max-height:240px;overflow:auto;margin-top:6px';results.hidden=true;panel.append(results);
+ const matched=new Map(),queued=new Set();
+ function makeAdd(data){
+  const b=btn(queued.has(data.slug)?'✓':'+');b.disabled=queued.has(data.slug);b.title='Add to Wishlist without leaving Wiki';b.setAttribute('aria-label','Add '+data.name+' to Wishlist');b.style.cssText='display:inline-block;margin-left:4px;padding:0 5px;border:1px solid #466781;border-radius:4px;background:#19334a;color:#a9ddff;cursor:pointer;font:600 12px system-ui';
+  b.addEventListener('click',async e=>{if(!e.isTrusted||b.disabled)return;b.disabled=true;try{const r=await chrome.runtime.sendMessage({type:'wishlist-queue-add',item:data});if(!r?.ok)throw Error(r?.error||'Could not save');queued.add(data.slug);b.textContent='✓';b.title='Saved locally; imported automatically when Companion is open.'}catch(err){b.disabled=false;b.title=String(err?.message||err);status.textContent=b.title}});
+  return b;
+ }
+ function renderSearch(){
+  const query=clean(search.value).toLowerCase();results.replaceChildren();results.hidden=!query;if(!query)return;
+  const hits=groups.filter(g=>g.name.toLowerCase().includes(query));
+  if(!hits.length){results.textContent='No items found on this page.';return}
+  const note=document.createElement('small');note.textContent=hits.length+' matching items'+(hits.length>40?' · first 40':'');results.append(note);
+  for(const g of hits.slice(0,40)){
+   const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:6px;margin:4px 0';
+   const a=document.createElement('a');a.href=origin+'/'+[...g.slugs][0];a.textContent=g.name;a.style.color='#a9ddff';row.append(a);
+   const m=matched.get(g.name),s=document.createElement('small');s.textContent=m?label(m,g.slugs.size!==1).text:'Checking…';row.append(s);
+   const data={name:g.name,slug:[...g.slugs][0],category},target=globalThis.AQWCWikiWishlist?.target(data);
+   if(g.slugs.size===1&&target&&!target.variant)row.append(makeAdd(data));results.append(row);
+  }
+ }
+ search.addEventListener('input',renderSearch);
+ search.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();renderSearch()}});
  function annotate(group,m){
+  matched.set(group.name,m);
   const l=label(m,group.slugs.size!==1);
   if(group.slugs.size!==1||!m||!['owned','not-found'].includes(m.state))unknown++;
   else if(m.state==='owned')owned++;else absent++;
   for(const a of group.anchors){
    if(!a.isConnected)continue;
-   const el=document.createElement('span');el.setAttribute('data-aqwc-list-ownership','');
-   const text=document.createElement('span');text.textContent=' '+l.text;text.title='AQW Companion local snapshot; name/category match, not a live account check';
+   const el=document.createElement('span');el.setAttribute('data-aqwc-list-ownership','');el.style.cssText='display:inline;white-space:nowrap';
+   const text=document.createElement('span');text.textContent=' '+l.text;text.title=m?.possible?.length?'Possible inventory variant: '+m.possible.join(', ')+' — exact variant not verified':'AQW Companion local snapshot; name/category match, not a live account check';
    text.style.cssText='display:inline-block;margin-left:4px;padding:0 4px;border-radius:4px;background:#142b3e;color:'+l.color+';font:600 11px/1.5 system-ui';
    const shadow=el.attachShadow({mode:'closed'});shadow.append(text);
    if(group.slugs.size===1){
     const data={name:group.name,slug:[...group.slugs][0],category},target=globalThis.AQWCWikiWishlist?.target(data);
-    const href=target&&!target.variant?globalThis.AQWCWikiWishlist.build(data):null;
-    if(href){const link=document.createElement('a');link.href=href;link.target='_blank';link.rel='noopener noreferrer';link.textContent='☆';link.title='Review or add to Wishlist in Companion';link.setAttribute('aria-label','Review Wishlist for '+group.name);link.style.cssText='margin-left:4px;color:#a9ddff;font:600 13px system-ui;text-decoration:none';shadow.append(link)}
+    if(target&&!target.variant){
+     const plus=makeAdd(data);shadow.append(plus)
+    }
    }
    a.insertAdjacentElement('afterend',el);labels.add(el)
   }
  }
  async function scan(query=''){
   if(busy)return;
-  reset();const q=clean(query).toLowerCase(),selected=groups.filter(g=>g.name.toLowerCase().includes(q));
+  reset();matched.clear();const selected=groups;
   if(!selected.length){status.textContent='No matching candidate names.';return}
-  busy=true;show.disabled=clear.disabled=search.disabled=true;
+  busy=true;show.disabled=clear.disabled=true;
   status.textContent='Checking 0 / '+selected.length.toLocaleString()+' local inventory names…';
   try{
    await checkAll(selected,category,msg=>chrome.runtime.sendMessage(msg),(chunk,matches,progress)=>{
     chunk.forEach((g,i)=>annotate(g,matches[i]));
     status.textContent=progress.offset.toLocaleString()+' / '+selected.length.toLocaleString()+' checked · '+owned+' owned · '+absent+' not in snapshot · '+unknown+' unknown · synced '+new Date(progress.syncedAt).toLocaleString();
    });
-   clear.hidden=false;
+   clear.hidden=false;renderSearch();
   }catch(err){reset();status.textContent=String(err?.message||err)}
   finally{busy=false;show.disabled=clear.disabled=search.disabled=false}
  }
- show.addEventListener('click',e=>{if(e.isTrusted&&!busy)scan(search.value)});
- clear.addEventListener('click',e=>{if(!e.isTrusted||busy)return;reset();status.textContent='Labels cleared. Refresh ownership to check again.'});
+ show.addEventListener('click',e=>{if(e.isTrusted&&!busy)scan()});
+ clear.addEventListener('click',e=>{if(!e.isTrusted||busy)return;reset();matched.clear();renderSearch();status.textContent='Labels cleared. Refresh ownership to check again.'});
  // Local read-only comparison on recognized category pages. No network requests,
  // no new permissions, and no simulated click or write to the inventory.
  scan();
