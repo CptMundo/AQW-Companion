@@ -99,7 +99,7 @@ assert.equal(reviewedApi.encounterUltraBuild("ezrajal","Void Highlord",null),nul
 assert.ok(reviewedApi.ultraReviewedTactics.gramiel.some(row=>row[1].includes("70%, 40% and 10%")));
 assert.ok(html.includes("const rows=ultraUnifiedTips(b.id,cls,baseTips)"),"Render curated fight phases in the role checklist");
 assert.ok(!html.includes("Suggested general setup — not encounter-tested."));
-assert.ok(html.includes("ultraReviewedSources[b.id]||[]"));
+assert.ok(html.includes("const ultraReviewedSources="),"Retain internal source provenance");
 for(const rows of Object.values(reviewedApi.ultraReviewedSources))for(const [,url] of rows)assert.ok(url.startsWith("https://"));
 
 const workbookApi=vm.runInNewContext(reviewedCode+"\n({simplifiedProfiles,simplifiedRatings,simplifiedRatingRoles,simplifiedRoleRatings,simplifiedSpeakerEvents,simplifiedSpeakerPatterns,simplifiedExtraEncounters})");
