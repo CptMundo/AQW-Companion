@@ -58,10 +58,13 @@ function matchWikiMaterial(snapshot,name){
  const rows=snapshot.items.filter(row=>row.Count>0);
  let found=rows.filter(row=>nameKey(row.Name)===key);
  if(suffix){
-  const category=Object.keys(wikiTypes).find(c=>c===suffix[2]+'s'||suffix[2]==='class'&&c==='classes'||suffix[2]==='item'&&c==='misc-items'||suffix[2]==='helm'&&c==='helmets');
-  const allowed=category?wikiTypes[category]:[suffix[2]];
+  const categories={axe:'axes',staff:'staffs',class:'classes',armor:'armors',helm:'helmets',item:'misc-items'};
+  const category=categories[suffix[2]]||suffix[2]+'s';
+  const allowed=Object.hasOwn(wikiTypes,category)?wikiTypes[category]:[suffix[2]];
+  const exact=found.filter(row=>allowed.includes(nameKey(row.Type)));
   const candidates=rows.filter(row=>nameKey(row.Name)===suffix[1]&&allowed.includes(nameKey(row.Type)));
-  found=[...new Set([...found,...candidates])];
+  if(!exact.length&&!candidates.length&&(found.length||rows.some(row=>nameKey(row.Name)===suffix[1])))return {state:'ambiguous'};
+  found=[...new Set([...exact,...candidates])];
  }else if(!found.length&&/\s\([^)]+\)$/.test(key)){
   if(rows.some(row=>nameKey(row.Name)===key.replace(/\s\([^)]+\)$/,'')))return {state:'ambiguous'};
  }
