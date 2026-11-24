@@ -38,10 +38,10 @@ function normalizeAppearance(value){
   if(v.banner!=='original'){
    const preset=banners[v.banner];
    const chosen=v.banner==='prometheus';
-   const images=chosen?['url("'+chrome.runtime.getURL('wiki-banner-prometheus.webp')+'")','linear-gradient(90deg,#07131b,#102c35 50%,#07131b)']:[wordmark,preset.art,preset.gradient];
+   const images=chosen?['url("'+chrome.runtime.getURL('image_2026-11-24_232002011.png')+'")','linear-gradient(90deg,#07131b,#102c35 50%,#07131b)']:[wordmark,preset.art,preset.gradient];
    const positions=chosen?['center top','center top']:['12px 12px','right top','center top'];
-   // Artwork cropped to 2048 × 330, not stretched; maximum rendered height 140px.
-   const sizes=chosen?['min(100%, 869px) auto','100% 140px']:['min(290px, 38vw) 108px','auto 140px','100% 140px'];
+   // Preserve the uploaded PNG aspect ratio; fit within the native 140px header.
+   const sizes=chosen?['auto 140px','100% 140px']:['min(290px, 38vw) 108px','auto 140px','100% 140px'];
    // The native banner image lives on the full-width container-wrap, not
    // the narrow, offset #header. Replace only its background; never overlay
    // or move the header links, search box or menu.
@@ -55,7 +55,7 @@ function normalizeAppearance(value){
  }
  chrome.runtime.onMessage.addListener((message,sender,respond)=>{
   if(sender.id!==chrome.runtime.id||sender.url!==chrome.runtime.getURL('popup.html')||message?.type!=='aqwc-appearance-preview')return;
-  revision++;apply(message.appearance);const target=document.getElementById('container-wrap');let applied=false;try{applied=normalizeAppearance(message.appearance).banner==='original'||!!target&&getComputedStyle(target).backgroundImage.includes(normalizeAppearance(message.appearance).banner==='prometheus'?chrome.runtime.getURL('wiki-banner-prometheus.webp'):'data:image/svg+xml')}catch{}if(typeof respond==='function')respond({ok:true,bannerTarget:!!target,applied});return false;
+  revision++;apply(message.appearance);const target=document.getElementById('container-wrap');let applied=false;try{applied=normalizeAppearance(message.appearance).banner==='original'||!!target&&getComputedStyle(target).backgroundImage.includes(normalizeAppearance(message.appearance).banner==='prometheus'?chrome.runtime.getURL('image_2026-11-24_232002011.png'):'data:image/svg+xml')}catch{}if(typeof respond==='function')respond({ok:true,bannerTarget:!!target,applied});return false;
  });
  const start=revision;
  chrome.runtime.sendMessage({type:'wiki-appearance-read'},response=>{
