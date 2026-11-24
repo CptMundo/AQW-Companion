@@ -102,7 +102,7 @@
   const joins=[...new Set([...text.matchAll(/\/join\s+([a-z0-9-]{1,60})\b/gi)].map(m=>m[1].toLowerCase()))];
   return names.length===1&&joins.includes(names[0])?names[0]:null;
  }
- const verifiedMaps=Object.freeze({'luna-cove':'lunacove','shadowfall':'shadowfall','battleodium':'battleodium','yulgar-s-inn':'yulgar','titan-attack':'titanattack'});
+ const verifiedMaps=Object.freeze({'luna-cove':'lunacove','shadowfall':'shadowfall','battleodium':'battleodium','yulgar-s-inn':'yulgar','titan-attack':'titanattack','mermaid-sushi':'mermaidsushi'});
  const mapCache=new Map(),mapPending=new Map();let mapRequests=0,mapQueue=Promise.resolve();
  async function verifyMap(origin,slug){
   if(mapCache.has(slug))return mapCache.get(slug);
