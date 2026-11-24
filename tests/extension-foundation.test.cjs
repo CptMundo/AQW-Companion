@@ -95,7 +95,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.11.1');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
+ assert.equal(manifest.version,'0.11.2');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -460,7 +460,22 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.ok(bridge.includes('AQW Wiki Companion'));assert.ok(bridge.includes('data:image/png;base64,'));
  assert.ok(bridge.includes('width-590'));assert.ok(popup.includes('Inventory export &amp; sync'));
  assert.ok(read('extension/wiki-items.js').includes('Inventory snapshot'));
- assert.ok(read('extension/wiki-items.js').includes('aqwc-facts'));
+ assert.ok(!read('extension/wiki-items.js').includes('aqwc-facts'));
  assert.ok(popup.includes('id="capture-account"'));assert.ok(popup.includes('id="enable-account-button"'));
  assert.ok(!manifest.content_scripts[2].js.includes('ownership-auto.js'));
+}
+
+{
+ const js=read('extension/wiki-items.js');
+ assert.ok(js.includes("stackable?'✓ Owned · '+result.total.toLocaleString()+' total':'✓ Owned'"));
+ assert.ok(js.includes("stackable?'0 total':'Not owned'"));
+ assert.ok(!js.includes('Inventory ×'));assert.ok(!js.includes('Bank ×'));
+ const api=vm.runInNewContext(read('extension/wiki-quest-shop.js')+'\nAQWCQuestShop',{URL});
+ const panel={},outside={},content={ownerDocument:{getElementById:id=>id==='quest1'?panel:outside},contains:x=>x===panel};
+ const tab=(name,href)=>({textContent:name,getAttribute:k=>k==='href'?href:null});
+ assert.equal(api.questScope(content,[tab('First','#quest1')],'First'),panel);
+ assert.equal(api.questScope(content,[tab('First','#other')],'First'),null);
+ assert.equal(api.questScope(content,[tab('First','#quest1'),tab('First','#quest1')],'First'),null);
+ assert.ok(read('extension/wiki-quest-shop.js').includes('Page-wide stock (not an individual quest)'));
+ assert.ok(read('extension/wiki-quest-shop.js').includes('revision!==scopeRevision'));
 }
