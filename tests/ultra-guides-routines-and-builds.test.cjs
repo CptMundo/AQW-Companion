@@ -121,9 +121,9 @@ assert.equal(workbookApi.simplifiedRoleRatings("gramiel",3).find(x=>x.name==="Sh
 for(const key of Object.keys(workbookApi.simplifiedRatings))for(let i=0;i<5;i++){const rows=workbookApi.simplifiedRoleRatings(key,i);assert.equal(rows.length,workbookApi.simplifiedRatingRoles[i][1].length,key+" role "+i);assert.ok(rows.every(x=>x.rating>=0&&x.rating<=5))}
 assert.ok(!html.includes("appendSimplifiedProfile(root,simplifiedProfiles[b.id]"),"No second workbook panel in main guide");
 assert.ok(html.includes("renderSimplifiedExtras(root,term)"));
-assert.ok(html.includes("Source author’s subjective ratings"));
+assert.ok(html.includes("Score belongs only in the selector"));
 
-const compact=vm.runInNewContext(reviewedCode+"\n({ultraClassOptions,ultraSelectedRating,ultraWorkbookBuild,ultraCompactTips,simplifiedProfiles,simplifiedRatings,simplifiedExtraEncounters,sameUltraClass,fillUltraClassSelect,renderUltraSelectedRating,appendUltraGearCells})",{
+const compact=vm.runInNewContext(reviewedCode+"\n({ultraClassOptions,ultraSelectedRating,ultraWorkbookBuild,ultraCompactTips,ultraActionTips,simplifiedProfiles,simplifiedRatings,simplifiedExtraEncounters,sameUltraClass,fillUltraClassSelect,renderUltraSelectedRating,appendUltraGearCells})",{
  node(tag,text,cls){return {tag,text,cls,children:[],append(...x){this.children.push(...x)},replaceChildren(...x){this.children=x}}},
  Option:function(label,value){this.label=label;this.value=value},
  ultraOwned:cls=>['Lord of Order','Void Highlord'].includes(cls)
@@ -133,8 +133,8 @@ const groups=compact.ultraClassOptions("drakath",profile,["Void Highlord","Lord 
 const names=groups.flatMap(g=>g.names);
 assert.ok(names.includes("Paladin Chronomancer"),"Workbook team class appears in Your loadout");
 assert.ok(names.includes("Chrono ShadowHunter"),"Workbook DPS class appears in Your loadout");
-assert.ok(names.includes("Void Highlord"),"Existing DPS class remains");
-assert.equal(names.filter(x=>compact.sameUltraClass(x,"Void HighLord")).length,1,"Case/spacing aliases must not duplicate options");
+assert.ok(!names.includes("Void Highlord"),"Rated 3/5 must be excluded, including existing guide classes");
+assert.equal(names.filter(x=>compact.sameUltraClass(x,"Void HighLord")).length,0,"Excluded aliases must not reappear");
 assert.equal(compact.ultraSelectedRating("drakath","Void Highlord").rating,3);
 assert.equal(compact.ultraSelectedRating("drakath","Lord of Order").role,"Healer");
 assert.equal(compact.ultraSelectedRating("drakath","Bard"),null,"Missing rating is not zero");
@@ -151,7 +151,7 @@ assert.ok(!compact.ultraCompactTips("drakath","Void Highlord").some(x=>x.include
 assert.equal(compact.ultraCompactTips("ezrajal","Void Highlord",["Workbook survival target: at least 3,175 HP before pulling."]).length,1,"Identical tips are deduplicated");
 assert.ok(compact.ultraCompactTips("nulgath","Legion Revenant").some(x=>x.includes("Only in the workbook")));
 assert.ok(!compact.ultraCompactTips("nulgath","Guardian").some(x=>x.includes("alternate Nulgath taunts")));
-for(const [key,p] of Object.entries(compact.simplifiedProfiles)){const classes=compact.ultraClassOptions(key,p).flatMap(x=>x.names);assert.ok(p.team.every(r=>classes.some(n=>compact.sameUltraClass(n,r.cls))),key);}
+for(const [key,p] of Object.entries(compact.simplifiedProfiles)){const groups=compact.ultraClassOptions(key,p);const classes=groups.flatMap(x=>x.names);assert.ok(classes.length,key);assert.ok(classes.every(n=>{const s=compact.ultraSelectedRating(key,n);return !s||[2,4,5].includes(s.rating)}),key);for(const group of groups){const scores=group.names.map(n=>compact.ultraSelectedRating(key,n)?.rating??-1);assert.ok(scores.every((s,i)=>i===0||scores[i-1]>=s),key+" sorted");}for(const cls of classes)assert.ok(compact.ultraActionTips(key,cls,[]).length>=2,key+" / "+cls+" has real mechanics");}
 const select={children:[],append(x){this.children.push(x)}};
 compact.fillUltraClassSelect(select,"drakath",profile,["Void Highlord"]);
 assert.equal(select.value,"Lord of Order");
@@ -160,14 +160,29 @@ const rating={children:[],append(...x){this.children.push(...x)},replaceChildren
 compact.renderUltraSelectedRating(rating,"drakath","Lord of Order");
 assert.ok(rating.children.some(x=>x.text.includes("Healer")));
 compact.renderUltraSelectedRating(rating,"drakath","Bard");
-assert.ok(rating.children.some(x=>x.text==="Not rated in the guide"));
+assert.ok(rating.children.some(x=>x.text==="Not owned"));
 assert.ok(!rating.children.some(x=>x.text.includes("Healer")),"Class change clears previous rating");
 assert.ok(html.includes("fillUltraClassSelect(select,b.id,profile,"));
 assert.ok(html.includes("const build=workbook||encounter||generic"));
 assert.ok(html.includes("renderUltraSelectedRating(rating,b.id,cls)"));
-assert.ok(html.includes("const tips=ultraCompactTips(b.id,cls,baseTips)"));
+assert.ok(html.includes("const tips=ultraActionTips(b.id,cls,baseTips)"));
 assert.ok(html.includes("if(b.id==='speaker')appendSpeakerRotations(inner)"));
 assert.ok(!html.includes("Community workbook — suggested strategy"));
 assert.ok(!html.includes("Class suitability by role (community ratings)"));
 assert.ok(ultraCSS.includes(".ultra-selected-rating"));
 console.log("Compact loadout selector: class options, per-boss ratings, source loadouts, targeted tips and rotation retention passed.");
+
+assert.equal(groups[0].label,"✓ OWNED CLASSES");
+assert.ok(groups[0].names.every(n=>n==="Lord of Order"||n==="Void Highlord"));
+assert.ok(groups.slice(1).every(g=>g.owned===false));
+assert.ok(select.children[0].children.every(o=>o.label.startsWith("✓ OWNED · ")));
+compact.renderUltraSelectedRating(rating,"drakath","Lord of Order");
+assert.ok(rating.children.every(x=>!/\/5/.test(x.text)),"Rating appears only in select");
+assert.ok(compact.ultraActionTips("ezrajal","Verus DoomKnight",[]).some(x=>x.includes("Counter Attack")));
+assert.ok(compact.ultraActionTips("kathool","Chrono ShadowHunter",[]).some(x=>x.includes("Vigil")));
+assert.ok(compact.ultraActionTips("dage","Verus DoomKnight",[]).some(x=>x.includes("blue circle")));
+assert.ok(compact.ultraActionTips("drakath","Verus DoomKnight",[]).some(x=>x.includes("18M")));
+assert.ok(compact.ultraActionTips("gramiel","Chrono ShadowHunter",[]).some(x=>x.includes("70%")));
+assert.ok(compact.ultraActionTips("speaker","Guardian",[]).some(x=>x.includes("Stasis")));
+assert.ok(!html.includes("No complete class-specific rotation in the guide."));
+assert.ok(ultraCSS.includes(".ultra-option-owned"));

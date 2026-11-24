@@ -41,6 +41,7 @@ assert.ok(html.includes('src="js/ultra-quote-actions.js"'));
 assert.ok(html.includes('href="css/ultra-quote-actions.css"'));
 assert.ok(html.includes("b.alternate||[]"),"Alternate classes must be selectable");
 assert.ok(html.includes("fillUltraClassSelect(select,b.id,profile,[...b.team,...(b.alternate||[])])"),"Include existing alternatives and workbook classes");
-assert.ok(html.includes("No complete class-specific rotation in the guide."),"Unreviewed alternatives must not receive invented role assignments");
+assert.ok(html.includes("const tips=ultraActionTips(b.id,cls,baseTips)"),"Alternatives get encounter and role actions, not invented class rotations");
+assert.ok(!html.includes("No complete class-specific rotation in the guide."));
 assert.ok(stylesheet.includes(".ultra-role-quote"));
 console.log("Ultra quote actions: verified role-dependent prompts across all declared classes.");

@@ -19,8 +19,12 @@
 
 /* One compact class rating beside ownership, not a second guide panel. */
 .ultra-selected-rating{display:flex;align-items:center;justify-content:space-between;gap:6px 12px;flex-wrap:wrap;font-size:12px;margin:0 0 10px}
-.ultra-rating-value{color:#92e6ff;background:#10273a;border:1px solid #34546c;border-radius:6px;padding:4px 8px;font-size:12px;white-space:nowrap}
 .ultra-focus-selector .ultra-role-select{min-width:0;max-width:100%;flex:1}
 .ultra-catalog-card .ultra-role-select{display:block;max-width:100%;width:100%;margin-top:5px}
 .ultra-catalog-card .ultra-focus-gear{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,100px),1fr));gap:6px}
 .ultra-catalog-card .ultra-focus-gear-cell{overflow-wrap:anywhere;min-width:0}
+
+/* Native select grouping and explicit text remain accessible on every browser. */
+.ultra-role-select optgroup{font-weight:800;color:#dceaf7;background:#102134}
+.ultra-role-select option.ultra-option-owned{color:#8ce6ac;font-weight:700}
+.ultra-role-select option.ultra-option-missing{color:#dceaf7}
