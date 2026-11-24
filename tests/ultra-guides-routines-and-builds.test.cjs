@@ -408,3 +408,22 @@ navTabs[1].click();navGroups[0].click();assert.ok(navViews[1].active.has('active
 navApi.activateTab('planner-history');assert.ok(navViews[3].active.has('active'));assert.ok(navTabs[0].active.has('group-visible'));
 navGroups[1].click();assert.ok(navViews[4].active.has('active'));assert.ok(!navTabs[0].active.has('group-visible'));
 console.log("Planner navigation round trip, main tab fallback and history access passed.");
+
+const artBefore=vm.runInNewContext(portraitCode.replace(':plannerRelatedArt(t);',':null;')+"\n({plannerArt})",{});
+const newlyIllustrated=active.filter(t=>!artBefore.plannerArt(t)&&portrait.plannerArt(t));
+assert.ok(newlyIllustrated.length>=20,"at least 20 new illustrated active routines");
+for(const t of active){
+ const before=artBefore.plannerArt(t),after=portrait.plannerArt(t);
+ if(before)assert.equal(after.url,before.url,"preserve existing art: "+t.id);
+ if(after){assert.match(after.url,/^https:\/\/i\.imgur\.com\/[A-Za-z0-9]+\.(?:png(?:\.png)?|jpg)$/);assert.match(after.source,/^https:\/\/aqwwiki\.wikidot\.com\/[a-z0-9-]+$/);}
+}
+for(const [id,file] of [['mining','nukE09D.png'],['hardcore','nukE09D.png'],['encroach','vG57ctr.png'],['wrongturn','x4cJMlq.png'],['seal-dark','PaWdbKE.jpg'],['reviewed-fins-up','aN3gnPQ.png'],['friendship-gravelyn','O72reGd.png']]){
+ const task=active.find(t=>t.id===id);assert.ok(task,id);assert.ok(portrait.plannerArt(task).url.endsWith('/'+file),id);
+ const artTree=flatten109(portrait.taskCard(task,false));
+ assert.ok(artTree.some(n=>n.tag==='img'&&n.loading==='lazy'&&n.referrerPolicy==='no-referrer'));
+ assert.ok(artTree.some(n=>n.tag==='a'&&n.href===portrait.plannerArt(task).source));
+}
+assert.equal(portrait.plannerArt({id:'custom-1',name:'Mine Crafting',group:'Custom',wiki:'https://aqwwiki.wikidot.com/reens-quests'}),null);
+assert.equal(portrait.plannerArt({id:'unknown',name:'Unknown quest',group:'General',join:'/join yulgar',wiki:'https://aqwwiki.wikidot.com/daily-quest-board-s-quests'}),null);
+assert.equal(portrait.plannerArt({id:'toString',group:'General'}),null);
+console.log("Quest artwork expansion: "+newlyIllustrated.length+" additional active routines; "+active.filter(t=>portrait.plannerArt(t)).length+"/"+active.length+" with artwork references.");
