@@ -205,7 +205,7 @@ function questCards(panel,content,title){
   });
  }
  const hideStyle=document.createElement('style');hideStyle.textContent='#page-content[hidden]{display:none!important}';(document.head||document.documentElement).append(hideStyle);
- const original=document.createElement('button');original.type='button';original.className='aqwc-original-toggle';original.textContent='Hide original Wiki content';original.setAttribute('aria-expanded','true');panel.append(original);original.addEventListener('click',e=>{if(!e.isTrusted)return;content.hidden=!content.hidden;original.textContent=content.hidden?'Show original Wiki content':'Hide original Wiki content';original.setAttribute('aria-expanded',String(!content.hidden))});
+ const original=document.createElement('button');original.type='button';original.className='aqwc-original-toggle';content.hidden=choices.some(({name,tab})=>tab?!!questScope(content,[tab],name):questLists(content).length>0);original.textContent=content.hidden?'▾ Show original Wiki content':'▴ Hide original Wiki content';original.setAttribute('aria-expanded',String(!content.hidden));panel.append(original);original.addEventListener('click',e=>{if(!e.isTrusted)return;content.hidden=!content.hidden;original.textContent=content.hidden?'▾ Show original Wiki content':'▴ Hide original Wiki content';original.setAttribute('aria-expanded',String(!content.hidden))});
  if(choices.length>100){const n=document.createElement('small');n.textContent='Showing first 100 quests; see Wiki for the rest.';panel.append(n)}
 }
 function init(){
