@@ -62,8 +62,11 @@
 .planner-quest-route button{max-width:100%;white-space:normal!important;overflow-wrap:anywhere;font-size:11px!important}
 #planner #planner-my-tasks .planner-quest-details,#planner-discover .planner-quest-details{margin:0!important;padding:6px 8px;width:100%;box-sizing:border-box}
 #planner #planner-my-tasks .planner-quest-details summary,#planner-discover .planner-quest-details summary{padding:0!important;font-size:11px!important}
-.planner-complete-action{margin-top:auto;width:100%;border:1px solid #3a708e;background:#1d4159;color:#ddf4ff;border-radius:7px;min-height:31px;font-size:12px;font-weight:700}
-.planner-complete-action.is-complete{border-color:#488b70;background:#245a46;color:#c2f5db}
+.planner-quest-actions{display:flex;align-items:center;gap:4px;flex:none}
+.planner-quest-actions .planner-complete-action,.planner-quest-actions .planner-pin-action[aria-label^="Unpin"]{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;width:27px;min-width:27px;height:27px;min-height:27px;padding:0!important;border-radius:6px}
+.planner-quest-actions .planner-complete-action{border:1px solid #416681;background:#102335;color:#a2c7da;font-size:15px!important;font-weight:800}
+.planner-quest-actions .planner-complete-action:hover:not(:disabled){color:#b6f4d1;border-color:#488b70;background:#1b3f37}
+.planner-quest-actions .planner-complete-action.is-complete{border-color:#488b70;background:#245a46;color:#c2f5db}
 .planner-complete-action:disabled{opacity:.65;cursor:not-allowed}
 .planner-quest-card .task-target{overflow-wrap:anywhere}
 #planner .planner-controls{margin:10px 0}
