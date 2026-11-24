@@ -28,7 +28,7 @@
    try{
     const r=await chrome.runtime.sendMessage({type:'wiki-appearance-save',appearance:value});if(!r?.ok)throw Error('Could not save preferences');fill(r.appearance);
     feedback.textContent='Saved. Applies on your next Wiki page load.';
-    try{const [tab]=await chrome.tabs.query({active:true,currentWindow:true});if(Number.isInteger(tab?.id)&&new URL(tab.url).origin==='https://aqwwiki.wikidot.com'){const ack=await chrome.tabs.sendMessage(tab.id,{type:'aqwc-appearance-preview',appearance:r.appearance},{frameId:0});feedback.textContent=ack?.applied?'Saved · banner CSS confirmed. Check the artwork on the page.':ack?.bannerTarget?'Saved · banner CSS not confirmed. Try disabling competing Wiki themes.':'Saved · refresh the Wiki page to apply.'}}catch{}
+    try{const [tab]=await chrome.tabs.query({active:true,currentWindow:true});if(Number.isInteger(tab?.id)&&new URL(tab.url).origin==='https://aqwwiki.wikidot.com'){const ack=await chrome.tabs.sendMessage(tab.id,{type:'aqwc-appearance-preview',appearance:r.appearance},{frameId:0});feedback.textContent=ack?.artworkLoaded===true?'Saved · Prometheus image loaded. Check the header.':ack?.artworkLoaded===false?'Saved · image could not load. Check extension files.':ack?.applied?'Saved · banner CSS confirmed. Check the artwork on the page.':ack?.bannerTarget?'Saved · banner CSS not confirmed. Try disabling competing Wiki themes.':'Saved · refresh the Wiki page to apply.'}}catch{}
    }catch(err){feedback.textContent=String(err?.message||err)}finally{enabled(true)}
   }
   save.addEventListener('click',e=>{if(e.isTrusted&&!save.disabled)persist({background:bg.value,banner:banner.value,panel:panel.value})});
