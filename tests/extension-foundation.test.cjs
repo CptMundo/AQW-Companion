@@ -522,3 +522,10 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.ok(read('extension/wiki-theme.js').includes('#header-extra-div')||read('extension/wiki-theme.js').includes('header-extra-div'));
  assert.ok(read('extension/wiki-materials.js').includes('navigator.clipboard.writeText'));
 }
+
+{
+ const api=vm.runInNewContext(read('extension/wiki-materials.js')+'\nAQWCWikiMaterials',{URL});
+ assert.equal(api.mapCommand({textContent:'Map Name: lunacove Room Limit: 6 /join lunacove'}),'lunacove');
+ assert.equal(api.mapCommand({textContent:'Map Name: fake /join different'}),null);
+ assert.equal(api.mapCommand({textContent:'Map Name: a Map Name: b /join a'}),null);
+}
