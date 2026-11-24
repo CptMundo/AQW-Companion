@@ -15,7 +15,7 @@ const tabs=[...html.matchAll(/<button\b[^>]*data-tab="([^"]+)"[^>]*data-parent="
 assert.equal(tabs.filter(x=>x.group==="home").length,0,"Home has no secondary tabs");
 assert.equal(tabs.filter(x=>x.tab==="account-stats").length,1,"Stats appears exactly once");
 assert.deepEqual(tabs.filter(x=>x.group==="inventory").map(x=>x.tab),
-  ["account-stats","alerts","inventory","compare","history"],"Account Statistics belongs with the Inventory subviews");
+  ["account-stats","alerts","milestones","inventory","compare","history"],"Account Statistics belongs with the Inventory subviews");
 assert.ok(!html.includes('data-tab="overview"'),"Overview remains the Home main view, not a subtab");
 const siteCss=fs.readFileSync(path.join(__dirname,"../css/site.css"),"utf8");
 const navCssStart=siteCss.indexOf("/* style: aqw-feedback-nav-v2 */");
@@ -64,7 +64,7 @@ navigate("inventory");
 assert.equal(activeGroup(),"inventory");
 assert.equal(activeView(),"inventory");
 assert.deepEqual(tabButtons.filter(x=>x.classList.contains("group-visible")).map(x=>x.dataset.tab),
-  ["account-stats","alerts","inventory","compare","history"]);
+  ["account-stats","alerts","milestones","inventory","compare","history"]);
 navigate("alerts");
 assert.equal(activeGroup(),"inventory");
 assert.equal(activeView(),"alerts");
@@ -81,7 +81,7 @@ assert.equal(statsRenderCount,1,"Returning Home should not reopen statistics");
 assert.ok(html.includes('<section id="account-stats" class="view">'));
 assert.ok(html.includes('href="css/account-statistics.css"'));
 assert.ok(html.includes('src="js/account-statistics.js"'));
-assert.ok(html.includes("if(tab==='account-stats')renderAccountStatistics()"),"Statistics should refresh when selected");
+assert.ok(html.includes("if(tab==='account-stats'||tab==='milestones')renderAccountStatistics()"),"Statistics should refresh when selected");
 assert.ok(html.includes("current,snapshots,projects"),"Runtime must use real browser state");
 assert.ok(html.includes("metadataLookup:name=>communityItems.get(communityKey(name))"),"Rarity data is community metadata");
 assert.ok(html.includes("forgeUnlocked:forgeUnlocked.size"),"Forge count is manual tracker state");
@@ -207,5 +207,8 @@ assert.ok(all.some(x=>x.tagName==="TABLE"),"Exact history table available");
 assert.ok(all.some(x=>String(x.textContent).includes("Recent Wishlist Finds")),"Dedicated Wishlist finds section exists");
 api.render(root,withFinds,{onWishlist:()=>{wishlistClicked=true}});
 assert.ok(flatten(root).some(x=>x.textContent==="Horned Helmet"),"New target shown in Account Statistics");
-assert.ok(all.some(x=>x.textContent==="Companion Milestones"||String(x.textContent).includes("Companion Milestones")),"Milestones clearly branded");
+assert.ok(!all.some(x=>String(x.textContent).includes("Companion Milestones")),"Milestones removed from statistics");
+api.render(root,data,{milestonesOnly:true});
+assert.ok(flatten(root).some(x=>String(x.textContent).includes("Companion Milestones")),"Milestones clearly branded");
+assert.ok(!flatten(root).some(x=>x.tagName==="TABLE"),"Milestones view excludes collection statistics");
 console.log("Account Statistics passed: local-only metrics, duplicate IDs, growth, unknown tags, Wishlist, Forge, milestones, history, accessible UI.");

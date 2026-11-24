@@ -47,3 +47,19 @@
 .home-wishlist-win{display:grid;gap:4px;padding:9px 11px;border:1px solid #326354;border-radius:8px;background:#132c2c;overflow-wrap:anywhere}
 .home-wishlist-win strong{color:#d9fff0;font-size:12px}
 .home-wishlist-win small{color:#a9d4c4;font-size:11px}
+
+/* Home notices and completed goals share the Companion's visual language. */
+.home-inventory-changes .home-stack-card{margin:16px 0 0;padding:12px 14px;border:1px solid #8d693f;border-radius:10px;background:#2b261e}
+.home-stack-card .stack-alert-use-title{display:flex;align-items:center;gap:9px;font-size:14px;color:#ffda9a}
+.home-warning-icon{font-size:28px;line-height:1;color:#ffc66d;flex:none}
+.home-inventory-changes .home-wishlist-wins{padding:12px;border:1px solid #326354;border-radius:10px;background:#102b2c;margin:14px 0;gap:9px}
+.home-inventory-changes .home-wishlist-win{display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding:10px;border-color:#3a7564}
+.home-inventory-changes .home-wishlist-win strong{font-size:14px}
+.home-inventory-changes .home-wishlist-win small{display:block;color:#b6dbce;line-height:1.5}
+.wishlist-completed-card{border-color:#469e89!important}
+.wishlist-completion{display:grid;justify-items:center;text-align:center;gap:12px;padding:22px 14px;border:1px solid #397e6a;border-radius:12px;background:#102d2e;margin-top:16px;color:#d8f9eb}
+.wishlist-completion-icon{display:grid;place-items:center;width:54px;height:54px;border-radius:50%;background:#1b5147;color:#86f3cb;font-size:32px;font-weight:800}
+.wishlist-completion h3,.wishlist-completion p{margin:0}
+.wishlist-completion h3{color:#86f3cb;font-size:20px}
+.wishlist-completion small{color:#b3d4cd}
+.wishlist-completion-remove{width:100%;min-height:44px;background:#226c58!important;color:#fff!important}

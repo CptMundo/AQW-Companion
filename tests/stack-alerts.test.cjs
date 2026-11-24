@@ -111,3 +111,9 @@ console.log("Stack Alerts: exact wiki caps, bank separation, no inferred limits,
 assert.ok(html.includes('<section id="alerts" class="view"><div class="card stack-alerts-card">'));
 assert.ok(html.includes("$('homestacks')?.addEventListener('click',()=>selectTab('alerts'))"));
 assert.ok(html.includes('id="homeinventorydelta" class="home-delta"></div><div class="home-stack-card hidden" id="home-stack-card">'));
+
+assert.ok(html.includes("wishlist-completion-remove"));
+assert.ok(html.includes("No further farming is needed."));
+assert.ok(html.indexOf("if(owned(project.name)){\n  card.classList")<html.indexOf("// Only show recipe coverage when there is an actual fix to apply."));
+assert.ok(css.includes(".home-warning-icon"));
+assert.ok(css.includes(".home-inventory-changes .home-wishlist-win small"));
