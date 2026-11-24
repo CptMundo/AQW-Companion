@@ -94,7 +94,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.9.1');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js','wiki-quest-shop.js','wiki-list-ownership.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
+ assert.equal(manifest.version,'0.9.2');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js','wiki-quest-shop.js','wiki-list-ownership.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -341,5 +341,26 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
   assert.equal((await worker.handle({...msg,category:'armors'},sender)).ok,false);
   assert.equal((await worker.handle({...msg,names:Array.from({length:81},(_,i)=>'item '+i)},sender)).ok,false);
   console.log('Ownership Everywhere: typed lookup, scoped sender, bounded requests and safe candidates passed.');
+ })().catch(e=>{console.error(e);process.exitCode=1});
+}
+
+{
+ const ctx={URL};vm.runInNewContext(read('extension/wiki-list-ownership.js'),ctx);
+ const api=ctx.AQWCListOwnership;
+ (async()=>{
+  const groups=Array.from({length:1301},(_,i)=>({name:'Item '+i})),sizes=[],offsets=[],seen=[];let yields=0;
+  await api.checkAll(groups,'helmets-hoods',async m=>{
+   assert.equal(m.category,'helmets-hoods');assert.equal(m.type,'wiki-list-lookup');
+   sizes.push(m.names.length);return {ok:true,syncedAt:'2026-11-24',exportedAt:'2026-11-24',matches:m.names.map(name=>({name,state:'not-found'}))};
+  },(chunk,matches,p)=>{offsets.push(p.offset);seen.push(...matches.map(m=>m.name))},async()=>{yields++});
+  assert.equal(sizes.length,17);assert.ok(sizes.every(n=>n<=80));assert.equal(sizes.at(-1),21);
+  assert.equal(offsets.at(-1),1301);assert.equal(seen.length,1301);assert.equal(new Set(seen).size,1301);assert.equal(yields,16);
+  let calls=0,annotated=0;
+  await assert.rejects(api.checkAll(groups,'helmets-hoods',async m=>({ok:true,syncedAt:String(++calls),exportedAt:'same',matches:m.names.map(()=>({state:'owned'}))}),chunk=>{annotated+=chunk.length},async()=>{}),/Inventory changed/);
+  assert.equal(annotated,80);
+  await assert.rejects(api.checkAll(groups,'helmets-hoods',async m=>({ok:true,matches:m.names.map(()=>({state:'unsynced'}))}),()=>{},async()=>{}),/Inventory not synced/);
+  assert.ok(!read('extension/wiki-list-ownership.js').includes('Check next 400'));
+  assert.ok(read('extension/wiki-list-ownership.js').includes('\n scan();'));
+  console.log('Automatic full ownership scan: 1301 names, bounded batches, yielding and snapshot consistency passed.');
  })().catch(e=>{console.error(e);process.exitCode=1});
 }
