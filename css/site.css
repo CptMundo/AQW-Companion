@@ -1112,3 +1112,15 @@ body{background:#0a1420!important}
 .top .inventory-advanced-menu #clear{border-top:1px solid var(--line);margin-top:4px;color:#ffc2a8}
 .top .inventory-header-status [data-state="success"]{color:var(--green)}
 .top .inventory-header-status [data-state="error"]{color:var(--red)}
+
+/* Recent stock changes: compact signed deltas, independent of new item IDs. */
+.home-quantity-changes{margin-top:12px}
+.home-quantity-list{display:grid;gap:5px;max-height:260px;overflow:auto}
+.home-quantity-row{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(54px,auto);align-items:center;gap:10px;padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:#0d2233;font-size:12px}
+.home-quantity-name{overflow-wrap:anywhere;color:var(--txt);min-width:0}
+.home-quantity-counts{color:#a9cde2;white-space:nowrap;font-variant-numeric:tabular-nums}
+.home-quantity-diff{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.home-quantity-diff.gain{color:#90edb5}
+.home-quantity-diff.loss{color:#ff9a91}
+.home-quantity-more{display:block;margin:7px 0 0 auto}
+@media(max-width:420px){.home-quantity-row{gap:5px;padding:6px;font-size:11px}}
