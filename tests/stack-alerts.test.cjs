@@ -91,7 +91,7 @@ assert.ok(html.includes('id="stack-cap-save"'));
 assert.ok(html.includes('id="stack-cap-clear"'));
 assert.ok(html.includes('src="js/stack-alerts.js"'));
 assert.ok(html.includes('href="css/stack-alerts.css"'));
-assert.ok(html.includes("renderStackAlerts();render"));
+assert.ok(html.includes("renderUnlocks();renderStackAlerts();showUnlockSuggestions()"),"Alerts refresh with inventory snapshots");
 assert.ok(html.includes("initStackAlerts();"));
 assert.ok(html.includes("MaxStack:window.AQWCStackAlerts?.validCap"));
 assert.ok(html.includes("const reviewed=(api && window.AQWCRecipeIntegrity?.reviewedNames||[]).map"));
