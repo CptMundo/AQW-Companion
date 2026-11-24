@@ -21,7 +21,7 @@
 
 <link rel="stylesheet" href="css/account-statistics.css?v=97">
 <link rel="stylesheet" href="css/meta-class-builds.css">
-<link rel="stylesheet" href="css/planner-routines.css?v=112">
+<link rel="stylesheet" href="css/planner-routines.css?v=114">
 <link rel="stylesheet" href="css/recipe-coverage.css">
 <link rel="stylesheet" href="css/stack-alerts.css?v=95">
 <link rel="stylesheet" href="css/ultra-quote-actions.css?v=108">
@@ -80,8 +80,8 @@
 <div class="planner-metric"><div class="planner-metric-line"><span>☀️ Dailies</span><strong id="dailycount">0 / 0</strong></div><strong class="planner-timer" id="dailyreset">--</strong><small id="dailyresetlocal"></small><div class="planner-progress"><div id="dailybar"></div></div></div>
 <div class="planner-metric"><div class="planner-metric-line"><span>📅 Weeklies</span><strong id="weeklycount">0 / 0</strong></div><strong class="planner-timer" id="weeklyreset">--</strong><small id="weeklyresetlocal"></small><div class="planner-progress"><div id="weeklybar"></div></div></div>
 </div><p class="muted tiny" id="plannerperiod"></p></div>
-<div class="card planner-board"><div class="planner-my-toolbar"><div class="planner-frequency-controls" role="group" aria-label="Quest frequency"><button type="button" data-planner-frequency="all" aria-pressed="true" class="active">All</button><button type="button" data-planner-frequency="daily" aria-pressed="false">☀️ Dailies</button><button type="button" data-planner-frequency="weekly" aria-pressed="false">📅 Weeklies</button></div><div class="planner-board-actions"><label>Show <select id="plannerstatus"><option value="all">All tasks</option><option value="pending">Pending</option><option value="completed">Completed</option></select></label><button id="plannerbrowse" class="primary">+ Quest Library</button><button id="planneropenhistory" type="button" class="smallbutton">History</button></div></div>
-<div id="planner-my-categories" class="planner-category-controls" role="group" aria-label="Quest category"></div><div id="planner-my-tasks" class="task-grid"></div><p class="muted tiny planner-reset-note">Checks reset automatically; history remains available.</p></div></section><section id="planner-discover" class="view"><div class="card"><h3 class="sectiontitle">Quest Library</h3><div class="toolbar"><input id="plannersearch" placeholder="Search quests, maps, factions, items…" type="search"><select id="plannerfilter"><option value="all">Daily &amp; weekly</option><option value="daily">Daily only</option><option value="weekly">Weekly only</option></select><select id="plannercategory" aria-label="Task category"><option value="all">All categories</option></select><select id="plannerpinfilter" aria-label="Pinned status"><option value="all">All tasks</option><option value="unpinned">Not pinned</option><option value="pinned">Pinned</option></select></div>
+<div class="card planner-board"><div class="planner-my-toolbar"><div class="planner-frequency-controls" role="group" aria-label="Quest frequency"><button type="button" data-planner-frequency="all" aria-pressed="true" class="active">All</button><button type="button" data-planner-frequency="daily" aria-pressed="false">☀️ Dailies</button><button type="button" data-planner-frequency="weekly" aria-pressed="false">📅 Weeklies</button></div><div class="planner-toolbar-filters"><select id="planner-my-categories" aria-label="Quest category"><option value="all">All categories</option></select><select id="plannerstatus" aria-label="Completion status"><option value="all">All tasks</option><option value="pending">Pending</option><option value="completed">Completed</option></select></div><div class="planner-board-actions"><button id="plannerbrowse" type="button" class="smallbutton">+ Quest Library</button><button id="planneropenhistory" type="button" class="smallbutton">History</button></div></div>
+<div id="planner-my-tasks" class="task-grid"></div><p class="muted tiny planner-reset-note">Checks reset automatically; history remains available.</p></div></section><section id="planner-discover" class="view"><div class="card"><h3 class="sectiontitle">Quest Library</h3><div class="toolbar"><input id="plannersearch" placeholder="Search quests, maps, factions, items…" type="search"><select id="plannerfilter"><option value="all">Daily &amp; weekly</option><option value="daily">Daily only</option><option value="weekly">Weekly only</option></select><select id="plannercategory" aria-label="Task category"><option value="all">All categories</option></select><select id="plannerpinfilter" aria-label="Pinned status"><option value="all">All tasks</option><option value="unpinned">Not pinned</option><option value="pinned">Pinned</option></select></div>
 <div class="packrow"><button class="smallbutton" data-pack="essentials">+ Starter routines</button><button class="smallbutton" data-pack="legion">+ Legion</button><button class="smallbutton" data-pack="nulgath">+ Nulgath</button><button class="smallbutton" data-pack="shadowfall">+ Shadowfall / Doom</button><button class="smallbutton" data-pack="ultras">+ Ultra weeklies</button></div><p class="muted tiny">Recurring quests indexed from AQWWiki community data, the Daily Quest Board and curated Ultra guides. Some require unlocks, membership or seasonal availability. Data attribution: AQWikiTools / AQWorlds Wiki (CC BY-SA 3.0). <a href="https://aqwwiki.wikidot.com/daily-quest-board-s-quests" target="_blank" rel="noopener noreferrer">Daily Quest Board ↗</a> · <a href="https://aqwwiki.wikidot.com/sort-by-all-quests" target="_blank" rel="noopener noreferrer">All AQW quests ↗</a></p><h4 class="sectiontitle" style="margin-top:14px">Quest Library <small id="plannerresultcount" class="muted"></small></h4><div id="planner-suggestions" class="task-grid"></div><details class="task-route" id="planner-source-details"><summary>Quest library coverage &amp; source pages</summary><p id="planner-coverage" class="muted tiny"></p><div id="planner-source-pages"></div></details>
 <div class="new-task"><input id="customtask" maxlength="120" placeholder="Add your own task, e.g. Check Wheel of Doom"><select id="customfrequency"><option value="daily">Daily</option><option value="weekly">Weekly</option></select><input id="customjoin" placeholder="Optional /join" maxlength="80"><button id="addcustomtask" class="primary">+ Add task</button></div></div>
 </section><section id="planner-history" class="view"><div class="card"><div class="planner-my-toolbar"><h3 class="sectiontitle">Task History</h3><button id="plannerbackfromhistory" class="smallbutton" type="button">← My Tracker</button></div><div id="planner-task-history"></div></div></section><section id="compare" class="view"><div class="card"><h3 class="sectiontitle">Compare two snapshots</h3><p class="muted" style="font-size:13px">Import both snapshots into the same browser. Comparison uses <b>ID</b> and quantity; moving items between inventory and bank does not count as a new item.</p><div class="comparecontrols"><label>Older <select id="oldselect"></select></label><label>Newer <select id="newselect"></select></label><button id="comparebtn" class="primary">Compare</button></div><div id="compareresult" class="muted">Import at least two snapshots to get started.</div></div></section>
@@ -2668,7 +2668,11 @@ const plannerQuestArtById=Object.freeze({
  'reviewed-rubber-duck-rescue':['wtMtsmG.png','cysero-npc'],
  'friendship-dage-the-evil':['rW2Gsql.png','dage-the-evil-npc'],
  'friendship-gravelyn':['O72reGd.png','gravelyn-npc'],
- 'friendship-nulgath':['Lnn04tC.png','nulgath-npc']
+ 'friendship-nulgath':['Lnn04tC.png','nulgath-npc'],
+ 'friendship-twilly':['0KftqqS.png','twilly'],
+ 'friendship-warlic':['sq7rbv5.png','warlic'],
+ 'friendship-sally':['GI2CmjZ.png','sally'],
+ 'friendship-twig':['Ke7Ri6j.png','twig']
 });
 const plannerQuestArtBySource=Object.freeze({
  'braeus-quests':['vG57ctr.png','braeus'],
@@ -2684,7 +2688,12 @@ const plannerQuestArtBySource=Object.freeze({
  'gravelyn-s-quests':['O72reGd.png','gravelyn-npc'],
  'dage-the-evil-s-quests':['rW2Gsql.png','dage-the-evil-npc'],
  'jon-jett-s-quests':['OE4MabD.png','jon-jett'],
- 'zot-s-quests':['4UwS9m8.png','zot']
+ 'zot-s-quests':['4UwS9m8.png','zot'],
+ 'mido-s-quests':['2ZhblBx.png','mido'],
+ 'sokrakiis-quests':['Y3qHwLO.png','sokrakiis'],
+ 'kagg-s-quests':['mop7DwO.png','kagg'],
+ 'drakor-s-quests':['SOh74EC.png','drakor'],
+ 'warlic-s-quests':['sq7rbv5.png','warlic']
 });
 function plannerRelatedArt(t){
  if(t.group==='Custom')return null;
@@ -2793,7 +2802,8 @@ function renderPlanner(){const suggested=$('planner-suggestions'),my=$('planner-
  const categoryBar=$('planner-my-categories');categoryBar.replaceChildren();
  const cats=['all',...new Set(relevant.flatMap(t=>[plannerCategory(t),...(taskCategories(t).includes('Legion')?['Legion']:[])]))];
  if(!cats.includes(plannerMyCategory))plannerMyCategory='all';
- for(const category of cats){const btn=node('button',category==='all'?'All categories':category,'planner-category-chip'+(category===plannerMyCategory?' active':''));btn.type='button';btn.setAttribute('aria-pressed',String(category===plannerMyCategory));btn.onclick=()=>{plannerMyCategory=category;renderPlanner()};categoryBar.append(btn)}
+ for(const category of cats){const option=node('option',category==='all'?'All categories':category);option.value=category;categoryBar.append(option)}
+ categoryBar.value=plannerMyCategory;categoryBar.onchange=()=>{plannerMyCategory=categoryBar.value;renderPlanner()};
  my.replaceChildren();
  for(const freq of ['daily','weekly']){
  if(plannerMyFrequency!=='all'&&plannerMyFrequency!==freq)continue;
