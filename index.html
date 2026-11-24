@@ -2625,7 +2625,15 @@ function taskCard(t,pinned){const done=taskDone(t),conflict=routineConflict(t);
  const button=node('button',pinned?'×':'+ Pin','smallbutton planner-pin-action');
  button.type='button';button.title=pinned?'Unpin '+t.name:'Pin '+t.name;button.setAttribute('aria-label',button.title);
  button.onclick=()=>pinned?unpinTask(t):pinTask(t);
- header.append(name,button);card.append(header);
+ const actions=node('div',undefined,'planner-quest-actions');
+ if(pinned){const action=node('button','✓','smallbutton planner-complete-action'+(done?' is-complete':''));
+ action.type='button';action.disabled=!!conflict;
+ action.title=conflict?'Alternative already completed':done?'Undo completion':'Mark complete';
+ action.setAttribute('aria-label',(done?'Undo completion of ':'Complete ')+t.name);
+ action.setAttribute('aria-pressed',String(done));
+ action.onclick=()=>{if(done&&$('plannerstatus').value==='completed')$('plannerstatus').value='all';toggleTask(t,!done)};
+ actions.append(action)}
+ actions.append(button);header.append(name,actions);card.append(header);
  if(pinned&&Array.isArray(t.sourceProjects)&&t.sourceProjects.length)card.append(node('small','🎯 '+t.sourceProjects.join(' · '),'task-project'));
  const rewards=node('div',undefined,'planner-quest-rewards');
  if(t.rewards?.length){rewards.append(node('small','Rewards','planner-quest-label'));
@@ -2649,10 +2657,6 @@ function taskCard(t,pinned){const done=taskDone(t),conflict=routineConflict(t);
  const wiki=node('a','Quest source ↗','task-wiki');wiki.href=info?.wiki||t.wiki||'https://aqwwiki.wikidot.com/daily-quest-board-s-quests';wiki.target='_blank';wiki.rel='noopener noreferrer';details.append(wiki);
  card.append(details);
  if(conflict)card.append(node('small','Alternative already completed: '+conflict.name,'task-unverified'));
- if(pinned){const action=node('button',done?'✓ Completed · Undo':conflict?'Alternative completed':'Mark complete','planner-complete-action'+(done?' is-complete':''));
- action.type='button';action.disabled=!!conflict;action.setAttribute('aria-label',(done?'Undo completion of ':'Complete ')+t.name);
- action.onclick=()=>{if(done&&$('plannerstatus').value==='completed')$('plannerstatus').value='all';toggleTask(t,!done)};
- card.append(action)}
  return card
 }
 $('resetultradaily').onclick=()=>resetUltraChecks('daily');$('resetultraweekly').onclick=()=>resetUltraChecks('weekly');
