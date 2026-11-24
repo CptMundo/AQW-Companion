@@ -569,7 +569,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  const art=fs.readFileSync(path.join(__dirname,'..','extension/image_2026-11-24_232002011.png'));
  assert.equal(art.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.equal(art.toString('ascii',12,16),'IHDR');assert.ok(art.readUInt32BE(16)>0 && art.readUInt32BE(20)>0);
  assert.ok(art.length>10000 && art.length<15000000);
- assert.deepEqual(manifest.web_accessible_resources,[{resources:['image_2026-11-24_232002011.png'],matches:['https://aqwwiki.wikidot.com/*']}]);
+ assert.deepEqual(manifest.web_accessible_resources,[{resources:['image_2026-11-24_232002011.png','prometheus-helm.svg'],matches:['https://aqwwiki.wikidot.com/*']}]);
 }
 
 {
@@ -667,5 +667,5 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.ok(read('extension/wiki-materials.js').includes("'mermaid-sushi':'mermaidsushi'"));
  assert.ok(read('extension/wiki-items.js').includes('joinControl(row,source,location.origin)'));
  assert.ok(read('extension/wiki-theme.js').includes('aqwc-faithful-wordmark'));
- assert.ok(read('extension/prometheus-helm.svg').includes('data:image/webp;base64,'));
+ const svg=read('extension/prometheus-helm.svg'),data=svg.match(/data:image\/webp;base64,([A-Za-z0-9+/=]+)/);assert.ok(data);const bytes=Buffer.from(data[1],'base64');assert.equal(bytes.length,3516);assert.equal(bytes.toString('ascii',0,4),'RIFF');assert.equal(bytes.toString('ascii',8,12),'WEBP');assert.equal(bytes.readUInt32LE(4)+8,bytes.length);
 }
