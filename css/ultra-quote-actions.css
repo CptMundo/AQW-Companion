@@ -42,3 +42,19 @@
 .ultra-help-popup small{display:block;color:#a8c3d3;font-size:10px}
 .ultra-help-popup img{width:36px;height:36px;flex:0 0 36px;object-fit:contain}
 @media(max-width:550px){#ultradetail .ultra-focus-selector{display:grid;grid-template-columns:minmax(0,1fr);gap:4px}.ultra-help-popup{left:0;max-width:min(200px,65vw)}}
+
+/* Recommended team uses a compact, wrapping row above both quick cards. */
+#ultradetail .ultra-recommended-team{display:grid;gap:9px;padding:11px 14px;margin:0 0 14px;border:1px solid #34526c;border-radius:10px;background:#11273a}
+#ultradetail .ultra-recommended-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#ultradetail .ultra-recommended-heading h3{margin:0;font-size:13px;color:#e0f0ff}
+#ultradetail .ultra-recommended-classes{display:flex;flex-wrap:wrap;gap:7px}
+#ultradetail .ultra-team-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid #3a5368;border-radius:7px;color:#d6e5f3;background:#142b3c;font-size:12px;line-height:1.3}
+#ultradetail .ultra-team-mark{color:#9db4c5;font-weight:700}
+#ultradetail .ultra-team-chip.is-owned{border-color:#396956}
+#ultradetail .ultra-team-chip.is-owned .ultra-team-mark{color:#82e4a4}
+#ultradetail .ultra-setup-card>h3,#ultradetail .ultra-quickstart>h3{margin-bottom:14px}
+#ultradetail .ultra-focus-job{margin-top:10px}
+#ultradetail .ultra-guide-layout{margin-bottom:14px}
+#ultradetail .ultra-role-quote-heading,#ultradetail .ultra-react-quote{color:#ffce79;font-weight:800}
+#ultradetail .ultra-react-step{border-left:3px solid #f4b653;background:#222b32}
+#ultradetail .ultra-focus-selector .ultra-role-select{width:100%;max-width:none}
