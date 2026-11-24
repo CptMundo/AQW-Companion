@@ -97,8 +97,8 @@ assert.equal(reviewedApi.encounterUltraBuild("gramiel","Shaman",null).consumable
 assert.equal(reviewedApi.encounterUltraBuild("darkon","StoneCrusher",null).base,"Fighter");
 assert.equal(reviewedApi.encounterUltraBuild("ezrajal","Void Highlord",null),null,"No invented encounter preset");
 assert.ok(reviewedApi.ultraReviewedTactics.gramiel.some(row=>row[1].includes("70%, 40% and 10%")));
-assert.ok(html.includes("for(const [label,description] of b.phases||[])"),"Render existing fight phases");
-assert.ok(html.includes("Suggested general setup — not encounter-tested."));
+assert.ok(html.includes("const rows=ultraUnifiedTips(b.id,cls,baseTips)"),"Render curated fight phases in the role checklist");
+assert.ok(!html.includes("Suggested general setup — not encounter-tested."));
 assert.ok(html.includes("ultraReviewedSources[b.id]||[]"));
 for(const rows of Object.values(reviewedApi.ultraReviewedSources))for(const [,url] of rows)assert.ok(url.startsWith("https://"));
 
@@ -123,7 +123,7 @@ assert.ok(!html.includes("appendSimplifiedProfile(root,simplifiedProfiles[b.id]"
 assert.ok(html.includes("renderSimplifiedExtras(root,term)"));
 assert.ok(html.includes("Score belongs only in the selector"));
 
-const compact=vm.runInNewContext(reviewedCode+"\n({ultraClassOptions,ultraSelectedRating,ultraWorkbookBuild,ultraCompactTips,ultraActionTips,ultraBeginnerActions,ultraBeginnerText,ultraGlossary,ultraTermPattern,ultraTermInfo,ultraSuggestedGear,ultraRecommendedTeam,simplifiedProfiles,simplifiedRatings,simplifiedExtraEncounters,sameUltraClass,fillUltraClassSelect,renderUltraSelectedRating,appendUltraGearCells})",{
+const compact=vm.runInNewContext(reviewedCode+"\n({ultraClassOptions,ultraSelectedRating,ultraWorkbookBuild,ultraCompactTips,ultraActionTips,ultraBeginnerActions,ultraBeginnerText,ultraGlossary,ultraTermPattern,ultraTermInfo,ultraSuggestedGear,ultraRecommendedTeam,ultraUnifiedTips,ultraSpeakerRole,ultraSpeakerPersonal,simplifiedSpeakerPatterns,simplifiedProfiles,simplifiedRatings,simplifiedExtraEncounters,sameUltraClass,fillUltraClassSelect,renderUltraSelectedRating,appendUltraGearCells})",{
  node(tag,text,cls){return {tag,text,cls,children:[],append(...x){this.children.push(...x)},replaceChildren(...x){this.children=x}}},
  Option:function(label,value){this.label=label;this.value=value},
  ultraOwned:cls=>['Lord of Order','Void Highlord'].includes(cls)
@@ -165,8 +165,8 @@ assert.ok(!rating.children.some(x=>x.text.includes("Healer")),"Class change clea
 assert.ok(html.includes("fillUltraClassSelect(select,b.id,profile,"));
 assert.ok(html.includes("const build=ultraSuggestedGear(b.id,cls,profile,generic,encounter)"));
 assert.ok(html.includes("renderUltraSelectedRating(rating,b.id,cls)"));
-assert.ok(html.includes("const tips=ultraBeginnerActions(b.id,cls,ultraActionTips(b.id,cls,baseTips))"));
-assert.ok(html.includes("if(b.id==='speaker')appendSpeakerRotations(inner)"));
+assert.ok(html.includes("const rows=ultraUnifiedTips(b.id,cls,baseTips)"));
+assert.ok(html.includes("if(b.id==='speaker')appendPersonalSpeakerRotation(sequence,cls)"));
 assert.ok(!html.includes("Community workbook — suggested strategy"));
 assert.ok(!html.includes("Class suitability by role (community ratings)"));
 assert.ok(ultraCSS.includes(".ultra-selected-rating"));
@@ -245,7 +245,7 @@ assert.ok(compact.ultraGlossary["Noxious Decay"].text.includes("11 seconds"));
 assert.ok(compact.ultraGlossary["Righteous Seal"].text.includes("skill 4"));
 assert.ok(compact.ultraGlossary["Sacred Magic: Eden"].text.includes("skill 5"));
 assert.ok("Noxious Decay reverses HoTs".split(compact.ultraTermPattern).includes("Noxious Decay"));
-assert.ok(html.includes("ultraExplainText(description,part.text,b.id)"));
+assert.ok(html.includes("ultraExplainText(description,part.quote?"));
 assert.ok(html.includes("img.referrerPolicy='no-referrer'"));
 assert.ok(ultraCSS.includes(".ultra-help-term:focus>.ultra-help-popup"));
 assert.ok(!html.includes("Workbook loadout · agree your party strategy."));
@@ -281,3 +281,28 @@ assert.ok(html.includes("appendUltraRecommendedTeam(root,b,profile)"));
 assert.ok(ultraCSS.includes(".ultra-react-step"));
 assert.ok(ultraCSS.includes(".ultra-recommended-team"));
 console.log("Ultra team, all selectable class gear slots, scoped glossary, and AP reaction guidance passed.");
+
+for(const [key,p] of Object.entries(compact.simplifiedProfiles))for(const cls of compact.ultraClassOptions(key,p).flatMap(x=>x.names)){
+ const tips=compact.ultraUnifiedTips(key,cls);
+ assert.ok(tips.length>=2,key+" / "+cls);
+ assert.equal(new Set(tips.map(t=>t.text)).size,tips.length,key+" duplicate tips");
+ assert.equal(new Set(tips.filter(t=>t.quote).map(t=>t.quote)).size,tips.filter(t=>t.quote).length,key+" duplicate quotes");
+}
+const chaos=compact.ultraUnifiedTips("drakath","Chaos Shaper");
+assert.ok(chaos.some(t=>t.title.includes("18M")&&t.title.includes("4M")));
+assert.ok(chaos.some(t=>t.title.includes("Meteor")&&t.text.includes("20 seconds")));
+assert.ok(chaos.every(t=>!t.text.includes("Hymn of Light")));
+assert.ok(compact.ultraUnifiedTips("drakath","ArchPaladin").some(t=>t.text.includes("Hymn of Light (3)")));
+assert.ok(compact.ultraUnifiedTips("darkon","Chrono ShadowHunter").some(t=>t.text.includes("72 seconds")));
+assert.ok(compact.ultraUnifiedTips("gramiel","Legion Revenant").some(t=>t.text.includes("Atramentous Shade")));
+assert.ok(compact.ultraUnifiedTips("gramiel","Shaman").every(t=>!t.text.includes("Atramentous Shade")));
+assert.ok(compact.ultraUnifiedTips("dage","ArchPaladin").some(t=>t.quote.includes("Legion at my disposal")));
+assert.ok(compact.ultraUnifiedTips("nulgath","Chrono ShadowHunter").some(t=>t.text.includes("stacking indefinitely")));
+const personal=compact.ultraSpeakerPersonal(compact.simplifiedSpeakerPatterns[0],"ArchPaladin");
+assert.ok(personal.some(t=>t.event==="Zone 3"));
+assert.ok(personal.every(t=>t.event!=="Zone 1"));
+assert.ok(compact.ultraSpeakerPersonal(compact.simplifiedSpeakerPatterns[0],"Legion Revenant").some(t=>t.event==="Zone 2"));
+assert.ok(!html.includes("🧩 Team & advanced tactics"));
+assert.ok(ultraCSS.includes(".ultra-recommended-classes{justify-content:center}"));
+assert.ok(ultraCSS.includes("grid-template-columns:minmax(0,1fr) minmax(0,auto) minmax(0,1fr)"));
+console.log("Unified role guides, contextual action ownership, single quotes, personal Speaker rotations and centered header passed.");
