@@ -2059,7 +2059,7 @@ function reconcileRoutineState(pins,checks){
  for(const old of pins){
   const id=routineCanonicalId(old.id),entry=taskCatalog.find(x=>x.id===id);
   const next=entry?{...old,...entry,sourceProjects:old.sourceProjects}:old;
-  if(id!==old.id)changed=true;
+  if(id!==old.id||next.freq!==old.freq)changed=true;
   if(byId.has(id)){const prev=byId.get(id);prev.sourceProjects=[...new Set([...(prev.sourceProjects||[]),...(next.sourceProjects||[])])];changed=true}
   else byId.set(id,next);
  }
@@ -2087,6 +2087,7 @@ for(const t of taskCatalog){
  if(t.id==='guide-ultra-ezrajal'||t.id==='guide-ultra-warden'||t.id==='guide-ultra-engineer')t.acceptJoin='/join timeinn';
  if(t.sourceName&&t.group==='Ultra Boss')t.searchName=t.name+' · '+t.sourceName;
  if(t.id==='gramiel-echoes-weekly'||t.id==='gramiel-weekly')t.exclusiveGroup='gramiel-hub-weekly';
+ if(t.id==='wiki-holothurian-s-quests-frenzy-feast'||/^Daily Exercise [56]:/.test(t.name))t.categories=[...new Set([...(t.categories||[]),'Ultras'])];
  if(routineIsRecurring(t)&&t.group==='Ultra Boss'&&t.freq==='weekly'&&!t.exclusiveGroup)t.packs=[...new Set([...(t.packs||[]),'ultras'])];
 }
 // Curated acquisition instructions. Missing destinations deliberately stay unverified.
@@ -2295,9 +2296,10 @@ function renderHomeInsights(){
  activity.replaceChildren();projectList.replaceChildren();
  const records=pinnedTasks.filter(routineIsRecurring).map(t=>({task:t,done:taskDone(t)}));
  const daily=records.filter(x=>x.task.freq==='daily'),weekly=records.filter(x=>x.task.freq==='weekly');
- const pending=records.filter(x=>!x.done);
+ const pending=records.filter(x=>!x.done&&!routineConflict(x.task));
+ const dp=routineProgress(daily.map(x=>x.task)),wp=routineProgress(weekly.map(x=>x.task));
  activity.append(node('div',
-   `Today: ${daily.filter(x=>x.done).length}/${daily.length} dailies · This tracking week: ${weekly.filter(x=>x.done).length}/${weekly.length} weeklies`,
+   `Today: ${dp.done}/${dp.total} dailies · This tracking week: ${wp.done}/${wp.total} weeklies`,
    'muted tiny'));
  if(!records.length)activity.append(node('p','No active tasks yet. Open Daily / Weekly Tracker to pin your tasks.','muted tiny'));
  for(const freq of ['daily','weekly']){
@@ -2336,8 +2338,11 @@ function aqwServerDay(now=new Date()){const shifted=new Date(now.getTime()-5*60*
 function taskPeriod(freq,now=new Date()){const day=aqwServerDay(freq==='weekly'?new Date(now.getTime()-60000):now);if(freq==='daily')return 'd:'+day;const d=new Date(day+'T12:00:00Z');const since=(d.getUTCDay()+2)%7;d.setUTCDate(d.getUTCDate()-since);return 'w:'+d.toISOString().slice(0,10)}
 function taskKey(t){return taskPeriod(t.freq)+'|'+t.id}
 function taskDone(t){return taskChecks[taskKey(t)]===true}
+function routineConflict(t){return !taskDone(t)&&t.exclusiveGroup&&taskCatalog.find(x=>x.id!==t.id&&x.exclusiveGroup===t.exclusiveGroup&&x.freq===t.freq&&taskDone(x))}
+function routineIsUltraTask(t){return !t.exclusiveGroup&&(t.group==='Ultra Boss'||t.categories?.includes('Ultras'))}
+function routineProgress(tasks){const groups=new Map();for(const t of tasks){const key=t.exclusiveGroup||t.id;groups.set(key,!!(groups.get(key)||taskDone(t)||routineConflict(t)))}return {total:groups.size,done:[...groups.values()].filter(Boolean).length}}
 function resetUltraChecks(freq){
- const matches=pinnedTasks.filter(t=>routineIsRecurring(t)&&t.freq===freq&&t.group==='Ultra Boss');
+ const matches=pinnedTasks.filter(t=>routineIsRecurring(t)&&t.freq===freq&&routineIsUltraTask(t));
  const done=matches.filter(taskDone);
  if(!done.length){message('No completed '+freq+' Ultra tasks to reset for the current tracking period.');return}
  if(!confirm('Reset '+done.length+' completed '+freq+' Ultra check(s) for this tracking period? This does not reset game quests.'))return;
@@ -2345,16 +2350,17 @@ function resetUltraChecks(freq){
  savePlanner();renderPlanner();renderHomeInsights();message('Reset '+done.length+' local Ultra check(s).');
 }
 
-function toggleTask(t,done){if(!routineIsRecurring(t))return;taskChecks[taskKey(t)]=done;savePlanner();renderPlanner();renderHomeInsights()}
+function toggleTask(t,done){if(!routineIsRecurring(t))return;const conflict=done&&routineConflict(t);if(conflict){message('Only one of these quests can be completed this week. Undo '+conflict.name+' first.');renderPlanner();return}taskChecks[taskKey(t)]=done;savePlanner();renderPlanner();renderHomeInsights()}
 function pinTask(t){if(!routineIsRecurring(t)||pinnedTasks.some(x=>x.id===t.id))return;pinnedTasks.push({...t});savePlanner();renderPlanner()}
 function unpinTask(t){pinnedTasks=pinnedTasks.filter(x=>x.id!==t.id);savePlanner();renderPlanner()}
 function copyJoin(txt){if(!txt)return;if(navigator.clipboard?.writeText)navigator.clipboard.writeText(txt).then(()=>message(txt+' copied')).catch(()=>message('Copy '+txt));else message('Copy '+txt)}
-function taskCard(t,pinned){const card=node('div',undefined,'task-card'+(taskDone(t)?' done':''));const inner=node('div',undefined,'task-main');if(pinned){const input=node('input');input.type='checkbox';input.checked=taskDone(t);input.setAttribute('aria-label','Completed '+t.name);input.onchange=()=>toggleTask(t,input.checked);inner.append(input)}const name=node('div');name.append(node('strong',t.searchName||t.name,'task-title'));name.append(node('small',(t.freq==='daily'?'Daily':'Weekly')+' · '+(t.group||'Custom')));
+function taskCard(t,pinned){const card=node('div',undefined,'task-card'+(taskDone(t)?' done':''));const inner=node('div',undefined,'task-main');if(pinned){const input=node('input');input.type='checkbox';input.checked=taskDone(t);input.disabled=!!routineConflict(t);input.setAttribute('aria-label','Completed '+t.name);input.onchange=()=>toggleTask(t,input.checked);inner.append(input)}const name=node('div');name.append(node('strong',t.searchName||t.name,'task-title'));name.append(node('small',(t.freq==='daily'?'Daily':'Weekly')+' · '+(t.group||'Custom')));
  if(pinned&&Array.isArray(t.sourceProjects)&&t.sourceProjects.length){name.append(node('small','🎯 Project: '+t.sourceProjects.join(' · '),'task-project'))}
  if(!pinned){const tags=node('div',undefined,'planner-tags');for(const tag of taskCategories(t))tags.append(node('span',tag,'pill'));name.append(tags)}
  if(t.rewards?.length)name.append(node('small','Rewards: '+t.rewards.join(' · '),'planner-rewards'));
  if(t.acceptJoin&&t.acceptJoin!==t.join){const route=node('div',undefined,'task-location');route.append(node('small','Accept quest: '),makeCopyJoin(t.acceptJoin));name.append(route)}
  if(t.note)name.append(node('small',t.note,'task-unverified'));
+ const conflict=routineConflict(t);if(conflict)name.append(node('small','Alternative already completed: '+conflict.name,'task-unverified'));
  const info=taskRoutes[t.id];
  if(info){const details=node('details',undefined,'task-route');const summary=node('summary','📍 Where / what to defeat');details.append(summary);details.append(node('div',info.npc.replace(/\s*·\s*\/join\s+[a-z0-9-]+/gi,''),'task-location'));
  for(const target of info.targets){const line=node('div',undefined,'task-target');line.append(node('strong',target[0]),node('small',target[1]));if(target[2]){line.append(makeCopyJoin(target[2]))}else{line.append(node('small','Map not yet verified','task-unverified'))}details.append(line)}
@@ -2364,7 +2370,7 @@ function taskCard(t,pinned){const card=node('div',undefined,'task-card'+(taskDon
  inner.append(name);card.append(inner);if(pinned&&taskDone(t)){const undo=node('button','Undo completion','smallbutton planner-undo');undo.type='button';undo.onclick=()=>{if($('plannerstatus').value==='completed')$('plannerstatus').value='all';toggleTask(t,false)};name.append(undo)}const button=node('button',pinned?'Unpin':'+ Pin','smallbutton');button.onclick=()=>pinned?unpinTask(t):pinTask(t);card.append(button);return card}
 $('resetultradaily').onclick=()=>resetUltraChecks('daily');$('resetultraweekly').onclick=()=>resetUltraChecks('weekly');
 let plannerShowAll=false;
-const coverage=window.AQWCRoutineLibrary?.coverage;if(coverage){$('planner-coverage').textContent=coverage.quests.toLocaleString()+' quest records across '+coverage.pages.toLocaleString()+' source pages scanned. '+coverage.daily+' daily and '+coverage.weekly+' weekly source entries identified. Some source pages do not specify individual quest frequency in the export; check the Wiki before treating unclassified quests as recurring.';for(const p of window.AQWCRoutineLibrary.sourcePages||[]){const a=node('a',p.name+' ↗','task-wiki');a.href=p.url;a.target='_blank';a.rel='noopener noreferrer';const line=node('div');line.append(a);$('planner-source-pages').append(line)}}
+const coverage=window.AQWCRoutineLibrary?.coverage;if(coverage){$('planner-coverage').textContent=coverage.quests.toLocaleString()+' quest records across '+coverage.pages.toLocaleString()+' source pages scanned. '+coverage.daily+' daily and '+coverage.weekly+' weekly source entries identified (raw index, not the deduplicated active library). Some source pages do not specify individual quest frequency in the export; check the Wiki before treating unclassified quests as recurring.';for(const p of window.AQWCRoutineLibrary.sourcePages||[]){const a=node('a',p.name+' ↗','task-wiki');a.href=p.url;a.target='_blank';a.rel='noopener noreferrer';const line=node('div');line.append(a);$('planner-source-pages').append(line)}}
 function taskCategories(t){const tags=new Set([t.group||'General',...(t.categories||[])]);if(t.group==='Ultra Boss')tags.add('Ultras');if(t.group==='Legion'||t.group==='Nulgath'||t.group==='Shadowfall')tags.add('Factions');if(t.group==='Metals')tags.add('Materials');if(String(t.group).includes('End game'))tags.add('Endgame');for(const r of projectRoutines)if(r.ids.includes(t.id))tags.add('Endgame projects');return [...tags]}
 function taskSearchText(t){return [t.name,t.searchName,t.group,t.join,t.acceptJoin,...taskCategories(t),...(t.rewards||[]),...(t.targets||[]),t.npc,t.location,t.sourceName,t.note,...projectRoutines.filter(r=>r.ids.includes(t.id)).flatMap(r=>r.terms),...(taskRoutes[t.id]?.targets||[]).flat()].join(' ').toLowerCase()}
 
@@ -2376,16 +2382,19 @@ function renderPlanner(){const suggested=$('planner-suggestions'),my=$('planner-
  const cat=$('plannercategory'),pinFilter=$('plannerpinfilter').value;const selected=cat.value;const categories=[...new Set(activeCatalog.flatMap(taskCategories))].sort();cat.replaceChildren(new Option('All categories','all'),...categories.map(c=>new Option(c,c)));cat.value=categories.includes(selected)?selected:'all';
  const matches=activeCatalog.filter(x=>(freq==='all'||x.freq===freq)&&(cat.value==='all'||taskCategories(x).includes(cat.value))&&(pinFilter==='all'||(pinFilter==='pinned')===pinnedTasks.some(y=>y.id===x.id))&&(!query||taskSearchText(x).includes(query)));suggested.replaceChildren();$('plannerresultcount').textContent=' · '+matches.length+' of '+activeCatalog.length+' tasks';
  const visible=(plannerShowAll||query)?matches:matches.slice(0,36);
+ $('plannerresultcount').textContent=' · Showing '+visible.length+' of '+matches.length+' matching tasks ('+activeCatalog.length+' recurring indexed)';
  for(const t of visible)suggested.append(taskCard(pinnedTasks.find(p=>p.id===t.id)||t,pinnedTasks.some(p=>p.id===t.id)));
  if(visible.length<matches.length){
   const more=node('button','Show all '+matches.length+' tasks','smallbutton planner-show-all');
   more.type='button';more.onclick=()=>{plannerShowAll=true;renderPlanner()};suggested.append(more);
  }
  if(!matches.length)suggested.append(node('div','No tasks match your filters.','planner-empty'));
+ const reference=taskCatalog.filter(t=>!routineIsRecurring(t)&&(!query||taskSearchText(t).includes(query))&&(freq==='all'||t.freq===freq));
+ if(reference.length&&pinFilter!=='unpinned'&&pinFilter!=='pinned'&&cat.value==='all'){const box=node('details',undefined,'task-route');box.append(node('summary','Progression / retired / legacy references · '+reference.length));for(const t of reference){const line=node('div',undefined,'task-card');const name=node('div');name.append(node('strong',t.name),node('small',routineReviewReason(t),'task-unverified'));if(t.wiki){const link=node('a','Quest source ↗','task-wiki');link.href=t.wiki;link.target='_blank';link.rel='noopener noreferrer';name.append(link)}line.append(name);box.append(line)}suggested.append(box)}
  my.replaceChildren();for(const freq of ['daily','weekly']){const group=node('div',undefined,'planner-task-group');group.append(node('h3',freq==='daily'?'Daily Tasks':'Weekly Tasks'));const tasks=pinnedTasks.filter(t=>routineIsRecurring(t)&&t.freq===freq).sort((a,b)=>Number(taskDone(a))-Number(taskDone(b))||a.name.localeCompare(b.name));const status=$('plannerstatus').value;for(const [title,done] of [['Pending',false],['Completed',true]]){if(status!=='all'&&status!==(done?'completed':'pending'))continue;const subset=tasks.filter(t=>taskDone(t)===done);group.append(node('h4',title+' · '+subset.length,'planner-state-heading'));for(const t of subset)group.append(taskCard(t,true));if(!subset.length)group.append(node('p',done?'Nothing completed yet.':'No pending tasks.','muted tiny'))}my.append(group)}
  const review=pinnedTasks.filter(t=>!routineIsRecurring(t));if(review.length){const box=node('details',undefined,'task-route');box.append(node('summary','Saved tasks needing review · '+review.length));for(const t of review){const line=node('div',undefined,'task-card');line.append(node('div',t.name+' — '+routineReviewReason(t)));const remove=node('button','Unpin','smallbutton');remove.onclick=()=>unpinTask(t);line.append(remove);box.append(line)}my.append(box)}
  const history=$('planner-task-history');history.replaceChildren();const entries=Object.entries(taskChecks).filter(([,done])=>done===true).sort(([a],[b])=>b.localeCompare(a));for(const [id] of entries){const [period,...parts]=id.split('|');const taskId=parts.join('|');const t=pinnedTasks.find(x=>x.id===taskId)||taskCatalog.find(x=>x.id===taskId);history.append(node('div',period+' · '+(t?.name||taskId),'planner-history-row'));}if(!entries.length)history.append(node('p','No completed tasks recorded yet.','muted tiny'));if(!pinnedTasks.length)my.append(node('div','Pin a starter pack, a suggestion, or add your own task.','planner-empty'));
- for(const freq of ['daily','weekly']){const t=pinnedTasks.filter(x=>routineIsRecurring(x)&&x.freq===freq),done=t.filter(taskDone).length;$(freq+'count').textContent=done+' / '+t.length;$(freq+'bar').style.width=(t.length?100*done/t.length:0)+'%'}
+ for(const freq of ['daily','weekly']){const t=pinnedTasks.filter(x=>routineIsRecurring(x)&&x.freq===freq),progress=routineProgress(t);$(freq+'count').textContent=progress.done+' / '+progress.total;$(freq+'bar').style.width=(progress.total?100*progress.done/progress.total:0)+'%'}
  $('plannerperiod').textContent='AQW server day: '+taskPeriod('daily').slice(2)+' (EST) · Weekly reset: Friday 00:01 EST';
  updatePlannerTimers();
 }
