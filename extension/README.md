@@ -104,3 +104,6 @@ Item information and Companion status aligned on the first row; farming and stan
 
 ### v0.12.7
 Balanced item page grid (60% farming/40% artwork), narrower ingredient column, equal-height top cards, larger right-side monster previews, and a rebuilt contained CSS banner frame without inherited image sizing. No new permissions or changes to farming/sync calculations. Live Opera QA pending.
+
+### v0.12.8
+Equal-height farming and artwork cards; explicit rarity/base damage in the item summary; original details collapsed on recognized split item layouts. Monster links remain visible when artwork cannot be loaded; allowlisted legacy HTTP image URLs upgraded to HTTPS. Banner unchanged. No new permissions or farming logic changes. Browser validation required.
