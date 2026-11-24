@@ -96,6 +96,23 @@
   const result={};for(const kind of ['locations','drops','quests','shops']){const list=[...(reviewed?.[kind]||[])];for(const x of primary?.[kind]||[])if(!list.some(y=>y.slug===x.slug&&y.name===x.name&&(y.hash||'')===(x.hash||'')))list.push(x);result[kind]=list}
   return result;
  }
+ function mapCommand(content){
+  const text=String(content?.innerText||content?.textContent||'');
+  const names=[...new Set([...text.matchAll(/\bMap Name\s*:\s*([a-z0-9-]{1,60})\b/gi)].map(m=>m[1].toLowerCase()))];
+  const joins=[...new Set([...text.matchAll(/\/join\s+([a-z0-9-]{1,60})\b/gi)].map(m=>m[1].toLowerCase()))];
+  return names.length===1&&joins.includes(names[0])?names[0]:null;
+ }
+ const mapCache=new Map();let mapRequests=0;
+ async function verifyMap(origin,slug){
+  if(mapCache.has(slug))return mapCache.get(slug);
+  if(mapRequests>=10)throw Error('Map lookup limit reached; open the location page.');
+  mapRequests++;
+  const doc=await loadDocument(origin,slug),content=doc.querySelector('#page-content');
+  const crumb=doc.querySelector('#breadcrumbs')||doc.querySelector('.breadcrumbs, #breadcrumb, .breadcrumb');
+  if(!content||!doc.querySelector('#page-title')||![...(crumb?.querySelectorAll('a[href]')||[])].some(a=>sourceLink(a,origin)?.slug==='locations'))throw Error('Not a verified location page.');
+  const join=mapCommand(content);if(!join)throw Error('Map command not verified.');
+  mapCache.set(slug,join);return join;
+ }
  function renderSources(container,sources,origin,slug,{partial=false}={}){
   if(!sources||!Object.values(sources).some(a=>a.length))return false;
   const box=document.createElement('div');box.className='aqwc-source-guide';const title=document.createElement('strong');title.textContent='How to get';box.append(title);
@@ -106,10 +123,13 @@
     const line=document.createElement('div');line.className='aqwc-source-line';const a=document.createElement('a');a.href=origin+'/'+x.slug+(x.hash||'');a.textContent=x.name;line.append(a);
     if(kind==='locations'){
      const join=x.join||(x.slug==='luna-cove'?'lunacove':null);
-     if(join&&/^[a-z0-9-]{1,60}$/.test(join)){
-      const copy=document.createElement('button');copy.type='button';copy.textContent='/join '+join+' · Copy';copy.className='aqwc-copy-join';
-      copy.addEventListener('click',async e=>{if(!e.isTrusted)return;try{await navigator.clipboard.writeText('/join '+join);copy.textContent='Copied /join '+join}catch{copy.textContent='/join '+join+' · copy manually'}});line.append(copy);
-     }
+     let command=join||mapCache.get(x.slug);
+     const copy=document.createElement('button');copy.type='button';copy.textContent=command?'/join '+command+' · Copy':'Find /join';copy.className='aqwc-copy-join';
+     copy.addEventListener('click',async e=>{
+      if(!e.isTrusted||copy.disabled)return;
+      if(!command){copy.disabled=true;copy.textContent='Checking map…';try{command=await verifyMap(origin,x.slug);copy.textContent='/join '+command+' · Copy'}catch{copy.textContent='Open location to verify';copy.disabled=true;return}finally{if(command)copy.disabled=false}return}
+      try{await navigator.clipboard.writeText('/join '+command);copy.textContent='Copied /join '+command}catch{copy.textContent='/join '+command+' · copy manually'}
+     });line.append(copy);
     }
     group.append(line);
    }
@@ -118,7 +138,7 @@
   if(partial){const note=document.createElement('small');note.textContent='Reviewed sources (partial list). Open the Wiki for all sources.';box.append(note)}
   const link=document.createElement('a');link.href=origin+'/'+slug;link.textContent='View original material page ↗';link.className='aqwc-source-page';box.append(link);container.append(box);return true;
  }
- async function loadRecipe(origin,slug){
+ async function loadDocument(origin,slug){
   if(origin!=='https://aqwwiki.wikidot.com'||! /^[a-z0-9][a-z0-9-]{0,199}$/.test(slug))throw Error('Unsupported Wiki link');
   const url=origin+'/'+slug,controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
   try{
@@ -128,13 +148,16 @@
    const reader=r.body.getReader(),decoder=new TextDecoder();let html='',size=0;
    try{while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>1500000){await reader.cancel();throw Error('Wiki page too large')}html+=decoder.decode(value,{stream:true})}html+=decoder.decode()}finally{reader.releaseLock()}
    const template=document.createElement('template');template.innerHTML=html;
-   const doc=template.content,content=doc.querySelector('#page-content');
+   return template.content;
+  }finally{clearTimeout(timer)}
+ }
+ async function loadRecipe(origin,slug){
+   const doc=await loadDocument(origin,slug),content=doc.querySelector('#page-content'),url=origin+'/'+slug;
    const body=String(content?.textContent||'');
    const crumb=doc.querySelector('#breadcrumbs')||doc.querySelector('.breadcrumbs, #breadcrumb, .breadcrumb');
    const links=[...(crumb?.querySelectorAll('a[href]')||[])];
    if(!content||!doc.querySelector('#page-title')||!/\bSellback\s*:/i.test(body)||!/\bDescription\s*:/i.test(body)||/\busually refers to\s*:/i.test(body)||links.length&&!links.some(a=>{try{return new URL(a.getAttribute('href'),url).pathname.replace(/^\/|\/$/g,'')==='items'}catch{return false}}))return {groups:[],incomplete:true};
    return {...parse(content,origin),sources:parseSources(content,origin)};
-  }finally{clearTimeout(timer)}
  }
  function render(card,content,origin){
   const {groups,incomplete}=parse(content,origin);
@@ -217,5 +240,5 @@
   }
   draw();lookup().catch(()=>{statusLine.textContent='Inventory unavailable. Sync in Companion and refresh this page.'}).finally(()=>{busy=false;draw()});
  }
- globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources});
+ globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources,mapCommand});
 })();
