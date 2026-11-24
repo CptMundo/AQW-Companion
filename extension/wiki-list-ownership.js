@@ -19,14 +19,36 @@ function candidate(a,category){
  if(categoryFor(u.pathname)||['items','weapons','housing','world','shops','quests','monsters','locations','npcs','factions','search','search-items-by-tag','start','key','glossary','system','list-of-all-tags'].includes(slug)||slug===category)return null;
  return {name,slug,anchor:a};
 }
+function sectionMarker(el){
+ const tag=String(el.tagName||'').toUpperCase(),name=clean(el.textContent);
+ const letter=/^(?:[A-Z]|#|0-9)$/i;
+ if(/^H[1-6]$/.test(tag))return letter.test(name)?'start':'end';
+ if(tag==='A'){
+  // Named jump targets are not item links and may be empty.
+  if(el.getAttribute('href')!==null)return null;
+  const target=clean(el.getAttribute('name')||el.getAttribute('id'));
+  return letter.test(target)?'start':null;
+ }
+ if(!/^(P|STRONG|B|SPAN|DIV)$/.test(tag))return null;
+ if(el.closest?.('a[href],#breadcrumbs,.breadcrumbs,#breadcrumb,.breadcrumb,.page-tags,.pager,.pagination'))return null;
+ // The live indexes use plain letter separators, not always H1-H6.
+ // Do not interpret linked alphabetical navigation as a section marker.
+ if(letter.test(name)&&!el.querySelector?.('a[href]'))return 'start';
+ return null;
+}
 function collect(content,category,sorted){
- // Canonical indexes have alphabetical headings; filtered indexes are commonly
- // Wikidot ListPages modules. No arbitrary links from prose or navigation.
- const rows=[];let inList=false;
- for(const el of content.querySelectorAll('h1,h2,h3,h4,h5,h6,a[href]')){
-  if(/^H[1-6]$/.test(el.tagName)){inList=/^(?:[A-Z]|#|0-9)$/i.test(clean(el.textContent));continue}
-  if(!inList&&!(sorted&&el.closest?.('.list-pages-box,.list-pages-item')))continue;
-  const item=candidate(el,category);if(item)rows.push(item);
+ const rows=[];let inList=false,autoList=false;
+ for(const el of content.querySelectorAll('h1,h2,h3,h4,h5,h6,p,strong,b,span,div,a[name],a[id],a[href]')){
+  if(el.tagName==='A'&&el.getAttribute('href')!==null){
+   if(/^back to top$/i.test(clean(el.textContent))){inList=false;autoList=false;continue}
+   if(!inList&&!(sorted&&(autoList||el.closest?.('.list-pages-box,.list-pages-item'))))continue;
+   const item=candidate(el,category);if(item)rows.push(item);
+   continue;
+  }
+  if(sorted&&/^(?:auto[ -]updating list of|list of all)\b/i.test(clean(el.textContent))&&/^(P|STRONG|B|SPAN|H[1-6])$/.test(el.tagName)&&!el.querySelector?.('a[href]'))autoList=true;
+  const marker=sectionMarker(el);
+  if(marker==='start')inList=true;
+  if(marker==='end'){inList=false;autoList=false}
  }
  return rows;
 }
@@ -51,7 +73,6 @@ function init(){
  const crumb=document.getElementById('breadcrumbs')||document.querySelector('.breadcrumbs,#breadcrumb,.breadcrumb');
  if(crumb){const links=[...crumb.querySelectorAll('a[href]')];if(links.length&&!links.some(a=>{try{return new URL(a.getAttribute('href'),origin).pathname.replace(/^\/|\/$/g,'')==='items'}catch{return false}}))return}
  const groups=groupRows(collect(content,category,location.pathname.startsWith('/sort-by-')));
- if(!groups.length)return;
  const host=document.createElement('div');host.id='aqwc-list-ownership';host.style.cssText='margin:8px 0';
  const shadow=host.attachShadow({mode:'closed'}),panel=document.createElement('div');
  panel.style.cssText='display:inline-block;padding:8px 12px;border:1px solid #38566d;border-radius:8px;background:#142b3e;color:#e5f5ff;font:600 13px/1.5 system-ui;max-width:100%;box-sizing:border-box';
@@ -63,6 +84,7 @@ function init(){
  const show=btn('Show ownership'),next=btn('Check next 400'),clear=btn('Clear labels');next.hidden=true;clear.hidden=true;
  const status=document.createElement('small');status.setAttribute('role','status');status.style.cssText='display:block;color:#b6cddd;font-weight:400;margin-top:4px';
  controls.append(search,show,next,clear);panel.append(titleLine,note,controls,status);shadow.append(panel);(document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);
+ if(!groups.length){search.disabled=show.disabled=true;status.textContent='No supported item links detected on this index. Refresh the page; if this persists, report the page URL.';return}
  let selected=[],offset=0,syncedAt=null,exportedAt=null,busy=false,owned=0,unknown=0,absent=0;
  const labels=new Set();
  function reset(){for(const el of labels)el.remove();labels.clear();selected=[];offset=0;syncedAt=null;exportedAt=null;owned=0;unknown=0;absent=0;next.hidden=true;clear.hidden=true}
@@ -100,6 +122,6 @@ function init(){
  next.addEventListener('click',e=>{if(e.isTrusted&&!busy)batch()});
  clear.addEventListener('click',e=>{if(!e.isTrusted||busy)return;reset();status.textContent='Labels cleared.';show.textContent='Show ownership'});
 }
-globalThis.AQWCListOwnership=Object.freeze({categoryFor,candidate,collect,groupRows,label});
+globalThis.AQWCListOwnership=Object.freeze({categoryFor,candidate,sectionMarker,collect,groupRows,label});
 if(typeof document!=='undefined')init();
 })();
