@@ -98,7 +98,7 @@ assert.equal(reviewedApi.encounterUltraBuild("darkon","StoneCrusher",null).base,
 assert.equal(reviewedApi.encounterUltraBuild("ezrajal","Void Highlord",null),null,"No invented encounter preset");
 assert.ok(reviewedApi.ultraReviewedTactics.gramiel.some(row=>row[1].includes("70%, 40% and 10%")));
 assert.ok(html.includes("for(const [label,description] of b.phases||[])"),"Render existing fight phases");
-assert.ok(html.includes("General setup; adjust for this fight."));
+assert.ok(html.includes("Suggested general setup — not encounter-tested."));
 assert.ok(html.includes("ultraReviewedSources[b.id]||[]"));
 for(const rows of Object.values(reviewedApi.ultraReviewedSources))for(const [,url] of rows)assert.ok(url.startsWith("https://"));
 
@@ -123,7 +123,7 @@ assert.ok(!html.includes("appendSimplifiedProfile(root,simplifiedProfiles[b.id]"
 assert.ok(html.includes("renderSimplifiedExtras(root,term)"));
 assert.ok(html.includes("Score belongs only in the selector"));
 
-const compact=vm.runInNewContext(reviewedCode+"\n({ultraClassOptions,ultraSelectedRating,ultraWorkbookBuild,ultraCompactTips,ultraActionTips,ultraBeginnerActions,ultraBeginnerText,ultraGlossary,ultraTermPattern,simplifiedProfiles,simplifiedRatings,simplifiedExtraEncounters,sameUltraClass,fillUltraClassSelect,renderUltraSelectedRating,appendUltraGearCells})",{
+const compact=vm.runInNewContext(reviewedCode+"\n({ultraClassOptions,ultraSelectedRating,ultraWorkbookBuild,ultraCompactTips,ultraActionTips,ultraBeginnerActions,ultraBeginnerText,ultraGlossary,ultraTermPattern,ultraTermInfo,ultraSuggestedGear,ultraRecommendedTeam,simplifiedProfiles,simplifiedRatings,simplifiedExtraEncounters,sameUltraClass,fillUltraClassSelect,renderUltraSelectedRating,appendUltraGearCells})",{
  node(tag,text,cls){return {tag,text,cls,children:[],append(...x){this.children.push(...x)},replaceChildren(...x){this.children=x}}},
  Option:function(label,value){this.label=label;this.value=value},
  ultraOwned:cls=>['Lord of Order','Void Highlord'].includes(cls)
@@ -163,7 +163,7 @@ compact.renderUltraSelectedRating(rating,"drakath","Bard");
 assert.ok(rating.children.some(x=>x.text==="Not owned"));
 assert.ok(!rating.children.some(x=>x.text.includes("Healer")),"Class change clears previous rating");
 assert.ok(html.includes("fillUltraClassSelect(select,b.id,profile,"));
-assert.ok(html.includes("const baseBuild=workbook||encounter||generic"));
+assert.ok(html.includes("const build=ultraSuggestedGear(b.id,cls,profile,generic,encounter)"));
 assert.ok(html.includes("renderUltraSelectedRating(rating,b.id,cls)"));
 assert.ok(html.includes("const tips=ultraBeginnerActions(b.id,cls,ultraActionTips(b.id,cls,baseTips))"));
 assert.ok(html.includes("if(b.id==='speaker')appendSpeakerRotations(inner)"));
@@ -221,7 +221,7 @@ assert.ok(html.includes("Progression / retired / legacy references"));
 assert.ok(html.includes("selectedUltraClasses.get(b.id)"));
 assert.ok(html.includes("selectedUltraClasses.set(b.id,cls)"));
 assert.ok(html.includes("const chosen=all.find"));
-assert.ok(html.includes("consumable:'Vigil'"));
+assert.ok(html.includes("out.consumable='Vigil'"));
 assert.equal(workbookApi.simplifiedExtraEncounters.find(x=>x.name==="Fourth Lynaria").join,"/join murdermoon");
 assert.equal(workbookApi.simplifiedRoleRatings("Fourth Lynaria",0).find(x=>x.name==="Verus DoomKnight").rating,5);
 assert.equal(guide.caption("Avoid Decay during the crystal phase"),"Decay · Hold the debuff");
@@ -245,8 +245,39 @@ assert.ok(compact.ultraGlossary["Noxious Decay"].text.includes("11 seconds"));
 assert.ok(compact.ultraGlossary["Righteous Seal"].text.includes("skill 4"));
 assert.ok(compact.ultraGlossary["Sacred Magic: Eden"].text.includes("skill 5"));
 assert.ok("Noxious Decay reverses HoTs".split(compact.ultraTermPattern).includes("Noxious Decay"));
-assert.ok(html.includes("ultraExplainText(description,part.text)"));
+assert.ok(html.includes("ultraExplainText(description,part.text,b.id)"));
 assert.ok(html.includes("img.referrerPolicy='no-referrer'"));
 assert.ok(ultraCSS.includes(".ultra-help-term:focus>.ultra-help-popup"));
 assert.ok(!html.includes("Workbook loadout · agree your party strategy."));
 console.log("Beginner tips: rating 3–5, exact sword timing, skill names, glossary and icon reference.");
+
+for(const [key,p] of Object.entries(compact.simplifiedProfiles)){
+ for(const cls of compact.ultraClassOptions(key,p).flatMap(x=>x.names)){
+  const gear=compact.ultraSuggestedGear(key,cls,p);
+  for(const slot of ["weapon","helm","cape","base"])assert.ok(gear[slot],key+" / "+cls+" / "+slot);
+  if(key==="dage")assert.match(gear.weapon,/Health Vamp|Dauntless/);
+  if(key==="kathool")assert.equal(gear.consumable,"Vigil");
+ }
+}
+for(const p of compact.simplifiedExtraEncounters)for(const cls of compact.ultraClassOptions(p.name,p).flatMap(x=>x.names)){
+ const gear=compact.ultraSuggestedGear(p.name,cls,p);for(const slot of ["weapon","helm","cape","base"])assert.ok(gear[slot],p.name+" / "+cls+" / "+slot);
+}
+assert.equal(compact.ultraSuggestedGear("tyndarius","Chaos Shaper",null).base,"Lucky");
+assert.equal(compact.ultraSuggestedGear("engineer","Sentinel",null).estimated,true);
+assert.equal(compact.ultraSuggestedGear("kathool","Chaos Shaper",null).consumable,"Vigil");
+assert.ok(!compact.ultraTermInfo("Zone","dage").text.includes("Speaker"));
+assert.ok(!compact.ultraTermInfo("Zone","speaker").text.includes("Dage"));
+assert.ok(!compact.ultraTermInfo("HoT","engineer").text.includes("Dage"));
+assert.ok(compact.ultraTermInfo("Zone","dage").text.includes("3 seconds"));
+assert.ok(compact.ultraTermInfo("Zone","speaker").text.includes("assigned"));
+const apDage=compact.ultraBeginnerActions("dage","ArchPaladin",[]);
+assert.equal(apDage.length,4);
+assert.ok(apDage.some(x=>x.includes("Hymn of Light (3)")));
+assert.ok(apDage.some(x=>x.includes("Scroll of Decay")&&x.includes("backup")));
+assert.ok(apDage.every(x=>!/\b(?:LDK|LR|Legion Revenant|Legion DoomKnight)\b/.test(x)));
+assert.equal(apDage.filter(x=>x.includes("Cower behind")).length,1);
+assert.equal(compact.ultraRecommendedTeam({team:["A","B","C","D"]},{team:[{cls:"E"}]}).join(","),"A,B,C,D");
+assert.ok(html.includes("appendUltraRecommendedTeam(root,b,profile)"));
+assert.ok(ultraCSS.includes(".ultra-react-step"));
+assert.ok(ultraCSS.includes(".ultra-recommended-team"));
+console.log("Ultra team, all selectable class gear slots, scoped glossary, and AP reaction guidance passed.");
