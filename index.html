@@ -1994,7 +1994,7 @@ const ultraRoleActions={
  drago:{all:['Focus Bowmaster → Executioner → Drago; do not split guard damage.'],Support:['If assigned a guard taunt, control that guard until the team switches; prepare mitigation before Bowmaster dies.'],Healer:['Keep recovery ready for guard deaths and the transition to Executioner.'],DPS:['Finish Bowmaster before switching to Executioner, then Drago.']},
  darkon:{all:['Never take consecutive Elegy taunts unless the agreed strategy accounts for the debuffs. Avoid Vainglory in the workbook setup.'],Support:['Keep damage debuffs active to meet the timed DPS check; if assigned Elegy, alternate with the other taunter.'],Healer:['In Phase 2 stagger direct heals with the other healer; reserve recovery for the next damage window.'],DPS:['Reach the first transition near 15.56M HP before 72 seconds; maintain DPS during phase changes without taking unassigned Elegy taunts.']},
  gramiel:{all:['Balance the crystals and kill both within five seconds. On the drain cue, switch to Gramiel to break guard.','At 70%, 40% and 10% HP hold damage until required Vendetta/Death’s Door protection is ready; five Vendetta stacks are fatal.'],Support:['Alternate taunts with your assigned crystal partner on the defense-shattering cue, then take your turn in the four-player Vendetta rotation.'],Healer:['Sustain your crystal pair and alternate its taunts on the cue; take only your assigned Vendetta turn in Phase 2.'],DPS:['Balance crystal damage instead of bursting one early. In Phase 2, follow your assigned Vendetta turn and pause at protection thresholds.']},
- speaker:{all:['Only enter your assigned Zone on “All stand equal beneath the eyes of the Eternal.” Never enter with Magia Burn, Stasis or Sanctity.','On Truth and Listen, only the designated player taunts. Use ONE complete rotation from Advanced Tactics; never mix charts.'],Support:['Take the Truth/Listen assignment matching your chosen rotation, not another support class’s assignment; prepare mitigation before the assigned Truth.'],Healer:['Stagger recovery with the other healer and follow your rotation’s heal/mitigation schedule.'],DPS:['Enter the DPS Zone only if assigned by the chosen chart; do not taunt unless that chart assigns DPS a taunt.']}
+ speaker:{all:['Only enter your assigned Zone on “All stand equal beneath the eyes of the Eternal.” Never enter with Magia Burn, Stasis or Sanctity.','On Truth and Listen, only the designated player taunts. Use ONE complete rotation; never mix charts.'],Support:['Take the Truth/Listen assignment matching your chosen rotation, not another support class’s assignment; prepare mitigation before the assigned Truth.'],Healer:['Stagger recovery with the other healer and follow your rotation’s heal/mitigation schedule.'],DPS:['Enter the DPS Zone only if assigned by the chosen chart; do not taunt unless that chart assigns DPS a taunt.']}
 };
 function ultraActionTips(key,cls,existing=[]){
  const row=ultraRoleActions[key];if(!row)return existing;
@@ -2043,9 +2043,8 @@ function appendSimplifiedProfile(root,profile){
   const label=node('label','Your loadout','muted tiny'),select=node('select',undefined,'ultra-role-select');select.setAttribute('aria-label',profile.name+' class');
   fillUltraClassSelect(select,key,profile);
   const rating=node('div',undefined,'ultra-selected-rating'),gear=node('div',undefined,'ultra-focus-gear');
-  const note=node('p',undefined,'muted tiny');
-  const draw=()=>{renderUltraSelectedRating(rating,key,select.value);gear.replaceChildren();const genericKey=Object.keys(starterBuilds).find(x=>sameUltraClass(x,select.value));const build=ultraSuggestedGear(key,select.value,profile,starterBuilds[genericKey]?.group);appendUltraGearCells(gear,build,key);note.textContent=build.estimated?'Suggested general setup — not encounter-tested.':'Guide setup.';};
-  label.append(select);content.append(label,rating,gear,note);select.onchange=draw;draw();
+  const draw=()=>{renderUltraSelectedRating(rating,key,select.value);gear.replaceChildren();const genericKey=Object.keys(starterBuilds).find(x=>sameUltraClass(x,select.value));const build=ultraSuggestedGear(key,select.value,profile,starterBuilds[genericKey]?.group);appendUltraGearCells(gear,build,key);gear.title=build.estimated?'Suggested enhancements; not verified for this encounter.':'Encounter guide enhancements';};
+  label.append(select);content.append(label,rating,gear);select.onchange=draw;draw();
  }
  for(const tip of profile.tips||[]){const p=node('p');ultraExplainText(p,ultraBeginnerText(tip,''),key);content.append(p)}
  if(profile.potions?.length)content.append(node('p','Suggested consumables: '+profile.potions.join(' · ')));
@@ -2058,6 +2057,127 @@ function renderSimplifiedExtras(root,term){
  const section=node('section',undefined,'ultra-catalog-group');section.append(node('h4','More boss guides · '+entries.length));
  for(const e of entries){const card=node('div',undefined,'ultra-catalog-card');card.append(node('strong',e.name),node('small',e.group));const actions=node('div',undefined,'ultra-catalog-actions');actions.append(makeCopyJoin(e.join));const link=node('a','Wiki location ↗');link.href='https://aqwwiki.wikidot.com/'+e.wiki;link.target='_blank';link.rel='noopener noreferrer';actions.append(link);card.append(actions);appendSimplifiedProfile(card,e);section.append(card)}
  root.append(section);return entries.length;
+}
+
+
+// Single chronological, role-scoped checklist. Curated from the existing
+// playbooks, fight phases, callouts and reviewed tactical checks.
+// Do not combine incompatible strategy variants or duplicate the quick overview.
+function ultraUnifiedTips(key,cls,previous=[]){
+ const rating=ultraSelectedRating(key,cls),role=rating?.role||'';
+ const is=n=>sameUltraClass(n,cls);
+ const healer=role==='Healer'||is('Lord of Order')||is('StoneCrusher');
+ const support=role==='Support'||healer||is('ArchPaladin');
+ const tips=[];
+ const add=(title,text,quote='')=>tips.push({title,text,quote});
+ if(key==='drakath'){
+  add('Before pulling','Aim for around 3,000 buffed HP, or 3,500 if you are the assigned taunter. Equip seven Scrolls of Enrage if you will taunt every HP blast.');
+  add('HP blasts · 18M / 16M / 14M / 12M / 8M / 6M / 4M','If assigned to taunt, activate Scroll of Enrage BEFORE the next threshold. Otherwise hold burst until the taunter confirms readiness. Resume damage after the blast.');
+  if(is('Lord of Order'))add('Support','Maintain buffs between blasts; heal after damage lands. Use Blessing of Order (5) for planned mitigation.');
+  else if(is('ArchPaladin'))add('Mitigation','Maintain Commandment (2) and Righteous Seal (4); time Hymn of Light (3) after damage lands. Use Sacred Magic: Eden (5) only in the planned mitigation window.');
+  else if(healer)add('Recovery','Keep recovery available for HP blasts; stagger direct heals with the other healer.');
+  else if(support)add('Support','Maintain your buffs and defensive debuffs between HP blasts.');
+  add('10M HP · Transformation','This is a transformation, not a normal tauntable blast.');
+  add('2M HP · Final Meteor','Use your final damage window and finish within 20 seconds. Scroll of Enrage cannot stop the meteor.','I WILL NOT LOSE EVERYTHING! NOT AGAIN!');
+ }else if(key==='kathool'){
+  add('Prepare','Equip Vigil before pulling; all seven players need it.');
+  if(healer)add('Mana & healing','Maintain mana support and recovery as Kathool’s Glare doubles mana costs. Heal through Migraine.');
+  else if(support)add('Debuffs','Keep debuffs on the called target; help clear spawned Sacrosanct Tendrils.');
+  add('Tendril priority','Focus the called Sacrosanct Tendril together. Below 30% HP it enrages; finish it quickly before returning to Kathool.');
+  add('Nightmare · 3 seconds','Activate Vigil immediately, then resume your role. Taunt cannot replace Vigil.','You cannot resist.');
+ }else if(key==='ezrajal'){
+  add('Prepare','Aim for at least 3,175 HP before pulling.');
+  add('Counter Attack','Stop damaging skills and untarget until the reflection ends. Re-engage only after it expires.');
+  add('Prism burst',healer?'Keep a heal ready for the heavy multi-hit burst; recover when skills unlock.':support?'Refresh mitigation before the prism burst and resume damaging debuffs only when reflection ends.':'Prepare for the heavy prism burst and skill lockout; save damage skills for the safe window.');
+ }else if(key==='warden'){
+  add('1 HP attack',healer?'Keep a heal ready; restore the party immediately when HP drops to 1.':'Expect sudden 1 HP and stuns; allow recovery before continuing burst.');
+  if(is('Lord of Order'))add('Mitigation','Time Blessing of Order (5) around Berserk when assigned.');
+  add('450k HP · Enrage','If assigned taunt, prepare Scroll of Enrage before 450k HP. Otherwise hold burst until the taunter calls ready, then finish quickly.');
+ }else if(key==='engineer'){
+  add('Opening','Let a ranged player initiate before moving in.');
+  add('Defense Drone','Focus Defense Drone first; stop damaging it while it reflects attacks.');
+  if(is('ArchPaladin'))add('Defense Drone burst','When reflection is inactive, use Commandment (2), Righteous Seal (4), then Sacred Magic: Eden (5) if using the assigned burst setup.');
+  add('Attack Drone',is('Lord of Order')?'Switch to Attack Drone; use Blessing of Order (5) in the assigned window.':'Switch to Attack Drone after Defense Drone dies.');
+  add('Engineer',healer?'Keep recovery ready for the periodic heavy attack; finish before the drones respawn.':support?'Maintain mitigation during the periodic heavy attack; finish before drones respawn.':'Burst Engineer only after both drones die; finish before they respawn.');
+ }else if(key==='tyndarius'){
+  add('Orb assignment','If assigned to taunt an Orb, agree which one before pulling. Do not improvise an additional taunt rotation.');
+  add('Target order','Focus Left Orb → Right Orb → Tyndarius; switch back when Orbs respawn.');
+  if(healer)add('Recovery','Time recovery around Orb transitions and keep the assigned taunter alive.');
+  else if(support)add('Mitigation','Keep defensive support active during Orb transitions.');
+ }else if(key==='drago'){
+  add('Bowmaster','Focus Bowmaster first. If assigned a guard taunt, keep control of your assigned guard until the switch.');
+  if(is('Lord of Order'))add('Executioner transition','Before Bowmaster dies, apply Quixotic with Blessing of Order (5) on Executioner as planned.');
+  else if(healer||is('ArchPaladin'))add('Executioner transition','Keep recovery and mitigation ready for the guard death; avoid overlapping taunts.');
+  add('Finish','Switch to Executioner, then Drago. Do not split guard damage.');
+ }else if(key==='darkon'){
+  add('Phase 1 · DPS check','Reach the first transition near 15.56M HP before 72 seconds.');
+  add('Elegy','If assigned to taunt, alternate Elegy with your partner. Two consecutive Elegies can invert crits and healing; a third is lethal. Do not take an unassigned taunt.');
+  if(healer||is('ArchPaladin'))add('Phase 2 · Healing','Stagger direct heals; do not heal simultaneously with the other healer.');
+  if(is('Lord of Order'))add('4.5–4.6M HP','Save Blessing of Order (5) for the nuke near 4.5–4.6M HP when using this timing.');
+  add('Final phase','After Darkon refills HP, expect stronger auto attacks and mana pressure. Maintain damage and your assigned defensive or healing duties.');
+ }else if(key==='gramiel'){
+  add('Crystal pairs','Agree your crystal partner before pulling. Alternate your assigned taunts on the defense-shattering cue.');
+  if(is('Legion Revenant'))add('Avoid Decay','Do not use Atramentous Shade (2) during the crystal phase; Decay can strengthen Gramiel.');
+  add('Guard break','On the drain cue, switch to Gramiel to break his guard, then return to your crystal.');
+  add('Crystal balance','Keep both crystal HP close; kill them within five seconds of each other.');
+  add('Vendetta','After the crystals, follow your assigned turn in the four-player rotation. In the standard displayed-team variant, order is DPS → LoO → SC → LR; confirm the order before pulling. Five stacks are fatal.');
+  add('70% / 40% / 10% HP','Hold damage until everyone has the required Vendetta or Death’s Door protection.');
+ }else if(key==='dage'){
+  for(const text of ultraBeginnerActions(key,cls,previous)){
+   const quote=text.match(/“([^”]+)”/)?.[1]||'';
+   add(quote?'React to the cue':/Flux/.test(text)?'Assigned taunt':/Hymn|Tracer|Life Carve|Noxious/.test(text)?'Survival & skills':'Your action',text,quote);
+  }
+ }else if(key==='nulgath'){
+  for(const text of ultraBeginnerActions(key,cls,previous)){
+   const quote=text.match(/“([^”]+)”/)?.[1]||'';
+   add(quote?'Blade · 5-second charge':/Contracts/.test(text)?'Assigned Contracts taunt':/half HP/.test(text)?'Prepare the Blade':/Essence Gathered/.test(text)?'Return to Nulgath':'Your skills',text,quote);
+  }
+  if(support)add('Optional taunt variant','Only if you are the second taunter in the 6-second-offset strategy, use Scroll of Enrage on the Abyssal Charge cue. Do not mix it with another timing.','Behold the power of the Abyss!');
+ }else if(key==='speaker'){
+  add('Before pulling','Choose one rotation below with your team. Equip Scroll of Enrage if your rotation assigns you scroll taunts.');
+  add('Zone safety','Enter only your own assigned Zone. Stay out when affected by Magia Burn, Stasis or Sanctity.','All stand equal beneath the eyes of the Eternal.');
+  if(is('Legion Revenant'))add('Regeneration','Use Atramentous Shade (2) when the Zone appears to counter regeneration.');
+  if(is('ArchPaladin'))add('Mitigation','Use Righteous Seal (4) and Sacred Magic: Eden (5) only at your chosen rotation’s mitigation timings.');
+  if(is('Lord of Order'))add('Mitigation','Maintain buffs and use Blessing of Order (5) on the chosen rotation’s mitigation timings.');
+ }else for(const text of previous)add('Your action',text);
+ return tips;
+}
+function ultraSpeakerRole(cls){
+ const roles={'Legion Revenant':'LR','Lord of Order':'LoO','ArchPaladin':'AP','Glaceran Warlord':'GW'};
+ const key=Object.keys(roles).find(n=>sameUltraClass(n,cls));
+ if(key)return roles[key];
+ return ultraSelectedRating('speaker',cls)?.role?.includes('DPS')?'DPS':null;
+}
+function ultraSpeakerPersonal(pattern,cls){
+ const role=ultraSpeakerRole(cls);if(!role)return [];
+ const skills=pattern.skills||{};
+ return (pattern.events||simplifiedSpeakerEvents).flatMap((event,i)=>{
+  const assigned=pattern.roles[i]===role;
+  const skill=String(skills[i]||'');
+  // Only explicit class-prefixed skill actions are safely attributable.
+  const ownSkill=skill.split(' · ').filter(s=>s.startsWith(role+' '));
+  if(!assigned&&!ownSkill.length)return [];
+  const task=assigned?(event.startsWith('Zone')?'Enter your assigned Zone':event==='Truth'||event==='Listen'?'Intercept '+event+' as assigned':'Follow your assigned cue'):'';
+  return [{number:i+1,event,text:[task,...ownSkill].filter(Boolean).join(' · ')}];
+ });
+}
+function appendPersonalSpeakerRotation(content,cls){
+ const role=ultraSpeakerRole(cls);
+ const wrap=node('div',undefined,'ultra-personal-rotation');
+ wrap.append(node('h4','Your rotation'));
+ if(!role){wrap.append(node('p','This class has no assigned role in the documented rotation charts. Confirm a separate team strategy before pulling.','muted tiny'));content.append(wrap);return}
+ const choices=simplifiedSpeakerPatterns.map((p,i)=>({p,i})).filter(({p})=>p.roles.includes(role)&&(role==='GW'?p.name.includes('Glaceran'):role==='AP'?!p.name.includes('Glaceran'):true));
+ if(!choices.length){content.append(wrap);return}
+ const pick=node('select');pick.setAttribute('aria-label','Speaker rotation');
+ for(const {p,i} of choices)pick.append(new Option(p.name,String(i)));
+ const rotation=node('div',undefined,'ultra-flow-list');
+ const draw=()=>{const pattern=simplifiedSpeakerPatterns[Number(pick.value)];rotation.replaceChildren();
+  rotation.append(node('p',pattern.note,'muted tiny'));
+  for(const row of ultraSpeakerPersonal(pattern,cls)){const line=node('div',undefined,'ultra-role-step ultra-react-step');const body=node('div',undefined,'ultra-role-step-body');body.append(node('h4',row.event,'ultra-role-mini-title ultra-role-quote-heading'),node('p',row.text));line.append(node('span',String(row.number).padStart(2,'0'),'ultra-step-number'),body);rotation.append(line)}
+  const full=node('details',undefined,'ultra-rotation-reference');full.append(node('summary','Full timing reference'));const list=node('div',undefined,'ultra-flow-list');
+  for(const [i,event] of (pattern.events||simplifiedSpeakerEvents).entries()){const p=node('p',String(i+1).padStart(2,'0')+' · '+event+' · '+(pattern.roles[i]||'—')+(pattern.skills[i]?' · '+pattern.skills[i]:''),'muted tiny');list.append(p)}full.append(list);rotation.append(full);
+ };
+ pick.onchange=draw;wrap.append(pick,rotation);content.append(wrap);draw();
 }
 
 function renderUltraDetail(b){
@@ -2078,8 +2198,7 @@ function renderUltraDetail(b){
  selectorRow.append(node('span','Class'),select);setup.append(selectorRow);
  const gear=node('div',undefined,'ultra-focus-gear');
  const rating=node('div',undefined,'ultra-selected-rating');
- const job=node('p',undefined,'ultra-focus-job');
- setup.append(rating,gear,job);
+ setup.append(rating,gear);
  const summary=node('section',undefined,'ultra-focus-card ultra-quickstart');
  summary.append(node('h3','🎯 Fight at a glance'));
  const focus=node('div',undefined,'ultra-focus-grid');
@@ -2100,55 +2219,6 @@ function renderUltraDetail(b){
  mechanics.append(roleContext);
  const sequence=node('div',undefined,'ultra-flow-list');mechanics.append(sequence);
  root.append(mechanics);
- const details=node('details',undefined,'ultra-extra-details');
- details.append(node('summary','🧩 Team & advanced tactics'));
- const inner=node('div',undefined,'ultra-extra-content');
- const team=node('section');team.append(node('h4','Party composition'));
- const comp=node('div',undefined,'ultracomp');
- for(const cls of b.team){const box=node('div',undefined,'ultra-team-member');box.append(node('strong',cls),node('span',ultraOwned(cls)?'✓ Owned':'✕ Not owned',ultraOwned(cls)?'ultra-owned':'ultra-missing'));comp.append(box)}
- team.append(comp);if(profile?.team?.length&&profile.team.map(r=>r.cls).join('|')!==b.team.join('|'))team.append(node('p','Alternative team: '+profile.team.map(r=>r.cls).join(' · '),'muted tiny'));inner.append(team);
- if(b.id==='speaker')appendSpeakerRotations(inner);
- const phases=node('section');phases.append(node('h4','Fight phases'));
- for(const [label,description] of b.phases||[]){const p=node('p');p.append(node('strong',label+' — '),node('span',description));phases.append(p)}
- inner.append(phases);
- const reviewed=ultraReviewedTactics[b.id]||[];
- if(reviewed.length){const tactics=node('section');tactics.append(node('h4','Additional encounter checks'));for(const [label,description] of reviewed){const p=node('p');p.append(node('strong',label+' — '),node('span',description));tactics.append(p)}inner.append(tactics)}
- const cues=ultraBattleCues[b.id]||[];
- const uniqueCallouts=[];
- const seenCallouts=new Set();
- for(const cue of [
-  ...(quick.quote?[{quote:quick.quote,action:quick.action}]:[]),
-  ...(quick.specialQuote?[{quote:quick.specialQuote,action:quick.specialAction}]:[]),
-  ...cues
- ]){
-  const key=String(cue.quote||'').toLowerCase().trim();
-  if(!key||seenCallouts.has(key))continue;
-  seenCallouts.add(key);
-  uniqueCallouts.push(cue);
- }
- if(uniqueCallouts.length){
-  const callouts=node('section');callouts.append(node('h4','Boss callouts'));
-  for(const cue of uniqueCallouts){
-   const p=node('p');p.append(node('strong','“'+cue.quote+'”'),node('span',' — '+cue.action));
-   callouts.append(p);
-  }
-  inner.append(callouts);
- }
- const others=node('section');others.append(node('h4','Alternative team & wipe risks'));
- if(b.alternate?.length && b.alternate.join('|')!==b.team.join('|'))
-  others.append(node('p','Alternative team: '+b.alternate.join(' · ')));
- const normalize=s=>String(s||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').replace(/\\s+/g,' ').trim();
- // Avoid repeating warnings already present in the quick overview.
- const highlighted=[quick.avoid,quick.priority,quick.skips].filter(Boolean).map(normalize);
- const extraMistakes=[...new Set(b.mistakes||[])].filter(m=>{
-  const n=normalize(m);
-  return n&&!highlighted.some(q=>q===n||q.includes(n)||n.includes(q));
- });
- if(extraMistakes.length){
-  const mistakes=node('ul');for(const m of extraMistakes)mistakes.append(node('li',m));others.append(mistakes);
- }
- if(others.children.length>1)inner.append(others);
- details.append(inner);root.append(details);
  const footer=node('div',undefined,'ultra-focus-footer');
  const link=node('a','↗ Full community strategy');link.href=b.source;link.target='_blank';link.rel='noopener noreferrer';footer.append(link,node('span','Team ownership ≠ boss access · verify encounter-specific gear','muted tiny'));for(const [label,url] of ultraReviewedSources[b.id]||[]){const a=node('a',label+' ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';footer.append(a)}if(profile){const a=node('a','↗ Simplified Bosses Guide');a.href=simplifiedGuideSource;a.target='_blank';a.rel='noopener noreferrer';footer.append(a)}root.append(footer);
  function updateRole(){
@@ -2173,25 +2243,23 @@ function renderUltraDetail(b){
     source.href='https://www.aq.com/lore/classes/bard';source.target='_blank';source.rel='noopener noreferrer';gear.append(source);
    }
   }else gear.append(node('span','No reviewed class-specific gear preset; consult the encounter guide.','muted tiny'));
-  job.textContent=build.estimated?'Suggested general setup — not encounter-tested.':workbook?'Recommended setup for this fight.':ultraBeginnerText(encounter?.note||'Suggested setup for this fight.',cls);
+  gear.title=build.estimated?'Suggested enhancements; not verified for this encounter.':'Encounter guide enhancements';
   roleName.textContent=cls;
   sequence.replaceChildren();
   const baseTips=[...new Set((play?.steps||[]).map(step=>String(step).trim()).filter(Boolean))];
-  const tips=ultraBeginnerActions(b.id,cls,ultraActionTips(b.id,cls,baseTips));
-  const callouts=(window.AQWUltraQuoteActions?.forRole(b.id,playKey||cls)||[]).filter(c=>b.id!=='nulgath'&&b.id!=='dage').map(c=>({...c,response:ultraBeginnerText(c.response,cls)}));
-  const rows=window.AQWCGuideRows?.rows({tips,quotes:callouts,warning:['nulgath','dage'].includes(b.id)?undefined:ultraBeginnerText(play?.warning||'',cls),
-   fallback:role||quick.priority||b.phases[0]?.[1]||''})||[];
+  const rows=ultraUnifiedTips(b.id,cls,baseTips).map((part,i)=>({...part,number:String(i+1).padStart(2,'0')}));
   for(const part of rows){
    const step=node('div',undefined,'ultra-role-step');
    const body=node('div',undefined,'ultra-role-step-body');
-   const heading=node('h4',part.title,'ultra-role-mini-title');
+   const heading=node('h4',part.quote?'“'+part.quote+'”':part.title,'ultra-role-mini-title');
    if(part.quote||/“[^”]+”/.test(part.text)){heading.classList.add('ultra-role-quote-heading');step.classList.add('ultra-react-step')}
    const description=node('p');
-   ultraExplainText(description,part.text,b.id);
+   ultraExplainText(description,part.quote?part.text.replace('“'+part.quote+'” — ','').replace('“'+part.quote+'”','this cue'):part.text,b.id);
    body.append(heading,description);
    step.append(node('span',part.number,'ultra-step-number'),body);
    sequence.append(step);
   }
+  if(b.id==='speaker')appendPersonalSpeakerRotation(sequence,cls);
  }
  select.onchange=updateRole;updateRole();
 }
