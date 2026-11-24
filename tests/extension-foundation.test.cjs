@@ -95,7 +95,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.11.6');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
+ assert.equal(manifest.version,'0.11.7');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -498,7 +498,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  vm.runInNewContext(read('extension/wiki-theme.js'),{document,location:{origin:'https://aqwwiki.wikidot.com'},chrome:{runtime}});
  respond({ok:true,appearance:{background:'original',banner:'original',panel:'integrated'}});assert.equal(styles.length,0);assert.equal(attrs['data-aqwc-panel-theme'],'integrated');
  listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'bad',url:popup.url});assert.equal(styles.length,0);
- listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'id',url:popup.url});assert.equal(styles.length,1);assert.ok(styles[0].textContent.includes('#header'));assert.ok(styles[0].textContent.includes('#1b1627'));
+ listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'id',url:popup.url});assert.equal(styles.length,1);assert.ok(styles[0].textContent.includes('div#container-wrap'));assert.ok(styles[0].textContent.includes('image_2026-11-24_232002011.png'));assert.ok(styles[0].textContent.includes('auto 140px'));assert.ok(!styles[0].textContent.includes('#header::before'));assert.ok(styles[0].textContent.includes('#1b1627'));
  listener({type:'aqwc-appearance-preview',appearance:{}},{id:'id',url:popup.url});assert.equal(styles.length,0);
  console.log('Wiki appearance: defaults, scoped read/write, validated presets and restore original passed.');
 })().catch(e=>{console.error(e);process.exitCode=1});
@@ -519,7 +519,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.equal(api.reviewedSources('moon-rock-fragments').locations[0].join,'lunacove');
  assert.equal(api.reviewedSources('unknown'),null);
  assert.ok(!api.mergeSources(s,api.reviewedSources('moon-rock-fragments')).drops.some(x=>x.name==='External'));
- assert.ok(read('extension/wiki-theme.js').includes('#header-extra-div')||read('extension/wiki-theme.js').includes('header-extra-div'));
+ assert.ok(read('extension/wiki-theme.js').includes('div#container-wrap'));
  assert.ok(read('extension/wiki-materials.js').includes('navigator.clipboard.writeText'));
 }
 
@@ -535,8 +535,8 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  for(const phrase of ['How progress is calculated','(separate recipe)','nested progress below'])assert.ok(!materials.includes(phrase));
  assert.ok(materials.includes('if(i!==activeOption)return'));
  assert.ok(materials.includes('aria-pressed'));assert.ok(bridge.includes('.aqwc-material-row'));
- assert.ok(theme.includes('aqwc-custom-banner'));assert.ok(theme.includes('bannerLayer.remove()'));
- assert.ok(theme.includes('pointer-events:none!important'));
+ assert.ok(theme.includes('div#container-wrap'));assert.ok(!theme.includes('bannerLayer'));
+ assert.ok(!theme.includes('header.prepend'));
 }
 
 {
@@ -546,4 +546,21 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.ok(items.includes('heading.append(itemTitle,line)'));
  assert.ok(bridge.includes('.aqwc-item-heading .aqwc-state'));
  assert.ok(bridge.includes('.aqwc-meta[hidden]{display:none!important}'));
+}
+
+{
+ const theme=read('extension/wiki-theme.js');
+ assert.ok(theme.includes('data-aqwc-banner'));
+ assert.ok(theme.includes('background-image:'+'')); 
+ assert.ok(!theme.includes('background-image:none !important'));
+ assert.ok(!theme.includes('header.style'));
+ assert.ok(!theme.includes('header.prepend'));
+}
+
+// Block release until the owner-selected binary artwork is actually present.
+{
+ const art=fs.readFileSync(path.join(__dirname,'..','extension/image_2026-11-24_232002011.png'));
+ assert.equal(art.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.equal(art.toString('ascii',12,16),'IHDR');assert.ok(art.readUInt32BE(16)>0 && art.readUInt32BE(20)>0);
+ assert.ok(art.length>10000 && art.length<15000000);
+ assert.deepEqual(manifest.web_accessible_resources,[{resources:['image_2026-11-24_232002011.png'],matches:['https://aqwwiki.wikidot.com/*']}]);
 }

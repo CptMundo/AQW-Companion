@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AQW Wiki Companion",
-  "version": "0.11.6",
+  "version": "0.11.7",
   "description": "Local AQW Companion inventory lookup on AQWorlds Wiki item pages.",
   "action": {
     "default_title": "AQW Wiki Companion",
@@ -58,5 +58,15 @@
   },
   "optional_host_permissions": [
     "https://account.aq.com/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "image_2026-11-24_232002011.png"
+      ],
+      "matches": [
+        "https://aqwwiki.wikidot.com/*"
+      ]
+    }
   ]
 }

@@ -68,3 +68,9 @@ Compact material rows, thinner bars, no repeated remaining line or technical hel
 
 ## v0.11.6 — Slimmer sidebar
 Reduce sidebar max width from 780 to 560 CSS px, using 38% of available parent width (380px preferred minimum, preserving the existing 590px article reserve). Inline fallback also capped at 560px. Item title and ownership/combined quantity share one row with right-aligned status; long names and diagnostic states may wrap. Hide empty ownership detail explicitly. No changes to inventory matching, recipes, sources, theme settings or permissions. Actual Opera layout pending.
+
+## v0.11.7 — Native Wiki banner target
+The public AQW Wiki Enhanced project (https://github.com/60GHz/aqw-wiki-enhanced) confirms that the native banner is a background image on #container-wrap, not #header. Implement our own CSS/inline SVG artwork targeting that full-width element, retaining existing header links/menu and native content. Prometheus uses the existing local helm, all presets have a local wordmark and decorative art; no Enhanced code/art copied. Original removes our banner rules. Popup acknowledges whether computed wrapper background contains our SVG. Existing color presets and sidebar remain unchanged. Other theme extensions may compete for CSS; test with Enhanced disabled first. No new permissions or network calls. No live browser validation.
+
+### Owner-selected Prometheus artwork
+Owner uploaded `extension/image_2026-11-24_232002011.png` on the PR branch. Use this actual PNG, preserving aspect ratio at 140px height, centered on a full-width matching gradient. No cropping or stretching. Arcane/Void presets retained. Only this public artwork is web-accessible to AQW Wiki; no new host permissions. Tests require PNG signature, IHDR and valid nonzero dimensions. Popup confirms CSS only, not visual image loading. Actual Opera QA pending.
