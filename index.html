@@ -3479,7 +3479,7 @@ function renderWikiQuestPins(){
  const root=$('wiki-pinned-quest-list');if(!root)return;root.replaceChildren();
  try{const pins=readWikiQuestPins();if(!pins.length){root.append(node('p','Pin any quest from the Wiki extension.','muted tiny'));return}
  for(const pin of pins){if(typeof pin?.name!=='string'||typeof pin.source!=='string'||! /^[a-z0-9][a-z0-9-]{0,199}$/.test(pin.source))continue;
- const row=node('div',undefined,'toolbar'),a=node('a',pin.name+' ↗'),remove=node('button','Unpin','smallbutton');a.href='https://aqwwiki.wikidot.com/'+pin.source;a.target='_blank';a.rel='noopener noreferrer';remove.type='button';remove.onclick=()=>{try{localStorage.setItem(wikiQuestPinKey,JSON.stringify(readWikiQuestPins().filter(p=>p.source!==pin.source||p.name!==pin.name)));renderWikiQuestPins()}catch(err){message('Could not remove pin','error')}};row.append(a,remove);root.append(row)}
+ const row=node('div',undefined,'toolbar'),a=node('a',(pin.completed?'✓ ':'')+pin.name+' ↗'),remove=node('button','Unpin','smallbutton');a.href='https://aqwwiki.wikidot.com/'+pin.source;a.target='_blank';a.rel='noopener noreferrer';remove.type='button';remove.onclick=()=>{try{localStorage.setItem(wikiQuestPinKey,JSON.stringify(readWikiQuestPins().filter(p=>p.source!==pin.source||p.name!==pin.name)));renderWikiQuestPins()}catch(err){message('Could not remove pin','error')}};const done=node('button',pin.completed?'Reopen':'Mark complete','smallbutton');done.type='button';done.onclick=()=>{try{localStorage.setItem(wikiQuestPinKey,JSON.stringify(readWikiQuestPins().map(p=>p.source===pin.source&&p.name===pin.name?{...p,completed:!p.completed}:p)));renderWikiQuestPins()}catch{message('Could not update pin','error')}};row.append(a,done,remove);root.append(row)}
  }catch(err){root.append(node('p','Could not read saved quest pins.','muted tiny'))}
 }
 function openWikiQuestPins(){if(location.hash==='#aqwc-pinned-quests'){selectTab('unlocks');renderWikiQuestPins();$('wiki-pinned-quests')?.scrollIntoView({block:'start'});}}
@@ -3488,7 +3488,8 @@ function initWikiWishlistQueue(){
  if(!root||!api)return;
  window.addEventListener('message',e=>{
   if(e.source!==window||e.origin!==location.origin||location.origin!=='https://cptmundo.github.io'||!['/AQW-Companion/','/AQW-Companion/index.html'].includes(location.pathname))return;
-  const m=e.data;if(m?.channel!==channel||m.type!=='entries'||typeof m.nonce!=='string'||!/^[a-f0-9]{32}$/.test(m.nonce)||!Array.isArray(m.entries)||m.entries.length>200)return;
+  const m=e.data;if(m?.channel===channel&&m.type==='status-request'&&typeof m.nonce==='string'&&/^[a-f0-9]{32}$/.test(m.nonce)){try{const projects=JSON.parse(localStorage.getItem(key)||'[]'),pins=readWikiQuestPins();if(!Array.isArray(projects))return;const goals=projects.slice(0,500).map(p=>({name:p.name,progress:Math.max(0,Math.min(100,Math.round(owned(p.name)?100:projectProgress(p).trackedPct)))}));window.postMessage({channel,type:'status-response',nonce:m.nonce,status:{goals,pins:pins.slice(0,500).map(p=>({name:p.name,source:p.source,completed:p.completed===true})),complete:projects.length<=500&&pins.length<=500}},location.origin)}catch{}return}
+  if(m?.channel!==channel||m.type!=='entries'||typeof m.nonce!=='string'||!/^[a-f0-9]{32}$/.test(m.nonce)||!Array.isArray(m.entries)||m.entries.length>200)return;
   // Use latest persisted projects, not a stale tab copy. Never clear on parse error.
   try{
    const latest=JSON.parse(localStorage.getItem(key)||'[]');if(!Array.isArray(latest))throw Error('Invalid local Wishlist.');
@@ -3498,7 +3499,7 @@ function initWikiWishlistQueue(){
     if(typeof entry?.id!=='string'||entry.id.length>64)continue;
     if(entry.quest){
      const {source,name}=entry.quest;if(typeof source!=='string'||! /^[a-z0-9][a-z0-9-]{0,199}$/.test(source)||typeof name!=='string'||name.length>350)continue;
-     if(entry.quest.pin===true){if(!name.trim()||/[\u0000-\u001f\u007f]/.test(name))continue;if(!questPins.some(p=>p.source===source&&p.name.toLowerCase()===name.trim().toLowerCase())){if(questPins.length>=500)continue;questPins.push({source,name:name.trim()});questAdded++}ids.push(entry.id);continue;}
+     if(entry.quest.pin===true){if(entry.quest.complete===true){const pin=questPins.find(p=>p.source===source&&p.name.toLowerCase()===name.trim().toLowerCase());if(pin&&!pin.completed){pin.completed=true;questAdded++}ids.push(entry.id);continue}if(!name.trim()||/[\u0000-\u001f\u007f]/.test(name))continue;if(!questPins.some(p=>p.source===source&&p.name.toLowerCase()===name.trim().toLowerCase())){if(questPins.length>=500)continue;questPins.push({source,name:name.trim()});questAdded++}ids.push(entry.id);continue;}
      const wiki='https://aqwwiki.wikidot.com/'+source,normalizeQuest=s=>String(s||'').replace(/[’‘]/g,"'").replace(/\s+/g,' ').trim().toLowerCase();
      const matches=taskCatalog.filter(t=>routineIsRecurring(t)&&['daily','weekly'].includes(t.freq)&&[t.wiki,taskRoutes[t.id]?.wiki].some(u=>typeof u==='string'&&u.split('#')[0]===wiki)&&[t.name,t.searchName].some(n=>normalizeQuest(n)===normalizeQuest(name)));
      if(matches.length!==1){unmatched++;ids.push(entry.id);continue}
@@ -3514,7 +3515,7 @@ function initWikiWishlistQueue(){
     }
     ids.push(entry.id);
    }
-   if(questAdded){localStorage.setItem(wikiQuestPinKey,JSON.stringify(questPins));renderWikiQuestPins();message(questAdded+' quest(s) pinned from AQW Wiki.')}
+   if(questAdded){localStorage.setItem(wikiQuestPinKey,JSON.stringify(questPins));renderWikiQuestPins();message(questAdded+' quest pin(s) updated from AQW Wiki.')}
    if(added)localStorage.setItem(key,JSON.stringify(latest));
    unlocks=latest;
    if(pinned){localStorage.setItem(plannerKey,JSON.stringify({pinned:pins,checks}));pinnedTasks=pins;taskChecks=checks;renderPlanner();renderHomeInsights();renderCleanupAlerts();message(pinned+' quest(s) pinned from AQW Wiki.')}
