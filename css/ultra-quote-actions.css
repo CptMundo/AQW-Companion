@@ -137,3 +137,18 @@ nav.tabs.subnav[aria-label="Section navigation"]:has(button[data-parent="ultras"
 @container (max-width:520px){#boss-guides .ultra-focus-gear{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){#boss-guides .boss-master-detail{grid-template-columns:1fr}#boss-guides .boss-guide-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-height:240px}#boss-guides .boss-guide-list .ultra-group-label{grid-column:1/-1}#boss-guides .boss-guide-detail{padding:11px}}
 @media(max-width:450px){#boss-guides .boss-guide-toolbar{grid-template-columns:1fr}}
+
+/* PR 119 — visibly distinguish the selected encounter from hover and unselected cards. */
+#ultras #ultracards .ultracard,
+#boss-guides .boss-guide-list .boss-guide-item{position:relative;transition:background .15s ease,border-color .15s ease;min-width:0}
+#ultras #ultracards .ultracard:not(.active):hover,
+#boss-guides .boss-guide-list .boss-guide-item:not(.active):hover{background:#1c354b;border-color:#648ca9}
+#ultras #ultracards .ultracard.active,
+#boss-guides .boss-guide-list .boss-guide-item.active{background:linear-gradient(105deg,#234e70,#1b344b);border-color:#82d5f8;box-shadow:inset 4px 0 0 #79d9ff,inset 0 0 0 1px #477e9d;padding-left:16px!important}
+#ultras #ultracards .ultracard.active strong,
+#boss-guides .boss-guide-list .boss-guide-item.active strong{color:#f2fbff;font-weight:800}
+#ultras #ultracards .ultracard.active small,
+#boss-guides .boss-guide-list .boss-guide-item.active small{color:#c1e7ff}
+#ultras #ultracards .ultracard:focus-visible,
+#boss-guides .boss-guide-list .boss-guide-item:focus-visible{outline:2px solid #b9efff;outline-offset:-3px}
+@media(prefers-reduced-motion:reduce){#ultras #ultracards .ultracard,#boss-guides .boss-guide-list .boss-guide-item{transition:none}}
