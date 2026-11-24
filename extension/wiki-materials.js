@@ -102,7 +102,8 @@
   const joins=[...new Set([...text.matchAll(/\/join\s+([a-z0-9-]{1,60})\b/gi)].map(m=>m[1].toLowerCase()))];
   return names.length===1&&joins.includes(names[0])?names[0]:null;
  }
- const mapCache=new Map();let mapRequests=0;
+ const verifiedMaps=Object.freeze({'luna-cove':'lunacove','shadowfall':'shadowfall','battleodium':'battleodium','yulgar-s-inn':'yulgar','titan-attack':'titanattack'});
+ const mapCache=new Map(),mapPending=new Map();let mapRequests=0,mapQueue=Promise.resolve();
  async function verifyMap(origin,slug){
   if(mapCache.has(slug))return mapCache.get(slug);
   if(mapRequests>=10)throw Error('Map lookup limit reached; open the location page.');
@@ -113,6 +114,26 @@
   const join=mapCommand(content);if(!join)throw Error('Map command not verified.');
   mapCache.set(slug,join);return join;
  }
+ function resolvedMap(origin,slug){
+  if(Object.hasOwn(verifiedMaps,slug))return Promise.resolve(verifiedMaps[slug]);
+  if(mapCache.has(slug))return Promise.resolve(mapCache.get(slug));
+  if(mapPending.has(slug))return mapPending.get(slug);
+  if(mapPending.size>=10)return Promise.resolve(null);
+  const task=mapQueue.then(()=>verifyMap(origin,slug)).catch(()=>null);mapPending.set(slug,task);mapQueue=task.then(()=>{});return task;
+ }
+ function joinControl(line,x,origin){
+  const known=x.join||(Object.hasOwn(verifiedMaps,x.slug)?verifiedMaps[x.slug]:null)||mapCache.get(x.slug);
+  const copy=document.createElement('button');copy.type='button';copy.className='aqwc-copy-join';
+  function ready(command){if(!command){copy.remove();return}copy.textContent='/join '+command+' · Copy';copy.disabled=false;copy.addEventListener('click',async e=>{if(!e.isTrusted)return;try{await navigator.clipboard.writeText('/join '+command);copy.textContent='Copied /join '+command}catch{copy.textContent='/join '+command+' · copy manually'}})}
+  if(known){line.append(copy);ready(known)}else{copy.disabled=true;copy.textContent='Verifying map…';line.append(copy);resolvedMap(origin,x.slug).then(ready)}
+ }
+ function recipeLabel(group,index,rootSlug){
+  if(rootSlug==='necrotic-sword-of-doom'||rootSlug==='necrotic-sword-of-doom-sword'){
+   if(group.length===1&&group[0].slug==='dual-necrotic-swords-of-doom')return 'Exchange weapon';
+   if(group.length===5)return 'Craft weapon';
+  }
+  return group.length===1?group[0].name:'Recipe '+(index+1);
+ }
  function renderSources(container,sources,origin,slug,{partial=false}={}){
   if(!sources||!Object.values(sources).some(a=>a.length))return false;
   const box=document.createElement('div');box.className='aqwc-source-guide';const title=document.createElement('strong');title.textContent='Acquisition';box.append(title);
@@ -122,14 +143,7 @@
    for(const x of rows.slice(0,40)){
     const line=document.createElement('div');line.className='aqwc-source-line';const a=document.createElement('a');a.href=origin+'/'+x.slug+(x.hash||'');a.textContent=x.name;line.append(a);
     if(kind==='locations'&&!/\b(shop|merge shop)\b/i.test(x.name)){
-     const join=x.join||(x.slug==='luna-cove'?'lunacove':null);
-     let command=join||mapCache.get(x.slug);
-     const copy=document.createElement('button');copy.type='button';copy.textContent=command?'/join '+command+' · Copy':'Find /join';copy.className='aqwc-copy-join';
-     copy.addEventListener('click',async e=>{
-      if(!e.isTrusted||copy.disabled)return;
-      if(!command){copy.disabled=true;copy.textContent='Checking map…';try{command=await verifyMap(origin,x.slug);copy.textContent='/join '+command+' · Copy'}catch{copy.textContent='Open location to verify';copy.disabled=true;return}finally{if(command)copy.disabled=false}return}
-      try{await navigator.clipboard.writeText('/join '+command);copy.textContent='Copied /join '+command}catch{copy.textContent='/join '+command+' · copy manually'}
-     });line.append(copy);
+     joinControl(line,x,origin);
     }
     entries.append(line);
    }
@@ -202,7 +216,7 @@
   }
   function draw(){
    tree.replaceChildren();
-   if(groups.length>1){const bar=document.createElement('div');bar.className='aqwc-recipe-tabs';groups.forEach((g,j)=>{const tab=button('Recipe '+(j+1));tab.setAttribute('aria-pressed',String(j===activeOption));tab.addEventListener('click',e=>{if(e.isTrusted&&!busy){activeOption=j;draw()}});bar.append(tab)});tree.append(bar)}
+   if(groups.length>1){const bar=document.createElement('div');bar.className='aqwc-recipe-tabs';groups.forEach((g,j)=>{const tab=button(recipeLabel(g,j,rootSlug));tab.setAttribute('aria-pressed',String(j===activeOption));tab.addEventListener('click',e=>{if(e.isTrusted&&!busy){activeOption=j;draw()}});bar.append(tab)});tree.append(bar)}
    groups.forEach((group,i)=>{if(i!==activeOption)return;
     const p=plan(group,states,matches,rootSlug,i);
     if(!busy){const ready=p.root.filter(n=>n.missing===0).length;tree.append(note(ready+' / '+p.root.length+' materials ready'));const track=document.createElement('div'),fill=document.createElement('div');track.style.cssText='height:6px;background:#0a1926;border-radius:6px;overflow:hidden';fill.style.cssText='height:100%;background:#53c7e6;width:'+(p.root.length?ready/p.root.length*100:0)+'%';track.setAttribute('aria-label',ready+' of '+p.root.length+' direct ingredients ready');track.append(fill);tree.append(track)}
@@ -240,5 +254,5 @@
   }
   draw();lookup().catch(()=>{statusLine.textContent='Inventory unavailable. Sync in Companion and refresh this page.'}).finally(()=>{busy=false;draw()});
  }
- globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources,mapCommand});
+ globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources,mapCommand,joinControl,recipeLabel,sourceLink});
 })();
