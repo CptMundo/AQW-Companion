@@ -198,7 +198,7 @@ const APPEARANCE_KEY='aqwc-wiki-appearance-v1';
 function normalizeAppearance(value){
  const v=value&&typeof value==='object'?value:{};
  return {
-  background:['original','midnight','slate','obsidian','void'].includes(v.background)?v.background:'original',
+  background:['original','neutral','midnight','slate','obsidian','void'].includes(v.background)?v.background:'original',
   banner:['original','prometheus','arcane','void'].includes(v.banner)?v.banner:'original',
   panel:['integrated','blue'].includes(v.panel)?v.panel:'integrated'
  };
@@ -213,7 +213,7 @@ async function handle(message,sender){
    const appearance=normalizeAppearance(message.appearance);
    await chrome.storage.local.set({[APPEARANCE_KEY]:appearance});return {ok:true,appearance};
   }
-  const stored=await chrome.storage.local.get(APPEARANCE_KEY);return {ok:true,appearance:normalizeAppearance(stored[APPEARANCE_KEY]??{banner:'prometheus'})};
+  const stored=await chrome.storage.local.get(APPEARANCE_KEY);return {ok:true,appearance:normalizeAppearance(stored[APPEARANCE_KEY]??{background:'neutral',banner:'prometheus'})};
  }
 
  if(['wishlist-queue-add','routine-queue-add','quest-pin-add','wishlist-queue-read','wishlist-queue-ack'].includes(message?.type))return queueWishlist(message,sender);
