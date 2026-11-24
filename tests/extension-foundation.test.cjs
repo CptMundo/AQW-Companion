@@ -94,7 +94,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.7.0');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
+ assert.equal(manifest.version,'0.8.0');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js','wiki-quest-shop.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -263,3 +263,32 @@ assert.ok(flow131.indexOf('const saved=await importFile(file);')<flow131.indexOf
 assert.ok(flow131.includes("if(m.ok)"));assert.ok(flow131.includes("synced.dataset.state='success'"));assert.ok(flow131.includes("synced.dataset.state='error'"));
 assert.ok(read('css/site.css').includes('.inventory-advanced:not([open]) .inventory-advanced-menu{display:none}'));
 console.log('Import & Sync primary action, advanced tools and confirmed sync feedback checked.');
+
+{
+ const ctx={URL};vm.runInNewContext(read('extension/wiki-quest-shop.js'),ctx);
+ const api=ctx.AQWCQuestShop;
+ const a=(name,slug)=>({textContent:name,getAttribute:()=>'/'+slug,querySelector:()=>null,closest:()=>null,nodeType:1,tagName:'A'});
+ const crumb=slugs=>({querySelectorAll:()=>slugs.map(x=>a(x,x))});
+ assert.equal(api.pageKind(crumb(['world','quests'])),'quest');
+ assert.equal(api.pageKind(crumb(['world','shops','merge-shops'])),'shop');
+ assert.equal(api.pageKind(crumb(['items','shops'])),null);
+ assert.equal(api.pageKind(crumb(['monsters'])),null);
+ assert.equal(api.quantity('x7,500'),7500);assert.equal(api.quantity('x5 for 2'),null);assert.equal(api.quantity('x0'),null);
+ const textNode=textContent=>({nodeType:3,textContent}),br={nodeType:1,tagName:'BR'};
+ const aura=a('Void Aura','void-aura'),gem=a('Gem of Nulgath','gem-of-nulgath');
+ const cell=childNodes=>({childNodes});
+ const costs=api.shopCosts(cell([aura,textNode(' x800,'),br,gem,textNode(' x15')]));
+ assert.equal(costs.length,2);assert.equal(costs[0].target,800);
+ assert.equal(api.shopCosts(cell([aura,textNode(' x5 for 2')])),null);
+ assert.equal(api.shopCosts(cell([textNode('100 Gold')])),null);
+ assert.equal(api.shopCosts(cell([aura,textNode(' x1'),br,aura,textNode(' x2')])),null);
+ const row={childNodes:[aura,textNode(' x800')],querySelectorAll:()=>[aura]};
+ assert.equal(api.linkedRow(row).target,800);
+ assert.equal(api.linkedRow({childNodes:[textNode('Slain Gorillaphant x50')],querySelectorAll:()=>[]}),null);
+ const matches=new Map([['Void Aura',{state:'owned',total:5,itemId:'1'}],['Gem of Nulgath',{state:'owned',total:5,itemId:'1'}]]);
+ const group={role:'cost',items:[{name:'Void Aura',target:4},{name:'Gem of Nulgath',target:4}]};
+ const result=api.labels(group,matches);assert.equal(result[0].text,'Stock 4/4');assert.equal(result[1].text,'Stock 1/4');
+ assert.equal(api.labels({role:'reward',items:[{name:'Void Aura',target:1}]},matches)[0].text,'✓ Owned ×5');
+ assert.equal(api.labels({role:'requirement',items:[{name:'Unknown',target:1}]},matches)[0].text,'? Unknown');
+ console.log('Quest/shop scoped parsing and independent stock allocation passed.');
+}
