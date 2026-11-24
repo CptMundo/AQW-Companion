@@ -338,10 +338,10 @@ tree109=flatten109(renderCard(task109,true));
 assert.ok(tree109[0].cls.includes("done"));
 status.value="completed";const undo109=tree109.find(n=>n.tag==="button"&&n.text==="✓");assert.equal(undo109.title,"Undo completion");assert.equal(undo109["aria-pressed"],"true");assert.ok(undo109.cls.includes("is-complete"));undo109.onclick();
 assert.equal(completed,false);assert.equal(status.value,"all");assert.equal(toggles,2);
-tree109.find(n=>n.text==="×").onclick();assert.equal(unpins,1);
+const removePin114=tree109.find(n=>n.tag==="button"&&n.cls.includes("planner-pin-action is-pinned"));assert.ok(removePin114);assert.match(removePin114.title,/^Unpin /);removePin114.onclick();assert.equal(unpins,1);
 conflict={name:"Other weekly"};tree109=flatten109(renderCard(task109,true));
 assert.ok(tree109.find(n=>n.tag==="button"&&n.text==="✓").disabled);
-conflict=null;flatten109(renderCard(task109,false)).find(n=>n.text==="+ Pin").onclick();assert.equal(pins,1);
+conflict=null;const addPin114=flatten109(renderCard(task109,false)).find(n=>n.tag==="button"&&n.cls.includes("planner-pin-action is-unpinned"));assert.ok(addPin114);assert.match(addPin114.title,/^Pin /);addPin114.onclick();assert.equal(pins,1);
 assert.ok(html.includes("const grid=node('div',undefined,'planner-quest-grid')"));
 assert.ok(plannerCSS.includes("max(235px,calc((100% - 44px)/5))"));
 assert.ok(plannerCSS.includes("#planner.view.active #planner-my-tasks{grid-template-columns:minmax(0,1fr)!important"));
@@ -438,3 +438,5 @@ for(const [id,file] of [['friendship-twilly','0KftqqS.png'],['friendship-warlic'
  const task=active.find(t=>t.id===id);assert.ok(task,id);assert.ok(portrait.plannerArt(task).url.endsWith('/'+file),id);
 }
 console.log("Compact toolbar and additional artwork checks passed.");
+
+assert.ok(plannerCSS.includes(".planner-pin-action.is-unpinned"));assert.ok(plannerCSS.includes(".planner-pin-action.is-pinned"));assert.ok(plannerCSS.includes("mask:var(--planner-pin-icon)"));assert.ok(html.includes("button.setAttribute('aria-label',button.title)"));console.log("Pin and unpin pictograms retain accessible labels and actions.");
