@@ -1087,3 +1087,16 @@ body{background:#0a1420!important}
 /* SVG geometry is calculated in rendered pixels, not a scaled static viewBox. */
 #builds svg.build-body-connectors{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;transform:none!important;pointer-events:none;overflow:visible}
 #builds svg.build-body-connectors>path{fill:none!important;stroke-dasharray:5 4;stroke-width:2;vector-effect:non-scaling-stroke}
+
+/* Inventory actions: main import + secondary tools in the header. */
+.top .inventory-header-actions{justify-content:flex-end;align-items:center;max-width:100%;position:relative}
+.inventory-tools{position:relative}
+.inventory-tools summary{cursor:pointer;list-style:none;border:1px solid var(--line);border-radius:9px;background:var(--panel2);padding:10px 14px;color:var(--txt);white-space:nowrap}
+.inventory-tools summary::-webkit-details-marker{display:none}
+.inventory-tools-menu{position:absolute;right:0;top:calc(100% + 7px);z-index:100;min-width:220px;max-width:calc(100vw - 40px);display:grid;gap:6px;padding:9px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);box-shadow:0 8px 22px #0006}
+.inventory-tools-menu button,.inventory-tools-menu label,.inventory-tools-menu a{width:100%;box-sizing:border-box;justify-content:flex-start;padding:8px 10px;text-align:left;font-size:12px}
+.inventory-tools-menu a{display:block;color:var(--cyan);text-decoration:none}
+.inventory-tools-menu #clear{color:#ffc2a8}
+.inventory-header-status{flex-basis:100%;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px 12px;max-width:520px;text-align:right}
+.inventory-header-status span{overflow-wrap:anywhere}
+@media(max-width:700px){.top .inventory-header-actions{justify-content:flex-start;width:100%}.inventory-header-status{justify-content:flex-start;text-align:left}.inventory-tools-menu{right:auto;left:0;min-width:200px}}
