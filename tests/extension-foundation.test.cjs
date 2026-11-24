@@ -14,10 +14,11 @@ listeners.message({source:{},origin,data:ping});assert.equal(sent.length,0);
 listeners.message({source:win,origin,data:{...ping,type:'inventory'}});assert.equal(sent.length,0);
 listeners.message({source:win,origin,data:{...ping,nonce:'bad'}});assert.equal(sent.length,0);
 listeners.message({source:win,origin,data:ping});assert.equal(sent.length,1);assert.equal(sent[0].msg.type,'pong');assert.equal(sent[0].msg.nonce,ping.nonce);assert.equal(sent[0].target,origin);
-let inserted=[];const doc={getElementById:id=>id==='aqwc-foundation-badge'?inserted[0]:null,createElement:()=>({style:{}}),body:{prepend:x=>inserted.push(x)}};
+let inserted=[];const doc={getElementById:id=>id==='aqwc-foundation-badge'?inserted[0]:id==='page-title'||id==='page-content'?{}:null,createElement:()=>({style:{}}),body:{prepend:x=>inserted.push(x)}};
 const wiki={document:doc,window:win,location:{origin:'https://aqwwiki.wikidot.com',pathname:'/necrotic-sword-of-doom'},chrome:ctx.chrome};
 vm.runInNewContext(read('extension/bridge.js'),wiki);vm.runInNewContext(read('extension/bridge.js'),wiki);
 assert.equal(inserted.length,1);assert.equal(inserted[0].href,origin+pathname);
+vm.runInNewContext(read('extension/bridge.js'),{...wiki,document:{...doc,getElementById:()=>null,createElement:()=>{throw Error('Error page must remain untouched')}}});
 const status={dataset:{},textContent:''},button={addEventListener(k,f){this[k]=f}};let nextTimer,posted;
 const pageWindow={addEventListener(k,f){this[k]=f},postMessage(msg,target){posted={msg,target}}};
 vm.runInNewContext(read('extension-connect.js'),{window:pageWindow,location:{origin},document:{getElementById:id=>id==='connection-status'?status:button},crypto:{getRandomValues:a=>a.fill(7)},setTimeout:f=>{nextTimer=f;return 1},clearTimeout:()=>{nextTimer=null}});
@@ -94,7 +95,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.10.1');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js','wiki-quest-shop.js','wiki-list-ownership.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
+ assert.equal(manifest.version,'0.10.2');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js','wiki-quest-shop.js','wiki-list-ownership.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -360,7 +361,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
   assert.equal(annotated,80);
   await assert.rejects(api.checkAll(groups,'helmets-hoods',async m=>({ok:true,matches:m.names.map(()=>({state:'unsynced'}))}),()=>{},async()=>{}),/Inventory not synced/);
   assert.ok(!read('extension/wiki-list-ownership.js').includes('Check next 400'));
-  assert.ok(read('extension/wiki-list-ownership.js').includes('\n scan();'));
+  assert.ok(read('extension/wiki-list-ownership.js').includes('scheduleScan()'));assert.ok(read('extension/wiki-list-ownership.js').includes('IntersectionObserver'));
   console.log('Automatic full ownership scan: 1301 names, bounded batches, yielding and snapshot consistency passed.');
  })().catch(e=>{console.error(e);process.exitCode=1});
 }
@@ -403,4 +404,11 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  const msg={type:'routine-queue-add',quest:{source:'daily-quest-board-s-quests',name:'Moglin Companions'}};
  assert.equal((await api.handle(msg,quest)).ok,true);assert.equal((await api.handle(msg,quest)).already,true);
  assert.equal((await api.handle({type:'wishlist-queue-read'},main)).entries.length,2);
+})().catch(e=>{console.error(e);process.exitCode=1});
+
+(async()=>{
+ const api=vm.runInNewContext(read('extension/wiki-list-ownership.js')+'\nAQWCListOwnership',{URL});
+ let cancelled=false,sends=0,rendered=0;
+ await api.checkAll(Array.from({length:200},(_,i)=>({name:'item '+i})),'misc-items',async m=>{sends++;return {ok:true,syncedAt:'now',matches:m.names.map(()=>({state:'not-found'}))}},chunk=>{rendered+=chunk.length},async()=>{cancelled=true},()=>cancelled);
+ assert.equal(sends,1);assert.equal(rendered,80);
 })().catch(e=>{console.error(e);process.exitCode=1});

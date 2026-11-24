@@ -66,11 +66,13 @@ function label(match,duplicate=false){
  const place=match.inventory&&match.bank?'Inventory + Bank':match.bank?'Bank':'Inventory';
  return {text:'✓ '+place+' ×'+Number(match.total).toLocaleString(),color:'#90edb5'};
 }
-async function checkAll(groups,category,send,onChunk,yieldFrame=()=>new Promise(resolve=>setTimeout(resolve,0))){
+async function checkAll(groups,category,send,onChunk,yieldFrame=()=>new Promise(resolve=>setTimeout(resolve,20)),isCancelled=()=>false){
  let syncedAt=null,exportedAt=null,offset=0;
  while(offset<groups.length){
+  if(isCancelled())return;
   const chunk=groups.slice(offset,offset+80);
   const r=await send({type:'wiki-list-lookup',category,names:chunk.map(g=>g.name)});
+  if(isCancelled())return;
   if(!r?.ok||!Array.isArray(r.matches)||r.matches.length!==chunk.length)throw Error('Inventory lookup unavailable');
   if(!r.syncedAt)throw Error('Inventory not synced. Import & Sync in Companion first.');
   if(syncedAt&&(r.syncedAt!==syncedAt||r.exportedAt!==exportedAt))throw Error('Inventory changed during check. Refresh ownership.');
@@ -98,9 +100,13 @@ function init(){
  const status=document.createElement('small');status.setAttribute('role','status');status.style.cssText='display:block;color:#b6cddd;font-weight:400;margin-top:4px';
  controls.append(search,show,clear);panel.append(titleLine,note,controls,status);shadow.append(panel);(document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);
  if(!groups.length){search.disabled=show.disabled=true;status.textContent='No supported item links detected on this index. Refresh the page; if this persists, report the page URL.';return}
- let busy=false,owned=0,unknown=0,absent=0;
- const labels=new Set();
- function reset(){for(const el of labels)el.remove();labels.clear();owned=0;unknown=0;absent=0;clear.hidden=true}
+ let busy=false,owned=0,unknown=0,absent=0,activeScan=0,departing=false,autoTimer=null;
+ const labels=new Set(),pendingAnchors=new Map();
+ const observer=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{
+  if(departing)return;
+  for(const entry of entries)if(entry.isIntersecting){const a=entry.target,data=pendingAnchors.get(a);observer.unobserve(a);pendingAnchors.delete(a);if(data&&a.isConnected)renderAnchor(a,data.group,data.match)}
+ },{rootMargin:'300px 0px'}):null;
+ function reset(){observer?.disconnect();pendingAnchors.clear();for(const el of labels)el.remove();labels.clear();owned=0;unknown=0;absent=0;clear.hidden=true}
  const results=document.createElement('div');results.style.cssText='max-height:240px;overflow:auto;margin-top:6px';results.hidden=true;panel.append(results);
  const matched=new Map(),queued=new Set();
  function makeAdd(data){
@@ -130,6 +136,12 @@ function init(){
   else if(m.state==='owned')owned++;else absent++;
   for(const a of group.anchors){
    if(!a.isConnected)continue;
+   if(observer){pendingAnchors.set(a,{group,match:m});observer.observe(a)}
+   else renderAnchor(a,group,m)
+  }
+ }
+ function renderAnchor(a,group,m){
+   const l=label(m,group.slugs.size!==1);
    const el=document.createElement('span');el.setAttribute('data-aqwc-list-ownership','');el.style.cssText='display:inline;white-space:nowrap';
    const text=document.createElement('span');text.textContent=' '+l.text;text.title=m?.possible?.length?'Possible inventory variant: '+m.possible.join(', ')+' — exact variant not verified':'AQW Companion local snapshot; name/category match, not a live account check';
    text.style.cssText='display:inline-block;margin-left:4px;padding:0 4px;border-radius:4px;background:#142b3e;color:'+l.color+';font:600 11px/1.5 system-ui';
@@ -141,10 +153,10 @@ function init(){
     }
    }
    a.insertAdjacentElement('afterend',el);labels.add(el)
-  }
  }
- async function scan(query=''){
-  if(busy)return;
+ async function scan(){
+  if(busy||departing)return;
+  const token=++activeScan;
   reset();matched.clear();const selected=groups;
   if(!selected.length){status.textContent='No matching candidate names.';return}
   busy=true;show.disabled=clear.disabled=true;
@@ -153,17 +165,21 @@ function init(){
    await checkAll(selected,category,msg=>chrome.runtime.sendMessage(msg),(chunk,matches,progress)=>{
     chunk.forEach((g,i)=>annotate(g,matches[i]));
     status.textContent=progress.offset.toLocaleString()+' / '+selected.length.toLocaleString()+' checked · '+owned+' owned · '+absent+' not in snapshot · '+unknown+' unknown · synced '+new Date(progress.syncedAt).toLocaleString();
-   });
+   },()=>new Promise(resolve=>setTimeout(resolve,20)),()=>departing||token!==activeScan);
+   if(departing||token!==activeScan)return;
    clear.hidden=false;renderSearch();
-  }catch(err){reset();matched.clear();renderSearch();status.textContent=String(err?.message||err)}
-  finally{busy=false;show.disabled=clear.disabled=search.disabled=false}
+  }catch(err){if(!departing&&token===activeScan){reset();matched.clear();renderSearch();status.textContent=String(err?.message||err)}}
+  finally{if(token===activeScan){busy=false;show.disabled=clear.disabled=search.disabled=false}}
  }
- show.addEventListener('click',e=>{if(e.isTrusted&&!busy)scan()});
+ show.addEventListener('click',e=>{if(e.isTrusted&&!busy){clearTimeout(autoTimer);scan()}});
  clear.addEventListener('click',e=>{if(!e.isTrusted||busy)return;reset();matched.clear();renderSearch();status.textContent='Labels cleared. Refresh ownership to check again.'});
  // Local read-only comparison on recognized category pages. No network requests,
  // no new permissions, and no simulated click or write to the inventory.
- scan();
-
+ function scheduleScan(){clearTimeout(autoTimer);autoTimer=setTimeout(()=>{if(!departing&&!busy)scan()},350)}
+ if(document.readyState==='complete')scheduleScan();else window.addEventListener('load',scheduleScan,{once:true});
+ window.addEventListener('pagehide',()=>{departing=true;activeScan++;clearTimeout(autoTimer);observer?.disconnect()});
+ window.addEventListener('pageshow',e=>{if(e.persisted){departing=false;busy=false;show.disabled=clear.disabled=search.disabled=false;scheduleScan()}});
+ 
 }
 globalThis.AQWCListOwnership=Object.freeze({categoryFor,candidate,sectionMarker,collect,groupRows,label,checkAll});
 if(typeof document!=='undefined')init();

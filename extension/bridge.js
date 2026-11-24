@@ -14,6 +14,7 @@
     return;
   }
   if (location.origin !== 'https://aqwwiki.wikidot.com') return;
+  if (!document.getElementById('page-title') || !document.getElementById('page-content')) return;
   if (document.getElementById('aqwc-foundation-badge')) return;
   const badge = document.createElement('a');
   badge.id = 'aqwc-foundation-badge';
