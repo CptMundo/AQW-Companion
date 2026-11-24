@@ -40,9 +40,21 @@
  const show=(text,detail,color)=>{line.textContent=text;line.style.color=color;note.textContent=detail};
  const badge=document.getElementById('aqwc-foundation-badge');(badge||title).insertAdjacentElement('afterend',host);
  if(!category){show('Item type not recognized','AQW Companion could not identify this Wiki category.','#ffdb93');return}
- const wishlistUrl=globalThis.AQWCWikiWishlist?.build({name,category,slug:location.pathname.replace(/^\/|\/$/g,'')});
- if(wishlistUrl){
-  const link=document.createElement('a');link.href=wishlistUrl;link.target='_blank';link.rel='noopener noreferrer';link.textContent='+ Add to Wishlist';link.style.cssText='display:inline-block;margin-top:8px;padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;text-decoration:none;font-size:12px;';card.append(link);
+ const item={name,category,slug:location.pathname.replace(/^\/|\/$/g,'')},target=globalThis.AQWCWikiWishlist?.target(item);
+ if(target){
+  const link=document.createElement('button');link.type='button';link.textContent='+ Add to Wishlist';link.style.cssText='display:inline-block;margin-top:8px;padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;font:600 12px system-ui;cursor:pointer';
+  const wishlistNote=document.createElement('small');wishlistNote.style.cssText='display:block;color:#b6cddd;font-weight:400;margin-top:3px';
+  if(target.variant){link.disabled=true;wishlistNote.textContent='Ambiguous item variant; direct addition is not supported.'}
+  link.addEventListener('click',async e=>{
+   if(!e.isTrusted||link.disabled)return;
+   link.disabled=true;link.textContent='Saving…';
+   try{
+    const r=await chrome.runtime.sendMessage({type:'wishlist-queue-add',item});
+    if(!r?.ok)throw Error(r?.error||'Could not save item.');
+    link.textContent='✓ Saved to Wishlist queue';wishlistNote.textContent='Saved locally. Companion imports it automatically when open.';
+   }catch(err){link.disabled=false;link.textContent='+ Add to Wishlist';wishlistNote.textContent=String(err?.message||err)}
+  });
+  card.append(link,wishlistNote);
  }
  try{globalThis.AQWCWikiMaterials?.render(card,content,location.origin)}catch{console.warn('AQW Companion: material progress unavailable on this page.')}
  show('Checking synced inventory…','','#b6dfff');
