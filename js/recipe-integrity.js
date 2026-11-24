@@ -169,6 +169,60 @@
  function upgradeUntouchedLegacy(project,makeStep){
   return isLegacySin(project)||isLegacyForge(project)||oldPlaceholder(project)?sync(project,makeStep).changed:false;
  }
- return Object.freeze({getVerified,getRecipe,getAcquisition,inspect,sync,isLegacySin,isLegacyForge,upgradeUntouchedLegacy,
+
+ const WIKI="https://aqwwiki.wikidot.com/";
+ const guideRows=[
+  ...[["Master of Moglins (Class) (1)",1,"master-of-moglins-class-1"],["Master of Moglins (Class) (2)",0,"master-of-moglins-class-2"],["Dark Master of Moglins",0,"dark-master-of-moglins"]].map(([name,ac,slug])=>({name,type:"Class",kind:"legacy",label:"Legacy entitlement required",price:ac+" AC",shop:"Master of Moglins Class — Book of Lore",requirements:["Eligible 2018 Moglins Kickstarter package"],note:"The original entitlement is no longer sold. Only eligible accounts can claim this item; its listed AC price alone is not sufficient.",wiki:WIKI+slug,source:WIKI+"master-of-moglins-class"})),
+  {name:"Shaman",type:"Class",kind:"purchase",label:"Reputation shop",price:"0 AC",shop:"Arcangrove Rep Shop",join:"/join arcangrove",requirements:["Arcangrove reputation Rank 10"],wiki:WIKI+"shaman"},
+  {name:"Evolved Shaman (AC)",type:"Class",kind:"purchase",label:"AC purchase",price:"2,000 AC",shop:"Class Shop — Battleon / Game Menu",join:"/join battleon",requirements:[],wiki:WIKI+"evolved-shaman-ac"},
+  {name:"Drakath the Eternal",type:"Armor",kind:"quest",label:"Quest reward",shop:"Hero — Eternal Drakath Set",join:"/join eternalchaos",requirements:["Drakath's Sword (Free Player)","Drakath Armor (Permanent)"],wiki:WIKI+"drakath-the-eternal",source:WIKI+"hero-s-quests",ingredients:[["Spirit Orb (Misc)",2000],["Crystallized Chaos",800],["Star Fragment",33],["Death's Oversight",5],["Reality Shard",200]]}
+ ];
+ const guidanceIndex=new Map(guideRows.map(row=>[normalize(row.name),row]));
+ function getGuidance(name){return guidanceIndex.get(normalize(name))||null}
+ function guidanceRecipe(name){
+  const g=getGuidance(name);if(!g)return null;
+  const own=item=>({label:"Own "+item,kind:"owned",item,target:1});
+  if(g.kind==="quest")return {name:g.name,type:g.type,steps:[...g.requirements.map(own),...toSteps(g),{label:"Complete Eternal Drakath Set (confirm in game)",kind:"manual"}]};
+  return {name:g.name,type:g.type,steps:[...g.requirements.map(label=>({label,kind:"manual"})),own(g.name)]};
+ }
+ function guidanceAcquisition(name){
+  const g=getGuidance(name);if(!g)return null;
+  return {name:g.name,type:g.type,origin:"reviewed",wiki:g.wiki,ingredients:g.ingredients||[],methods:[{type:g.kind==="quest"?"Quest Reward":"Shop",title:g.shop,join:g.join,url:g.source||g.wiki,details:[g.price&&"Price: "+g.price,...g.requirements,g.note].filter(Boolean).join(" · ")}]};
+ }
+ function sourceUrl(url){return typeof url==="string"&&/^https:\/\/aqwwiki\.wikidot\.com\/[a-z0-9][a-z0-9-]*$/i.test(url)?url:null}
+ function guidanceFor(name,meta,entry){
+  const known=getGuidance(name);if(known)return known;
+  const flags=new Set([...(Array.isArray(meta?.flags)?meta.flags:[]),...(Array.isArray(entry?.flags)?entry.flags:[])].map(normalize));
+  const wiki=sourceUrl(meta?.slug)||sourceUrl(entry?.wiki);
+  const methods=Array.isArray(entry?.methods)?entry.methods:[];
+  const requirements=[...new Set((entry?.questRoutes?.length===1?entry.questRoutes[0].prerequisites||[]:[]).filter(x=>["reputation","level","quest"].includes(x.kind)).map(x=>x.label).filter(x=>typeof x==="string"&&x.length<=250))];
+  if(flags.has("legend"))requirements.push("Membership required (community item tag; check source)");
+  const purchases=methods.filter(m=>/^(?:shop|purchase|ac purchase|gold purchase)$/i.test(m.type||"")&&sourceUrl(m.url));
+  const purchase=purchases.length===1?purchases[0]:null;
+  const value=String(purchase?.price??"").trim();
+  const price=/^(?:\d{1,3}(?:,\d{3})+|\d+)\s*(?:ACs?|Gold)$/i.test(value)?value:null;
+  const base={wiki,requirements,community:true};
+  if(flags.has("rare"))return {...base,kind:"rare",label:"Rare — original route may be unavailable",note:"Community rarity tag. Check the source for any remaining eligible claim or alternative route."};
+  if(flags.has("seasonal"))return {...base,kind:"seasonal",label:"Seasonal — check event availability",note:"Current event availability is not verified. Do not assume this item is obtainable today."};
+  if(flags.has("special offer"))return {...base,kind:"legacy",label:"Special offer / entitlement",note:"A promotional or account entitlement may be required; check the source."};
+  if(purchase)return {...base,kind:"purchase",label:"Shop purchase",price,shop:purchase.title,join:purchase.joinVerified===false?null:purchase.join,note:price?null:"Exact purchase price not verified."};
+  if(requirements.length)return {...base,kind:"requirements",label:"Acquisition requirements"};
+  if(!methods.length&&!entry?.ingredients?.length)return {...base,kind:"unknown",label:"Acquisition not verified",note:"No reliable acquisition route is stored. Check the AQWWiki before farming."};
+  return null;
+ }
+ function upgradeGuidance(project,makeStep){
+  const g=getGuidance(project?.name);if(!g||!Array.isArray(project.steps))return false;
+  const blank=project.steps.find(s=>s.kind==="manual"&&s.label===UNKNOWN_ACQUISITION&&[undefined,null,"unknown"].includes(s.status));
+  const target=project.steps.find(s=>s.kind==="owned"&&normalize(s.item)===normalize(project.name)&&[undefined,null,"unknown"].includes(s.status));
+  if(project.steps.length===2&&blank&&target){
+   project.steps=guidanceRecipe(project.name).steps.map(s=>s.kind==="owned"&&normalize(s.item)===normalize(project.name)?target:makeStep(s));return true;
+  }
+  if(g.kind!=="quest")return false;
+  let changed=false;
+  for(const item of g.requirements)if(!project.steps.some(s=>s.kind==="owned"&&normalize(s.item)===normalize(item))){project.steps.unshift(makeStep({label:"Own "+item,kind:"owned",item,target:1}));changed=true}
+  return changed;
+ }
+
+ return Object.freeze({getGuidance,guidanceRecipe,guidanceAcquisition,guidanceFor,upgradeGuidance,sourceUrl,getVerified,getRecipe,getAcquisition,inspect,sync,isLegacySin,isLegacyForge,upgradeUntouchedLegacy,
   reviewedNames:Object.freeze(reviewed.map(entry=>entry.name))});
 });

@@ -1,0 +1,5 @@
+# Wishlist acquisition guidance — PR 101
+
+Reviewed sources (2026-11-24): https://aqwwiki.wikidot.com/master-of-moglins-class ; https://aqwwiki.wikidot.com/master-of-moglins-class-1 ; https://aqwwiki.wikidot.com/master-of-moglins-class-2 ; https://aqwwiki.wikidot.com/drakath-the-eternal ; https://aqwwiki.wikidot.com/hero-s-quests ; https://aqwwiki.wikidot.com/shaman ; https://aqwwiki.wikidot.com/evolved-shaman-ac ; https://aqwwiki.wikidot.com/sin-of-the-abyss .
+
+Legacy entitlement and shop price are different; AC rarity tag does not mean AC purchase. Seasonal and rare community flags are not live availability. Quest alternatives must not be flattened into one set of requirements. Missing data is labelled as such. The original completed-goal design and manual steps remain. Four-pixel grid rows with ResizeObserver produce independent card heights; browser QA is still necessary. This is not a factual verification of every item in the community database. Ultras and extension are outside this PR.

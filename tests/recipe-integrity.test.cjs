@@ -227,3 +227,26 @@ assert.ok(customizedSword.steps.some(step=>step.id==="my-note"&&step.status==="d
 assert.equal(api.inspect(customizedSword).status,"reviewed");
 
 console.log("Wishlist recipe integrity passed: 8 verified components, saved checklists, safe sync and incomplete-recipe warnings");
+
+const mog1=api.getGuidance("Master of Moglins (Class) (1)");
+const mog2=api.getGuidance("Master of Moglins (Class) (2)");
+assert.equal(mog1.price,"1 AC");assert.equal(mog2.price,"0 AC");assert.equal(mog1.kind,"legacy");
+assert.equal(api.guidanceFor("Master of Moglins (Class) (2)",{},{}).kind,"legacy");
+assert.equal(api.guidanceFor("fake",{flags:["AC"]},null).kind,"unknown","AC tag is not purchase price");
+assert.equal(api.guidanceFor("fake",{flags:["Pseudo Rare"]},null).kind,"unknown","Pseudo Rare is not Rare");
+assert.equal(api.guidanceFor("fake",{flags:["Seasonal"]},null).kind,"seasonal");
+assert.equal(api.guidanceFor("fake",{flags:["Rare"]},null).kind,"rare");
+assert.equal(api.getGuidance("Shaman").requirements[0],"Arcangrove reputation Rank 10");
+assert.equal(api.getGuidance("Evolved Shaman (AC)").price,"2,000 AC");
+const drakath=api.guidanceRecipe("Drakath the Eternal");
+assert.equal(drakath.steps.length,8);
+assert.deepEqual(drakath.steps.filter(s=>s.kind==="owned").map(s=>s.item),["Drakath's Sword (Free Player)","Drakath Armor (Permanent)"]);
+const savedDrakath={name:drakath.name,id:"saved",steps:[{id:"custom",kind:"manual",label:"my note",status:"done"},...drakath.steps.slice(2).map(make)]};
+assert.equal(api.upgradeGuidance(savedDrakath,make),true);assert.equal(savedDrakath.steps.length,9);
+assert.equal(api.upgradeGuidance(savedDrakath,make),false);assert.equal(savedDrakath.steps.find(s=>s.id==="custom").status,"done");
+const savedMog={name:mog1.name,id:"saved-mog",steps:[{id:"owned",kind:"owned",item:mog1.name,label:"Own "+mog1.name,status:"unknown"},{kind:"manual",label:"Acquisition route not yet in the catalog",status:"unknown"}]};
+assert.equal(api.upgradeGuidance(savedMog,make),true);assert.equal(savedMog.steps.find(s=>s.kind==="owned").id,"owned");assert.equal(api.upgradeGuidance(savedMog,make),false);
+assert.equal(api.sourceUrl("javascript:alert(1)"),null);
+assert.ok(html.includes("appendWishlistGuidance(card,project)"));
+assert.ok(html.includes("observeWishlistCards(list)"));
+assert.ok(css.includes("grid-auto-flow:row dense"));
