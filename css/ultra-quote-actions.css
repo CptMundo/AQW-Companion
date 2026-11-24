@@ -58,3 +58,19 @@
 #ultradetail .ultra-role-quote-heading,#ultradetail .ultra-react-quote{color:#ffce79;font-weight:800}
 #ultradetail .ultra-react-step{border-left:3px solid #f4b653;background:#222b32}
 #ultradetail .ultra-focus-selector .ultra-role-select{width:100%;max-width:none}
+
+/* Center the encounter title independently of right-aligned metadata. */
+#ultras #ultradetail .ultra-title-row{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,auto) minmax(0,1fr);align-items:center!important;gap:8px 12px!important}
+#ultras #ultradetail .ultra-title-row h2{grid-column:2;text-align:center;justify-self:center;max-width:100%;overflow-wrap:anywhere}
+#ultras #ultradetail .ultra-title-actions{grid-column:3;justify-self:end;justify-content:flex-end!important;max-width:100%;margin-left:0!important}
+#ultradetail .ultra-recommended-heading{position:relative;justify-content:center;text-align:center}
+#ultradetail .ultra-recommended-heading small{position:absolute;right:0}
+#ultradetail .ultra-recommended-classes{justify-content:center}
+#ultradetail .ultra-personal-rotation{display:grid;gap:9px;margin-top:4px;padding-top:12px;border-top:1px solid #34526c}
+#ultradetail .ultra-personal-rotation h4{margin:0}
+#ultradetail .ultra-personal-rotation select{max-width:100%;width:fit-content}
+#ultradetail .ultra-rotation-reference{padding:8px 10px;border:1px solid #34526c;border-radius:7px}
+#ultradetail .ultra-rotation-reference summary{cursor:pointer;color:#a6e5ff;font-size:12px}
+#ultradetail .ultra-rotation-reference p{margin:0;font-size:12px}
+@media(max-width:1050px){#ultras #ultradetail .ultra-title-row{grid-template-columns:minmax(0,1fr)}#ultras #ultradetail .ultra-title-row h2,#ultras #ultradetail .ultra-title-actions{grid-column:1}#ultras #ultradetail .ultra-title-actions{justify-self:end}}
+@media(max-width:500px){#ultradetail .ultra-recommended-heading{flex-wrap:wrap}#ultradetail .ultra-recommended-heading small{position:static}}
