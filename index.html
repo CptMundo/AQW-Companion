@@ -87,7 +87,7 @@
 <div id="itemdetails" class="detailoverlay hidden" role="dialog" aria-modal="true" aria-label="Item acquisition details"><div class="detailpanel"><div class="detailhead"><div><small style="color:#7da5d1;font-weight:700">AQW COMPANION · ACQUISITION EXPLORER</small><h2 id="detailname"></h2></div><button type="button" class="smallbutton" id="closedetails" aria-label="Close details">✕ Close</button></div><div id="detailcontent"></div></div></div><script src="js/meta-class-builds.js"></script>
 <script src="js/recipe-integrity.js"></script>
 <script src="extension/wishlist-link.js?v=126"></script>
-<script src="js/stack-alerts.js?v=137"></script>
+<script src="js/stack-alerts.js?v=138"></script>
 <script src="js/ultra-quote-actions.js"></script>
 <script src="js/ultra-guide-rows.js"></script>
 <script src="js/routine-library.js?v=126"></script>
@@ -3442,9 +3442,18 @@ function initWikiWishlistQueue(){
   // Use latest persisted projects, not a stale tab copy. Never clear on parse error.
   try{
    const latest=JSON.parse(localStorage.getItem(key)||'[]');if(!Array.isArray(latest))throw Error('Invalid local Wishlist.');
-   const ids=[];let added=0;
+   const ids=[];let added=0,pinned=0,unmatched=0;
+   const planner=JSON.parse(localStorage.getItem(plannerKey)||'{}');if(!planner||typeof planner!=='object'||Array.isArray(planner))throw Error('Invalid tracker.');const pins=Array.isArray(planner.pinned)?planner.pinned.slice():[],checks=planner.checks&&typeof planner.checks==='object'?planner.checks:{};
    for(const entry of m.entries){
     if(typeof entry?.id!=='string'||entry.id.length>64)continue;
+    if(entry.quest){
+     const {source,name}=entry.quest;if(typeof source!=='string'||! /^[a-z0-9][a-z0-9-]{0,199}$/.test(source)||typeof name!=='string'||name.length>350)continue;
+     const wiki='https://aqwwiki.wikidot.com/'+source,normalizeQuest=s=>String(s||'').replace(/[’‘]/g,"'").replace(/\s+/g,' ').trim().toLowerCase();
+     const matches=taskCatalog.filter(t=>routineIsRecurring(t)&&['daily','weekly'].includes(t.freq)&&[t.wiki,taskRoutes[t.id]?.wiki].some(u=>typeof u==='string'&&u.split('#')[0]===wiki)&&[t.name,t.searchName].some(n=>normalizeQuest(n)===normalizeQuest(name)));
+     if(matches.length!==1){unmatched++;ids.push(entry.id);continue}
+     const t=matches[0];if(!pins.some(p=>routineCanonicalId(p.id)===routineCanonicalId(t.id))){if(pins.length>=250){unmatched++;continue}pins.push({...t});pinned++}
+     ids.push(entry.id);continue;
+    }
     const target=api.target(entry.item);if(!target||target.variant)continue;
     const recipe=getRecipe(canonicalItemName(target.name)),name=canonicalItemName(recipe?.name||target.name);
     if(!latest.some(x=>normalizedName(canonicalItemName(x.name))===normalizedName(name))){
@@ -3456,6 +3465,8 @@ function initWikiWishlistQueue(){
    }
    if(added)localStorage.setItem(key,JSON.stringify(latest));
    unlocks=latest;
+   if(pinned){localStorage.setItem(plannerKey,JSON.stringify({pinned:pins,checks}));pinnedTasks=pins;taskChecks=checks;renderPlanner();renderHomeInsights();renderCleanupAlerts();message(pinned+' quest(s) pinned from AQW Wiki.')}
+   if(unmatched)message(unmatched+' Wiki quest(s) could not be matched uniquely to a recurring library entry.','error');
    window.postMessage({channel,type:'saved',nonce:m.nonce,ids},location.origin);
    if(added){try{renderUnlocks();renderHomeInsights();renderHomeInventoryChanges();renderStackAlerts();message(added+' Wishlist goal(s) added from AQW Wiki.')}catch(err){console.warn('Wishlist saved; redraw failed',err)}}
   }catch(err){console.warn('Pending Wiki Wishlist import failed; queue retained',err)}
