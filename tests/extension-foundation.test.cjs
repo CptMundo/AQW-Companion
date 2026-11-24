@@ -94,7 +94,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.6.1');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
+ assert.equal(manifest.version,'0.6.2');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -167,6 +167,10 @@ console.log('Wiki Wishlist: scoped links, category suffixes, variant guard and e
  const popup={url:'chrome-extension://test/popup.html'},main={url:'https://cptmundo.github.io/AQW-Companion/',frameId:0},wiki={url:'https://aqwwiki.wikidot.com/item',frameId:0};
  assert.throws(()=>api.cleanAccountSnapshot({...snap,reportedTotal:100}));
  assert.equal((await api.handle({type:'account-stage',snapshot:snap},wiki)).ok,false);
+ assert.equal((await api.handle({type:'account-stage',snapshot:snap},{url:'https://account.aq.com/AQW/Account',frameId:0})).ok,false);
+ assert.equal((await api.handle({type:'account-stage',snapshot:snap},{url:'https://account.aq.com/AQW/Inventory',frameId:1})).ok,false);
+ assert.equal((await api.handle({type:'account-stage',snapshot:snap},{url:'https://account.aq.com/AQW/Inventory',frameId:0})).count,101);
+ assert.equal((await api.handle({type:'account-stage-read'},{url:'https://account.aq.com/AQW/Inventory',frameId:0})).ok,false);
  assert.equal((await api.handle({type:'account-stage',snapshot:snap},popup)).count,101);
  assert.equal(stored['aqwc-inventory-v1'],undefined);
  assert.equal((await api.handle({type:'account-stage-read'},wiki)).ok,false);
@@ -196,3 +200,12 @@ console.log('Wiki Wishlist: scoped links, category suffixes, variant guard and e
  const js=read('extension/wiki-items.js');assert.ok(js.includes("type:'wishlist-queue-add'"));assert.ok(!js.includes("link.target='_blank'"));
  console.log('One-click Wishlist queue: scoped sender, duplicate suppression, persistence acknowledgement and no navigation.');
 })().catch(e=>{console.error(e);process.exitCode=1});
+
+assert.deepEqual(manifest.optional_host_permissions,['https://account.aq.com/*']);
+const header129=read('index.html').split('</header>')[0];
+for(const id of ['aqwc-account-import','aqwc-sync-inventory','aqwc-sync-status','aqwc-account-status','file','backup','clear'])assert.equal((header129.match(new RegExp('id="'+id+'"','g'))||[]).length,1);
+assert.ok(header129.includes('Inventory tools'));assert.ok(header129.includes('Import JSON file'));
+const accountPage129=read('extension/account-page.js');assert.ok(accountPage129.includes('if(!e.isTrusted||button.disabled)return'));assert.ok(accountPage129.includes("type:'account-stage',snapshot"));
+assert.ok(read('extension/account-permission.js').includes("matches=['https://account.aq.com/AQW/Inventory','https://account.aq.com/AQW/Inventory/*']"));
+assert.ok(read('extension/account-permission.js').includes('chrome.permissions.request'));assert.ok(read('extension/account-permission.js').includes('chrome.permissions.remove'));
+console.log('Inventory UX: header actions, optional permission, exact-page export scope and fallback checks passed.');
