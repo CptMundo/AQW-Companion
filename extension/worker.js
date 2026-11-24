@@ -194,7 +194,28 @@ function searchLocalInventory(snapshot,query,location){
  const sorted=[...rows.values()].sort((a,b)=>Number(nameKey(b.name)===q)-Number(nameKey(a.name)===q)||a.name.localeCompare(b.name)||a.bank-b.bank);
  return {rows:sorted.slice(0,50),total:sorted.length,syncedAt:snapshot.syncedAt};
 }
+const APPEARANCE_KEY='aqwc-wiki-appearance-v1';
+function normalizeAppearance(value){
+ const v=value&&typeof value==='object'?value:{};
+ return {
+  background:['original','midnight','slate','obsidian','void'].includes(v.background)?v.background:'original',
+  banner:['original','prometheus','arcane','void'].includes(v.banner)?v.banner:'original',
+  panel:['integrated','blue'].includes(v.panel)?v.panel:'integrated'
+ };
+}
 async function handle(message,sender){
+ if(message?.type==='wiki-appearance-read'||message?.type==='wiki-appearance-save'){
+  let wiki=false;try{wiki=sender.frameId===0&&new URL(sender.url).origin==='https://aqwwiki.wikidot.com'}catch{}
+  const popup=popupSender(sender);
+  if(!popup&&!(wiki&&message.type==='wiki-appearance-read'))return {ok:false,error:'Invalid appearance request.'};
+  await restrictStorage();
+  if(message.type==='wiki-appearance-save'){
+   const appearance=normalizeAppearance(message.appearance);
+   await chrome.storage.local.set({[APPEARANCE_KEY]:appearance});return {ok:true,appearance};
+  }
+  const stored=await chrome.storage.local.get(APPEARANCE_KEY);return {ok:true,appearance:normalizeAppearance(stored[APPEARANCE_KEY])};
+ }
+
  if(['wishlist-queue-add','routine-queue-add','wishlist-queue-read','wishlist-queue-ack'].includes(message?.type))return queueWishlist(message,sender);
  const account=await accountStage(message,sender);if(account)return account;
  if(message?.type==='wiki-list-preference'){
