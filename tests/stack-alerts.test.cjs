@@ -94,7 +94,7 @@ assert.ok(html.includes('id="home-stack-card"'));
 assert.ok(html.includes('id="stack-cap-save"'));
 assert.ok(html.includes('id="stack-cap-clear"'));
 assert.ok(html.includes('src="js/stack-alerts.js"'));
-assert.ok(html.includes('href="css/stack-alerts.css"'));
+assert.ok(html.includes('href="css/stack-alerts.css?v=95"'));
 assert.ok(html.includes("renderUnlocks();renderStackAlerts();showUnlockSuggestions()"),"Alerts refresh with inventory snapshots");
 assert.ok(html.includes("initStackAlerts();"));
 assert.ok(html.includes("MaxStack:window.AQWCStackAlerts?.validCap"));
@@ -113,7 +113,12 @@ assert.ok(html.includes("$('homestacks')?.addEventListener('click',()=>selectTab
 assert.ok(html.includes('id="homeinventorydelta" class="home-delta"></div><div class="home-stack-card hidden" id="home-stack-card">'));
 
 assert.ok(html.includes("wishlist-completion-remove"));
-assert.ok(html.includes("No further farming is needed."));
+assert.ok(html.includes("Congratulations, Hero!"));
 assert.ok(html.indexOf("if(owned(project.name)){\n  card.classList")<html.indexOf("// Only show recipe coverage when there is an actual fix to apply."));
 assert.ok(css.includes(".home-warning-icon"));
 assert.ok(css.includes(".home-inventory-changes .home-wishlist-win small"));
+
+assert.ok(html.includes("✓ Remove from Wishlist"));
+assert.ok(html.includes("home-wishlist-win-badge"));
+assert.ok(css.includes("#unlocks #unlocklist .unlockcard.wishlist-completed-card"));
+assert.ok(css.includes("#unlocks #unlocklist .wishlist-completion-remove"));

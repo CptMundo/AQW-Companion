@@ -23,7 +23,7 @@
 <link rel="stylesheet" href="css/meta-class-builds.css">
 <link rel="stylesheet" href="css/planner-routines.css">
 <link rel="stylesheet" href="css/recipe-coverage.css">
-<link rel="stylesheet" href="css/stack-alerts.css">
+<link rel="stylesheet" href="css/stack-alerts.css?v=95">
 <link rel="stylesheet" href="css/ultra-quote-actions.css">
 </head><body><div class="wrap"><header class="top"><div class="brand"><div class="logo"><img src="assets/brand-logo.png" width="52" height="52" alt="AQW Companion Prometheus-inspired helmet logo"></div><div><h1>AQW Companion <span class="tag">ALPHA 0.9.9.24</span></h1><small>AdventureQuest Worlds Inventory & Farming · Created by CptMundo</small></div></div><div class="actions"><label class="upload primary">📂 Import JSON export<input id="file" type="file" accept=".json,application/json" multiple></label><button id="backup">⬇️ Backup</button><button id="clear">Clear data</button></div></header><div id="alert" class="alert"></div><div class="notice aqw-storage-diagnostics" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><strong id="inventory-storage-status" aria-live="polite">💾 Inventory: checking browser storage…</strong><button id="inventory-storage-diagnostic" class="smallbutton" type="button">📋 Copy storage diagnostic</button></div><div class="notice"><strong>🔒 Your game data stays in this browser.</strong> Inventory, Wishlist and progress are stored locally. <button id="aqw-analytics-settings" type="button">Privacy settings</button> <a href="privacy.html">Privacy details</a>.</div>
 <aside id="aqw-analytics-banner" role="region" aria-label="Optional analytics consent" hidden>
@@ -651,8 +651,10 @@ function renderUnlocks(){const list=$('unlocklist');list.replaceChildren();const
  if(owned(project.name)){
   card.classList.add('wishlist-completed-card');
   const done=node('div',undefined,'wishlist-completion');
-  done.append(node('div','✓','wishlist-completion-icon'),node('h3','Goal completed!'),node('p','Congratulations! You own '+project.name+'.'),node('small','Detected in the selected inventory snapshot. No further farming is needed.'));
-  const remove=node('button','✓ Remove completed goal','primary wide wishlist-completion-remove');remove.type='button';remove.onclick=()=>{if(confirm('Remove this completed goal from your Wishlist?')){unlocks=unlocks.filter(u=>u.id!==project.id);saveUnlocks();renderUnlocks()}};
+  const emblem=node('div','🏆','wishlist-completion-icon');emblem.setAttribute('aria-hidden','true');
+  done.append(emblem,node('span','WISHLIST GOAL COMPLETE','wishlist-celebration-label'),node('h3','Congratulations, Hero!','wishlist-celebration-title'),node('strong',project.name,'wishlist-celebration-item'),node('p','You did it! Another goal achieved. Time to enjoy your reward.','wishlist-celebration-copy'));
+  const progress=node('div',undefined,'wishlist-celebration-progress');progress.append(node('span','✓ Target obtained'),node('strong','100%'));done.append(progress);
+  const remove=node('button','✓ Remove from Wishlist','wishlist-completion-remove');remove.type='button';remove.onclick=()=>{if(confirm('Remove this completed goal from your Wishlist?')){unlocks=unlocks.filter(u=>u.id!==project.id);saveUnlocks();renderUnlocks()}};
   done.append(remove);card.append(done);(columns.length?columns[projectIndex%columnCount]:list).append(card);continue;
  }
  // Only show recipe coverage when there is an actual fix to apply.
@@ -1761,11 +1763,13 @@ function renderHomeInventoryChanges(){
  if(wins?.count){
   const section=node('div',undefined,'home-wishlist-wins');
   const head=node('div',undefined,'home-delta-highlight-head');
-  head.append(node('strong','🏆 Wishlist Achievements'),node('span',fmt(wins.count)+' newly recorded','muted tiny'));
+  head.append(node('strong','🏆 Wishlist Achievements'),node('span',fmt(wins.count)+(wins.count===1?' goal completed':' goals completed'),'wishlist-win-count'));
   section.append(head);
   for(const win of wins.recent){
    const row=node('div',undefined,'home-wishlist-win');
-   row.append(node('strong','✓ '+win.name),node('small','Wishlist target first seen in this export'));
+   const icon=node('span','✓','home-wishlist-win-icon');icon.setAttribute('aria-hidden','true');
+   const details=node('div',undefined,'home-wishlist-win-details');details.append(node('strong',win.name),node('small','You did it! Another Wishlist goal achieved.'));
+   row.append(icon,details,node('span','Completed','home-wishlist-win-badge'));
    section.append(row);
   }
   if(wins.count>wins.recent.length)section.append(node('small',fmt(wins.count-wins.recent.length)+' more · See Account Statistics','muted tiny'));

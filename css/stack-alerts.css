@@ -63,3 +63,24 @@
 .wishlist-completion h3{color:#86f3cb;font-size:20px}
 .wishlist-completion small{color:#b3d4cd}
 .wishlist-completion-remove{width:100%;min-height:44px;background:#226c58!important;color:#fff!important}
+
+/* Wishlist celebration: explicit specificity beats the standard blue card theme. */
+#unlocks #unlocklist .unlockcard.wishlist-completed-card{background:linear-gradient(145deg,#173b36,#102b2c)!important;border:1px solid #397965!important;border-top:2px solid #66d7ad!important;box-shadow:0 4px 18px #071b1b60!important}
+#unlocks .wishlist-completed-card .unlockhead{padding-bottom:12px;border-bottom:1px solid #346057}
+#unlocks .wishlist-completion{display:flex;flex-direction:column;align-items:center;gap:10px;padding:24px 14px 10px;margin:0;background:transparent;border:0;text-align:center;min-width:0}
+#unlocks .wishlist-completion-icon{display:grid;place-items:center;width:68px;height:68px;border:1px solid #4b9c82;border-radius:50%;background:#214d43;box-shadow:0 0 0 6px #65d7ab0d;font-size:32px;line-height:1;margin:4px 0 6px}
+#unlocks .wishlist-celebration-label{font-size:10px;font-weight:800;letter-spacing:1.5px;color:#80e4b9}
+#unlocks #unlocklist .wishlist-completed-card .wishlist-celebration-title{font-size:23px!important;line-height:1.2;color:#8ceac4;margin:0!important}
+#unlocks .wishlist-celebration-item{font-size:16px;color:#effff7;overflow-wrap:anywhere}
+#unlocks .wishlist-celebration-copy{margin:0;max-width:32ch;color:#b7d8d0;font-size:13px;line-height:1.6}
+#unlocks .wishlist-celebration-progress{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;color:#89e3bc;font-size:12px;margin-top:9px;padding:10px 12px;background:#153a32;border:1px solid #356958;border-radius:8px}
+#unlocks #unlocklist .wishlist-completion-remove{display:flex;width:100%;min-height:44px;margin:4px 0 0;padding:10px 12px;background:#2b705a!important;border:1px solid #53a98a!important;color:#f0fff8!important;font-weight:700;font-size:13px;border-radius:8px}
+#unlocks #unlocklist .wishlist-completion-remove:hover{background:#37866b!important;border-color:#8ceac4!important}
+#unlocks #unlocklist .wishlist-completion-remove:focus-visible{outline:2px solid #8ceac4;outline-offset:3px}
+.home-inventory-changes .home-wishlist-wins{background:#102b2c;border:1px solid #326354;padding:12px;border-radius:10px}
+.home-inventory-changes .home-wishlist-win{display:flex;flex-direction:row;align-items:center;gap:10px;background:#173b34;padding:12px;border:1px solid #3c7764;border-radius:8px}
+.home-wishlist-win-icon{display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;border-radius:50%;background:#245546;color:#a3f3cc;font-size:18px;font-weight:800}
+.home-wishlist-win-details{display:grid;gap:4px;flex:1;min-width:0}
+.home-wishlist-win-badge,.wishlist-win-count{color:#8ceac4;font-size:11px;font-weight:700}
+.home-wishlist-win-badge{padding:4px 8px;background:#204c3e;border:1px solid #3e8067;border-radius:999px;white-space:nowrap}
+@media(max-width:520px){.home-inventory-changes .home-wishlist-win{flex-wrap:wrap}.home-wishlist-win-details{flex-basis:calc(100% - 42px)}.home-wishlist-win-badge{margin-left:40px}}
