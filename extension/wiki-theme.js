@@ -5,13 +5,13 @@
 function normalizeAppearance(value){
  const v=value&&typeof value==='object'?value:{};
  return {
-  background:['original','midnight','slate','obsidian','void'].includes(v.background)?v.background:'original',
+  background:['original','neutral','midnight','slate','obsidian','void'].includes(v.background)?v.background:'original',
   banner:['original','prometheus','arcane','void'].includes(v.banner)?v.banner:'original',
   panel:['integrated','blue'].includes(v.panel)?v.panel:'integrated'
  };
 }
 
- const palettes={midnight:['#101924','#bcd5e9','#7dd7f5'],slate:['#262c34','#e4e9f1','#8fd8f2'],obsidian:['#141518','#e4e7ee','#8ad4f0'],void:['#1b1627','#e6dcf3','#c5abff']};
+ const palettes={neutral:['#192630','#dce5ee','#89cfe5'],midnight:['#101924','#bcd5e9','#7dd7f5'],slate:['#262c34','#e4e9f1','#8fd8f2'],obsidian:['#141518','#e4e7ee','#8ad4f0'],void:['#1b1627','#e6dcf3','#c5abff']};
  // Original artwork composed locally, with a separate readable wordmark and
  // full-width decorative background. No assets or code from other extensions.
  const svgUrl=svg=>'url("data:image/svg+xml,'+encodeURIComponent(svg)+'")';
@@ -29,12 +29,13 @@ function normalizeAppearance(value){
   const v=normalizeAppearance(value),root=document.documentElement;
   // Only the preference attributes and this owned style are touched. Original
   // means no page background/banner overrides, including other extensions.
-  root.setAttribute('data-aqwc-panel-theme',v.panel);
+  root.setAttribute('data-aqwc-panel-theme',v.panel);root.setAttribute('data-aqwc-background',v.background);
   const rules=[];
   if(v.background!=='original'){
    const [bg,fg,link]=palettes[v.background];
    rules.push('body,#container,#container-wrap,#content-wrap,#main-content,#page-content,#side-bar{background-color:'+bg+' !important;color:'+fg+' !important;}');
    rules.push('#page-content a:not([id^="aqwc-"]),#side-bar a,#breadcrumbs a{color:'+link+' !important;}');
+   if(v.background==='neutral')rules.push('#page-content .yui-content,#page-content .yui-content > div,#page-content .wiki-content-table td{background-color:#202f3b!important;border-color:#405362!important;color:#dce5ee!important;} #page-title{color:#a9e0f0!important;} #page-content .yui-nav a{background:#263847!important;color:#dce5ee!important;} #page-content .yui-nav .selected a{background:#325c70!important;}');
   }
   root.setAttribute('data-aqwc-banner',v.banner);restoreInline();if(artwork){artwork.remove();artwork=null;}
   if(v.banner!=='original'){
@@ -43,7 +44,7 @@ function normalizeAppearance(value){
    const images=chosen?['url("'+chrome.runtime.getURL('image_2026-11-24_232002011.png')+'")','linear-gradient(90deg,#07131b,#102c35 50%,#07131b)']:[wordmark,preset.art,preset.gradient];
    const positions=chosen?['center top','center top']:['12px 12px','right top','center top'];
    // Preserve the uploaded PNG aspect ratio; fit within the native 140px header.
-   const sizes=chosen?['auto 140px','100% 140px']:['min(290px, 38vw) 108px','auto 140px','100% 140px'];
+   const sizes=chosen?['auto clamp(164px,12vw,240px)','100% clamp(164px,12vw,240px)']:['min(290px, 38vw) 108px','auto 140px','100% 140px'];
    // The native banner image lives on the full-width container-wrap, not
    // the narrow, offset #header. Replace only its background; never overlay
    // or move the header links, search box or menu.
@@ -55,8 +56,8 @@ function normalizeAppearance(value){
    // background layers. Native header controls remain clickable.
    if(chosen&&target?.insertBefore&&document.createElement){
     artwork=document.createElement('img');artwork.id='aqwc-prometheus-artwork';artwork.alt='AQW Wiki Companion';artwork.src=chrome.runtime.getURL('image_2026-11-24_232002011.png');artwork.setAttribute('aria-hidden','true');target.insertBefore(artwork,target.firstChild);
-    rules.push(selector+'{position:relative!important;} #aqwc-prometheus-artwork{position:absolute!important;top:0!important;left:0!important;width:100%!important;height:140px!important;object-fit:contain!important;object-position:center!important;background:#07131b!important;z-index:1!important;pointer-events:none!important;display:block!important;}');
-    rules.push('html[data-aqwc-banner="prometheus"] #header{position:relative!important;z-index:2!important;background:transparent!important;} html[data-aqwc-banner="prometheus"] #header > h1,html[data-aqwc-banner="prometheus"] #header > h2{background:transparent!important;} html[data-aqwc-banner="prometheus"] #top-bar,html[data-aqwc-banner="prometheus"] #login-status,html[data-aqwc-banner="prometheus"] #search-top-box{z-index:3!important;}');
+    rules.push(selector+'{position:relative!important;--aqwc-banner-height:clamp(164px,12vw,240px);background-size: auto var(--aqwc-banner-height),100% var(--aqwc-banner-height)!important;} #aqwc-prometheus-artwork{position:absolute!important;top:0!important;left:0!important;width:100%!important;height:var(--aqwc-banner-height)!important;object-fit:cover!important;object-position:center 46%!important;background:#07131b!important;max-width:1180px!important;left:50%!important;transform:translateX(-50%)!important;mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);z-index:1!important;pointer-events:none!important;display:block!important;}');
+    rules.push('html[data-aqwc-banner="prometheus"] #header{position:relative!important;z-index:2!important;background:transparent!important;height:var(--aqwc-banner-height)!important;} html[data-aqwc-banner="prometheus"] #top-bar{top:var(--aqwc-banner-height)!important;} html[data-aqwc-banner="prometheus"] #header > h1,html[data-aqwc-banner="prometheus"] #header > h2{background:transparent!important;} html[data-aqwc-banner="prometheus"] #top-bar,html[data-aqwc-banner="prometheus"] #login-status,html[data-aqwc-banner="prometheus"] #search-top-box{z-index:3!important;}');
    }
   }
   if(!rules.length){style?.remove();style=null;return}
