@@ -286,7 +286,7 @@
     const p=plan(group,states,matches,rootSlug,i);
     if(!busy&&group.some(n=>!cache.has(n.slug)&&!Object.hasOwn(compactHints,n.slug)&&!reviewedSources(n.slug))&&requests<20){const load=button('Load material sources');load.className='aqwc-preview-load';load.addEventListener('click',e=>{if(e.isTrusted)loadPreviews(group)});tree.append(load)}
     if(!busy){const ready=p.root.filter(n=>n.missing===0).length;tree.append(note(ready+' / '+p.root.length+' materials ready'));const track=document.createElement('div'),fill=document.createElement('div');track.style.cssText='height:6px;background:#0a1926;border-radius:6px;overflow:hidden';fill.style.cssText='height:100%;background:#53c7e6;width:'+(p.root.length?ready/p.root.length*100:0)+'%';track.setAttribute('aria-label',ready+' of '+p.root.length+' direct ingredients ready');track.append(fill);tree.append(track)}
-    const columns=document.createElement('div');columns.className='aqwc-column-labels';columns.style.display='none';for(const label of ['Material','Acquisition / map','Progress']){const cell=document.createElement('span');cell.textContent=label;columns.append(cell)}tree.append(columns);
+    const columns=document.createElement('div');columns.className='aqwc-column-labels';for(const label of ['Material','Acquisition / map','Progress']){const cell=document.createElement('span');cell.textContent=label;columns.append(cell)}tree.append(columns);
     function drawNode(n,container){
      const row=document.createElement('div');row.className='aqwc-material-row';
      const top=document.createElement('div');top.className='aqwc-material-top';
