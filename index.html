@@ -21,7 +21,7 @@
 
 <link rel="stylesheet" href="css/account-statistics.css?v=97">
 <link rel="stylesheet" href="css/meta-class-builds.css">
-<link rel="stylesheet" href="css/planner-routines.css?v=114">
+<link rel="stylesheet" href="css/planner-routines.css?v=116">
 <link rel="stylesheet" href="css/recipe-coverage.css">
 <link rel="stylesheet" href="css/stack-alerts.css?v=95">
 <link rel="stylesheet" href="css/ultra-quote-actions.css?v=108">
@@ -2763,7 +2763,7 @@ function taskCard(t,pinned){const done=taskDone(t),conflict=routineConflict(t);
  if(conflict)card.append(node('small','Alternative already completed: '+conflict.name,'task-unverified'));
  const actions=node('div',undefined,'planner-quest-actions');
  const mainJoin=t.acceptJoin||t.join;if(mainJoin){const join=makeCopyJoin(mainJoin);join.title='Copy '+mainJoin+(t.acceptJoin&&t.acceptJoin!==t.join?' · Accept quest':'');actions.append(join)}
- if(pinned){const action=node('button','✓','smallbutton planner-complete-action'+(done?' is-complete':''));
+ if(pinned){const action=node('button',done?'×':'✓','smallbutton planner-complete-action'+(done?' is-complete':''));
  action.type='button';action.disabled=!!conflict;action.title=conflict?'Alternative already completed':done?'Undo completion':'Mark complete';
  action.setAttribute('aria-label',(done?'Undo completion of ':'Complete ')+t.name);action.setAttribute('aria-pressed',String(done));
  action.onclick=()=>{if(done&&$('plannerstatus').value==='completed')$('plannerstatus').value='all';toggleTask(t,!done)};
