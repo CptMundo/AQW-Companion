@@ -107,3 +107,6 @@ Balanced item page grid (60% farming/40% artwork), narrower ingredient column, e
 
 ### v0.12.8
 Equal-height farming and artwork cards; explicit rarity/base damage in the item summary; original details collapsed on recognized split item layouts. Monster links remain visible when artwork cannot be loaded; allowlisted legacy HTTP image URLs upgraded to HTTPS. Banner unchanged. No new permissions or farming logic changes. Browser validation required.
+
+### v0.12.9
+Custom Wiki themes now have a collapsible native sidebar (hidden by default, remembers choice locally), rounded navigation and dropdowns without changing their geometry, and compact failed-image links below available monster artwork. Expanded per-page monster lookup budget; avoid excluding actual monster names containing 'star' or 'large'. Supply Caravan source still redirects to an unavailable Imgur page; no fabricated replacement. Banner unchanged. No new permissions. Opera QA required.
