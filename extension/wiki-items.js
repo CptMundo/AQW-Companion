@@ -62,7 +62,9 @@
     link.textContent='✓ Saved to Wishlist queue';wishlistNote.textContent='Saved locally. Companion imports it automatically when open.';
    }catch(err){link.disabled=false;link.textContent='+ Add to Wishlist';wishlistNote.textContent=String(err?.message||err)}
   });
-  actions.append(link,wishlistNote);
+  const goal=document.createElement('small');goal.className='aqwc-goal-state';let queued=false;
+  async function readGoal(){if(document.hidden)return;try{const r=await chrome.runtime.sendMessage({type:'goal-status-read',query:{kind:'item',name:target.name||name}});if(!r?.ok)return;if(r.state==='saved'){goal.textContent='In Wishlist · '+r.progress+'% tracked · last synced '+new Date(r.at).toLocaleTimeString();link.textContent='✓ In Wishlist';link.disabled=true}else if(r.state==='absent'&&!queued&&!target.variant){goal.textContent='Wishlist status · last synced '+new Date(r.at).toLocaleTimeString();link.textContent='+ Add to Wishlist';link.disabled=false}else if(r.state==='unknown'){goal.textContent='Wishlist status unavailable · open Companion to sync'}}catch{}}
+  link.addEventListener('click',e=>{if(e.isTrusted)queued=true});actions.append(link,wishlistNote,goal);readGoal();window.addEventListener('focus',readGoal);const goalTimer=setInterval(readGoal,10000);window.addEventListener('pagehide',()=>clearInterval(goalTimer),{once:true});
   const href=!target.variant?globalThis.AQWCWikiWishlist?.build(item):null;
   if(href){const view=document.createElement('a');view.href=href;view.target='_blank';view.rel='noopener noreferrer';view.textContent='View in Wishlist ↗';view.style.cssText='display:inline-block;margin-top:5px;color:#a9ddff;font:600 11px system-ui';actions.append(view)}
   card.append(actions);
@@ -81,7 +83,6 @@
   const freshness=date?'Synced: '+date:'';
   sync.setAttribute?.('data-synced',String(!!result.syncedAt));syncTitle.textContent=result.syncedAt?'Inventory synced':'Inventory not synced';syncTime.textContent=freshness||'Import & Sync in Companion';
   if(result.state==='owned'){
-   if(!stackable&&farming)farming.open=false;
    show(stackable?'✓ Owned · '+result.total.toLocaleString()+' total':'✓ Owned',stackable?'Combined synced stock':'','#90edb5');
   }else if(result.state==='not-found')show(stackable?'0 total':'Not owned','','#ffc2a8');
   else if(result.state==='ambiguous')show('Possible match','Check the item variant in Companion.','#ffdb93');
