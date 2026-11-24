@@ -115,3 +115,15 @@
 #planner .planner-reset-note{margin:12px 0 0}
 @media(max-width:760px){#planner .planner-compact-summary{grid-template-columns:repeat(2,minmax(0,1fr))}#planner .planner-total{grid-column:1/-1}#planner .planner-task-group{padding:9px}#planner .planner-board-actions{width:100%;justify-content:space-between}}
 @media(max-width:440px){#planner .planner-quest-grid,#planner-discover #planner-suggestions{grid-template-columns:minmax(0,1fr)!important}#planner .planner-quest-art{height:115px}}
+
+/* PR 111: stretch each portrait across the card, overriding the legacy
+   align-items:start from site.css. Preserve aspect ratio without distortion. */
+#planner.view.active #planner-my-tasks .planner-quest-card,
+#planner-discover.view.active #planner-suggestions .planner-quest-card{display:flex!important;flex-direction:column!important;align-items:stretch!important;min-width:0}
+#planner .planner-quest-card .planner-quest-art,
+#planner-discover .planner-quest-card .planner-quest-art{width:100%;height:auto;aspect-ratio:16/9;flex:none;align-self:stretch;box-sizing:border-box;min-width:0}
+.planner-quest-art img{object-fit:cover;object-position:center}
+.planner-quest-art-fallback[hidden]{display:none}
+#planner .planner-heading-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:10px}
+#planner .planner-browse-frequency{font-size:11px;white-space:nowrap}
+@media(max-width:560px){#planner .planner-section-heading{flex-wrap:wrap}#planner .planner-heading-actions{justify-content:flex-start}}
