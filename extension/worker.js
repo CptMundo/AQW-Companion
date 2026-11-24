@@ -90,12 +90,15 @@ function cleanAccountSnapshot(value){
  if(new TextEncoder().encode(JSON.stringify(data)).length>MAX_BYTES)throw Error('Account snapshot exceeds local storage limit.');
  return {exportedAt:data.exportedAt,reportedTotal:value.reportedTotal,items:data.items};
 }
+function accountInventorySender(sender){
+ try{const u=new URL(sender.url);return sender.frameId===0&&u.origin==='https://account.aq.com'&&/^\/AQW\/Inventory\/?$/i.test(u.pathname)}catch{return false}
+}
 async function accountStage(message,sender){
- const popup=popupSender(sender),main=mainSender(sender);
- if(!popup&&!main)return null;
+ const popup=popupSender(sender),main=mainSender(sender),account=accountInventorySender(sender);
+ if(!popup&&!main&&!account)return null;
  if(!['account-stage','account-stage-summary','account-stage-discard','account-stage-read','account-stage-commit'].includes(message?.type))return null;
  await restrictStorage();
- if(popup&&message.type==='account-stage'){
+ if((popup||account)&&message.type==='account-stage'){
   const snapshot=cleanAccountSnapshot(message.snapshot),id=crypto.randomUUID();
   await chrome.storage.local.set({[ACCOUNT_STAGE]:{id,snapshot}});
   return {ok:true,count:snapshot.items.length};
