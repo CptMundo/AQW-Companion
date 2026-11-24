@@ -137,6 +137,18 @@
  // Narrow, source-reviewed use notes. These are review prompts, never claims
  // of exhaustive uses or automatic recommendations to discard.
  const cleanupNotes=[
+  {"name":"Ancient Sigil","kind":"keep","note":"Used in Forgotten Tombs shop merges.","url":"https://aqwwiki.wikidot.com/ancient-sigil"},
+  {"name":"Enchanted Dark Blood","kind":"keep","note":"Used to merge Iaste Armor and Legion Arcane Dark Caster.","url":"https://aqwwiki.wikidot.com/enchanted-dark-blood"},
+  {"name":"Dark Energy","kind":"keep","note":"A similarly named Misc variant appears in Lae's quest requirements; retain until exact variant is confirmed.","url":"https://aqwwiki.wikidot.com/lae-s-quests"},
+  {"name":"Hollow Soul","kind":"keep","note":"A similarly named Misc variant appears in Lae's quests; retain until exact variant is confirmed.","url":"https://aqwwiki.wikidot.com/lae-s-quests"},
+  {"name":"Potent Battle Elixir","kind":"keep","note":"Listed combat use-item variants; keep for combat unless exact use and current need are reviewed.","url":"https://aqwwiki.wikidot.com/use-items"},
+  {"name":"Potent Destruction Elixir","kind":"keep","note":"Listed combat use-item variants; keep for combat unless exact use and current need are reviewed.","url":"https://aqwwiki.wikidot.com/use-items"},
+  {"name":"Potent Life Potion","kind":"keep","note":"Listed combat use-item variants; keep for combat unless exact use and current need are reviewed.","url":"https://aqwwiki.wikidot.com/use-items"},
+  {"name":"Potent Malice Potion","kind":"keep","note":"Listed combat use-item variants; keep for combat unless exact use and current need are reviewed.","url":"https://aqwwiki.wikidot.com/use-items"},
+  {"name":"Potent Soul Potion","kind":"keep","note":"Listed combat use-item variants; keep for combat unless exact use and current need are reviewed.","url":"https://aqwwiki.wikidot.com/use-items"},
+  {"name":"Potent Vigor Potion","kind":"keep","note":"Listed combat use-item variants; keep for combat unless exact use and current need are reviewed.","url":"https://aqwwiki.wikidot.com/use-items"},
+  {"name":"Health Potion","kind":"keep","note":"Listed combat use-item variants; keep for combat unless exact use and current need are reviewed.","url":"https://aqwwiki.wikidot.com/use-items"},
+  {"name":"Scroll of Psychic Wave","kind":"keep","note":"Listed combat use-item variants; keep for combat unless exact use and current need are reviewed.","url":"https://aqwwiki.wikidot.com/use-items"},
   // Additional conservative use classifications from the 15 Nov 2026 WikiItems snapshot; not exhaustive live checks.
   {"name":"Gear of Doom","kind":"keep","note":"Collect three for a Wheel of Doom spin.","url":"https://aqwwiki.wikidot.com/gear-of-doom"},
   {"name":"Mystic Parchment","kind":"situational","note":"SpellCrafting reagent exchanged for ink. Consider banking when not crafting.","url":"https://aqwwiki.wikidot.com/mystic-parchment"},
