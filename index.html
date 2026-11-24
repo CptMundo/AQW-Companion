@@ -1707,6 +1707,27 @@ function appendSimplifiedRatings(content,key){
  pick.onchange=draw;details.append(node('p','Source author’s subjective ratings, not measured DPS or guaranteed success.','muted tiny'),pick,list);draw();content.append(details);
 }
 
+
+const arenaOptions={
+ 'Celestial Arena':[['Master Ranger','StoneCrusher','Legion DoomKnight','Rogue','Dragonslayer','Dragonslayer General','ArchFiend'],['Sentinel','Legendary Hero','Chrono ShadowSlayer','Phantom Chronomancer','Elemental Warrior','Other Chronomancers'],[]],
+ 'Infernal Arena — early bosses':[['Master Ranger','StoneCrusher','Legion DoomKnight','Rogue','Dragonslayer','Starting Classes'],['Sentinel','Legendary Hero','Chrono ShadowSlayer','Phantom Chronomancer','Elemental Warrior','Other Chronomancers'],[]],
+ 'Deadly Duo':[['Master Ranger','StoneCrusher','Legion DoomKnight','Dragonslayer','Dragonslayer General','ArchPaladin'],['Sentinel','Legendary Hero','Chrono ShadowSlayer','Phantom Chronomancer','Elemental Warrior','Other Chronomancers'],['Revitalize Elixir','Healing Potion','Scroll of Decay']],
+ 'Cervus Malus':[['Master Ranger','ArchPaladin','Legion DoomKnight','Dragonslayer General'],['Sentinel','Legendary Hero','Elemental Warrior','Other Chronomancers'],['Healing Potion']],
+ 'Key of Sholemoh':[['Master Ranger','ArchPaladin','Legion DoomKnight','Dragonslayer General','StoneCrusher','Dragonslayer'],['Sentinel','Legendary Hero','Elemental Warrior','Chrono ShadowSlayer','Phantom Chronomancer','Other Chronomancers'],['Revitalize Elixir','Healing Potion']],
+ "Azalith's Scythe":[['Lord of Order','Void Highlord','Dragon of Time','Lich','ArchPaladin','Shaman'],['Sentinel','Elemental Warrior','Dragon Knight'],['Healing Potion','Scroll of Chaos Fog (member)']],
+ "Na'al":[['Lord of Order','Void Highlord',"King's Echo",'Legion DoomKnight','Legion Revenant','Hollowborn Vindicator','ArchPaladin'],['Sentinel','Chrono ShadowSlayer','Phantom Chronomancer','Dragon Knight','Infinity Knight'],['Barrier Potion','Revitalize Elixir']]
+};
+for(const e of simplifiedExtraEncounters){const opts=arenaOptions[e.name];if(opts){[e.classes,e.premium,e.potions]=opts;if(["Azalith's Scythe","Na'al"].includes(e.name))e.tips.push('Workbook suggests level 100, a 30%+ all-monster damage weapon, and appropriate Forge enhancements.');}}
+const sgDetailedPattern=(name,note,lines)=>({name,note,events:lines.map(r=>r[0]),roles:lines.map(r=>r[1]||''),skills:Object.fromEntries(lines.flatMap((r,i)=>r[2]?[[i,r[2]]]:[]))});
+simplifiedSpeakerPatterns.push(
+ sgDetailedPattern('3-man Mole — detailed heal and Seal timing','Requires LR, LoO, AP and DPS. Use the detailed healing and mitigation schedule as one complete strategy, not combined with the shorter chart.',[
+ ['Start','','Seal'],['Truth','LR'],['Listen','LoO','Broken Seal'],['Zone 1','DPS','Seal'],['Truth','AP','AP heal'],['Auto','','LoO heal · Broken Seal'],['Listen','LoO'],['Truth','','Seal'],['Auto','','AP heal'],['Auto','','LoO heal · Broken Seal'],['Zone 2','LR'],['Listen'],['Truth'],['Auto','','AP heal · Seal'],['Auto','','LoO heal · Quix'],['Truth','LoO','Broken Seal'],['Listen'],['Zone 3','AP','Seal'],['Truth'],['Auto','','AP heal · Broken Seal'],['Listen','LR','LoO heal'],['Truth','','Seal'],['Auto','','AP heal'],['Auto','','LoO heal · Broken Seal'],['Zone 4','LoO','LoO heal'],['Listen','LoO'],['Truth'],['Auto','','AP heal · Seal'],['Auto','','LoO heal · Quix'],['Truth','LR','Broken Seal'],['Listen','LoO']
+ ]),
+ sgDetailedPattern('Glaceran Warlord variant','Advanced GW + LR + LoO + DPS strategy. This chart replaces AP with Glaceran Warlord; verify your exact team and healing timing before use.',[
+ ['Truth','LR','GW heal'],['Listen','LoO'],['Zone 1','DPS'],['Truth','GW','GW heal'],['Auto','','LoO heal'],['Listen','LoO'],['Truth','','GW heal'],['Auto'],['Auto','','LoO heal'],['Zone 2','LR','GW heal'],['Listen'],['Truth'],['Auto','','GW heal'],['Auto','','LoO heal'],['Truth','LoO','Quix'],['Listen'],['Zone 3','GW'],['Truth'],['Auto','','LoO heal'],['Listen','LR'],['Truth','','GW heal'],['Auto','','LoO heal'],['Auto','','GW heal'],['Zone 4','LoO','LoO heal'],['Listen','LoO'],['Truth'],['Auto','','GW heal'],['Auto','','LoO heal'],['Truth','LR','Quix'],['Listen','LoO']
+ ])
+);
+
 function appendSimplifiedProfile(root,profile,includeSpeaker=false,ratingKey=profile.name){
  const detail=node('details',undefined,'ultra-extra-details');
  detail.append(node('summary',includeSpeaker?'Community workbook — loadouts & Speaker rotations':'Community workbook — suggested strategy'));
@@ -1721,8 +1742,8 @@ function appendSimplifiedProfile(root,profile,includeSpeaker=false,ratingKey=pro
  appendSimplifiedRatings(content,ratingKey);
  if(includeSpeaker){const pick=node('select');for(const [i,p] of simplifiedSpeakerPatterns.entries())pick.append(new Option(p.name,String(i)));const rotation=node('div');
  const draw=()=>{const pattern=simplifiedSpeakerPatterns[Number(pick.value)]||simplifiedSpeakerPatterns[0];rotation.replaceChildren(node('p',pattern.note));const rows=node('div',undefined,'ultra-flow-list');
- for(const [i,event] of simplifiedSpeakerEvents.entries()){const line=node('div',undefined,'ultra-role-step');line.append(node('span',String(i+1).padStart(2,'0'),'ultra-step-number'),node('div',event+' · '+(pattern.roles[i]||(event.startsWith('Zone')?'Confirm assignment':'No assigned taunt'))+(pattern.skills[i]?' · '+pattern.skills[i]:''),'ultra-role-step-body'));rows.append(line)}rotation.append(rows)};
- pick.onchange=draw;content.append(node('h4','Choose ONE rotation (LoO + AP required)'),pick,rotation);draw()}
+ for(const [i,event] of (pattern.events||simplifiedSpeakerEvents).entries()){const line=node('div',undefined,'ultra-role-step');line.append(node('span',String(i+1).padStart(2,'0'),'ultra-step-number'),node('div',event+' · '+(pattern.roles[i]||(event.startsWith('Zone')?'Confirm assignment':event==='Auto'||event==='Start'?'No taunt specified':'No assigned taunt'))+(pattern.skills[i]?' · '+pattern.skills[i]:''),'ultra-role-step-body'));rows.append(line)}rotation.append(rows)};
+ pick.onchange=draw;content.append(node('h4','Choose ONE rotation — confirm required lineup'),pick,rotation);draw()}
  const link=node('a','↗ Original guide discussion');link.href=simplifiedGuideSource;link.target='_blank';link.rel='noopener noreferrer';content.append(link);detail.append(content);root.append(detail);
 }
 function renderSimplifiedExtras(root,term){
