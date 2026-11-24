@@ -65,6 +65,59 @@
   }
   return {root,limited};
  }
+
+ function sourceLink(a,origin){
+  try{const u=new URL(a.getAttribute('href'),origin),name=clean(a.textContent).replace(/^['‘“]+|['’”]+$/g,'');if(u.origin!==origin||u.search||!/^\/[a-z0-9][a-z0-9-]{0,199}\/?$/.test(u.pathname)||!name||name.length>180||u.hash&&!/^#[a-zA-Z0-9_-]{1,80}$/.test(u.hash))return null;return {name,slug:u.pathname.replace(/^\/|\/$/g,''),hash:u.hash}}catch{return null}
+ }
+ function parseSources(content,origin){
+  const out={locations:[],drops:[],quests:[],shops:[]};
+  function add(kind,a){const item=sourceLink(a,origin);if(item&&!out[kind].some(x=>x.slug===item.slug&&x.name===item.name&&x.hash===item.hash)&&out[kind].length<40)out[kind].push(item)}
+  // Read only acquisition-labelled lines and their immediately attached list.
+  // Stop at Sellback/Description/Notes. Never treat 'Used in' as a reward.
+  for(const el of content.querySelectorAll('p,li,div,strong,b')){
+   const direct=clean([...el.childNodes].filter(n=>n.nodeType===3||n.nodeType===1&&!['UL','OL','DIV','P'].includes(n.tagName)).map(n=>n.textContent).join(' '));
+   if(!direct||direct.length>400||/^(Notes?|Description|Sellback|Used (?:in|to))\b/i.test(direct))continue;
+   const kind=/^Locations?\s*:/i.test(direct)?'locations':/^(?:Price:\s*N\/A\s*\(?\s*)?Dropped by\b/i.test(direct)?'drops':/^(?:Price:\s*N\/A\s*\(?\s*)?Reward(?:ed)? from\b.*\bquests?\b/i.test(direct)?'quests':/^(?:Price:\s*N\/A\s*\(?\s*)?(?:Purchased from|Bought from|Available from)\b/i.test(direct)?'shops':null;
+   if(!kind)continue;
+   // Only explicit source links. A non-quest reward such as friendship is excluded.
+   for(const a of el.querySelectorAll('a[href]'))add(kind,a);
+   if(['UL','OL'].includes(el.nextElementSibling?.tagName)&&/:\s*$/.test(direct))for(const a of el.nextElementSibling.querySelectorAll('a[href]'))add(kind,a);
+   if(['STRONG','B'].includes(el.tagName)&&/:\s*$/.test(direct)){
+    for(let n=el.nextSibling,limit=0;n&&limit++<12;n=n.nextSibling){if(['BR','STRONG','B','P','DIV'].includes(n.nodeName))break;if(n.nodeName==='A')add(kind,n);else if(n.nodeType===1)for(const a of n.querySelectorAll('a[href]'))add(kind,a)}
+   }
+  }
+  return out;
+ }
+ const knownSources={
+  'moon-rock-fragments':{locations:[{name:'Luna Cove',slug:'luna-cove',join:'lunacove'}],drops:[{name:'Coral Merdraconian',slug:'coral-merdraconian'},{name:'Horde Lycan',slug:'horde-lycan'},{name:'Lunar Villager',slug:'lunar-villager'},{name:'Moonrock',slug:'moonrock'}],quests:[],shops:[]}
+ };
+ function reviewedSources(slug){return Object.hasOwn(knownSources,slug)?knownSources[slug]:null}
+ function mergeSources(primary,reviewed){
+  const result={};for(const kind of ['locations','drops','quests','shops']){const list=[...(reviewed?.[kind]||[])];for(const x of primary?.[kind]||[])if(!list.some(y=>y.slug===x.slug&&y.name===x.name&&(y.hash||'')===(x.hash||'')))list.push(x);result[kind]=list}
+  return result;
+ }
+ function renderSources(container,sources,origin,slug,{partial=false}={}){
+  if(!sources||!Object.values(sources).some(a=>a.length))return false;
+  const box=document.createElement('div');box.className='aqwc-source-guide';const title=document.createElement('strong');title.textContent='How to get';box.append(title);
+  for(const [kind,label] of [['locations','Locations'],['drops','Drops from'],['quests','Quest rewards'],['shops','Available from']]){
+   const rows=sources[kind]||[];if(!rows.length)continue;
+   const group=document.createElement('div'),heading=document.createElement('small');heading.className='aqwc-source-label';heading.textContent=label;group.append(heading);
+   for(const x of rows.slice(0,40)){
+    const line=document.createElement('div');line.className='aqwc-source-line';const a=document.createElement('a');a.href=origin+'/'+x.slug+(x.hash||'');a.textContent=x.name;line.append(a);
+    if(kind==='locations'){
+     const join=x.join||(x.slug==='luna-cove'?'lunacove':null);
+     if(join&&/^[a-z0-9-]{1,60}$/.test(join)){
+      const copy=document.createElement('button');copy.type='button';copy.textContent='/join '+join+' · Copy';copy.className='aqwc-copy-join';
+      copy.addEventListener('click',async e=>{if(!e.isTrusted)return;try{await navigator.clipboard.writeText('/join '+join);copy.textContent='Copied /join '+join}catch{copy.textContent='/join '+join+' · copy manually'}});line.append(copy);
+     }
+    }
+    group.append(line);
+   }
+   box.append(group);
+  }
+  if(partial){const note=document.createElement('small');note.textContent='Reviewed sources (partial list). Open the Wiki for all sources.';box.append(note)}
+  const link=document.createElement('a');link.href=origin+'/'+slug;link.textContent='View original material page ↗';link.className='aqwc-source-page';box.append(link);container.append(box);return true;
+ }
  async function loadRecipe(origin,slug){
   if(origin!=='https://aqwwiki.wikidot.com'||! /^[a-z0-9][a-z0-9-]{0,199}$/.test(slug))throw Error('Unsupported Wiki link');
   const url=origin+'/'+slug,controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
@@ -80,7 +133,7 @@
    const crumb=doc.querySelector('#breadcrumbs')||doc.querySelector('.breadcrumbs, #breadcrumb, .breadcrumb');
    const links=[...(crumb?.querySelectorAll('a[href]')||[])];
    if(!content||!doc.querySelector('#page-title')||!/\bSellback\s*:/i.test(body)||!/\bDescription\s*:/i.test(body)||/\busually refers to\s*:/i.test(body)||links.length&&!links.some(a=>{try{return new URL(a.getAttribute('href'),url).pathname.replace(/^\/|\/$/g,'')==='items'}catch{return false}}))return {groups:[],incomplete:true};
-   return parse(content,origin);
+   return {...parse(content,origin),sources:parseSources(content,origin)};
   }finally{clearTimeout(timer)}
  }
  function render(card,content,origin){
@@ -89,7 +142,7 @@
   const panel=document.createElement('section');panel.className='aqwc-section';panel.style.cssText='min-width:0;max-width:100%;';
   const heading=document.createElement('strong');heading.textContent='Farming Progress';panel.append(heading);card.append(panel);
   const note=text=>{const n=document.createElement('div');n.textContent=text;n.style.cssText='font-size:11px;color:#b6cddd;margin:5px 0;font-weight:400';return n};
-  panel.append(note('Inventory + Bank · expand a missing material to see its recipe.'));const help=document.createElement('details');const summary=document.createElement('summary');summary.textContent='How progress is calculated';summary.style.cssText='font-size:11px;color:#a9c4d8;cursor:pointer';help.append(summary,note('Stock is reserved once per option; alternative root recipes are independent. Unrecognized rows require manual verification.'));panel.append(help);
+  panel.append(note('Expand a material to see where to farm it or how to craft it.'));const help=document.createElement('details');const summary=document.createElement('summary');summary.textContent='How progress is calculated';summary.style.cssText='font-size:11px;color:#a9c4d8;cursor:pointer';help.append(summary,note('Stock is reserved once per option; alternative root recipes are independent. Unrecognized rows require manual verification.'));panel.append(help);
   if(incomplete)panel.append(note('Some recipe rows could not be read; check the original Wiki requirements.'));
   if(!groups.length)return;
   const tree=document.createElement('div'),statusLine=note('Checking synced inventory…');statusLine.setAttribute('role','status');panel.append(tree,statusLine);
@@ -110,11 +163,12 @@
    if(busy)return;
    let s=states.get(n.path);
    if(s){s.open=!s.open;draw();return}
-   s={open:true,choice:-1,groups:[],incomplete:false,error:''};states.set(n.path,s);
+   s={open:true,choice:-1,groups:[],incomplete:false,error:'',sources:reviewedSources(n.slug),partial:true};states.set(n.path,s);
    busy=true;statusLine.textContent='Reading Wiki recipe…';draw();
    try{
     let recipe=cache.get(n.slug);
     if(!recipe){if(requests>=20)throw Error('Wiki recipe request limit reached');requests++;recipe=await loadRecipe(origin,n.slug);cache.set(n.slug,recipe)}
+    s.sources=mergeSources(recipe.sources,reviewedSources(n.slug));s.partial=!!reviewedSources(n.slug)||recipe.incomplete;
     const next=new Set([...names,...recipe.groups.flat().map(x=>x.name)]);
     if(next.size>80)throw Error('Recipe material limit reached');
     for(const name of next)names.add(name);
@@ -134,7 +188,7 @@
      const top=document.createElement('div');top.style.cssText='display:flex;align-items:baseline;justify-content:space-between;gap:8px';
      const nameBox=document.createElement('div');nameBox.style.cssText='display:flex;align-items:center;gap:5px;min-width:0';
      const s=states.get(n.path);
-     if(n.missing>0&&n.depth<4&&!n.reason){const b=button(s?.open?'▾':'▸');b.setAttribute('aria-label',(s?.open?'Collapse ':'Expand recipe for ')+n.name);b.setAttribute('aria-expanded',String(!!s?.open));b.addEventListener('click',e=>{if(e.isTrusted)expand(n)});nameBox.append(b)}
+     if(n.missing>0&&n.depth<4&&!n.reason){const b=button(s?.open?'▾':'▸');b.setAttribute('aria-label',(s?.open?'Collapse ':'How to get ')+n.name);b.setAttribute('aria-expanded',String(!!s?.open));b.addEventListener('click',e=>{if(e.isTrusted)expand(n)});nameBox.append(b)}
      const a=document.createElement('a');a.href=origin+'/'+n.slug;a.textContent=n.name;a.style.cssText='color:#a9ddff;text-decoration:underline;overflow-wrap:anywhere';nameBox.append(a);
      const status=document.createElement('span');status.style.whiteSpace='nowrap';const done=n.missing===0,known=n.allocated!==null;
      status.textContent=(known?(done?'✓ ':n.allocated?'◐ ':'✕ ')+n.allocated.toLocaleString():'?')+' / '+n.target.toLocaleString();
@@ -145,10 +199,11 @@
      if(n.reason)row.append(note(n.reason));
      if(!s?.open||!n.missing)return;
      const nested=document.createElement('div');nested.style.cssText='margin:5px 0 0 8px;padding-left:10px;border-left:1px solid #38566d';row.append(nested);
-     if(s.error){nested.append(note(s.error));const retry=button('Retry');retry.addEventListener('click',e=>{if(e.isTrusted&&!busy){states.delete(n.path);expand(n)}});nested.append(retry);return}
+     const found=renderSources(nested,s.sources,origin,n.slug,{partial:s.partial});
+     if(s.error){nested.append(note('Wiki unavailable: '+s.error));const retry=button('Retry');retry.addEventListener('click',e=>{if(e.isTrusted&&!busy){states.delete(n.path);expand(n)}});nested.append(retry);return}
      if(busy&&!s.groups.length){nested.append(note('Loading…'));return}
      if(s.incomplete)nested.append(note('Some requirements could not be read. Verify the original Wiki page.'));
-     if(!s.groups.length){nested.append(note('No supported direct merge recipe found. Check quests or shops on the Wiki.'));return}
+     if(!s.groups.length){if(!found)nested.append(note('No acquisition links recognized. Open the material page to check its sources.'));return}
      if(s.groups.length>1||s.incomplete){
       const select=document.createElement('select');select.setAttribute('aria-label','Recipe option for '+n.name);select.disabled=busy;select.style.cssText='max-width:100%;background:#19334a;color:#e5f5ff;border:1px solid #466781;border-radius:4px;font:12px system-ui';
       const first=document.createElement('option');first.value='-1';first.textContent='Choose merge option';select.append(first);
@@ -162,5 +217,5 @@
   }
   draw();lookup().catch(()=>{statusLine.textContent='Inventory unavailable. Sync in Companion and refresh this page.'}).finally(()=>{busy=false;draw()});
  }
- globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render});
+ globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources});
 })();
