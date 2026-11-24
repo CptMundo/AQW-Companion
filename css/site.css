@@ -462,9 +462,9 @@ body{background:linear-gradient(145deg,#0a1420,#0d1926 52%,#101e2b)!important;co
 .primarynav{justify-content:center!important;gap:9px!important;padding:12px 16px!important}
 .primarynav button{min-width:112px!important;min-height:46px!important;font-size:14px!important;text-align:center!important}
 /* Single-view groups (Home, Story, Ultras, Planner) need no secondary tabs. */
-.subnav button[data-parent="home"],.subnav button[data-parent="story"],.subnav button[data-parent="ultras"],.subnav button[data-parent="planner"]{display:none!important}
-.subnav:has(button.group-visible:not([data-parent="home"]):not([data-parent="story"]):not([data-parent="ultras"]):not([data-parent="planner"])){display:flex!important}
-.subnav:not(:has(button.group-visible:not([data-parent="home"]):not([data-parent="story"]):not([data-parent="ultras"]):not([data-parent="planner"]))){display:none!important}
+.subnav button[data-parent="home"],.subnav button[data-parent="story"],.subnav button[data-parent="planner"]{display:none!important}
+.subnav:has(button.group-visible:not([data-parent="home"]):not([data-parent="story"]):not([data-parent="planner"])){display:flex!important}
+.subnav:not(:has(button.group-visible:not([data-parent="home"]):not([data-parent="story"]):not([data-parent="planner"]))){display:none!important}
 #overview .homeentries,#overview .home-delta,#overview .home-season-content{max-height:none!important;overflow:visible!important}
 #overview .homeinsights .card,#overview .home-main-grid .card{min-height:0!important}
 #overview .homeinsights,#overview .home-main-grid{align-items:start}

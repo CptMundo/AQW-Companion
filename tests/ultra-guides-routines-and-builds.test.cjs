@@ -319,7 +319,7 @@ assert.ok(ultraCSS.includes("@container (max-width:900px)"));
 assert.ok(ultraCSS.includes("@container (max-width:480px)"));
 console.log("Ultra layout: right gutter removed, four enhancement slots, responsive controls and no bottom footer.");
 
-const plannerCardCode=html.slice(html.indexOf("const plannerBossArt="),html.indexOf("$('resetultradaily')",html.indexOf("const plannerBossArt=")));
+const plannerCardCode=html.slice(html.indexOf("const plannerBossArt="),html.indexOf("let plannerShowAll=",html.indexOf("const plannerBossArt=")));
 let completed=false,unpins=0,pins=0,toggles=0,conflict=null;
 const makeNode=(tag,text,cls)=>({tag,text,cls,children:[],append(...nodes){this.children.push(...nodes)},setAttribute(k,v){this[k]=v}});
 const status={value:"all"};
@@ -350,7 +350,7 @@ console.log("Tracker 3.0 tiles: rewards, distinct joins, completion, undo, pin/u
 assert.ok(plannerCSS.includes(".planner-quest-actions .planner-complete-action.is-complete"));
 assert.ok(html.includes("actions.append(action)"));
 
-const portraitCode=html.slice(html.indexOf("const plannerBossArt="),html.indexOf("$('resetultradaily')",html.indexOf("const plannerBossArt=")));
+const portraitCode=html.slice(html.indexOf("const plannerBossArt="),html.indexOf("let plannerShowAll=",html.indexOf("const plannerBossArt=")));
 const portrait=vm.runInNewContext(portraitCode+"\n({taskCard,plannerArt,plannerCategory,plannerRewardParts,plannerTitle})",{node:makeNode,taskDone:()=>completed,routineConflict:()=>null,taskRoutes:{},taskCategories:t=>t.categories||[t.group||"Other"],makeCopyJoin:join=>makeNode("button",join),unpinTask:()=>{},pinTask:()=>{},toggleTask:()=>{},$:()=>status});
 const boss110={name:"Ultra Ezrajal",sourceName:"Ultra Ezrajal",group:"Ultra Boss",freq:"daily",join:"/join ultraezrajal",acceptJoin:"/join timeinn",rewards:["Ezrajal Insignia ×1","250000 Gold","500000 XP"]};
 assert.equal(portrait.plannerTitle(boss110),"Ultra Ezrajal");
@@ -475,3 +475,14 @@ const bossDoc={querySelector(q){return bossTabs.find(t=>q==='[data-tab="'+t.data
 vm.runInNewContext(navCode,{document:bossDoc});
 bossGroups[0].click();assert.ok(bossViews[0].active.has('active'));bossTabs[1].click();assert.ok(bossViews[1].active.has('active'));assert.ok(bossTabs[0].active.has('group-visible'));bossTabs[0].click();assert.ok(bossViews[0].active.has('active'));
 console.log("Separate Ultras / Boss Guides views, 29 guides and 11 catalog encounters, category search and selection passed.");
+
+const siteNav118=fs.readFileSync(path.join(__dirname,"../css/site.css"),"utf8");
+assert.ok(!siteNav118.includes('.subnav button[data-parent="ultras"]'),"No obsolete rule hides Ultra subtabs");
+assert.ok(!siteNav118.includes(':not([data-parent="ultras"])'),"Ultra group participates in subnav visibility");
+assert.ok(siteNav118.includes('.tabs.subnav button.group-visible{display:inline-flex}'));
+assert.ok(!html.includes('class="ultra-reset-tools"'));
+assert.ok(!html.includes('resetultradaily'));
+assert.ok(!html.includes('resetultraweekly'));
+assert.ok(html.includes('href="css/site.css?v=118"'));
+assert.ok(html.includes('id="ultracards"')&&html.includes('id="bossguidedetail"'));
+console.log("Ultra/Boss subnav CSS no longer excludes Ultras; reset toolbar removed without touching saved quest state.");
