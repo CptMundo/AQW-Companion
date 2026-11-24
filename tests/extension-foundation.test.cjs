@@ -414,7 +414,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
 })().catch(e=>{console.error(e);process.exitCode=1});
 
 (async()=>{
- const stored={};const api=vm.runInNewContext(read('extension/worker.js')+'\n({handle})',{chrome:{runtime:{onMessage:{addListener(){}}},storage:{local:{async get(k){return {[k]:stored[k]}},async set(v){Object.assign(stored,v)}}}},URL,TextEncoder});
+ const stored={};const api=vm.runInNewContext(read('extension/worker.js')+'\n({handle})',{chrome:{runtime:{onMessage:{addListener(){}},getURL:x=>'chrome-extension://test/'+x},storage:{local:{async get(k){return {[k]:stored[k]}},async set(v){Object.assign(stored,v)}}}},URL,TextEncoder});
  const wiki={url:'https://aqwwiki.wikidot.com/classes',frameId:0},msg={type:'wiki-list-preference'};
  assert.equal((await api.handle(msg,wiki)).automatic,true);
  assert.equal((await api.handle({...msg,automatic:false},wiki)).automatic,false);
