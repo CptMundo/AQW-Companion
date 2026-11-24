@@ -387,3 +387,20 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.ok(read('extension/wiki-quest-shop.js').includes("type:'routine-queue-add'"));
  assert.ok(read('index.html').includes("if(entry.quest)"));
 }
+
+{
+ const snap={items:[{ID:'1',Name:'Test',Type:'Class',Count:1,Bank:0},{ID:'1',Name:'Test',Type:'Class',Count:1,Bank:0},{ID:'1',Name:'Test',Type:'Class',Count:1,Bank:1}]};
+ const api=vm.runInNewContext(read('extension/worker.js')+'\n({buildListMatcher})',{chrome:{runtime:{onMessage:{addListener(){}}}},URL,TextEncoder});
+ assert.equal(api.buildListMatcher(snap,'classes')('Test').total,2);
+}
+(async()=>{
+ const stored={};let id=0;const api=vm.runInNewContext(read('extension/worker.js')+'\n({handle})',{chrome:{runtime:{onMessage:{addListener(){}},getURL:x=>'chrome-extension://test/'+x},storage:{local:{async get(k){return {[k]:stored[k]}},async set(v){Object.assign(stored,v)}}}},URL,TextEncoder,crypto:{randomUUID:()=>String(++id)}});
+ const main={url:'https://cptmundo.github.io/AQW-Companion/',frameId:0},wiki={url:'https://aqwwiki.wikidot.com/classes',frameId:0},quest={url:'https://aqwwiki.wikidot.com/daily-quest-board-s-quests',frameId:0};
+ const item={name:'Bard',slug:'bard',category:'classes'};
+ assert.equal((await api.handle({type:'wishlist-queue-add',item},wiki)).ok,true);
+ assert.equal((await api.handle({type:'wishlist-queue-add',item:{...item,category:'armors'}},wiki)).ok,false);
+ assert.equal((await api.handle({type:'routine-queue-add',quest:{source:'wrong',name:'Moglin Companions'}},quest)).ok,false);
+ const msg={type:'routine-queue-add',quest:{source:'daily-quest-board-s-quests',name:'Moglin Companions'}};
+ assert.equal((await api.handle(msg,quest)).ok,true);assert.equal((await api.handle(msg,quest)).already,true);
+ assert.equal((await api.handle({type:'wishlist-queue-read'},main)).entries.length,2);
+})().catch(e=>{console.error(e);process.exitCode=1});
