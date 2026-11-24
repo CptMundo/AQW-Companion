@@ -45,7 +45,7 @@ assert.ok(html.includes("planner-show-all"),"Extended catalog must remain usable
 assert.ok(html.includes("name:'Mine Crafting',group:'Metals',freq:'daily',join:'/join stalagbite'"));
 assert.ok(html.includes("name:'Hard Core Metals',group:'Metals',freq:'daily',join:'/join stalagbite'"));
 assert.ok(plannerCSS.includes("column-gap:14px"));
-assert.ok(html.includes('href="css/planner-routines.css?v=112"'));
+assert.ok(html.includes('href="css/planner-routines.css?v=114"'));
 assert.ok(html.includes('src="js/ultra-guide-rows.js"'));
 for(const [i,m] of [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].entries())
  if(!m[1].includes("src=")&&m[2].trim())new vm.Script(m[2],{filename:"index-inline-"+i});
@@ -338,10 +338,10 @@ tree109=flatten109(renderCard(task109,true));
 assert.ok(tree109[0].cls.includes("done"));
 status.value="completed";const undo109=tree109.find(n=>n.tag==="button"&&n.text==="✓");assert.equal(undo109.title,"Undo completion");assert.equal(undo109["aria-pressed"],"true");assert.ok(undo109.cls.includes("is-complete"));undo109.onclick();
 assert.equal(completed,false);assert.equal(status.value,"all");assert.equal(toggles,2);
-tree109.find(n=>n.text==="×").onclick();assert.equal(unpins,1);
+const removePin114=tree109.find(n=>n.tag==="button"&&String(n.cls||"").includes("planner-pin-action is-pinned"));assert.ok(removePin114);assert.match(removePin114.title,/^Unpin /);removePin114.onclick();assert.equal(unpins,1);
 conflict={name:"Other weekly"};tree109=flatten109(renderCard(task109,true));
 assert.ok(tree109.find(n=>n.tag==="button"&&n.text==="✓").disabled);
-conflict=null;flatten109(renderCard(task109,false)).find(n=>n.text==="+ Pin").onclick();assert.equal(pins,1);
+conflict=null;const addPin114=flatten109(renderCard(task109,false)).find(n=>n.tag==="button"&&String(n.cls||"").includes("planner-pin-action is-unpinned"));assert.ok(addPin114);assert.match(addPin114.title,/^Pin /);addPin114.onclick();assert.equal(pins,1);
 assert.ok(html.includes("const grid=node('div',undefined,'planner-quest-grid')"));
 assert.ok(plannerCSS.includes("max(235px,calc((100% - 44px)/5))"));
 assert.ok(plannerCSS.includes("#planner.view.active #planner-my-tasks{grid-template-columns:minmax(0,1fr)!important"));
@@ -427,3 +427,16 @@ assert.equal(portrait.plannerArt({id:'custom-1',name:'Mine Crafting',group:'Cust
 assert.equal(portrait.plannerArt({id:'unknown',name:'Unknown quest',group:'General',join:'/join yulgar',wiki:'https://aqwwiki.wikidot.com/daily-quest-board-s-quests'}),null);
 assert.equal(portrait.plannerArt({id:'toString',group:'General'}),null);
 console.log("Quest artwork expansion: "+newlyIllustrated.length+" additional active routines; "+active.filter(t=>portrait.plannerArt(t)).length+"/"+active.length+" with artwork references.");
+
+const toolbar114=html.slice(html.indexOf('<div class="card planner-board">'),html.indexOf('<div id="planner-my-tasks"'));
+assert.match(toolbar114,/<select id="planner-my-categories" aria-label="Quest category">/);
+assert.match(toolbar114,/<select id="plannerstatus" aria-label="Completion status">/);
+assert.ok(!toolbar114.includes('planner-category-controls'));
+assert.ok(html.includes("categoryBar.value=plannerMyCategory;categoryBar.onchange=()=>{plannerMyCategory=categoryBar.value;renderPlanner()}"));
+assert.ok(html.includes("css/planner-routines.css?v=114"));
+for(const [id,file] of [['friendship-twilly','0KftqqS.png'],['friendship-warlic','sq7rbv5.png'],['friendship-sally','GI2CmjZ.png'],['friendship-twig','Ke7Ri6j.png']]){
+ const task=active.find(t=>t.id===id);assert.ok(task,id);assert.ok(portrait.plannerArt(task).url.endsWith('/'+file),id);
+}
+console.log("Compact toolbar and additional artwork checks passed.");
+
+assert.ok(plannerCSS.includes(".planner-pin-action.is-unpinned"));assert.ok(plannerCSS.includes(".planner-pin-action.is-pinned"));assert.ok(plannerCSS.includes("mask:var(--planner-pin-icon)"));assert.ok(html.includes("button.setAttribute('aria-label',button.title)"));console.log("Pin and unpin pictograms retain accessible labels and actions.");
