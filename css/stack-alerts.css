@@ -41,3 +41,9 @@
  .stack-cap-form{grid-template-columns:1fr 1fr}
 }
 @media(max-width:520px){.stack-cap-form{grid-template-columns:1fr}}
+
+.home-wishlist-wins{display:grid;gap:7px;margin:12px 0}
+.home-wishlist-wins .home-delta-highlight-head strong{color:#70e1b7}
+.home-wishlist-win{display:grid;gap:4px;padding:9px 11px;border:1px solid #326354;border-radius:8px;background:#132c2c;overflow-wrap:anywhere}
+.home-wishlist-win strong{color:#d9fff0;font-size:12px}
+.home-wishlist-win small{color:#a9d4c4;font-size:11px}
