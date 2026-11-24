@@ -46,6 +46,12 @@
  const show=(text,detail,color)=>{line.textContent=text;line.style.color=color;note.textContent=detail;note.hidden=!detail};
  const badge=document.getElementById('aqwc-foundation-badge');if(ui)ui.mount(host,content,title);else (badge||title).insertAdjacentElement('afterend',host);
  if(!category){show('Item type not recognized','AQW Companion could not identify this Wiki category.','#ffdb93');return}
+ // Decorate actual large item illustrations only; preserve the Wiki image/link,
+ // original dimensions and credit. No additional image requests.
+ for(const img of content.querySelectorAll?.('img')||[]){
+  const frame=()=>{if(img.naturalWidth>=200&&img.naturalHeight>=120&&!img.closest?.('.page-rate-widget-box,.wiki-content-table'))img.classList?.add('aqwc-showcase-image')};
+  if(img.complete)frame();else img.addEventListener?.('load',frame,{once:true});
+ }
  const stackable=['misc-items','use-items'].includes(category);
  const item={name,category,slug:location.pathname.replace(/^\/|\/$/g,'')},target=globalThis.AQWCWikiWishlist?.target(item);
  if(target){

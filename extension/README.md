@@ -86,3 +86,6 @@ Prometheus banner uses a larger responsive height (164–240px), up to 1180px wi
 
 ## v0.12.1 — Wiki polish and goal sync
 Keep Farming Progress open even for owned gear; compact source typography, direct copy labels and expandable +more. Responsive stable quest selector grid with separate detail area and original content toggle, improved quest-location extraction. Larger-width centered artwork with soft full-width backdrop, slightly shorter header and clearer menu, redundant badge hidden. Website publishes bounded local Wishlist/pin summaries via existing trusted bridge; Wiki reads only requested goal status, timestamp shown, no raw inventory export. Manual quest completion queues only for a known pinned quest, can reopen on website; no game completion inference. Exact name matching may miss aliases; open website to refresh, no live external sync. No new permissions. Source coverage still incremental; existing explicit bounded source loading retained. Browser QA and deployment pending.
+
+### v0.12.2
+Responsive wide item panel with horizontal material rows (compact on narrower pages), restrained charcoal quest styling and improved native menu. Large item illustrations receive a CSS frame in custom appearance modes; originals and credits remain intact. No new permissions or fetches. Live Opera and Enhanced coexistence testing remains required.
