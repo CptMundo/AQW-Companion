@@ -92,3 +92,6 @@ Responsive wide item panel with horizontal material rows (compact on narrower pa
 
 ### v0.12.3
 Restore native top menu geometry; move the existing farming panel after the recognized Price line (fallback to sidebar if the Wiki layout cannot be matched); compact right item status, objectives first with narrow location/rewards column. No new permissions, requests or changes to recipe allocation. Original banner retained pending a verified game helm reference. Live Opera QA required.
+
+### v0.12.4
+Correct Price label matching and fallback placement; original recipe DOM retained. One compact quest detail surface with aligned metadata strip and objectives; direct verified item-location join controls, including Mermaid Sushi. Prometheus banner uses owner-provided game helm reference with local image and new wordmark, retains right-hand background art. No added permissions. Browser QA required.

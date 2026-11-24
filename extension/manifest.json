@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AQW Wiki Companion",
-  "version": "0.12.3",
+  "version": "0.12.4",
   "description": "Local AQW Companion inventory lookup on AQWorlds Wiki item pages.",
   "action": {
     "default_title": "AQW Wiki Companion",
@@ -62,7 +62,8 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "image_2026-11-24_232002011.png"
+        "image_2026-11-24_232002011.png",
+        "prometheus-helm.svg"
       ],
       "matches": [
         "https://aqwwiki.wikidot.com/*"
