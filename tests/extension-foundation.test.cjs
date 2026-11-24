@@ -95,7 +95,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.10.3');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js','wiki-quest-shop.js','wiki-list-ownership.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
+ assert.equal(manifest.version,'0.10.4');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -361,7 +361,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
   assert.equal(annotated,80);
   await assert.rejects(api.checkAll(groups,'helmets-hoods',async m=>({ok:true,matches:m.names.map(()=>({state:'unsynced'}))}),()=>{},async()=>{}),/Inventory not synced/);
   assert.ok(!read('extension/wiki-list-ownership.js').includes('Check next 400'));
-  assert.ok(read('extension/wiki-list-ownership.js').includes('scheduleScan()'));assert.ok(read('extension/wiki-list-ownership.js').includes('IntersectionObserver'));
+  assert.ok(!read('extension/wiki-list-ownership.js').includes('scheduleScan()'));assert.ok(!read('extension/wiki-list-ownership.js').includes('wiki-list-preference'));assert.ok(read('extension/wiki-list-ownership.js').includes('let groups=null,parseMs=null'));assert.ok(read('extension/wiki-list-ownership.js').includes('IntersectionObserver'));
   console.log('Automatic full ownership scan: 1301 names, bounded batches, yielding and snapshot consistency passed.');
  })().catch(e=>{console.error(e);process.exitCode=1});
 }
@@ -424,3 +424,13 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.equal((await api.handle(msg,{...wiki,url:'https://aqwwiki.wikidot.com/void-aura'})).ok,false);
  assert.ok(read('extension/wiki-list-ownership.js').includes('Navigation diagnostics'));
 })().catch(e=>{console.error(e);process.exitCode=1});
+
+{
+ // The actual init path must not enumerate the page or message the worker.
+ const el=()=>({style:{},append(){},replaceChildren(){},setAttribute(){},addEventListener(){},attachShadow(){return el()},insertAdjacentElement(){},hidden:false});
+ const title=el(),content={querySelectorAll(){throw Error('List parsed without explicit action')},get textContent(){throw Error('Page text read without explicit action')}};
+ const document={getElementById:id=>id==='page-title'?title:id==='page-content'?content:null,querySelector:()=>null,createElement:el,addEventListener(){}};
+ const context={URL,location:{origin:'https://aqwwiki.wikidot.com',pathname:'/misc-items'},document,window:{addEventListener(){}},performance:{now:()=>0,getEntriesByType:()=>[]},chrome:{runtime:{sendMessage(){throw Error('Unexpected background lookup')}}}};
+ vm.runInNewContext(read('extension/wiki-list-ownership.js'),context);
+ vm.runInNewContext(read('extension/wiki-items.js'),context);
+}
