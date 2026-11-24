@@ -89,25 +89,24 @@ function init(){
  const content=document.getElementById('page-content'),title=document.getElementById('page-title');if(!content||!title)return;
  const crumb=document.getElementById('breadcrumbs')||document.querySelector('.breadcrumbs,#breadcrumb,.breadcrumb');
  if(crumb){const links=[...crumb.querySelectorAll('a[href]')];if(links.length&&!links.some(a=>{try{return new URL(a.getAttribute('href'),origin).pathname.replace(/^\/|\/$/g,'')==='items'}catch{return false}}))return}
- const parseStarted=performance.now(),groups=groupRows(collect(content,category,location.pathname.startsWith('/sort-by-'))),parseMs=Math.round(performance.now()-parseStarted);
+ let groups=null,parseMs=null;
+ function getGroups(){if(groups===null){const started=performance.now();groups=groupRows(collect(content,category,location.pathname.startsWith('/sort-by-')));parseMs=Math.round(performance.now()-started)}return groups}
  const host=document.createElement('div');host.id='aqwc-list-ownership';host.style.cssText='margin:8px 0';
  const shadow=host.attachShadow({mode:'closed'}),panel=document.createElement('div');
  panel.style.cssText='display:inline-block;padding:8px 12px;border:1px solid #38566d;border-radius:8px;background:#142b3e;color:#e5f5ff;font:600 13px/1.5 system-ui;max-width:100%;box-sizing:border-box';
  const titleLine=document.createElement('strong');titleLine.textContent='Ownership Everywhere';
- const note=document.createElement('small');note.style.cssText='display:block;color:#b6cddd;font-weight:400';note.textContent='Local snapshot · name and category matching · '+groups.length.toLocaleString()+' candidate names';
+ const note=document.createElement('small');note.style.cssText='display:block;color:#b6cddd;font-weight:400';note.textContent='On demand · search a name or check the entire list. No background checks.';
  const controls=document.createElement('div');controls.style.cssText='display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:5px';
- const search=document.createElement('input');search.type='search';search.placeholder='Filter item names';search.setAttribute('aria-label','Filter item names for ownership check');search.style.cssText='max-width:100%;padding:5px;background:#101d2c;border:1px solid #466781;border-radius:4px;color:#e5f5ff';
+ const search=document.createElement('input');search.type='search';search.placeholder='Item name (optional)';search.setAttribute('aria-label','Filter item names for ownership check');search.style.cssText='max-width:100%;padding:5px;background:#101d2c;border:1px solid #466781;border-radius:4px;color:#e5f5ff';
  function btn(text){const b=document.createElement('button');b.type='button';b.textContent=text;b.style.cssText='padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;cursor:pointer';return b}
- const show=btn('Refresh ownership'),clear=btn('Clear labels');clear.hidden=true;
+ const show=btn('Check ownership'),clear=btn('Clear labels'),cancel=btn('Cancel');cancel.hidden=true;clear.hidden=true;
  const status=document.createElement('small');status.setAttribute('role','status');status.style.cssText='display:block;color:#b6cddd;font-weight:400;margin-top:4px';
- const auto=document.createElement('input');auto.type='checkbox';auto.disabled=true;auto.setAttribute('aria-label','Automatic ownership checks');
- const autoLabel=document.createElement('label');autoLabel.style.cssText='display:block;font-size:11px;margin-top:6px;color:#b6cddd';autoLabel.append(auto,document.createTextNode(' Automatic ownership checks'));
  const diagnostics=document.createElement('details');diagnostics.style.cssText='font-size:11px;color:#b6cddd;margin-top:5px';const diagnosticTitle=document.createElement('summary');diagnosticTitle.textContent='Navigation diagnostics';const diagnosticBody=document.createElement('div');diagnostics.append(diagnosticTitle,diagnosticBody);
- function report(scanMs=null){const n=performance.getEntriesByType('navigation')[0],waiting=n&&n.responseStart>=n.requestStart&&n.requestStart>0?Math.round(n.responseStart-n.requestStart):null;diagnosticBody.textContent='Document response wait: '+(waiting===null?'unavailable':waiting+' ms')+' · list parsing: '+parseMs+' ms · local scan: '+(scanMs===null?'not finished':scanMs+' ms')+'. Response wait includes network and server time; timings stay on this page.'}
+ function report(scanMs=null){const n=performance.getEntriesByType('navigation')[0],waiting=n&&n.responseStart>=n.requestStart&&n.requestStart>0?Math.round(n.responseStart-n.requestStart):null;diagnosticBody.textContent='Document response wait: '+(waiting===null?'unavailable':waiting+' ms')+' · list parsing: '+(parseMs===null?'not started':parseMs+' ms')+' · local scan: '+(scanMs===null?'not finished':scanMs+' ms')+'. Response wait includes network and server time; timings stay on this page.'}
  report();
- controls.append(search,show,clear);panel.append(titleLine,note,controls,autoLabel,status,diagnostics);shadow.append(panel);(document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);
- if(!groups.length){search.disabled=show.disabled=true;status.textContent='No supported item links detected on this index. Refresh the page; if this persists, report the page URL.';return}
- let busy=false,owned=0,unknown=0,absent=0,activeScan=0,departing=false,autoTimer=null,automatic=false,loadedPreference=false,pausedByUser=false;
+ controls.append(search,show,cancel,clear);panel.append(titleLine,note,controls,status,diagnostics);shadow.append(panel);(document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);
+ status.textContent='Ready. Nothing has been scanned.';
+ let busy=false,owned=0,unknown=0,absent=0,activeScan=0,departing=false;
  const labels=new Set(),pendingAnchors=new Map();
  const observer=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{
   if(departing)return;
@@ -123,6 +122,7 @@ function init(){
  }
  function renderSearch(){
   const query=clean(search.value).toLowerCase();results.replaceChildren();results.hidden=!query;if(!query)return;
+  if(groups===null){results.textContent='Press Enter or Check ownership to search this page.';return}
   const hits=groups.filter(g=>g.name.toLowerCase().includes(query));
   if(!hits.length){results.textContent='No items found on this page.';return}
   const note=document.createElement('small');note.textContent=hits.length+' matching items'+(hits.length>40?' · first 40':'');results.append(note);
@@ -135,7 +135,7 @@ function init(){
   }
  }
  search.addEventListener('input',renderSearch);
- search.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();renderSearch()}});
+ search.addEventListener('keydown',e=>{if(e.isTrusted&&e.key==='Enter'){e.preventDefault();scan()}});
  function annotate(group,m){
   matched.set(group.name,m);
   const l=label(m,group.slugs.size!==1);
@@ -165,9 +165,12 @@ function init(){
   if(busy||departing)return;
   const token=++activeScan,started=performance.now();
   report();
-  reset();matched.clear();const selected=groups;
-  if(!selected.length){status.textContent='No matching candidate names.';return}
-  busy=true;show.disabled=clear.disabled=true;
+  reset();matched.clear();busy=true;show.disabled=clear.disabled=search.disabled=true;cancel.hidden=false;
+  status.textContent='Reading item list…';
+  await new Promise(resolve=>setTimeout(resolve,0));
+  if(departing||token!==activeScan)return;
+  let selected;
+  try{const all=getGroups(),query=clean(search.value).toLowerCase();selected=query?all.filter(g=>g.name.toLowerCase().includes(query)):all;note.textContent=all.length.toLocaleString()+' candidate names · on-demand checks only';if(!selected.length){status.textContent=all.length?'No matching candidate names.':'No supported item links detected on this index.';renderSearch();report();return}}catch(err){status.textContent='Could not read item list.';return}finally{if(!selected?.length&&token===activeScan){busy=false;show.disabled=clear.disabled=search.disabled=false;cancel.hidden=true}}
   status.textContent='Checking 0 / '+selected.length.toLocaleString()+' local inventory names…';
   try{
    await checkAll(selected,category,msg=>chrome.runtime.sendMessage(msg),(chunk,matches,progress)=>{
@@ -177,23 +180,20 @@ function init(){
    if(departing||token!==activeScan)return;
    clear.hidden=false;renderSearch();report(Math.round(performance.now()-started));
   }catch(err){if(!departing&&token===activeScan){reset();matched.clear();renderSearch();status.textContent=String(err?.message||err)}}
-  finally{if(token===activeScan){busy=false;show.disabled=clear.disabled=search.disabled=false}}
+  finally{if(token===activeScan){busy=false;show.disabled=clear.disabled=search.disabled=false;cancel.hidden=true}}
  }
- show.addEventListener('click',e=>{if(e.isTrusted&&!busy){clearTimeout(autoTimer);pausedByUser=false;scan()}});
- clear.addEventListener('click',e=>{if(!e.isTrusted||busy)return;clearTimeout(autoTimer);pausedByUser=true;reset();matched.clear();renderSearch();status.textContent='Labels cleared. Refresh ownership to check again.'});
- // Local read-only comparison on recognized category pages. No network requests,
- // no new permissions, and no simulated click or write to the inventory.
- function scheduleScan(){clearTimeout(autoTimer);if(!loadedPreference||!automatic||pausedByUser||document.hidden||document.readyState!=='complete')return;autoTimer=setTimeout(()=>{if(!departing&&!busy&&!document.hidden&&!pausedByUser)scan()},750)}
- async function loadPreference(){try{const r=await chrome.runtime.sendMessage({type:'wiki-list-preference'});if(!r?.ok)throw Error('Preference unavailable');automatic=r.automatic===true;auto.checked=automatic;loadedPreference=true;auto.disabled=false;if(automatic)scheduleScan();else status.textContent='Automatic checks paused. Refresh ownership to check manually.'}catch(err){status.textContent='Manual checks available; automatic preference unavailable.'}}
- auto.addEventListener('change',async e=>{if(!e.isTrusted)return;auto.disabled=true;const previous=automatic;automatic=auto.checked;clearTimeout(autoTimer);if(!automatic){activeScan++;busy=false;show.disabled=false;clear.disabled=false;reset();matched.clear();renderSearch();status.textContent='Automatic checks paused.'}
-  try{const r=await chrome.runtime.sendMessage({type:'wiki-list-preference',automatic});if(!r?.ok)throw Error('Could not save preference');pausedByUser=false;if(automatic)scheduleScan()}
-  catch(err){automatic=previous;auto.checked=previous;status.textContent='Could not save automatic preference.';if(automatic)scheduleScan()}finally{auto.disabled=false}
- });
- if(document.readyState!=='complete')window.addEventListener('load',scheduleScan,{once:true});
- document.addEventListener('visibilitychange',()=>{if(document.hidden){clearTimeout(autoTimer);if(busy){activeScan++;busy=false;show.disabled=clear.disabled=false;reset();matched.clear();renderSearch();status.textContent='Check paused while tab is hidden.'}}else if(!matched.size)scheduleScan()});
- loadPreference();
- window.addEventListener('pagehide',()=>{departing=true;activeScan++;clearTimeout(autoTimer);observer?.disconnect()});
- window.addEventListener('pageshow',e=>{if(e.persisted){departing=false;busy=false;show.disabled=clear.disabled=search.disabled=false;loadPreference()}});
+ function stop(message){
+  activeScan++;busy=false;show.disabled=clear.disabled=search.disabled=false;cancel.hidden=true;
+  reset();matched.clear();results.replaceChildren();results.hidden=true;report();status.textContent=message;
+ }
+ show.addEventListener('click',e=>{if(e.isTrusted&&!busy)scan()});
+ cancel.addEventListener('click',e=>{if(e.isTrusted&&busy)stop('Check cancelled. Nothing is running.')});
+ clear.addEventListener('click',e=>{if(e.isTrusted&&!busy)stop('Labels cleared. Nothing is running.')});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden&&busy)stop('Check cancelled while tab was hidden. Check manually to restart.')});
+ window.addEventListener('pagehide',()=>{departing=true;activeScan++;observer?.disconnect()});
+ window.addEventListener('pageshow',e=>{if(e.persisted){departing=false;stop('Ready. Check manually to restart.')}});
+ // No list parsing, storage read, lookup or automatic scan on page entry.
+
  
 }
 globalThis.AQWCListOwnership=Object.freeze({categoryFor,candidate,sectionMarker,collect,groupRows,label,checkAll});
