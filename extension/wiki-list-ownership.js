@@ -110,7 +110,13 @@ function init(){
    const el=document.createElement('span');el.setAttribute('data-aqwc-list-ownership','');
    const text=document.createElement('span');text.textContent=' '+l.text;text.title='AQW Companion local snapshot; name/category match, not a live account check';
    text.style.cssText='display:inline-block;margin-left:4px;padding:0 4px;border-radius:4px;background:#142b3e;color:'+l.color+';font:600 11px/1.5 system-ui';
-   el.attachShadow({mode:'closed'}).append(text);a.insertAdjacentElement('afterend',el);labels.add(el)
+   const shadow=el.attachShadow({mode:'closed'});shadow.append(text);
+   if(group.slugs.size===1){
+    const data={name:group.name,slug:[...group.slugs][0],category},target=globalThis.AQWCWikiWishlist?.target(data);
+    const href=target&&!target.variant?globalThis.AQWCWikiWishlist.build(data):null;
+    if(href){const link=document.createElement('a');link.href=href;link.target='_blank';link.rel='noopener noreferrer';link.textContent='☆';link.title='Review or add to Wishlist in Companion';link.setAttribute('aria-label','Review Wishlist for '+group.name);link.style.cssText='margin-left:4px;color:#a9ddff;font:600 13px system-ui;text-decoration:none';shadow.append(link)}
+   }
+   a.insertAdjacentElement('afterend',el);labels.add(el)
   }
  }
  async function scan(query=''){
