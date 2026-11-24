@@ -1879,17 +1879,17 @@ function ultraBeginnerActions(key,cls,existing){
  if(key==='dage'&&sameUltraClass(cls,'Chrono ShadowHunter'))return [
  'Equip Health Vamp for life steal. Do not use Tracer Rounds (3) while Noxious Decay is active; it applies a HoT.',
  '“Cower behind your meager protection spells!” — move to the glowing blue platform within 3 seconds. Resume damage after the blast.',
- 'Use FMJ Rounds (4) for DPS, Silver Bullet (5) for burst, then Reload (2). Avoid ordinary heals. If no one covers regeneration, bring Scroll of Decay as backup.'
+ 'Use FMJ Rounds (4) for DPS, Silver Bullet (5) for burst, then Reload (2). Avoid ordinary heals. If no one covers regeneration, bring Scroll of Decay as backup; use it on “I possess the full power of the Legion at my disposal.” only if assigned.'
  ];
  if(key==='dage'&&sameUltraClass(cls,'Verus DoomKnight'))return [
  'Equip Dauntless or Health Vamp. Use Soul Fracture (2) to weaken Dage. Watch Noxious Decay before using empowered Life Carve (3), which can apply a HoT.',
  '“Cower behind your meager protection spells!” — reach the glowing blue platform within 3 seconds.',
- 'If assigned Decay: use Unleash Doom (5) as Dage starts the regeneration cast; coordinate another Decay source if necessary.'
+ 'If assigned Decay: use Unleash Doom (5) on “I possess the full power of the Legion at my disposal.”; coordinate another Decay source if necessary.'
  ];
  if(key==='dage'){
   const decay=sameUltraClass(cls,'Legion DoomKnight')?'Use Imminent Doom (5) on “I possess the full power of the Legion at my disposal.” if assigned to prevent regeneration.':sameUltraClass(cls,'Legion Revenant')?'Use Atramentous Shade (2) on “I possess the full power of the Legion at my disposal.” only if assigned to prevent regeneration.': 'If your team has no Decay source, bring Scroll of Decay as backup. Use it on “I possess the full power of the Legion at my disposal.” only if assigned.';
   const tips=['Equip Health Vamp or Dauntless for life steal. Avoid normal healing and HoTs during Noxious Decay.','“Cower behind your meager protection spells!” — reach the glowing blue platform within 3 seconds.',decay];
-  if(sameUltraClass(cls,'Chaos Avenger'))tips.push('If assigned loop taunt, open with Scroll of Enrage and use Flux (3) just before the taunt expires. Watch the first auto after each safe zone.');
+  if(sameUltraClass(cls,'Chaos Avenger'))tips.push('If assigned loop taunt, open with Scroll of Enrage and use Flux (3) just before the taunt expires. In the Flux timing variant, watch the second opening auto, the first auto after Noxious Decay and the first auto after each safe zone.');
   return tips;
  }
  return existing.map(x=>ultraBeginnerText(x,cls));
@@ -1931,9 +1931,12 @@ function ultraSuggestedGear(key,cls,profile,generic=null,encounter=null){
  return out;
 }
 function ultraRecommendedTeam(b,profile){
- // Keep a complete established strategy intact; do not assemble a party
- // out of the highest individual ratings. The main guide uses b.team.
- return (b.team?.length?b.team:profile?.team?.map(r=>r.cls)||[]).slice();
+ // Select one intact documented composition. Never assemble a new lineup
+ // from individual ratings, because taunt and healing rotations may differ.
+ const source=profile?.team?.map(r=>r.cls)||[];
+ const candidates=[b.team||[],b.alternate||[],source].filter(t=>t.length);
+ const size=b.team?.length||source.length;
+ return (candidates.find(t=>t.length===size&&t.every(cls=>{const score=ultraSelectedRating(b.id,cls);return !score||score.rating>=3}))||candidates[0]||[]).slice();
 }
 function appendUltraRecommendedTeam(root,b,profile){
  const names=ultraRecommendedTeam(b,profile);if(!names.length)return;
