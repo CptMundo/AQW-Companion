@@ -38,7 +38,7 @@
   <p class="muted tiny">Not every AQW item publishes its maximum stack. You can save a limit for your own tracker; it does not change the game.</p>
   <div class="stack-cap-form"><label>Material<input id="stack-cap-item" list="itemnames" placeholder="Exact inventory item name"></label><label>Stack limit<input id="stack-cap-value" type="number" min="1" max="10000000" step="1" placeholder="e.g. 1000"></label>
    <button type="button" id="stack-cap-save" class="smallbutton">Save limit</button><button type="button" id="stack-cap-clear" class="smallbutton">Clear custom limit</button></div>
- </details></div></section><section id="inventory" class="view"><div class="inventory-filter-toolbar">
+ </details></div><div class="card stack-alerts-card" id="cleanup-card"><div class="homehead"><div><h3 class="sectiontitle">Inventory Cleanup</h3><p class="muted tiny">Bag materials only. Review possible surplus, situational uses and unknown materials. Never discard based on this list alone.</p></div><span id="cleanup-count" class="stack-alert-count">—</span></div><div class="toolbar"><input id="cleanup-search" type="search" placeholder="Find a material…"><select id="cleanup-filter" aria-label="Cleanup status"><option value="action">Review / situational</option><option value="unknown">Unknown — verify first</option><option value="protected">Protected</option><option value="all">All bag materials</option></select></div><p id="cleanup-summary" class="muted tiny"></p><div id="cleanup-list" class="stack-alert-list"></div></div></section><section id="inventory" class="view"><div class="inventory-filter-toolbar">
 <label>Item name<input id="search" type="search" placeholder="Search items…"></label>
 <label>Category<select id="type"><option value="">All categories</option></select></label>
 <label>Location<select id="location"><option value="">Bank &amp; bag</option><option value="1">Bank</option><option value="0">Bag</option></select></label>
@@ -79,7 +79,7 @@
 <div class="planner-metric"><div class="planner-metric-line"><span>📅 Weeklies</span><strong id="weeklycount">0 / 0</strong></div><strong class="planner-timer" id="weeklyreset">--</strong><small id="weeklyresetlocal"></small><div class="planner-progress"><div id="weeklybar"></div></div></div>
 </div><p class="muted tiny" id="plannerperiod"></p></div>
 <div class="card planner-board"><div class="planner-my-toolbar"><div class="planner-frequency-controls" role="group" aria-label="Quest frequency"><button type="button" data-planner-frequency="all" aria-pressed="true" class="active">All</button><button type="button" data-planner-frequency="daily" aria-pressed="false">☀️ Dailies</button><button type="button" data-planner-frequency="weekly" aria-pressed="false">📅 Weeklies</button></div><div class="planner-toolbar-filters"><select id="planner-my-categories" aria-label="Quest category"><option value="all">All categories</option></select><select id="plannerstatus" aria-label="Completion status"><option value="all">All tasks</option><option value="pending">Pending</option><option value="completed">Completed</option></select></div><div class="planner-board-actions"><button id="plannerbrowse" type="button" class="smallbutton">+ Search more quests</button><button id="planneropenhistory" type="button" class="smallbutton">History</button></div></div>
-<div id="planner-my-tasks" class="task-grid"></div><p class="muted tiny planner-reset-note">Checks reset automatically; history remains available.</p></div></section><section id="planner-discover" class="view"><div class="card"><h3 class="sectiontitle">Quest Library</h3><div class="toolbar"><input id="plannersearch" placeholder="Search quests, maps, factions, items…" type="search"><select id="plannerfilter"><option value="all">Daily &amp; weekly</option><option value="daily">Daily only</option><option value="weekly">Weekly only</option></select><select id="plannercategory" aria-label="Task category"><option value="all">All categories</option></select><select id="plannerpinfilter" aria-label="Pinned status"><option value="all">All tasks</option><option value="unpinned">Not pinned</option><option value="pinned">Pinned</option></select></div>
+<div id="planner-my-tasks" class="task-grid"></div><p class="muted tiny planner-reset-note">Checks reset automatically; history remains available.</p></div></section><section id="planner-discover" class="view"><div class="card"><h3 class="sectiontitle">Quest Library</h3><div id="wiki-routine-review" class="card hidden"></div><div class="toolbar"><input id="plannersearch" placeholder="Search quests, maps, factions, items…" type="search"><select id="plannerfilter"><option value="all">Daily &amp; weekly</option><option value="daily">Daily only</option><option value="weekly">Weekly only</option></select><select id="plannercategory" aria-label="Task category"><option value="all">All categories</option></select><select id="plannerpinfilter" aria-label="Pinned status"><option value="all">All tasks</option><option value="unpinned">Not pinned</option><option value="pinned">Pinned</option></select></div>
 <div class="packrow"><button class="smallbutton" data-pack="essentials">+ Starter routines</button><button class="smallbutton" data-pack="legion">+ Legion</button><button class="smallbutton" data-pack="nulgath">+ Nulgath</button><button class="smallbutton" data-pack="shadowfall">+ Shadowfall / Doom</button><button class="smallbutton" data-pack="ultras">+ Ultra weeklies</button></div><p class="muted tiny">Recurring quests indexed from AQWWiki community data, the Daily Quest Board and curated Ultra guides. Some require unlocks, membership or seasonal availability. Data attribution: AQWikiTools / AQWorlds Wiki (CC BY-SA 3.0). <a href="https://aqwwiki.wikidot.com/daily-quest-board-s-quests" target="_blank" rel="noopener noreferrer">Daily Quest Board ↗</a> · <a href="https://aqwwiki.wikidot.com/sort-by-all-quests" target="_blank" rel="noopener noreferrer">All AQW quests ↗</a></p><h4 class="sectiontitle" style="margin-top:14px">Quest Library <small id="plannerresultcount" class="muted"></small></h4><div id="planner-suggestions" class="task-grid"></div><details class="task-route" id="planner-source-details"><summary>Quest library coverage &amp; source pages</summary><p id="planner-coverage" class="muted tiny"></p><div id="planner-source-pages"></div></details>
 <div class="new-task"><input id="customtask" maxlength="120" placeholder="Add your own task, e.g. Check Wheel of Doom"><select id="customfrequency"><option value="daily">Daily</option><option value="weekly">Weekly</option></select><input id="customjoin" placeholder="Optional /join" maxlength="80"><button id="addcustomtask" class="primary">+ Add task</button></div></div>
 </section><section id="planner-history" class="view"><div class="card"><div class="planner-my-toolbar"><h3 class="sectiontitle">Task History</h3><button id="plannerbackfromhistory" class="smallbutton" type="button">← My Tracker</button></div><div id="planner-task-history"></div></div></section><section id="compare" class="view"><div class="card"><h3 class="sectiontitle">Compare two snapshots</h3><p class="muted" style="font-size:13px">Import both snapshots into the same browser. Comparison uses <b>ID</b> and quantity; moving items between inventory and bank does not count as a new item.</p><div class="comparecontrols"><label>Older <select id="oldselect"></select></label><label>Newer <select id="newselect"></select></label><button id="comparebtn" class="primary">Compare</button></div><div id="compareresult" class="muted">Import at least two snapshots to get started.</div></div></section>
@@ -87,7 +87,7 @@
 <div id="itemdetails" class="detailoverlay hidden" role="dialog" aria-modal="true" aria-label="Item acquisition details"><div class="detailpanel"><div class="detailhead"><div><small style="color:#7da5d1;font-weight:700">AQW COMPANION · ACQUISITION EXPLORER</small><h2 id="detailname"></h2></div><button type="button" class="smallbutton" id="closedetails" aria-label="Close details">✕ Close</button></div><div id="detailcontent"></div></div></div><script src="js/meta-class-builds.js"></script>
 <script src="js/recipe-integrity.js"></script>
 <script src="extension/wishlist-link.js?v=126"></script>
-<script src="js/stack-alerts.js"></script>
+<script src="js/stack-alerts.js?v=137"></script>
 <script src="js/ultra-quote-actions.js"></script>
 <script src="js/ultra-guide-rows.js"></script>
 <script src="js/routine-library.js?v=126"></script>
@@ -256,7 +256,35 @@ function saveStackCaps(){
  try{localStorage.setItem(STACK_CAPS_KEY,JSON.stringify(userStackCaps));return true}
  catch(e){message('Could not save stack limit locally: '+String(e?.message||e),'error');return false}
 }
+function renderCleanupAlerts(){
+ const api=window.AQWCStackAlerts,list=$('cleanup-list'),summary=$('cleanup-summary'),count=$('cleanup-count');
+ if(!api?.cleanup||!list||!summary||!count)return;
+ list.replaceChildren();
+ if(!current){summary.textContent='Import your inventory to review bag materials.';count.textContent='—';return}
+ const reviewed=(window.AQWCRecipeIntegrity?.reviewedNames||[]).map(name=>window.AQWCRecipeIntegrity.getAcquisition(name)).filter(Boolean);
+ const result=api.cleanup(items,{reviewed:[...reviewed,...acquisitionCatalog],wishlist:unlocks,community:[...communityAcquisition.values()],routines:pinnedTasks.map(t=>({...t,targets:[...(t.targets||[]),...(taskRoutes[t.id]?.targets||[]).flat()]}))});
+ count.textContent=result.review+' review · '+result.situational+' situational';
+ summary.textContent=result.unknown+' unclassified (not a cleanup recommendation) · '+result.protected+' protected · '+result.rows.length+' bag material records. Confirm all uses and quest completion before moving or discarding.';
+ const filter=$('cleanup-filter').value,q=api.normalize($('cleanup-search').value);
+ const selected=result.rows.filter(r=>(filter==='all'||filter==='action'&&['review','situational'].includes(r.status)||r.status===filter)&&(!q||api.normalize(r.name).includes(q)));
+ const labels={review:'Review surplus',situational:'Consider banking',unknown:'Verify first',protected:'Keep / protected'};
+ let offset=0;
+ function more(){
+  const end=Math.min(offset+50,selected.length);
+  for(const r of selected.slice(offset,end)){
+   const row=node('details',undefined,'stack-alert-item'),head=node('summary',undefined,'stack-alert-heading'),left=node('span',undefined,'stack-alert-name');
+   left.append(node('strong',r.name),node('small','Bag · ×'+fmt(r.quantity)));head.append(left,node('span',labels[r.status],'stack-alert-status '+(r.status==='review'||r.status==='situational'?'near':'')));row.append(head);
+   const body=node('div',undefined,'stack-alert-body');body.append(node('p',r.reason,'muted tiny'));
+   for(const [url,label] of [[r.url,'Item source ↗'],[r.questUrl,'Quest source ↗']])if(api.safeWiki(url)){const a=node('a',label);a.href=url;a.target='_blank';a.rel='noopener noreferrer';body.append(a)}
+   if(!r.url){const a=node('a','Search AQWWiki ↗');a.href='https://aqwwiki.wikidot.com/search:site/q/'+encodeURIComponent(r.name);a.target='_blank';a.rel='noopener noreferrer';body.append(a)}
+   row.append(body);list.append(row);
+  }offset=end;
+  if(offset<selected.length){const button=node('button','Show next '+Math.min(50,selected.length-offset),'smallbutton stack-show-all');button.type='button';button.onclick=()=>{button.remove();more()};list.append(button)}
+ }
+ if(!selected.length)list.append(node('p','No materials in this category. Unknown items are never treated as safe to discard.','muted tiny'));else more();
+}
 function renderStackAlerts(){
+ renderCleanupAlerts();
  const api=window.AQWCStackAlerts,summary=$('stack-alert-summary'),list=$('stack-alert-list');
  if(!api||!summary||!list)return;
  const checked=api.analyze(items,userStackCaps);
@@ -334,6 +362,7 @@ function renderStackAlerts(){
 }
 function initStackAlerts(){
  loadStackCaps();
+ $('cleanup-search')?.addEventListener('input',renderCleanupAlerts);$('cleanup-filter')?.addEventListener('change',renderCleanupAlerts);
  $('homestacks')?.addEventListener('click',()=>selectTab('alerts'));
  const name=$('stack-cap-item'),input=$('stack-cap-value');
  $('stack-cap-save')?.addEventListener('click',()=>{
@@ -2723,8 +2752,8 @@ function resetUltraChecks(freq){
 }
 
 function toggleTask(t,done){if(!routineIsRecurring(t))return;const conflict=done&&routineConflict(t);if(conflict){message('Only one of these quests can be completed this week. Undo '+conflict.name+' first.');renderPlanner();return}taskChecks[taskKey(t)]=done;savePlanner();renderPlanner();renderHomeInsights()}
-function pinTask(t){if(!routineIsRecurring(t)||pinnedTasks.some(x=>x.id===t.id))return;pinnedTasks.push({...t});savePlanner();renderPlanner()}
-function unpinTask(t){pinnedTasks=pinnedTasks.filter(x=>x.id!==t.id);savePlanner();renderPlanner()}
+function pinTask(t){if(!routineIsRecurring(t)||pinnedTasks.some(x=>x.id===t.id))return;pinnedTasks.push({...t});savePlanner();renderPlanner();renderCleanupAlerts()}
+function unpinTask(t){pinnedTasks=pinnedTasks.filter(x=>x.id!==t.id);savePlanner();renderPlanner();renderCleanupAlerts()}
 function copyJoin(txt){if(!txt)return;if(navigator.clipboard?.writeText)navigator.clipboard.writeText(txt).then(()=>message(txt+' copied')).catch(()=>message('Copy '+txt));else message('Copy '+txt)}
 // Static public boss illustrations from the linked AQWorlds Wiki monster pages.
 // Only use a verified encounter name/map association; never guess an image.
@@ -3355,6 +3384,21 @@ window.addEventListener('message',event=>{
 });
 
 
+function showWikiRoutineReview(){
+ const root=$('wiki-routine-review');if(!root)return;root.replaceChildren();root.classList.add('hidden');
+ const hash=location.hash;if(!hash.startsWith('#aqwc-routines?'))return;
+ const params=new URLSearchParams(hash.slice('#aqwc-routines?'.length)),source=params.get('source');
+ if([...params.keys()].length!==1||!source||! /^[a-z0-9][a-z0-9-]{0,199}$/.test(source)){message('Invalid Wiki quest link.','error');return}
+ const wiki='https://aqwwiki.wikidot.com/'+source;
+ const matches=taskCatalog.filter(t=>routineIsRecurring(t)&&[t.wiki,taskRoutes[t.id]?.wiki].some(u=>typeof u==='string'&&u.split('#')[0]===wiki));
+ openPlannerLibrary();root.classList.remove('hidden');root.append(node('h3','Recurring quests from this Wiki page'),node('p','Choose an indexed daily or weekly quest to pin. Quest completion is never inferred.','muted tiny'));
+ const close=node('button','Close','smallbutton');close.type='button';close.onclick=()=>{root.replaceChildren();root.classList.add('hidden');if(location.hash===hash)history.replaceState(history.state,'',location.pathname+location.search)};root.append(close);
+ if(!matches.length){root.append(node('p','No confirmed recurring quests from this source are indexed yet. Search the Quest Library manually.','muted'));return}
+ for(const t of matches){
+  const row=node('div',undefined,'stack-alert-heading'),label=node('span',t.name+' · '+t.freq),pin=node('button',pinnedTasks.some(p=>p.id===t.id)?'Pinned':'Pin quest','smallbutton');pin.type='button';pin.disabled=pinnedTasks.some(p=>p.id===t.id);
+  pin.onclick=()=>{if(!confirm('Pin '+t.name+' to your local tracker?'))return;loadPlanner();pinTask(t);showWikiRoutineReview()};row.append(label,pin);root.append(row);
+ }
+}
 function showWikiWishlistReview(){
  const root=$('wiki-wishlist-review'),api=window.AQWCWikiWishlist;
  if(!root||!api)return;
@@ -3498,7 +3542,7 @@ async function init(){
   document.addEventListener('click',e=>{if(advancedInventory.open&&!advancedInventory.contains(e.target))advancedInventory.open=false});
   advancedInventory.addEventListener('keydown',e=>{if(e.key==='Escape'&&advancedInventory.open){advancedInventory.open=false;advancedInventory.querySelector('summary')?.focus()}});
  }
- initAccountInventoryImport();initWikiWishlistQueue();showWikiWishlistReview();window.addEventListener('hashchange',showWikiWishlistReview);
+ initAccountInventoryImport();initWikiWishlistQueue();showWikiWishlistReview();window.addEventListener('hashchange',showWikiWishlistReview);showWikiRoutineReview();window.addEventListener('hashchange',showWikiRoutineReview);
 }init();})();
 </script>
 <script defer src="js/umami-analytics.js"></script>
