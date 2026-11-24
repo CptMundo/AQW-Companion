@@ -110,3 +110,6 @@ Equal-height farming and artwork cards; explicit rarity/base damage in the item 
 
 ### v0.12.9
 Custom Wiki themes now have a collapsible native sidebar (hidden by default, remembers choice locally), rounded navigation and dropdowns without changing their geometry, and compact failed-image links below available monster artwork. Expanded per-page monster lookup budget; avoid excluding actual monster names containing 'star' or 'large'. Supply Caravan source still redirects to an unavailable Imgur page; no fabricated replacement. Banner unchanged. No new permissions. Opera QA required.
+
+### v0.12.10
+Hide native page-tag clutter in custom appearance modes only; restyle footer and license area to match the selected theme while preserving attribution and legal links. Fix monster gallery sizing when one or more image sources fail: remaining artwork fills the available row, missing links remain compact. Supply Caravan's Wiki image H21Es6B.png redirects to Imgur and could not be independently retrieved; no substitute art added. Banner, menus, permissions, and inventory/farming logic unchanged. Live Opera validation required.
