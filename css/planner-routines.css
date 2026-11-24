@@ -72,3 +72,46 @@
 #planner .planner-controls{margin:10px 0}
 #planner .planner-metric{padding:13px;gap:4px}
 #planner .planner-my-toolbar{margin:8px 0 17px}
+
+/* PR 110 — compact summary and portrait quest dashboard. */
+#planner .planner-compact-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0 4px}
+#planner .planner-compact-summary .planner-metric{min-width:0;padding:10px 13px;gap:4px}
+#planner .planner-metric-line{display:flex;align-items:center;justify-content:space-between;gap:6px}
+#planner .planner-metric-line strong{font-size:17px;font-variant-numeric:tabular-nums}
+#planner .planner-compact-summary .planner-timer{font-size:19px;line-height:1.2}
+#planner .planner-compact-summary .planner-progress{margin-top:3px}
+#planner .planner-total{justify-content:center}
+#planner .planner-total .planner-metric-line strong{font-size:25px}
+#planner #plannerperiod{margin:8px 0 0}
+#planner .planner-my-toolbar{margin:0 0 9px}
+.planner-frequency-controls,.planner-board-actions,.planner-category-controls{display:flex;align-items:center;flex-wrap:wrap;gap:7px}
+.planner-frequency-controls button,.planner-category-controls button{border:1px solid #36566f;border-radius:7px;background:#102334;color:#c8e2f4;padding:7px 12px;font-weight:650;font-size:12px}
+.planner-frequency-controls button.active,.planner-category-controls button.active{background:#214e70;border-color:#67bcdf;color:#e5f7ff}
+#planner .planner-board-actions label{font-size:12px}
+#planner .planner-board-actions select{padding:6px 9px;min-height:32px}
+#planner .planner-category-controls{margin:0 0 17px}
+#planner .planner-category-controls button{padding:5px 10px;font-size:11px}
+#planner .planner-task-group{border:1px solid #34546d;border-radius:11px;padding:12px;background:#102334}
+#planner .planner-section-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid #36556c}
+#planner .planner-section-heading h3{margin:0;font-size:16px}
+#planner .planner-section-progress{font-size:12px;color:#9ce6d2;white-space:nowrap}
+#planner .planner-quest-grid,#planner-discover #planner-suggestions{grid-template-columns:repeat(auto-fill,minmax(min(100%,max(185px,calc((100% - 55px)/6))),1fr))!important;gap:10px!important;align-items:start}
+#planner.view.active #planner-my-tasks .planner-quest-card,#planner-discover .planner-quest-card{position:relative;gap:7px!important;padding:8px!important;background:#14293a!important;min-width:0;align-self:start}
+#planner.view.active #planner-my-tasks .planner-quest-card.done,#planner-discover .planner-quest-card.done{border:1px solid #60bd96!important;background:#16372f!important;box-shadow:inset 0 0 0 1px #3d7658}
+.planner-quest-art{height:100px;position:relative;display:grid;place-items:center;overflow:hidden;border-radius:6px;background:radial-gradient(ellipse at 50% 45%,#254a61,#0c1e2e);border:1px solid #37536b}
+.planner-quest-art-fallback{font-size:34px;color:#a6c7dd;line-height:1}
+.planner-quest-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;display:block}
+.planner-quest-art img[hidden]{display:none}
+.planner-art-complete{position:absolute;right:6px;top:6px;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#75e3a4;color:#0b3424;font-weight:900;font-size:15px}
+#planner .planner-quest-head,#planner-discover .planner-quest-head{min-height:41px;align-items:flex-start}
+#planner .planner-quest-name,#planner-discover .planner-quest-name{display:grid;gap:1px}
+#planner .planner-quest-card .task-title,#planner-discover .planner-quest-card .task-title{margin:0;line-height:1.25}
+.planner-reward-preview{font-size:11px;line-height:1.35;color:#a4efd5;min-height:16px;overflow-wrap:anywhere}
+#planner .planner-quest-actions,#planner-discover .planner-quest-actions{display:flex;gap:5px;align-items:center;flex-wrap:nowrap;margin-top:1px}
+.planner-quest-actions .ultra-copy-join{flex:1;min-width:0;width:auto;justify-content:center;gap:4px;min-height:27px;padding:3px 5px!important;font-size:10px!important}
+.planner-quest-actions .ultra-copy-command{white-space:normal;overflow-wrap:anywhere}
+#planner .planner-quest-details,#planner-discover .planner-quest-details{width:100%;border:0!important;background:transparent!important;padding:2px 0!important}
+#planner .planner-quest-details[open],#planner-discover .planner-quest-details[open]{padding:6px!important;border:1px solid #34546d!important;background:#102333!important}
+#planner .planner-reset-note{margin:12px 0 0}
+@media(max-width:760px){#planner .planner-compact-summary{grid-template-columns:repeat(2,minmax(0,1fr))}#planner .planner-total{grid-column:1/-1}#planner .planner-task-group{padding:9px}#planner .planner-board-actions{width:100%;justify-content:space-between}}
+@media(max-width:440px){#planner .planner-quest-grid,#planner-discover #planner-suggestions{grid-template-columns:minmax(0,1fr)!important}#planner .planner-quest-art{height:115px}}
