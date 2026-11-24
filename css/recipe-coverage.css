@@ -11,3 +11,9 @@
 #unlocks .wishlist-dismiss:hover,#unlocks .wishlist-dismiss:focus-visible{color:#fff;background:#663548;border-color:#c56b80}
 #unlocks .unlockhead .wishlist-dismiss{margin-left:auto;flex:0 0 auto}
 @media(pointer:coarse){#unlocks .wishlist-dismiss{min-width:36px;min-height:36px}}
+
+/* Independent card heights; resize observer assigns spans including 12px gap. */
+#unlocks #unlocklist.wishlist-masonry{grid-auto-rows:4px;grid-auto-flow:row dense;row-gap:0!important;align-items:start!important}
+#unlocks #unlocklist.wishlist-masonry>.unlockcard{align-self:start!important;height:auto!important;min-height:0;margin:0!important;box-sizing:border-box}
+.wishlist-acquisition{display:grid;gap:5px;margin:8px 0;padding:10px;border:1px solid #365f78;border-radius:9px;background:#132b3b;color:#c9e1ef;font-size:12px;line-height:1.4;overflow-wrap:anywhere}
+.wishlist-acquisition p{margin:0}.wishlist-acquisition a{color:#8ce0ff;width:fit-content}.wishlist-acquisition.legacy,.wishlist-acquisition.rare,.wishlist-acquisition.seasonal{border-color:#a57c3b;background:#31291e;color:#ffe0a3}.wishlist-acquisition.unknown{border-color:#52677d;background:#1b2937}.wishlist-acquisition .smallbutton{justify-self:start}
