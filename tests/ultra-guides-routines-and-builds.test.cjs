@@ -45,7 +45,7 @@ assert.ok(html.includes("planner-show-all"),"Extended catalog must remain usable
 assert.ok(html.includes("name:'Mine Crafting',group:'Metals',freq:'daily',join:'/join stalagbite'"));
 assert.ok(html.includes("name:'Hard Core Metals',group:'Metals',freq:'daily',join:'/join stalagbite'"));
 assert.ok(plannerCSS.includes("column-gap:14px"));
-assert.ok(html.includes('href="css/planner-routines.css?v=99"'));
+assert.ok(html.includes('href="css/planner-routines.css?v=100"'));
 assert.ok(html.includes('src="js/ultra-guide-rows.js"'));
 for(const [i,m] of [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].entries())
  if(!m[1].includes("src=")&&m[2].trim())new vm.Script(m[2],{filename:"index-inline-"+i});
@@ -61,3 +61,12 @@ assert.equal(clock.taskPeriod("weekly",new Date("2026-11-27T05:01:00Z")),"w:2026
 assert.equal(clock.nextPlannerReset("weekly",new Date("2026-11-27T05:00:59Z")).toISOString(),"2026-11-27T05:01:00.000Z");
 assert.equal(clock.nextPlannerReset("weekly",new Date("2026-11-27T05:01:00Z")).toISOString(),"2026-12-04T05:01:00.000Z");
 assert.equal(clock.nextPlannerReset("daily",new Date("2026-11-27T05:00:00Z")).toISOString(),"2026-11-28T05:00:00.000Z");
+
+assert.ok(html.includes('id="plannerstatus"'));
+assert.ok(html.includes('id="plannercategory"'));
+assert.ok(html.includes('id="plannerpinfilter"'));
+assert.ok(html.includes('Undo completion'));
+assert.ok(html.includes('toggleTask(t,false)'));
+assert.ok(html.includes("['Completed',true]"));
+assert.ok(html.includes("taskSearchText(x).includes(query)"));
+assert.ok(html.includes("const plannerKey='aqw-companion-planner-v09'"));
