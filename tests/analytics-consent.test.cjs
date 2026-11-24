@@ -29,3 +29,6 @@ assert.equal(normal.events[0].referrer,"https://www.reddit.com/r/AQW/");
 assert.ok(!/SECRET|PRIVATE/.test(JSON.stringify(normal.events)));
 for(const opts of [{choice:"reject"},{gpc:true},{dnt:"1"},{hostname:"localhost"},{pathname:"/other/"},{blocked:true}])assert.equal(scenario(opts).scripts.length,0);
 console.log("Umami pageview-only and privacy signal checks passed");
+
+assert.equal(normal.events[0].website,'6991fe97-a5a7-49ab-9619-384710fba182');
+assert.equal(normal.events[0].hostname,'cptmundo.github.io');

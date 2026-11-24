@@ -45,7 +45,7 @@ assert.ok(html.includes("planner-show-all"),"Extended catalog must remain usable
 assert.ok(html.includes("name:'Mine Crafting',group:'Metals',freq:'daily',join:'/join stalagbite'"));
 assert.ok(html.includes("name:'Hard Core Metals',group:'Metals',freq:'daily',join:'/join stalagbite'"));
 assert.ok(plannerCSS.includes("column-gap:14px"));
-assert.ok(html.includes('href="css/planner-routines.css?v=99"'));
+assert.ok(html.includes('href="css/planner-routines.css?v=100"'));
 assert.ok(html.includes('src="js/ultra-guide-rows.js"'));
 for(const [i,m] of [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].entries())
  if(!m[1].includes("src=")&&m[2].trim())new vm.Script(m[2],{filename:"index-inline-"+i});
@@ -61,3 +61,30 @@ assert.equal(clock.taskPeriod("weekly",new Date("2026-11-27T05:01:00Z")),"w:2026
 assert.equal(clock.nextPlannerReset("weekly",new Date("2026-11-27T05:00:59Z")).toISOString(),"2026-11-27T05:01:00.000Z");
 assert.equal(clock.nextPlannerReset("weekly",new Date("2026-11-27T05:01:00Z")).toISOString(),"2026-12-04T05:01:00.000Z");
 assert.equal(clock.nextPlannerReset("daily",new Date("2026-11-27T05:00:00Z")).toISOString(),"2026-11-28T05:00:00.000Z");
+
+assert.ok(html.includes('id="plannerstatus"'));
+assert.ok(html.includes('id="plannercategory"'));
+assert.ok(html.includes('id="plannerpinfilter"'));
+assert.ok(html.includes('Undo completion'));
+assert.ok(html.includes('toggleTask(t,false)'));
+assert.ok(html.includes("['Completed',true]"));
+assert.ok(html.includes("taskSearchText(x).includes(query)"));
+assert.ok(html.includes("const plannerKey='aqw-companion-planner-v09'"));
+
+assert.equal(routines.coverage.pages,1260);
+assert.equal(routines.coverage.quests,10147);
+assert.ok(routines.indexedEntries.length>=160);
+assert.equal(routines.indexedEntries.length,routines.coverage.daily+routines.coverage.weekly);
+assert.equal(new Set(routines.indexedEntries.map(x=>x.id)).size,routines.indexedEntries.length);
+assert.ok(routines.sourcePages.length>=99);
+for(const t of routines.indexedEntries){assert.ok(['daily','weekly'].includes(t.freq));assert.ok(t.wiki.startsWith('https://aqwwiki.wikidot.com/'));assert.ok(!t.join||/^\/join [a-z0-9-]+$/i.test(t.join));assert.ok(Array.isArray(t.rewards)&&Array.isArray(t.targets)&&Array.isArray(t.categories));}
+for(const [name,freq] of [['Ultra Avatar Tyndarius','daily'],['Dage, Lord of the Undead Legion','weekly'],['Asterism\'s Toll','daily'],['2.0 No!','weekly'],['Champion of the Coliseum','weekly'],['Tenacity Challenge','daily'],['Fungi for a Fun Guy','daily']])assert.ok(routines.indexedEntries.some(t=>t.name===name&&t.freq===freq),name);
+const dataCode=html.slice(html.indexOf("const taskCatalog=["),html.indexOf("// Curated acquisition instructions."));
+const catalog=vm.runInNewContext(dataCode+"\n taskCatalog",{window:{AQWCRoutineLibrary:routines},ultraGuides:[]});
+assert.ok(catalog.length>=160);
+assert.equal(new Set(catalog.map(t=>t.id)).size,catalog.length);
+assert.equal(catalog.find(t=>t.id==='tyndarius').freq,'daily');
+assert.ok(catalog.find(t=>t.id==='ex107').rewards.some(r=>/Elder/i.test(r)));
+assert.ok(catalog.find(t=>t.id==='ultra-dage').rewards.some(r=>/Insignia/i.test(r)));
+assert.ok(html.includes('planner-source-details'));
+console.log("Expanded quest library coverage:",catalog.length,"tasks;",routines.coverage.daily,"daily and",routines.coverage.weekly,"weekly source entries");
