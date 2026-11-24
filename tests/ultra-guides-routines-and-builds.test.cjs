@@ -67,7 +67,7 @@ assert.ok(html.includes('id="plannercategory"'));
 assert.ok(html.includes('id="plannerpinfilter"'));
 assert.ok(html.includes('Undo completion'));
 assert.ok(html.includes('toggleTask(t,!done)'));
-assert.ok(html.includes("['Completed',true]"));
+assert.ok(html.includes("status==='all'||taskDone(t)===(status==='completed')"),"Completed tasks remain filterable in the same quest grid");
 assert.ok(html.includes("taskSearchText(x).includes(query)"));
 assert.ok(html.includes("const plannerKey='aqw-companion-planner-v09'"));
 
