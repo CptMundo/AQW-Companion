@@ -111,7 +111,32 @@ async function accountStage(message,sender){
  return {ok:false,error:'Unsupported account import request.'};
 }
 
+
+const WISHLIST_QUEUE='aqwc-wishlist-queue-v1';
+let wishlistLock=Promise.resolve();
+function queueWishlist(message,sender){
+ const run=async()=>{
+  const wiki=wikiSender(sender),main=mainSender(sender),type=message?.type;
+  if(!(wiki&&type==='wishlist-queue-add'||main&&['wishlist-queue-read','wishlist-queue-ack'].includes(type)))return {ok:false,error:'Unsupported Wishlist request.'};
+  await restrictStorage();
+  const raw=(await chrome.storage.local.get(WISHLIST_QUEUE))[WISHLIST_QUEUE],entries=Array.isArray(raw)?raw:[];
+  if(type==='wishlist-queue-read')return {ok:true,entries};
+  if(type==='wishlist-queue-ack'){
+   if(!Array.isArray(message.ids)||message.ids.length>200||message.ids.some(id=>typeof id!=='string'||id.length>64))return {ok:false,error:'Invalid acknowledgement.'};
+   await chrome.storage.local.set({[WISHLIST_QUEUE]:entries.filter(e=>!message.ids.includes(e.id))});return {ok:true};
+  }
+  const item=message.item;
+  if(!item||typeof item.name!=='string'||!item.name.trim()||item.name.length>350||/[\u0000-\u001f\u007f]/.test(item.name)||typeof item.slug!=='string'||! /^[a-z0-9][a-z0-9-]{0,199}$/.test(item.slug)||typeof item.category!=='string'||!Object.hasOwn(wikiTypes,item.category)||new URL(sender.url).pathname.replace(/^\/|\/$/g,'')!==item.slug)return {ok:false,error:'Invalid Wiki item.'};
+  if(entries.some(e=>e.item.slug===item.slug&&e.item.category===item.category))return {ok:true,already:true};
+  if(entries.length>=200)return {ok:false,error:'Pending Wishlist is full. Open Companion to sync.'};
+  const entry={id:crypto.randomUUID(),item:{name:item.name.trim(),slug:item.slug,category:item.category}};
+  await chrome.storage.local.set({[WISHLIST_QUEUE]:[...entries,entry]});return {ok:true};
+ };
+ const result=wishlistLock.then(run);wishlistLock=result.catch(()=>{});return result;
+}
+
 async function handle(message,sender){
+ if(['wishlist-queue-add','wishlist-queue-read','wishlist-queue-ack'].includes(message?.type))return queueWishlist(message,sender);
  const account=await accountStage(message,sender);if(account)return account;
  if(message?.type==='wiki-material-lookup'&&wikiSender(sender)){
   const names=message.names;
