@@ -2,12 +2,12 @@
  'use strict';
  const SITE='https://cptmundo.github.io',channel='aqwc-wishlist-queue-v1';
  if(location.origin!==SITE||!['/AQW-Companion/','/AQW-Companion/index.html'].includes(location.pathname))return;
- let pending=null,busy=false,statusNonce=null,lastStatus='',lastAt=0;
+ let pending=null,busy=false,statusNonce=null,lastStatus='',lastAt=0,lastRequest=0;
  async function poll(){
   if(busy||document.hidden||document.getElementById('wiki-wishlist-review')?.dataset.queueReady!=='1')return;
   busy=true;
   try{
-   statusNonce=Array.from(crypto.getRandomValues(new Uint8Array(16)),n=>n.toString(16).padStart(2,'0')).join('');window.postMessage({channel,type:'status-request',nonce:statusNonce},SITE);
+   if(Date.now()-lastRequest>=10000){lastRequest=Date.now();statusNonce=Array.from(crypto.getRandomValues(new Uint8Array(16)),n=>n.toString(16).padStart(2,'0')).join('');window.postMessage({channel,type:'status-request',nonce:statusNonce},SITE);}
    const result=await chrome.runtime.sendMessage({type:'wishlist-queue-read'});
    if(!result?.ok||!result.entries?.length){busy=false;return}
    const nonce=Array.from(crypto.getRandomValues(new Uint8Array(16)),n=>n.toString(16).padStart(2,'0')).join('');
