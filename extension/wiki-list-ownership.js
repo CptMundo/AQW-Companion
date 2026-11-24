@@ -66,6 +66,19 @@ function label(match,duplicate=false){
  const place=match.inventory&&match.bank?'Inventory + Bank':match.bank?'Bank':'Inventory';
  return {text:'✓ '+place+' ×'+Number(match.total).toLocaleString(),color:'#90edb5'};
 }
+async function checkAll(groups,category,send,onChunk,yieldFrame=()=>new Promise(resolve=>setTimeout(resolve,0))){
+ let syncedAt=null,exportedAt=null,offset=0;
+ while(offset<groups.length){
+  const chunk=groups.slice(offset,offset+80);
+  const r=await send({type:'wiki-list-lookup',category,names:chunk.map(g=>g.name)});
+  if(!r?.ok||!Array.isArray(r.matches)||r.matches.length!==chunk.length)throw Error('Inventory lookup unavailable');
+  if(!r.syncedAt)throw Error('Inventory not synced. Import & Sync in Companion first.');
+  if(syncedAt&&(r.syncedAt!==syncedAt||r.exportedAt!==exportedAt))throw Error('Inventory changed during check. Refresh ownership.');
+  syncedAt=r.syncedAt;exportedAt=r.exportedAt;offset+=chunk.length;
+  onChunk(chunk,r.matches,{offset,syncedAt,exportedAt});
+  if(offset<groups.length)await yieldFrame();
+ }
+}
 function init(){
  const category=categoryFor(location.pathname);
  if(location.origin!==origin||!category||document.getElementById('aqwc-list-ownership')||document.getElementById('aqwc-item-status')||document.getElementById('aqwc-quest-shop'))return;
@@ -81,13 +94,13 @@ function init(){
  const controls=document.createElement('div');controls.style.cssText='display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:5px';
  const search=document.createElement('input');search.type='search';search.placeholder='Filter item names';search.setAttribute('aria-label','Filter item names for ownership check');search.style.cssText='max-width:100%;padding:5px;background:#101d2c;border:1px solid #466781;border-radius:4px;color:#e5f5ff';
  function btn(text){const b=document.createElement('button');b.type='button';b.textContent=text;b.style.cssText='padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;cursor:pointer';return b}
- const show=btn('Show ownership'),next=btn('Check next 400'),clear=btn('Clear labels');next.hidden=true;clear.hidden=true;
+ const show=btn('Refresh ownership'),clear=btn('Clear labels');clear.hidden=true;
  const status=document.createElement('small');status.setAttribute('role','status');status.style.cssText='display:block;color:#b6cddd;font-weight:400;margin-top:4px';
- controls.append(search,show,next,clear);panel.append(titleLine,note,controls,status);shadow.append(panel);(document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);
+ controls.append(search,show,clear);panel.append(titleLine,note,controls,status);shadow.append(panel);(document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);
  if(!groups.length){search.disabled=show.disabled=true;status.textContent='No supported item links detected on this index. Refresh the page; if this persists, report the page URL.';return}
- let selected=[],offset=0,syncedAt=null,exportedAt=null,busy=false,owned=0,unknown=0,absent=0;
+ let busy=false,owned=0,unknown=0,absent=0;
  const labels=new Set();
- function reset(){for(const el of labels)el.remove();labels.clear();selected=[];offset=0;syncedAt=null;exportedAt=null;owned=0;unknown=0;absent=0;next.hidden=true;clear.hidden=true}
+ function reset(){for(const el of labels)el.remove();labels.clear();owned=0;unknown=0;absent=0;clear.hidden=true}
  function annotate(group,m){
   const l=label(m,group.slugs.size!==1);
   if(group.slugs.size!==1||!m||!['owned','not-found'].includes(m.state))unknown++;
@@ -97,31 +110,37 @@ function init(){
    const el=document.createElement('span');el.setAttribute('data-aqwc-list-ownership','');
    const text=document.createElement('span');text.textContent=' '+l.text;text.title='AQW Companion local snapshot; name/category match, not a live account check';
    text.style.cssText='display:inline-block;margin-left:4px;padding:0 4px;border-radius:4px;background:#142b3e;color:'+l.color+';font:600 11px/1.5 system-ui';
-   el.attachShadow({mode:'closed'}).append(text);a.insertAdjacentElement('afterend',el);labels.add(el)
+   const shadow=el.attachShadow({mode:'closed'});shadow.append(text);
+   if(group.slugs.size===1){
+    const data={name:group.name,slug:[...group.slugs][0],category},target=globalThis.AQWCWikiWishlist?.target(data);
+    const href=target&&!target.variant?globalThis.AQWCWikiWishlist.build(data):null;
+    if(href){const link=document.createElement('a');link.href=href;link.target='_blank';link.rel='noopener noreferrer';link.textContent='☆';link.title='Review or add to Wishlist in Companion';link.setAttribute('aria-label','Review Wishlist for '+group.name);link.style.cssText='margin-left:4px;color:#a9ddff;font:600 13px system-ui;text-decoration:none';shadow.append(link)}
+   }
+   a.insertAdjacentElement('afterend',el);labels.add(el)
   }
  }
- async function batch(){
-  if(busy||!selected.length)return;
-  busy=true;show.disabled=next.disabled=clear.disabled=search.disabled=true;status.textContent='Checking local inventory…';
+ async function scan(query=''){
+  if(busy)return;
+  reset();const q=clean(query).toLowerCase(),selected=groups.filter(g=>g.name.toLowerCase().includes(q));
+  if(!selected.length){status.textContent='No matching candidate names.';return}
+  busy=true;show.disabled=clear.disabled=search.disabled=true;
+  status.textContent='Checking 0 / '+selected.length.toLocaleString()+' local inventory names…';
   try{
-   const batch=selected.slice(offset,offset+400),results=new Map();
-   for(let i=0;i<batch.length;i+=80){
-    const chunk=batch.slice(i,i+80),r=await chrome.runtime.sendMessage({type:'wiki-list-lookup',category,names:chunk.map(g=>g.name)});
-    if(!r?.ok||!Array.isArray(r.matches)||r.matches.length!==chunk.length)throw Error('Inventory lookup unavailable');
-    if(!r.syncedAt)throw Error('Inventory not synced. Import & Sync in Companion first.');
-    if(syncedAt&&(r.syncedAt!==syncedAt||r.exportedAt!==exportedAt))throw Error('Inventory changed. Refresh ownership.');
-    syncedAt=r.syncedAt;exportedAt=r.exportedAt;chunk.forEach((g,j)=>results.set(g.name,r.matches[j]));
-   }
-   batch.forEach(g=>annotate(g,results.get(g.name)));offset+=batch.length;
-   status.textContent=offset.toLocaleString()+' / '+selected.length.toLocaleString()+' checked · '+owned+' owned · '+absent+' not in snapshot · '+unknown+' unknown · synced '+new Date(syncedAt).toLocaleString();
-   next.hidden=offset>=selected.length;clear.hidden=false;show.textContent='Refresh ownership';
-  }catch(err){reset();status.textContent=String(err?.message||err);show.textContent='Show ownership'}
-  finally{busy=false;show.disabled=next.disabled=clear.disabled=search.disabled=false}
+   await checkAll(selected,category,msg=>chrome.runtime.sendMessage(msg),(chunk,matches,progress)=>{
+    chunk.forEach((g,i)=>annotate(g,matches[i]));
+    status.textContent=progress.offset.toLocaleString()+' / '+selected.length.toLocaleString()+' checked · '+owned+' owned · '+absent+' not in snapshot · '+unknown+' unknown · synced '+new Date(progress.syncedAt).toLocaleString();
+   });
+   clear.hidden=false;
+  }catch(err){reset();status.textContent=String(err?.message||err)}
+  finally{busy=false;show.disabled=clear.disabled=search.disabled=false}
  }
- show.addEventListener('click',e=>{if(!e.isTrusted||busy)return;reset();const q=clean(search.value).toLowerCase();selected=groups.filter(g=>g.name.toLowerCase().includes(q));if(!selected.length){status.textContent='No matching candidate names.';return}batch()});
- next.addEventListener('click',e=>{if(e.isTrusted&&!busy)batch()});
- clear.addEventListener('click',e=>{if(!e.isTrusted||busy)return;reset();status.textContent='Labels cleared.';show.textContent='Show ownership'});
+ show.addEventListener('click',e=>{if(e.isTrusted&&!busy)scan(search.value)});
+ clear.addEventListener('click',e=>{if(!e.isTrusted||busy)return;reset();status.textContent='Labels cleared. Refresh ownership to check again.'});
+ // Local read-only comparison on recognized category pages. No network requests,
+ // no new permissions, and no simulated click or write to the inventory.
+ scan();
+
 }
-globalThis.AQWCListOwnership=Object.freeze({categoryFor,candidate,sectionMarker,collect,groupRows,label});
+globalThis.AQWCListOwnership=Object.freeze({categoryFor,candidate,sectionMarker,collect,groupRows,label,checkAll});
 if(typeof document!=='undefined')init();
 })();

@@ -94,7 +94,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.9.1');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js','wiki-quest-shop.js','wiki-list-ownership.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
+ assert.equal(manifest.version,'0.10.0');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js','wiki-quest-shop.js','wiki-list-ownership.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -331,7 +331,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.equal(worker.matchWikiListItem(snap,'ArchPaladin','classes').inventory,1);
  assert.equal(worker.matchWikiListItem(snap,'Example (Class)','classes').state,'ambiguous');
  assert.equal(worker.matchWikiListItem(snap,'ArchPaladin (Merge)','classes').state,'ambiguous');
- assert.equal(worker.matchWikiListItem(snap,'Unknown (AC)','classes').state,'ambiguous');
+ assert.equal(worker.matchWikiListItem(snap,'Unknown (AC)','classes').state,'not-found');
  assert.equal(worker.matchWikiListItem(snap,'Missing','classes').state,'not-found');
  (async()=>{
   const sender={url:'https://aqwwiki.wikidot.com/classes',frameId:0},msg={type:'wiki-list-lookup',category:'classes',names:['ArchPaladin','Missing']};
@@ -342,4 +342,40 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
   assert.equal((await worker.handle({...msg,names:Array.from({length:81},(_,i)=>'item '+i)},sender)).ok,false);
   console.log('Ownership Everywhere: typed lookup, scoped sender, bounded requests and safe candidates passed.');
  })().catch(e=>{console.error(e);process.exitCode=1});
+}
+
+{
+ const ctx={URL};vm.runInNewContext(read('extension/wiki-list-ownership.js'),ctx);
+ const api=ctx.AQWCListOwnership;
+ (async()=>{
+  const groups=Array.from({length:1301},(_,i)=>({name:'Item '+i})),sizes=[],offsets=[],seen=[];let yields=0;
+  await api.checkAll(groups,'helmets-hoods',async m=>{
+   assert.equal(m.category,'helmets-hoods');assert.equal(m.type,'wiki-list-lookup');
+   sizes.push(m.names.length);return {ok:true,syncedAt:'2026-11-24',exportedAt:'2026-11-24',matches:m.names.map(name=>({name,state:'not-found'}))};
+  },(chunk,matches,p)=>{offsets.push(p.offset);seen.push(...matches.map(m=>m.name))},async()=>{yields++});
+  assert.equal(sizes.length,17);assert.ok(sizes.every(n=>n<=80));assert.equal(sizes.at(-1),21);
+  assert.equal(offsets.at(-1),1301);assert.equal(seen.length,1301);assert.equal(new Set(seen).size,1301);assert.equal(yields,16);
+  let calls=0,annotated=0;
+  await assert.rejects(api.checkAll(groups,'helmets-hoods',async m=>({ok:true,syncedAt:String(++calls),exportedAt:'same',matches:m.names.map(()=>({state:'owned'}))}),chunk=>{annotated+=chunk.length},async()=>{}),/Inventory changed/);
+  assert.equal(annotated,80);
+  await assert.rejects(api.checkAll(groups,'helmets-hoods',async m=>({ok:true,matches:m.names.map(()=>({state:'unsynced'}))}),()=>{},async()=>{}),/Inventory not synced/);
+  assert.ok(!read('extension/wiki-list-ownership.js').includes('Check next 400'));
+  assert.ok(read('extension/wiki-list-ownership.js').includes('\n scan();'));
+  console.log('Automatic full ownership scan: 1301 names, bounded batches, yielding and snapshot consistency passed.');
+ })().catch(e=>{console.error(e);process.exitCode=1});
+}
+
+{
+ const ctx={URL};vm.runInNewContext(read('extension/wiki-quest-shop.js'),ctx);const api=ctx.AQWCQuestShop;
+ assert.equal(api.questQuantity('x3 (Stacks up to 1,000)'),3);assert.equal(api.questQuantity('x3 or x4'),null);assert.equal(api.questQuantity('x3 (Stacks up to 10) extra'),null);
+ const snapshot={items:[{ID:'1',Name:'Void Aura',Type:'Item',Count:10,Bank:0},{ID:'1',Name:'Void Aura',Type:'Item',Count:20,Bank:1},{ID:'2',Name:'Example (0 AC)',Type:'Class',Count:1,Bank:0}],syncedAt:'now'};
+ const chromeMock={runtime:{onMessage:{addListener(){}},getURL:x=>'chrome-extension://test/'+x},storage:{local:{async get(k){return {[k]:snapshot}}}}};
+ const worker=vm.runInNewContext(read('extension/worker.js')+'\n({handle,searchLocalInventory,matchWikiListItem})',{chrome:chromeMock,URL,TextEncoder});
+ assert.equal(worker.searchLocalInventory(snapshot,'void','all').total,2);assert.equal(worker.searchLocalInventory(snapshot,'void','bank').rows[0].count,20);
+ assert.equal(worker.searchLocalInventory(snapshot,'v','all').total,0);
+ assert.equal(worker.matchWikiListItem(snapshot,'Example (AC)','classes').state,'ambiguous');
+ assert.equal(worker.matchWikiListItem(snapshot,'Absent (Legend)','classes').state,'not-found');
+ (async()=>{const msg={type:'inventory-search',query:'void',location:'all'};assert.equal((await worker.handle(msg,{url:'https://aqwwiki.wikidot.com/classes',frameId:0})).ok,false);assert.equal((await worker.handle(msg,{url:'chrome-extension://test/popup.html'})).total,2)})().catch(e=>{console.error(e);process.exitCode=1});
+ assert.ok(read('index.html').includes('function showWikiRoutineReview()'));assert.ok(read('index.html').includes('pinTask(t);showWikiRoutineReview()'));
+ assert.ok(read('extension/wiki-list-ownership.js').includes('Review or add to Wishlist'));
 }
