@@ -4,7 +4,7 @@
  const call=message=>chrome.runtime.sendMessage(message);
  async function summary(){
   const r=await call({type:'account-stage-summary'});
-  if(r?.ok&&r.count!=null)show(r.count.toLocaleString()+' records ready to import. Open Companion and select Import Account Manager inventory.');
+  if(r?.ok&&r.count!=null)show(r.count.toLocaleString()+' records ready to import. Open Companion and select Import inventory.');
   discard.disabled=!(r?.ok&&r.count!=null);
  }
  button.addEventListener('click',async event=>{
