@@ -76,7 +76,8 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
   function el(){return {style:{},children:[],append(...x){this.children.push(...x)},attachShadow({mode}){closed=mode;return el()}}}
   const title={textContent:name,insertAdjacentElement(_,host){inserted=host}},content={textContent:body},crumb=crumbs===null?null:{querySelectorAll(){return crumbs.map(x=>typeof x==='string'?{href:'https://aqwwiki.wikidot.com/'+x}:{href:'https://aqwwiki.wikidot.com/'+x.slug,textContent:x.label})}};
   const doc={getElementById:id=>({'page-title':title,'page-content':content,'breadcrumbs':crumb}[id]||null),createElement:el,querySelectorAll:()=>tags.map(textContent=>({textContent}))};
-  vm.runInNewContext(read('extension/wiki-items.js'),{URL,location:{origin:'https://aqwwiki.wikidot.com',pathname:'/void-aura',href:'https://aqwwiki.wikidot.com/void-aura'},document:doc,chrome:{runtime:{sendMessage(m,cb){request=m;cb(response)}}}});
+  const context={URL,URLSearchParams,location:{origin:'https://aqwwiki.wikidot.com',pathname:'/void-aura',href:'https://aqwwiki.wikidot.com/void-aura'},document:doc,chrome:{runtime:{sendMessage(m,cb){request=m;cb(response)}}}};
+  vm.runInNewContext(read('extension/wishlist-link.js'),context);vm.runInNewContext(read('extension/wiki-items.js'),context);
   return {request,inserted,closed};
  };
  assert.ok(runWiki(['items','misc-items']).inserted);
@@ -93,6 +94,26 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.3.1');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wiki-items.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
+ assert.equal(manifest.version,'0.4.0');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-items.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
+
+const wishlistContext={URLSearchParams};vm.runInNewContext(read('extension/wishlist-link.js'),wishlistContext);
+const wl=wishlistContext.AQWCWikiWishlist;
+const item={name:'Necrotic Sword of Doom (Sword)',slug:'necrotic-sword-of-doom-sword',category:'swords'};
+const link=wl.build(item);assert.ok(link.startsWith('https://cptmundo.github.io/AQW-Companion/#aqwc-wishlist?'));
+assert.equal(wl.parse(new URL(link).hash).name,item.name);
+assert.equal(wl.target(item).name,'Necrotic Sword of Doom');assert.equal(wl.target(item).type,'Sword');
+assert.equal(wl.target({...item,name:'StoneCrusher (Merge)',category:'classes'}).variant,true);
+assert.equal(wl.target({...item,name:'Void Aura',category:'misc-items'}).type,'Item');
+assert.equal(wl.build({...item,slug:'https://example.com'}),null);
+assert.equal(wl.build({...item,category:'shops'}),null);
+assert.equal(wl.parse('#aqwc-wishlist?name=x&name=y&slug=a&category=swords'),null);
+assert.equal(wl.parse('#aqwc-wishlist?name=x&slug=a&category=swords&extra=1'),null);
+assert.equal(wl.parse('#other'),null);
+assert.ok(read('extension/wiki-items.js').includes("link.textContent='+ Add to Wishlist'"));
+const site=read('index.html'),review=site.slice(site.indexOf('function showWikiWishlistReview(){'),site.indexOf('async function init(){'));
+assert.ok(review.includes('add.onclick=()=>{'));assert.ok(review.includes('addProjectByName(name,target.type);clear()'));assert.ok(review.includes('if(target.variant)'));assert.ok(review.includes('loadUnlocks();'));
+assert.ok(site.includes('extension/wishlist-link.js?v=126'));assert.ok(site.includes('showWikiWishlistReview();window.addEventListener'));
+assert.ok(read('js/umami-analytics.js').includes("url:'/AQW-Companion/'"));
+console.log('Wiki Wishlist: scoped links, category suffixes, variant guard and explicit confirmation checked.');
