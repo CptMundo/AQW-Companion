@@ -1671,6 +1671,10 @@ const taskCatalog=[
 // already present in Companion's guide. Not all quests elsewhere in the game.
 for(const task of (window.AQWCRoutineLibrary?.entries||[]))
  if(!taskCatalog.some(x=>x.id===task.id))taskCatalog.push({...task});
+const extraReviewedTasks=[{id:'gramiel-weekly',name:'Trial of the Vessel (Weekly Quest)',group:'Ultra Boss',freq:'weekly',join:'',packs:[],wiki:'https://aqwwiki.wikidot.com/mysterious-figure-s-quests',categories:['Ultras','Materials','Endgame'],rewards:["Gramiel the Graceful's Insignia"]}];
+for(const t of extraReviewedTasks)if(!taskCatalog.some(x=>x.id===t.id||x.name.toLowerCase().includes('gramiel')||x.name===t.name))taskCatalog.push(t);
+const reviewedTaskTags={encroach:{categories:['Materials','Endgame'],rewards:['Void Aura']},glimpse:{categories:['Materials','Endgame'],rewards:['Void Aura']},ex107:{categories:['Materials'],rewards:["Elder's Blood"]},drakath:{categories:['Materials','Endgame'],rewards:['Champion Drakath Insignia']}};
+for(const t of taskCatalog)Object.assign(t,reviewedTaskTags[t.id]||{});
 for(const boss of ultraGuides){
  const freq=String(boss.type||'').toLowerCase();
  if(!['daily','weekly'].includes(freq)||taskCatalog.some(t=>t.join===boss.join))continue;
@@ -1938,12 +1942,13 @@ function unpinTask(t){pinnedTasks=pinnedTasks.filter(x=>x.id!==t.id);savePlanner
 function copyJoin(txt){if(!txt)return;if(navigator.clipboard?.writeText)navigator.clipboard.writeText(txt).then(()=>message(txt+' copied')).catch(()=>message('Copy '+txt));else message('Copy '+txt)}
 function taskCard(t,pinned){const card=node('div',undefined,'task-card'+(taskDone(t)?' done':''));const inner=node('div',undefined,'task-main');if(pinned){const input=node('input');input.type='checkbox';input.checked=taskDone(t);input.setAttribute('aria-label','Completed '+t.name);input.onchange=()=>toggleTask(t,input.checked);inner.append(input)}const name=node('div');name.append(node('strong',t.name,'task-title'));name.append(node('small',(t.freq==='daily'?'Daily':'Weekly')+' · '+(t.group||'Custom')));
  if(pinned&&Array.isArray(t.sourceProjects)&&t.sourceProjects.length){name.append(node('small','🎯 Project: '+t.sourceProjects.join(' · '),'task-project'))}
+ if(!pinned){const tags=node('div',undefined,'planner-tags');for(const tag of taskCategories(t))tags.append(node('span',tag,'pill'));name.append(tags);if(t.rewards?.length)name.append(node('small','Rewards: '+t.rewards.join(' · '),'planner-rewards'))}
  const info=taskRoutes[t.id];
  if(info){const details=node('details',undefined,'task-route');const summary=node('summary','📍 Where / what to defeat');details.append(summary);details.append(node('div',info.npc.replace(/\s*·\s*\/join\s+[a-z0-9-]+/gi,''),'task-location'));
  for(const target of info.targets){const line=node('div',undefined,'task-target');line.append(node('strong',target[0]),node('small',target[1]));if(target[2]){line.append(makeCopyJoin(target[2]))}else{line.append(node('small','Map not yet verified','task-unverified'))}details.append(line)}
  if(t.join)name.append(makeCopyJoin(t.join));
  const wiki=node('a','Verify on AQWWiki','task-wiki');wiki.href=info.wiki;wiki.target='_blank';wiki.rel='noopener noreferrer';details.append(wiki);name.append(details);
- }else{if(t.join){const link=makeCopyJoin(t.join);link.style.marginTop='6px';name.append(link)}name.append(node('small','Custom / pending guide: open the quest in-game to confirm its current objectives.','task-unverified'));const quick=node('a','Daily Quest Board (AQWWiki) ↗','task-wiki');quick.href='https://aqwwiki.wikidot.com/daily-quest-board-s-quests';quick.target='_blank';quick.rel='noopener noreferrer';name.append(quick)}
+ }else{if(t.join){const link=makeCopyJoin(t.join);link.style.marginTop='6px';name.append(link)}name.append(node('small','Custom / pending guide: open the quest in-game to confirm its current objectives.','task-unverified'));const quick=node('a','Quest source (AQWWiki) ↗','task-wiki');quick.href=t.wiki||'https://aqwwiki.wikidot.com/daily-quest-board-s-quests';quick.target='_blank';quick.rel='noopener noreferrer';name.append(quick)}
  inner.append(name);card.append(inner);if(pinned&&taskDone(t)){const undo=node('button','Undo completion','smallbutton planner-undo');undo.type='button';undo.onclick=()=>{if($('plannerstatus').value==='completed')$('plannerstatus').value='all';toggleTask(t,false)};name.append(undo)}const button=node('button',pinned?'Unpin':'+ Pin','smallbutton');button.onclick=()=>pinned?unpinTask(t):pinTask(t);card.append(button);return card}
 $('resetultradaily').onclick=()=>resetUltraChecks('daily');$('resetultraweekly').onclick=()=>resetUltraChecks('weekly');
 let plannerShowAll=false;
