@@ -101,3 +101,24 @@ assert.ok(html.includes("for(const [label,description] of b.phases||[])"),"Rende
 assert.ok(html.includes("General group preset — adapt to this fight."));
 assert.ok(html.includes("ultraReviewedSources[b.id]||[]"));
 for(const rows of Object.values(reviewedApi.ultraReviewedSources))for(const [,url] of rows)assert.ok(url.startsWith("https://"));
+
+const workbookApi=vm.runInNewContext(reviewedCode+"\n({simplifiedProfiles,simplifiedRatings,simplifiedRatingRoles,simplifiedRoleRatings,simplifiedSpeakerEvents,simplifiedSpeakerPatterns,simplifiedExtraEncounters})");
+assert.equal(Object.keys(workbookApi.simplifiedProfiles).length,12,"Every current detailed encounter has a workbook strategy");
+assert.equal(Object.keys(workbookApi.simplifiedRatings).length,22,"All group-boss rating blocks in visible guide sheets");
+assert.equal(workbookApi.simplifiedExtraEncounters.length,28,"Additional group and solo guide cards");
+assert.equal(workbookApi.simplifiedExtraEncounters.filter(x=>x.group==="Grim Gaol").length,11);
+for(const e of workbookApi.simplifiedExtraEncounters){assert.ok(/^\/join [a-z0-9-]+$/.test(e.join));assert.ok(e.sheet&&e.tips.length&&e.wiki);}
+assert.equal(workbookApi.simplifiedProfiles.kathool.team.length,7);
+assert.equal(workbookApi.simplifiedProfiles.gramiel.team.find(x=>x.cls==="Shaman").cape,"Lament");
+assert.equal(workbookApi.simplifiedProfiles.darkon.team.some(x=>x.cape==="Vainglory"),false);
+assert.equal(workbookApi.simplifiedSpeakerPatterns.length,6);
+for(const p of workbookApi.simplifiedSpeakerPatterns)assert.equal(p.roles.length,(p.events||workbookApi.simplifiedSpeakerEvents).length,p.name);
+assert.equal(workbookApi.simplifiedSpeakerPatterns[0].roles[2],"DPS");
+assert.equal(workbookApi.simplifiedSpeakerPatterns[0].roles[18],"LR");
+assert.ok(workbookApi.simplifiedSpeakerPatterns[5].roles.includes("GW"));
+assert.equal(workbookApi.simplifiedRoleRatings("speaker",0).length,7);
+assert.equal(workbookApi.simplifiedRoleRatings("gramiel",3).find(x=>x.name==="Shaman").rating,5);
+for(const key of Object.keys(workbookApi.simplifiedRatings))for(let i=0;i<5;i++){const rows=workbookApi.simplifiedRoleRatings(key,i);assert.equal(rows.length,workbookApi.simplifiedRatingRoles[i][1].length,key+" role "+i);assert.ok(rows.every(x=>x.rating>=0&&x.rating<=5))}
+assert.ok(html.includes("appendSimplifiedProfile(root,simplifiedProfiles[b.id]"));
+assert.ok(html.includes("renderSimplifiedExtras(root,term)"));
+assert.ok(html.includes("Source author’s subjective ratings"));
