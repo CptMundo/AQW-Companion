@@ -1712,37 +1712,36 @@ function ultraSelectedRating(key,cls){
 }
 function ultraWorkbookBuild(profile,cls){return (profile?.team||[]).find(x=>sameUltraClass(x.cls,cls))||null}
 function ultraClassOptions(key,profile,original=[]){
- const used=new Set(),groups=[];
- const add=(label,names)=>{
-  const unique=[];
-  for(const name of names){const id=ultraClassKey(name);if(id&&!used.has(id)){used.add(id);unique.push(name)}}
-  if(unique.length)groups.push({label,names:unique});
- };
- add('Guide lineup',(profile?.team||[]).map(x=>x.cls));
- add('Other existing guide classes',original);
- for(let i=0;i<simplifiedRatingRoles.length;i++)add(simplifiedRatingRoles[i][0]+' — community ratings',simplifiedRoleRatings(key,i).map(x=>x.name));
- add('Other class options',[...(profile?.classes||[]),...(profile?.premium||[])]);
+ const used=new Set(),rows=[];
+ const add=names=>{for(const name of names){const id=ultraClassKey(name);if(!id||used.has(id))continue;used.add(id);
+ const score=ultraSelectedRating(key,name);if(score&&![5,4,2].includes(score.rating))continue;
+ rows.push({name,score,owned:ultraOwned(name)})}};
+ add((profile?.team||[]).map(x=>x.cls));add(original);
+ for(let i=0;i<simplifiedRatingRoles.length;i++)add(simplifiedRoleRatings(key,i).map(x=>x.name));
+ add([...(profile?.classes||[]),...(profile?.premium||[])]);
+ const groups=[];
+ for(const owned of [true,false]){
+  const names=rows.filter(x=>x.owned===owned).sort((a,b)=>(b.score?.rating??-1)-(a.score?.rating??-1)||a.name.localeCompare(b.name)).map(x=>x.name);
+  if(names.length)groups.push({label:owned?'✓ OWNED CLASSES':'NOT OWNED',owned,names});
+ }
  return groups;
 }
 function fillUltraClassSelect(select,key,profile,original=[]){
  const groups=ultraClassOptions(key,profile,original);
  for(const group of groups){const optgroup=node('optgroup');optgroup.label=group.label;
   for(const name of group.names){const score=ultraSelectedRating(key,name);
-   const option=new Option((ultraOwned(name)?'✓ ':'')+name+(score?' · '+score.rating+'/5':''),name);optgroup.append(option)}
+   const option=new Option((group.owned?'✓ OWNED · ':'')+name+(score?' · '+score.rating+'/5':''),name);
+   option.className=group.owned?'ultra-option-owned':'ultra-option-missing';optgroup.append(option)}
   select.append(optgroup);
  }
- const names=groups.flatMap(x=>x.names);
- select.value=groups[0]?.names.find(ultraOwned)||names.find(ultraOwned)||names[0]||'';
+ const names=groups.flatMap(x=>x.names);select.value=names[0]||'';
 }
 function renderUltraSelectedRating(target,key,cls){
- const score=ultraSelectedRating(key,cls);
+ // Score belongs only in the selector. Keep the ownership indicator.
  target.replaceChildren();
  target.append(node('span',ultraOwned(cls)?'✓ Owned':'Not owned',ultraOwned(cls)?'ultra-owned':'ultra-missing'));
- if(score){
-  const value=node('strong',score.rating+'/5 · '+score.role,'ultra-rating-value');
-  value.title='Source author’s subjective ratings; not measured DPS or guaranteed success.';
-  target.append(value);
- }else target.append(node('span','Not rated in the guide','muted tiny'));
+ const score=ultraSelectedRating(key,cls);
+ if(score)target.append(node('span',score.role,'muted tiny'));
 }
 function appendUltraGearCells(gear,build){
  if(!build){gear.append(node('span','No reviewed class-specific gear preset; consult the encounter guide.','muted tiny'));return}
@@ -1774,6 +1773,33 @@ function ultraCompactTips(key,cls,existing=[]){
  for(const tip of additions){const n=normalize(tip);if(n&&!out.some(x=>{const k=normalize(x);return k&&(k===n||k.includes(n)||n.includes(k))}))out.push(tip)}
  return out;
 }
+
+// Encounter-wide actions are applicable to all classes; role actions are
+// conditional, never a claimed class-exclusive rotation or assigned taunt.
+const ultraRoleActions={
+ kathool:{all:['Equip Vigil. At “You cannot resist.” activate it within 3 seconds; taunt cannot replace Vigil.','Finish the assigned Sacrosanct Tendril together; below 30% HP it enrages.'],Support:['Apply debuffs to the team’s focused target; switch to spawned tendrils as assigned.'],Healer:['Keep mana and recovery available during Kathool’s Glare and the Migraine DoT.'],DPS:['Focus the called tendril or boss; do not tunnel damage through the Vigil cue.']},
+ ezrajal:{all:['On Counter Attack, stop damaging skills and untarget until reflection ends.','Prepare for the prism burst and skill lockout.'],Support:['Refresh mitigation before the prism burst; resume damaging debuffs only after reflect ends.'],Healer:['Keep recovery ready for the prism burst; avoid offensive skills during reflection.'],DPS:['Resume burst only when the counter window ends.']},
+ warden:{all:['At about 450k HP, hold damage until the assigned Enrage taunter is ready.'],Support:['If assigned final Enrage, prepare Scroll of Enrage before 450k HP; otherwise maintain mitigation.'],Healer:['When the party drops to 1 HP, restore health immediately; keep a heal ready for this attack.'],DPS:['Avoid crossing the final Enrage threshold before the taunter calls ready; then finish quickly.']},
+ engineer:{all:['Target Defense Drone → Attack Drone → Engineer. Stop hitting Defense Drone while it reflects damage.'],Support:['Keep damage mitigation active while drones are alive; resume debuffs after the counter.'],Healer:['Heal through drone damage; keep recovery ready for Engineer’s burst after drones die.'],DPS:['Kill both drones before bursting Engineer; finish before the drones respawn.']},
+ tyndarius:{all:['Focus Left Orb → Right Orb → Tyndarius; switch back when orbs respawn.'],Support:['If assigned an orb, keep taunt ready for that target; otherwise protect the assigned tank during switches.'],Healer:['Time recovery around orb transitions and damage spikes; keep the orb taunter alive.'],DPS:['Kill the called orb before attacking Tyndarius; if assigned an orb taunt, confirm which one before pulling.']},
+ drakath:{all:['Watch 18M, 16M, 14M, 12M, 8M, 6M and 4M HP. Hold damage until the assigned taunter is ready.','10M is transformation; at 2M the meteor starts. Finish within 20 seconds; do not taunt the meteor.'],Support:['Keep defensive debuffs active before each HP blast. If assigned taunter, use Scroll of Enrage BEFORE crossing the threshold.'],Healer:['Keep recovery ready for HP blasts. If assigned taunter, use Scroll of Enrage BEFORE crossing the threshold.'],DPS:['Stop burst near each tauntable threshold until the taunter confirms; save a damage window for the final meteor.']},
+ dage:{all:['On “Cower behind your meager protection spells!” move to the illuminated blue circle within about 3 seconds.','Noxious Decay reverses normal heals and HoTs; use lifesteal (Health Vamp or Dauntless) instead.'],Support:['At “I possess the full power of the Legion at my disposal.” the assigned Decay user blocks regeneration. If your class has no verified Decay assignment, leave it to that player or the assigned Scroll of Decay user.'],Healer:['Do not cast ordinary heals while Noxious Decay is active. Confirm the debuff is gone before healing.'],DPS:['Keep lifesteal active, leave damage to move into every safe zone, and resume DPS after the blast.']},
+ nulgath:{all:['On “I will shatter you to the core!” follow the planned Overfiend Blade kill timing; do not ignore its charged attack.'],Support:['If assigned to the taunt pair, alternate Contracts with your partner; the second taunter in the workbook rotation uses “Behold the power of the Abyss!” as cue.'],Healer:['Sustain the assigned alternating Contracts taunters; do not overlap their taunts.'],DPS:['Follow the agreed Nulgath/Blade target plan; each Blade kill strengthens Nulgath. Do not switch targets independently.']},
+ drago:{all:['Focus Bowmaster → Executioner → Drago; do not split guard damage.'],Support:['If assigned a guard taunt, control that guard until the team switches; prepare mitigation before Bowmaster dies.'],Healer:['Keep recovery ready for guard deaths and the transition to Executioner.'],DPS:['Finish Bowmaster before switching to Executioner, then Drago.']},
+ darkon:{all:['Never take consecutive Elegy taunts unless the agreed strategy accounts for the debuffs. Avoid Vainglory in the workbook setup.'],Support:['Keep damage debuffs active to meet the timed DPS check; if assigned Elegy, alternate with the other taunter.'],Healer:['In Phase 2 stagger direct heals with the other healer; reserve recovery for the next damage window.'],DPS:['Reach the first transition near 15.56M HP before 72 seconds; maintain DPS during phase changes without taking unassigned Elegy taunts.']},
+ gramiel:{all:['Balance the crystals and kill both within five seconds. On the drain cue, switch to Gramiel to break guard.','At 70%, 40% and 10% HP hold damage until required Vendetta/Death’s Door protection is ready; five Vendetta stacks are fatal.'],Support:['Alternate taunts with your assigned crystal partner on the defense-shattering cue, then take your turn in the four-player Vendetta rotation.'],Healer:['Sustain your crystal pair and alternate its taunts on the cue; take only your assigned Vendetta turn in Phase 2.'],DPS:['Balance crystal damage instead of bursting one early. In Phase 2, follow your assigned Vendetta turn and pause at protection thresholds.']},
+ speaker:{all:['Only enter your assigned Zone on “All stand equal beneath the eyes of the Eternal.” Never enter with Magia Burn, Stasis or Sanctity.','On Truth and Listen, only the designated player taunts. Use ONE complete rotation from Advanced Tactics; never mix charts.'],Support:['Take the Truth/Listen assignment matching your chosen rotation, not another support class’s assignment; prepare mitigation before the assigned Truth.'],Healer:['Stagger recovery with the other healer and follow your rotation’s heal/mitigation schedule.'],DPS:['Enter the DPS Zone only if assigned by the chosen chart; do not taunt unless that chart assigns DPS a taunt.']}
+};
+function ultraActionTips(key,cls,existing=[]){
+ const row=ultraRoleActions[key];if(!row)return existing;
+ const role=ultraSelectedRating(key,cls)?.role;
+ const roleGroup=role?.includes('DPS')?'DPS':role;
+ // Keep reviewed playbooks intact; use concrete shared/role actions when
+ // a class has no dedicated playbook. No invented skill numbers.
+ const base=existing.length?existing:[...row.all,...(row[roleGroup]||[])];
+ return ultraCompactTips(key,cls,base);
+}
+
 function appendSpeakerRotations(content){
  const pick=node('select');pick.setAttribute('aria-label','Speaker rotation');
  for(const [i,p] of simplifiedSpeakerPatterns.entries())pick.append(new Option(p.name,String(i)));const rotation=node('div');
@@ -1924,7 +1950,8 @@ function renderUltraDetail(b){
   // Awe Blast + defensive Forge is a suggested group utility setup, not a hard requirement.
   const bardSupport={weapon:'Awe Blast',helm:'Forge',cape:'Absolution',
     note:'Healer base/armor for safer support; Wizard or Lucky are alternatives. Penitence is a defensive cape option.'};
-  const generic=starterBuilds[cls]?.group||(cls==='Bard'?bardSupport:null);
+  const genericKey=Object.keys(starterBuilds).find(x=>sameUltraClass(x,cls));
+  const generic=starterBuilds[genericKey]?.group||(cls==='Bard'?bardSupport:null);
   const encounter=encounterUltraBuild(b.id,cls,generic);
   const build=workbook||encounter||generic;
   renderUltraSelectedRating(rating,b.id,cls);
@@ -1940,11 +1967,10 @@ function renderUltraDetail(b){
   roleName.textContent=cls;
   sequence.replaceChildren();
   const baseTips=[...new Set((play?.steps||[]).map(step=>String(step).trim()).filter(Boolean))];
-  const tips=ultraCompactTips(b.id,cls,baseTips);
-  if(!play&&!role)tips.unshift('No complete class-specific rotation in the guide. Agree your role and follow the party plan.');
+  const tips=ultraActionTips(b.id,cls,baseTips);
   const callouts=window.AQWUltraQuoteActions?.forRole(b.id,playKey||cls)||[];
   const rows=window.AQWCGuideRows?.rows({tips,quotes:callouts,warning:play?.warning,
-   fallback:role||'Confirm your assigned responsibilities before pulling.'})||[];
+   fallback:role||quick.priority||b.phases[0]?.[1]||''})||[];
   for(const part of rows){
    const step=node('div',undefined,'ultra-role-step');
    const body=node('div',undefined,'ultra-role-step-body');
