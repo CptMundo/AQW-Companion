@@ -65,3 +65,6 @@ On existing explicit material expansion, read source headings from the same boun
 
 ## v0.11.5 — Compact recipes and banner layer
 Compact material rows, thinner bars, no repeated remaining line or technical help text; separate root recipes are selectable via tabs rather than stacked. All nested allocation logic remains unchanged. Compact acquisition rows grouped by type; shop-name links no longer receive map-copy actions. Explicit non-interactive header overlay for non-original presets, keeps logo/nav/search above it where selectors match; removes overlay on reset and restores any position override. No new permissions or network requests. Long expanded recipes may still need scrolling. Actual header stacking and coexistence must be checked in Opera; not a verified live fix.
+
+## v0.11.6 — Slimmer sidebar
+Reduce sidebar max width from 780 to 560 CSS px, using 38% of available parent width (380px preferred minimum, preserving the existing 590px article reserve). Inline fallback also capped at 560px. Item title and ownership/combined quantity share one row with right-aligned status; long names and diagnostic states may wrap. Hide empty ownership detail explicitly. No changes to inventory matching, recipes, sources, theme settings or permissions. Actual Opera layout pending.
