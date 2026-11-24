@@ -15,7 +15,7 @@ const tabs=[...html.matchAll(/<button\b[^>]*data-tab="([^"]+)"[^>]*data-parent="
 assert.equal(tabs.filter(x=>x.group==="home").length,0,"Home has no secondary tabs");
 assert.equal(tabs.filter(x=>x.tab==="account-stats").length,1,"Stats appears exactly once");
 assert.deepEqual(tabs.filter(x=>x.group==="inventory").map(x=>x.tab),
-  ["inventory","account-stats","compare","history"],"Account Statistics belongs with the Inventory subviews");
+  ["account-stats","alerts","inventory","compare","history"],"Account Statistics belongs with the Inventory subviews");
 assert.ok(!html.includes('data-tab="overview"'),"Overview remains the Home main view, not a subtab");
 const siteCss=fs.readFileSync(path.join(__dirname,"../css/site.css"),"utf8");
 const navCssStart=siteCss.indexOf("/* style: aqw-feedback-nav-v2 */");
@@ -64,7 +64,11 @@ navigate("inventory");
 assert.equal(activeGroup(),"inventory");
 assert.equal(activeView(),"inventory");
 assert.deepEqual(tabButtons.filter(x=>x.classList.contains("group-visible")).map(x=>x.dataset.tab),
-  ["inventory","account-stats","compare","history"]);
+  ["account-stats","alerts","inventory","compare","history"]);
+navigate("alerts");
+assert.equal(activeGroup(),"inventory");
+assert.equal(activeView(),"alerts");
+assert.ok(html.includes("inventory:'account-stats'"));
 navigate("account-stats");
 assert.equal(activeGroup(),"inventory");
 assert.equal(activeView(),"account-stats");

@@ -31,10 +31,19 @@
 .stack-cap-form label{display:grid;gap:5px;font-size:12px;color:#b4cad9}
 .stack-cap-form input{width:100%;min-width:0;min-height:39px}
 .stack-cap-form button{min-height:39px;white-space:nowrap}
-.home-stack-card{margin-top:12px;margin-bottom:12px;border-left:2px solid #e9b485}
+.home-stack-card{margin-top:14px;padding-top:12px;border-top:1px solid #315371}
+.home-stack-card .homehead{align-items:center;flex-wrap:wrap;gap:8px}
+.home-stack-card .stack-alert-use-title{margin:0;font-size:13px}
+.home-stack-card #home-stack-summary{margin-top:6px}
 .home-stack-card.hidden{display:none}
 @media(max-width:820px){
  .stack-alert-list{grid-template-columns:1fr}
  .stack-cap-form{grid-template-columns:1fr 1fr}
 }
 @media(max-width:520px){.stack-cap-form{grid-template-columns:1fr}}
+
+.home-wishlist-wins{display:grid;gap:7px;margin:12px 0}
+.home-wishlist-wins .home-delta-highlight-head strong{color:#70e1b7}
+.home-wishlist-win{display:grid;gap:4px;padding:9px 11px;border:1px solid #326354;border-radius:8px;background:#132c2c;overflow-wrap:anywhere}
+.home-wishlist-win strong{color:#d9fff0;font-size:12px}
+.home-wishlist-win small{color:#a9d4c4;font-size:11px}

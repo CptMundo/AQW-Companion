@@ -107,3 +107,7 @@ for(const [i,m] of [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
   new vm.Script(m[2],{filename:"index-inline-"+i});
 }
 console.log("Stack Alerts: exact wiki caps, bank separation, no inferred limits, private overrides and source-linked uses validated.");
+
+assert.ok(html.includes('<section id="alerts" class="view"><div class="card stack-alerts-card">'));
+assert.ok(html.includes("$('homestacks')?.addEventListener('click',()=>selectTab('alerts'))"));
+assert.ok(html.includes('id="homeinventorydelta" class="home-delta"></div><div class="home-stack-card hidden" id="home-stack-card">'));

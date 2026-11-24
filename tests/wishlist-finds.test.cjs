@@ -34,3 +34,11 @@ assert.ok(html.includes('src="js/wishlist-finds.js"'));
 assert.ok(html.includes("createdAt:new Date().toISOString()"));
 new vm.Script(fs.readFileSync(path.join(__dirname,"../js/wishlist-finds.js"),"utf8"));
 console.log("Wishlist finds: local snapshots, first observations, repeat imports and retroactive-goal prevention passed.");
+
+assert.equal(api.find([old,recent,withAfter],wishes,{onlyUid:"after"}).count,0,"Do not repeat past achievements on Home");
+assert.equal(api.find([old,recent,withAfter],wishes,{onlyUid:"new"}).count,1);
+assert.equal(api.find([old,recent],[{name:"Alpha"}],{onlyUid:"new"}).count,0,"Bank movement is not a win");
+assert.equal(api.find([old,recent],wishes,{onlyUid:"missing"}).count,0);
+assert.ok(html.includes("onlyUid:latest.uid"));
+assert.ok(html.includes("if(wins?.count)"));
+assert.ok(html.includes("Wishlist Achievements"));
