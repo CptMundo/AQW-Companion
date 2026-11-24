@@ -1075,7 +1075,8 @@ function renderUltraCatalog(){
    actions.append(wiki);card.append(actions);grid.append(card);
   }section.append(grid);root.append(section);
  }
- if(!filtered.length)root.append(node('p','No bosses matched your search.','muted tiny'));
+ const extraCount=renderSimplifiedExtras(root,term);
+ if(!filtered.length&&!extraCount)root.append(node('p','No bosses matched your search.','muted tiny'));
 }
 
 const ultraEmoji={drakath:'👑',nulgath:'💀',dage:'☠️',speaker:'🔊',ezrajal:'🔮',warden:'🛡️',engineer:'⚙️',tyndarius:'🔥',drago:'🐉',darkon:'🌌',gramiel:'🕯️',kathool:'🐙'};
@@ -1544,6 +1545,215 @@ const starterBuilds={
 // Add vetted 2026 meta/recent classes without rewriting existing 15×3 builds.
 };
 Object.assign(starterBuilds,window.AQWCMetaBuilds?.builds||{});
+
+// Encounter-specific recommendations, separate from general class builds.
+// Community strategies are examples, not mandatory or universal BiS.
+const ultraReviewedSources={
+ dage:[['AQW App — Dage mechanics','https://aqw.app/monsters/ultradage']],
+ drakath:[['AQWG — Drakath strategy','https://sites.google.com/view/aqwg-net/ultra-bosses']],
+ ezrajal:[['AQW App — Ezrajal mechanics','https://aqw.app/monsters/ultraezrajal']],
+ warden:[['AQW App — Warden mechanics','https://aqw.app/monsters/ultrawarden']],
+ engineer:[['AQW App — Engineer mechanics','https://aqw.app/monsters/ultraengineer']],
+ darkon:[['Solaris — Darkon gear and phases','https://solarisaqw.lol/guides/ultra-weeklies/ultradarkon']],
+ gramiel:[['AQW App — Gramiel strategy','https://aqw.app/monsters/ultragramiel'],['AQWorlds Wiki — Gramiel mechanics','https://aqwwiki.wikidot.com/gramiel-the-graceful']],
+ speaker:[['AQW App — three-taunter rotation','https://aqw.app/monsters/ultraspeaker'],['AQW Hub — alternate strategies','https://www.aqwhub.com/ultra-guides/ultra-speaker/']]
+};
+const ultraEncounterBuilds={
+ darkon:{
+  'Lord of Order':{weapon:'Awe Blast',helm:'Forge',cape:'Absolution',base:'Lucky',note:'Coordinate healing and your assigned Elegy taunt. Example setup from Solaris.'},
+  'Legion Revenant':{weapon:'Arcana Concerto',helm:'Pneuma',cape:'Lament',base:'Wizard',note:'Example for the standard healer composition; adjust for survival.'},
+  'StoneCrusher':{weapon:'Valiance',helm:'Anima',cape:'Absolution',base:'Fighter',note:'Support and coordinate healing windows.'},
+  'ArchPaladin':{weapon:'Praxis',helm:'Forge',cape:'Lament',base:'Lucky',note:'Healer alternative; do not overlap direct heals with LoO.'}
+ },
+ gramiel:{
+  'StoneCrusher':{weapon:'Valiance',helm:'Anima',cape:'Absolution',base:'Fighter',consumable:'Scroll of Enrage'},
+  'Legion Revenant':{weapon:'Mana Vamp',helm:'Wizard',cape:'Penitence',base:'Wizard',consumable:'Scroll of Enrage'},
+  'Lord of Order':{weapon:'Awe Blast',helm:'Forge',cape:'Penitence',base:'Lucky',consumable:'Scroll of Enrage'},
+  'Shaman':{weapon:'Elysium',helm:'Wizard',cape:'Vainglory',base:'Wizard',consumable:'Scroll of Enrage'}
+ }
+};
+function encounterUltraBuild(id,cls,generic){
+ if(id==='dage')return {weapon:'Health Vamp / Dauntless',helm:generic?.helm||'Choose defensive setup',cape:generic?.cape||'Choose defensive setup',note:'Use sustain through lifesteal instead of ordinary healing skills during Noxious Decay.',consumable:cls==='Chaos Avenger'?'Scroll of Enrage if loop-taunting':null};
+ return ultraEncounterBuilds[id]?.[cls]||null;
+}
+const ultraReviewedTactics={
+ drakath:[['Prepare taunts','Bring seven Enrage scrolls if using scrolls for every HP blast. Hold damage before each threshold until the taunter confirms readiness.']],
+ darkon:[['Phase 1 DPS check','Reach the transition at about 15.56M HP before 72 seconds.'],['Phase 2 taunt discipline','Alternate Elegy taunts. Two consecutive Elegies on one player can invert crits and healing; a third is lethal. Coordinate direct heals.'],['Phase 3','After Darkon restores HP for the final phase, plan around the stronger autos and mana pressure rather than assuming phase 2 timing still applies.']],
+ gramiel:[['Crystal assignments','Suggested pairs: SC + LR left; LoO + Shaman right. Alternate taunts within each pair, balance crystal HP, and switch to Gramiel to break the drain shield. LR avoids Decay during this phase.'],['Vendetta rotation','In the referenced method, the order is DPS, LoO, SC, LR. All four need Vendetta or Death’s Door before threshold damage.'],['Threshold checks','At 70%, 40% and 10% HP, verify the required protection before pushing damage. Five Vendetta stacks are fatal. Pause if protection or the rotation is not ready.']],
+ engineer:[['Drone counter','If the Defense Drone starts reflecting damage, stop hitting it until reflection ends. Resume the Defense Drone → Attack Drone → Engineer priority.']]
+};
+
+
+// Community workbook, Simplified bosses guide, supplied 2026-11-24.
+// Independent strategy examples; never mix a different party's taunt plan.
+const simplifiedGuideSource='https://www.reddit.com/r/AQW/comments/1u76wrp/aqw_guides_advanced_settings/';
+const sgBuild=(cls,weapon,base,helm,cape)=>({cls,weapon,base,helm,cape});
+const sgLoO=(cape='Penitence')=>sgBuild('Lord of Order','Awe Blast','Lucky','Base Forge',cape);
+const sgLR=(weapon='Arcana Concerto',helm='Pneuma')=>sgBuild('Legion Revenant',weapon,'Wizard',helm,'Lament');
+const sgSC=(weapon='Lacerate')=>sgBuild('StoneCrusher',weapon,'Fighter','Anima','Absolution');
+const sgAP=(weapon='Praxis',cape='Lament')=>sgBuild('ArchPaladin',weapon,'Lucky','Base Forge',cape);
+const sgCSH=(weapon='Arcana Concerto',helm='Examen',cape='Vainglory')=>sgBuild('Chrono ShadowHunter',weapon,'Lucky',helm,cape);
+const sgVDK=(weapon='Ravenous',helm='Base Forge',cape='Vainglory')=>sgBuild('Verus DoomKnight',weapon,'Lucky',helm,cape);
+const sgAF=(weapon='Ravenous',cape='Vainglory')=>sgBuild('ArchFiend',weapon,'Lucky','Base Forge',cape);
+const sgGW=(cape='Vainglory')=>sgBuild('Glaceran Warlord','Dauntless','Lucky','Anima',cape);
+const sgGuardian=()=>sgBuild('Guardian','Ravenous','Lucky','Vim','Lament');
+const sgLH=(helm='Anima')=>sgBuild('Legendary Hero','Lacerate','Lucky',helm,'Lament');
+const sgPhantom=(cape='Penitence')=>sgBuild('Phantom Chronomancer','Ravenous','Lucky','Examen',cape);
+const sgPC=(weapon,helm,cape)=>sgBuild('Paladin Chronomancer',weapon,'Fighter',helm,cape);
+const simplifiedProfiles={
+ kathool:{sheet:'Kathool',team:[sgLoO(),sgLR(),sgVDK(),sgSC(),sgAF(),sgGW(),sgBuild('Arcana Invoker','Ravenous','Lucky','Examen','Vainglory')],tips:['Equip Vigil on every player; activate it on “You cannot resist”.','Assign supports to newly spawned tentacles while DPS and debuff roles focus the eyes. With single-target DPS, most of the other players should help clear tentacles.']},
+ ezrajal:{sheet:'Timeinn Trio',team:[sgLoO(),sgLR('Arcana Concerto','Wizard'),sgAP(),sgCSH('Valiance','Base Forge')],tips:['Workbook recommends at least 3,175 HP. Coordinate pull and survival; retain the normal Counter Attack response. The workbook also mentions a skill-lock manipulation, which is not included as a recommended tactic.']},
+ warden:{sheet:'Timeinn Trio',team:[sgLoO(),sgLR('Ravenous'),sgSC(),sgCSH()],tips:['Assign a taunter with sustained healing for Berserk. Time Lord of Order skill 5 to protect the party; fast healers restore HP immediately.']},
+ engineer:{sheet:'Timeinn Trio',team:[sgLoO(),sgLR('Ravenous'),sgSC(),sgCSH()],tips:['Buff before combat. Engineer is protected while drones survive. Focus Defense Drone, then Attack Drone; finish Engineer before respawns. If using an AP variant, use its 2–4–5 burst on Defense Drone; LoO uses skill 5 on Attack Drone. Workbook cautions against reduced-HP Forge helms; its CSH example uses Examen, so check HP before equipping.']},
+ tyndarius:{sheet:'Tyndarius',team:[sgLoO(),sgSC(),sgAP(),sgCSH('Arcana Concerto','Base Forge')],tips:['Prioritize killing the two orbs. If needed, assign DPS and a support to taunt one orb each; a slower party can coordinate AP/LoO loop taunts. Fast DPS may make extra taunting unnecessary.']},
+ drakath:{sheet:'Drakath',team:[sgLoO(),sgLR('Ravenous','Wizard'),sgPC('Mana Vamp','Hearty','Vainglory'),sgCSH('Arcana Concerto','Examen','Lament')],tips:['Keep healers from overlapping direct heals. Assign a healer or LR to the HP blasts, using the existing guide’s precise threshold exceptions. Workbook recommends at least 3,500 buffed HP for the taunter and around 3,000 for other players.']},
+ dage:{sheet:'Dage',team:[sgBuild('Chaos Avenger','Dauntless','Lucky','Anima','Vainglory'),sgAF('Dauntless'),sgVDK('Dauntless'),sgCSH('Health Vamp')],tips:['Bring a Decay class and lifesteal; do not use ordinary heals under inverted healing. Apply Decay at the Legion power cue, enter the blue safe zones, then resume damage. Workbook favors Dauntless on CAv; Health Vamp and Scroll of Life Steal are alternatives.']},
+ nulgath:{sheet:'Nulgath',team:[sgLoO(),sgLR(),sgSC(),sgGuardian()],tips:['In this rotation LoO and LR alternate Nulgath taunts: first shortly after pull, second on “Behold the power of the Abyss!”, then renew as the taunt ends. DPS focuses Nulgath. If damage is low, prepare the sword to about half HP and handle its dangerous attacks with the team.']},
+ drago:{sheet:'Drago',team:[sgSC(),sgLR('Awe Blast'),sgAP(),sgGuardian()],tips:['LR controls Bowmaster. AP controls Executioner; if your variant includes LoO, AP and LoO can loop taunt it together. DPS prioritizes Bowmaster, then Executioner, then Drago. Do not assume LoO is present in the example SC composition.']},
+ darkon:{sheet:'Darkon',team:[sgLoO('Absolution'),sgLR('Ravenous'),sgPC('Lacerate','Vim','Fighter'),sgCSH('Arcana Concerto','Examen','Base Forge')],tips:['Avoid Vainglory. This example uses LoO and LR alternating taunts on the tentacle animation (or every two autos), then loop taunts after Darkon refills HP. Coordinate heals; preserve LoO skill 5 for the nuke near 4.5–4.6M HP. Consider Potent Honor Potion for secondary healer.']},
+ gramiel:{sheet:'Gramiel',team:[sgLoO(),sgLR('Arcana Concerto','Wizard'),sgSC('Praxis'),sgBuild('Shaman','Elysium','Lucky','Base Forge','Lament')],tips:['DPS + LoO take one crystal and LR + healer the other. Each pair alternates taunts at the defense-shattering cue; kill both within five seconds. After the explosion, rotate all four players through taunts, two autos per player, until beam; repeat after beam. Retain the existing threshold safety checks.']},
+ speaker:{sheet:'Speaker / Speaker Charts',team:[sgSC('Valiance'),sgLR('Arcana Concerto','Wizard'),sgAP(),sgGuardian()],tips:['Workbook’s example lineup differs from the LoO-based taunt charts. The charts below require LoO and AP; do not use them unchanged with StoneCrusher replacing LoO. Truth vulnerability must expire before the same player takes another Truth unless the team uses the planned Quix mitigation. Listen petrifies; only an eligible assigned player enters each Zone.']}
+};
+// Source worksheet Speaker Charts A3:O23. Blank assignments are intentional,
+// not a cue for a random player to taunt. Omit exploit-dependent solo method.
+const simplifiedSpeakerEvents=['Truth','Listen','Zone 1','Truth','Listen','Truth','Zone 2','Listen','Truth','Truth','Listen','Zone 3','Truth','Listen','Truth','Zone 4','Listen','Truth','Truth','Listen'];
+const simplifiedSpeakerPatterns=[
+ {name:'3-man taunt',roles:['LR','LoO','DPS','AP','LoO','','LR','','','LoO','','AP','','LR','','LoO','','','LR','LoO'],skills:{3:'AP 4',4:'LoO 5',8:'AP 4',12:'AP 4',14:'LoO 5',17:'AP 4'},note:'DPS can use damage potions; agree the LoO/LR/AP rotation in advance.'},
+ {name:'4-man Mole',roles:['LR','LoO','DPS','AP','DPS','','LR','','','LoO','','AP','','DPS','','LoO','LR','','LoO',''],skills:{3:'AP 4',5:'LoO 5',8:'AP 4',12:'AP 4',14:'LoO 5',17:'AP 4'},note:'All four players participate in the taunts, including DPS.'},
+ {name:'2-man taunt',roles:['LoO','','LR','','LoO','LR','LoO','LR','','LoO','','DPS','LR','LoO','LR','AP','LoO','','LoO',''],skills:{4:'AP 4',5:'Praxis',8:'AP 4',13:'AP 4',14:'Praxis',17:'AP 4',18:'Praxis'},note:'Higher risk. AP and DPS use damage potions; agree this variant before pulling.'},
+ {name:'3-man with DPS taunt skill',roles:['LR','LoO','DPS','','LoO','','LR','','','LoO','','AP','DPS','LR','','LoO','','','LR','LoO'],skills:{3:'AP 4',4:'LoO 5',8:'AP 4',12:'AP 4',14:'LoO 5',17:'AP 4'},note:'DPS must have its own taunt skill; AP uses Praxis in this example.'}
+];
+const sgVoidTeam=(night=false,xyfrag=false)=>[sgLoO(),sgLR(night||xyfrag?'Arcana Concerto':'Ravenous'),sgVDK(night?'Ravenous':'Dauntless','Anima',night?'Penitence':'Vainglory'),sgLH(),sgAF('Ravenous',night?'Penitence':'Vainglory'),sgCSH(night?'Health Vamp':'Arcana Concerto','Examen',night?'Penitence':'Vainglory'),sgCSH(night?'Health Vamp':'Arcana Concerto','Examen',night?'Penitence':'Vainglory')];
+const simplifiedExtraEncounters=[
+ {name:'Void Flibbi',group:'Void Bosses',join:'/join voidflibbi',wiki:'void-flibbitiestgibbet',sheet:'Void Bosses',team:sgVoidTeam(),tips:['Workbook warns Shaman users not to use skill 5.']},
+ {name:'Void Nightbane',group:'Void Bosses',join:'/join voidnightbane',wiki:'void-nightbane',sheet:'Void Bosses',team:sgVoidTeam(true),tips:['Avoid Vainglory because healing is heavily reduced. Favor rapid sustained hits rather than large individual nukes. Decay is ineffective.']},
+ {name:'Void Xyfrag',group:'Void Bosses',join:'/join voidxyfrag',wiki:'void-xyfrag',sheet:'Void Bosses',team:sgVoidTeam(false,true),tips:['Assign LR or VDK to taunt the BLEEEECH cue. Favor fast sustained damage. Finish promptly before the encounter becomes invulnerable.']},
+ {name:'Void NerfKitten',group:'Void Bosses',join:'/join voidnerfkitten',wiki:'void-nerfkitten',sheet:'Void Bosses',team:sgVoidTeam(),tips:['Taunt the Meow cue; alternate LR and another durable support if possible because taunting applies a debuff. Favor rapid damage.']},
+ {name:'Kasuko & Whirlpool',group:'Lavarock Shore',join:'/join lavarockshore',wiki:'lavarock-shore',sheet:'Lavarock Shore',team:[sgLoO(),sgLR(),sgVDK(),sgSC(),sgAF(),sgCSH(),sgCSH()],tips:['Seasonal encounter. HP-based nukes require near-full HP and regular healing. Focus Whirlpool first unless strong multi-target damage makes direct Kasuko focus safe.']},
+ {name:'Temple Shrine — Left',group:'Shrines',join:'/join templeshrine',wiki:'eclipse-ascent',sheet:'Temple Shrine',team:[sgLoO(),sgLR('Praxis'),sgSC(),sgCSH()],tips:['Use the hub to enter the left shrine. LoO taunts Lunar Haze after the gaze message vanishes; LR uses Praxis and taunt at the Moon Converges cue.']},
+ {name:'Temple Shrine — Right',group:'Shrines',join:'/join templeshrine',wiki:'eclipse-ascent',sheet:'Temple Shrine',team:[sgLoO(),sgLR('Praxis'),sgVDK(),sgCSH()],tips:['Use the hub to enter the right shrine. LR taunts Dawn Knight after the warmth message vanishes and uses Praxis with taunt on Sun Converges. Check HP when choosing reduced-HP helms.']},
+ {name:'Temple Shrine — Middle',group:'Shrines',join:'/join templeshrine',wiki:'eclipse-ascent',sheet:'Temple Shrine',team:[sgLoO(),sgLR('Praxis','Wizard'),sgAP('Arcana Concerto','Vainglory'),sgCSH('Arcana Concerto','Base Forge')],tips:['AP handles Dying Light at Sunlight Gathers with skill 4; LoO handles Lunar Haze; LR handles Dawn Knight. Alternate LR/DPS for Ascended Sunlight, using Praxis; LoO/AP alternate Ascended Moonlight.']},
+ {name:'Astral Empyrean',group:'Shrines',join:'/join astralshrine',wiki:'astral-shrine',sheet:'Astral Shrine',team:[sgLoO(),sgLR(),sgVDK('Dauntless','Anima','Penitence'),sgSC(),sgAF('Ravenous','Penitence'),sgGW('Penitence'),sgPhantom()],tips:['Avoid the red zone. Alternate taunts between LR and VDK at “Behold our starfire!”. Avoid deaths because the boss gains stats. Workbook warns against Vainglory while also listing it for some classes; use a safer cape pending verification.']},
+ {name:'Mechabinky & Raxborg 2.0',group:'Grim Challenge',join:'/join grimchallenge',wiki:'grim-challenge',sheet:'Grimchallenge',team:[sgLoO(),sgLR('Arcana Concerto','Wizard'),sgVDK('Dauntless','Anima'),sgLH('Forge'),sgAP(),sgGW('Penitence'),sgPhantom('Vainglory')],tips:['Assign two taunters; other players equip Vigil. At 45M stop heals during inversion; taunt at 45M, 40M and 35M according to assignment. At 30M heal after HP drops to 1. At 25M damage increases; at 20M dodge rises. At 15M apply Decay and prepare mitigation. At 10M use Vigil on the cue. At 5M finish the DPS check.']},
+ {name:'Celestial Arena',group:'Solo arenas',join:'/join celestialarena',wiki:'celestial-arena',sheet:'Celestial Arena',tips:['Solo quest sequence. Bring Awe enhancements and a class with reliable sustain, such as Master Ranger, StoneCrusher or Legion DoomKnight. Accept the corresponding quest before entering the arena.']},
+ {name:'Infernal Arena — early bosses',group:'Solo arenas',join:'/join infernalarena',wiki:'infernal-arena',sheet:'Infernal Arena',tips:['For the early level 20–70 bosses, prioritize sustain with Awe enhancements; a damage-boosting weapon and Forge helm when unlocked are optional improvements.']},
+ {name:'Deadly Duo',group:'Solo arenas',join:'/join infernalarena',wiki:'infernal-arena',sheet:'Infernal Arena',tips:['Level 75 section. Enter the charge at full HP, heal after the nuke, and use Scroll of Decay to stop the boss healing. Revitalize Elixir and a healing potion can help.']},
+ {name:'Cervus Malus',group:'Solo arenas',join:'/join infernalarena',wiki:'infernal-arena',sheet:'Infernal Arena',tips:['Level 80 section. Stay healthy before the nuke; wait until inverted healing ends before recovering.']},
+ {name:'Key of Sholemoh',group:'Solo arenas',join:'/join infernalarena',wiki:'infernal-arena',sheet:'Infernal Arena',tips:['Level 85 section. Maintain full health; workbook describes damage as not reducible. Use potions for safety.']},
+ {name:"Azalith's Scythe",group:'Solo arenas',join:'/join infernalarena',wiki:'infernal-arena',sheet:'Infernal Arena',tips:['Level 90 section. Recover promptly after nukes and choose classes with reliable hit mechanics. Scroll of Chaos Fog may help members.']},
+ {name:"Na'al",group:'Solo arenas',join:'/join infernalarena',wiki:'infernal-arena',sheet:'Infernal Arena',tips:['Level 95 section. Apply damage debuffs at Vidi, heal after the hit, and consider Barrier Potion and Revitalize Elixir. Lower-survival classes particularly benefit from barriers.']}
+];
+
+const sgGaolClasses=['Dragon of Time','Chaos Avenger',"King's Echo",'Hollowborn Vindicator','Verus DoomKnight','Void Highlord','Lich'];
+const sgGaolPremium=['Sentinel','Chrono ShadowSlayer','Phantom Chronomancer','Dragon Knight','Infinity Knight','Elemental Warrior','Legendary Hero'];
+const sgGaol=(name,tips,shield,potions,classes=sgGaolClasses,premium=sgGaolPremium)=>({name,group:'Grim Gaol',join:'/join gaolcell',wiki:'the-gaol-of-eternal-torment-and-misery',sheet:'Grim Gaol',tips:[shield+' boss shield. Enter the dungeon from Gaol Cell; leaving resets progress.',...tips],potions,classes,premium});
+simplifiedExtraEncounters.push(
+ sgGaol('Grimskull?',['On the punching-bag cue, stop attacking for seven seconds unless you can finish safely within the window. Lich and King’s Echo are recommended.'],'10k',['Barrier Potion']),
+ sgGaol('Grim Bomb',['Defeat all three bombs within one minute.'],'50k',['Felicitous Philtre']),
+ sgGaol('Empress Angler',['Restore full HP at the Heal up cue. Health Vamp can help maintain health.'],'50k',['Revitalize Elixir','Health Potion']),
+ sgGaol('Treasure Chest — first',['Clear the chest and proceed.'],'5k',[]),
+ sgGaol('Reinforced Shelleton',['Survive until the turtle stuns itself, then attack the stunned target. High resistance or healing helps.'],'5k',['Revitalize Elixir','Health Potion / Potent Honor Potion'],['Dragon of Time','ArchMage','Blaze Binder'],['Dragon Knight','Infinity Knight']),
+ sgGaol('Fell Statue',['Swap targets after dealing 5k damage to a statue; pause or switch if health becomes unsafe.'],'1k',['Revitalize Elixir','Health Potion'],['StoneCrusher','Dragon of Time','Hollowborn Vindicator','Verus DoomKnight','Void Highlord','ArchMage'],['Dragon Knight','Infinity Knight','Phantom Chronomancer','Chrono ShadowSlayer']),
+ sgGaol('Emperor Angler',['Heal to full on the Heal up cue; steady sustain is useful.'],'50k',['Revitalize Elixir','Health Potion']),
+ sgGaol('Treasure Chest — second',['Start at full health, then defeat the chest.'],'5k',[]),
+ sgGaol('Rick, Grim Soldier',['Sufficient damage prevents repeated recovery.'],'50k',['Revitalize Elixir','Health Potion']),
+ sgGaol('Rampaging Cyborg',['Kill summons first; use enough sustain to survive while keeping damage high.'],'50k',['Revitalize Elixir','Damage potions'],['Dragon of Time','Hollowborn Vindicator','Verus DoomKnight','Void Highlord','ArchMage'],['Sentinel','Chrono ShadowSlayer','Phantom Chronomancer','Dragon Knight','Infinity Knight']),
+ sgGaol('Mechabinky & Raxborg',['At 90% HP healing is inverted briefly. Avoid healing-over-time until the debuff expires. Account for variable buffs and debuffs.'],'50k',['Damage potions'],['Dragon of Time','Hollowborn Vindicator','Verus DoomKnight','Void Highlord','Lich','Chaos Avenger',"King's Echo"],['Sentinel','Chrono ShadowSlayer','Phantom Chronomancer','Dragon Knight','Infinity Knight','Elemental Warrior'])
+);
+// The workbook rates five different party roles. Keep these subjective ratings
+// separate from the Companion's own class recommendations and ownership checks.
+const simplifiedRatingRoles=[
+ ['Support',['Legion Revenant','Verus DoomKnight','ArchPaladin','ArchFiend','Arachnomancer','Glaceran Warlord','Scion of Flames']],
+ ['Healer',['Lord of Order','Legendary Hero','StoneCrusher','Paladin Chronomancer','Frostval Barbarian','Master of Moglins']],
+ ['Chrono DPS',['Chrono ShadowHunter','Great Thief','Phantom Chronomancer','Quantum Chronomancer','Infinity Knight','Guardian','Archivist of Time']],
+ ['Early DPS',['Light Caster','Elemental Warrior','Chaos Slayer','Yami no Ronin','Legion DoomKnight','Shaman','Alpha Omega']],
+ ['Endgame DPS',['Arcana Invoker',"King's Echo",'Hollowborn Vindicator','Dragon of Time','Martial Artist','Lich','Legion Paladin','Immortal DarkCaster','Timeless DarkCaster','Ultra OmniKnight','Chaos Shaper','Unundead Goat','Chaos Avenger','Void HighLord','Sentinel']]
+];
+const simplifiedRatings={
+ 'Void Flibbi':'5545555 552334- 5542454 4433331 544554455554243',
+ 'Void Nightbane':'5535544 551234- 5542454 3422221 533544455444142',
+ 'Void Xyfrag':'5535544 551234- 5542454 3422221 533544455444142',
+ 'Void NerfKitten':'5545544 551234- 5542454 3433331 544554455554344',
+ 'Kasuko & Whirlpool':'5435445 544335- 5542454 3322351 544454444444242',
+ 'Temple Shrine — Left':'5524234 531312- 5534252 1333321 432242422244333',
+ 'Temple Shrine — Right':'5424335 531213- 4353544 3222241 543544344333233',
+ 'Temple Shrine — Middle':'5354335 521213- 3333443 1222251 533433322222222',
+ 'Astral Empyrean':'5545554 552434- 5543354 3433341 553344444444243',
+ kathool:'5535544 553234- 5533554 2323250 533433343443333',
+ 'Mechabinky & Raxborg 2.0':'5545453 552323- 5543454 4323340 553353344444232',
+ ezrajal:'5554445 552435- 5554555 4444443 555555454555343',
+ warden:'5334345 552534- 5554555 4444443 555555454555243',
+ engineer:'5354245 532224- 5554455 3444432 555555453555344',
+ tyndarius:'5454344 532314- 5553555 2433331 555555453555344',
+ drakath:'5333245 523523- 5553555 1254230 553444344444334',
+ dage:'5445340 210001- 5533413 1433311 115154421444433',
+ nulgath:'5534444 531213- 5553554 2333321 554555455444344',
+ drago:'5054004 500203- 5050054 1400000 550305053050304',
+ darkon:'5232142 543534- 5442154 3323333 445134433333233',
+ gramiel:'5234225 534323- 4332344 2112151 522231233332121',
+ speaker:'5454242 520301- 5523153 1334411 332053312134334'
+};
+function simplifiedRoleRatings(key,index){
+ const role=simplifiedRatingRoles[index],scores=simplifiedRatings[key]?.split(' ')[index];
+ if(!role||!scores)return [];
+ return role[1].map((name,i)=>({name,rating:Number(scores[i])})).filter(x=>Number.isInteger(x.rating)&&x.rating>=0&&x.rating<=5).sort((a,b)=>b.rating-a.rating);
+}
+function appendSimplifiedRatings(content,key){
+ if(!simplifiedRatings[key])return;
+ const details=node('details');details.append(node('summary','Class suitability by role (community ratings)'));
+ const pick=node('select');for(const [i,[name]] of simplifiedRatingRoles.entries())pick.append(new Option(name,String(i)));
+ const list=node('div',undefined,'ultra-flow-list');
+ const draw=()=>{list.replaceChildren();for(const row of simplifiedRoleRatings(key,Number(pick.value))){const owned=ultraOwned(row.name)||ultraOwned(row.name==='Light Caster'?'LightCaster':row.name);const line=node('div',undefined,'ultra-role-step');line.append(node('span',row.rating+'/5','ultra-step-number'),node('strong',row.name),node('small',owned?'✓ Owned':'Not owned','muted tiny'));list.append(line)}};
+ pick.onchange=draw;details.append(node('p','Source author’s subjective ratings, not measured DPS or guaranteed success.','muted tiny'),pick,list);draw();content.append(details);
+}
+
+
+const arenaOptions={
+ 'Celestial Arena':[['Master Ranger','StoneCrusher','Legion DoomKnight','Rogue','Dragonslayer','Dragonslayer General','ArchFiend'],['Sentinel','Legendary Hero','Chrono ShadowSlayer','Phantom Chronomancer','Elemental Warrior','Other Chronomancers'],[]],
+ 'Infernal Arena — early bosses':[['Master Ranger','StoneCrusher','Legion DoomKnight','Rogue','Dragonslayer','Starting Classes'],['Sentinel','Legendary Hero','Chrono ShadowSlayer','Phantom Chronomancer','Elemental Warrior','Other Chronomancers'],[]],
+ 'Deadly Duo':[['Master Ranger','StoneCrusher','Legion DoomKnight','Dragonslayer','Dragonslayer General','ArchPaladin'],['Sentinel','Legendary Hero','Chrono ShadowSlayer','Phantom Chronomancer','Elemental Warrior','Other Chronomancers'],['Revitalize Elixir','Healing Potion','Scroll of Decay']],
+ 'Cervus Malus':[['Master Ranger','ArchPaladin','Legion DoomKnight','Dragonslayer General'],['Sentinel','Legendary Hero','Elemental Warrior','Other Chronomancers'],['Healing Potion']],
+ 'Key of Sholemoh':[['Master Ranger','ArchPaladin','Legion DoomKnight','Dragonslayer General','StoneCrusher','Dragonslayer'],['Sentinel','Legendary Hero','Elemental Warrior','Chrono ShadowSlayer','Phantom Chronomancer','Other Chronomancers'],['Revitalize Elixir','Healing Potion']],
+ "Azalith's Scythe":[['Lord of Order','Void Highlord','Dragon of Time','Lich','ArchPaladin','Shaman'],['Sentinel','Elemental Warrior','Dragon Knight'],['Healing Potion','Scroll of Chaos Fog (member)']],
+ "Na'al":[['Lord of Order','Void Highlord',"King's Echo",'Legion DoomKnight','Legion Revenant','Hollowborn Vindicator','ArchPaladin'],['Sentinel','Chrono ShadowSlayer','Phantom Chronomancer','Dragon Knight','Infinity Knight'],['Barrier Potion','Revitalize Elixir']]
+};
+for(const e of simplifiedExtraEncounters){const opts=arenaOptions[e.name];if(opts){[e.classes,e.premium,e.potions]=opts;if(["Azalith's Scythe","Na'al"].includes(e.name))e.tips.push('Workbook suggests level 100, a 30%+ all-monster damage weapon, and appropriate Forge enhancements.');}}
+const sgDetailedPattern=(name,note,lines)=>({name,note,events:lines.map(r=>r[0]),roles:lines.map(r=>r[1]||''),skills:Object.fromEntries(lines.flatMap((r,i)=>r[2]?[[i,r[2]]]:[]))});
+simplifiedSpeakerPatterns.push(
+ sgDetailedPattern('3-man Mole — detailed heal and Seal timing','Requires LR, LoO, AP and DPS. Use the detailed healing and mitigation schedule as one complete strategy, not combined with the shorter chart.',[
+ ['Start','','Seal'],['Truth','LR'],['Listen','LoO','Broken Seal'],['Zone 1','DPS','Seal'],['Truth','AP','AP heal'],['Auto','','LoO heal · Broken Seal'],['Listen','LoO'],['Truth','','Seal'],['Auto','','AP heal'],['Auto','','LoO heal · Broken Seal'],['Zone 2','LR'],['Listen'],['Truth'],['Auto','','AP heal · Seal'],['Auto','','LoO heal · Quix'],['Truth','LoO','Broken Seal'],['Listen'],['Zone 3','AP','Seal'],['Truth'],['Auto','','AP heal · Broken Seal'],['Listen','LR','LoO heal'],['Truth','','Seal'],['Auto','','AP heal'],['Auto','','LoO heal · Broken Seal'],['Zone 4','LoO','LoO heal'],['Listen','LoO'],['Truth'],['Auto','','AP heal · Seal'],['Auto','','LoO heal · Quix'],['Truth','LR','Broken Seal'],['Listen','LoO']
+ ]),
+ sgDetailedPattern('Glaceran Warlord variant','Advanced GW + LR + LoO + DPS strategy. This chart replaces AP with Glaceran Warlord; verify your exact team and healing timing before use.',[
+ ['Truth','LR','GW heal'],['Listen','LoO'],['Zone 1','DPS'],['Truth','GW','GW heal'],['Auto','','LoO heal'],['Listen','LoO'],['Truth','','GW heal'],['Auto'],['Auto','','LoO heal'],['Zone 2','LR','GW heal'],['Listen'],['Truth'],['Auto','','GW heal'],['Auto','','LoO heal'],['Truth','LoO','Quix'],['Listen'],['Zone 3','GW'],['Truth'],['Auto','','LoO heal'],['Listen','LR'],['Truth','','GW heal'],['Auto','','LoO heal'],['Auto','','GW heal'],['Zone 4','LoO','LoO heal'],['Listen','LoO'],['Truth'],['Auto','','GW heal'],['Auto','','LoO heal'],['Truth','LR','Quix'],['Listen','LoO']
+ ])
+);
+
+function appendSimplifiedProfile(root,profile,includeSpeaker=false,ratingKey=profile.name){
+ const detail=node('details',undefined,'ultra-extra-details');
+ detail.append(node('summary',includeSpeaker?'Community workbook — loadouts & Speaker rotations':'Community workbook — suggested strategy'));
+ const content=node('div',undefined,'ultra-extra-content');
+ content.append(node('p','Simplified Bosses Guide · '+profile.sheet+' · separate example strategy, not universal BiS. Agree the team plan before using it.','muted tiny'));
+ if(profile.team?.length){const grid=node('div',undefined,'ultracomp');
+ for(const row of profile.team){const card=node('div',undefined,'ultra-team-member');card.append(node('strong',row.cls),node('span',ultraOwned(row.cls)?'✓ Owned':'✕ Not owned',ultraOwned(row.cls)?'ultra-owned':'ultra-missing'),node('small',row.weapon+' · '+row.base),node('small',row.helm+' · '+row.cape));grid.append(card)}content.append(grid)}
+ for(const tip of profile.tips||[])content.append(node('p',tip));
+ if(profile.potions?.length)content.append(node('p','Suggested consumables: '+profile.potions.join(' · ')));
+ if(profile.classes?.length)content.append(node('p','F2P class options: '+profile.classes.join(' · ')));
+ if(profile.premium?.length)content.append(node('p','Paid / premium class options: '+profile.premium.join(' · ')));
+ appendSimplifiedRatings(content,ratingKey);
+ if(includeSpeaker){const pick=node('select');for(const [i,p] of simplifiedSpeakerPatterns.entries())pick.append(new Option(p.name,String(i)));const rotation=node('div');
+ const draw=()=>{const pattern=simplifiedSpeakerPatterns[Number(pick.value)]||simplifiedSpeakerPatterns[0];rotation.replaceChildren(node('p',pattern.note));const rows=node('div',undefined,'ultra-flow-list');
+ for(const [i,event] of (pattern.events||simplifiedSpeakerEvents).entries()){const line=node('div',undefined,'ultra-role-step');line.append(node('span',String(i+1).padStart(2,'0'),'ultra-step-number'),node('div',event+' · '+(pattern.roles[i]||(event.startsWith('Zone')?'Confirm assignment':event==='Auto'||event==='Start'?'No taunt specified':'No assigned taunt'))+(pattern.skills[i]?' · '+pattern.skills[i]:''),'ultra-role-step-body'));rows.append(line)}rotation.append(rows)};
+ pick.onchange=draw;content.append(node('h4','Choose ONE rotation — confirm required lineup'),pick,rotation);draw()}
+ const link=node('a','↗ Original guide discussion');link.href=simplifiedGuideSource;link.target='_blank';link.rel='noopener noreferrer';content.append(link);detail.append(content);root.append(detail);
+}
+function renderSimplifiedExtras(root,term){
+ const entries=simplifiedExtraEncounters.filter(x=>[x.name,x.group,x.join,...(x.team||[]).map(t=>t.cls),...(x.classes||[])].join(' ').toLowerCase().includes(term));
+ if(!entries.length)return 0;
+ const section=node('section',undefined,'ultra-catalog-group');section.append(node('h4','More boss guides · '+entries.length));
+ for(const e of entries){const card=node('div',undefined,'ultra-catalog-card');card.append(node('strong',e.name),node('small',e.group));const actions=node('div',undefined,'ultra-catalog-actions');actions.append(makeCopyJoin(e.join));const link=node('a','Wiki location ↗');link.href='https://aqwwiki.wikidot.com/'+e.wiki;link.target='_blank';link.rel='noopener noreferrer';actions.append(link);card.append(actions);appendSimplifiedProfile(card,e);section.append(card)}
+ root.append(section);return entries.length;
+}
+
 function renderUltraDetail(b){
  const root=$('ultradetail');root.classList.remove('hidden');root.replaceChildren();if(!b)return;
  const quick=ultraBeginner101[b.id]||{},roleMap=new Map(b.roles);
@@ -1575,6 +1785,7 @@ function renderUltraDetail(b){
  focus.append(focusCard('⛔','AVOID',quick.avoid||b.mistakes[0]||'Avoid damage spikes','ultra-focus-danger'));
  summary.append(focus);
  compact.append(setup,summary);root.append(compact);
+ if(simplifiedProfiles[b.id])appendSimplifiedProfile(root,simplifiedProfiles[b.id],b.id==='speaker',b.id);
  const mechanics=node('section',undefined,'ultra-focus-card ultra-mechanics ultra-class-guide');
  mechanics.append(node('h3','👤 Role-specific Tips'));
  const roleContext=node('div',undefined,'ultra-role-context');
@@ -1590,6 +1801,11 @@ function renderUltraDetail(b){
  const comp=node('div',undefined,'ultracomp');
  for(const cls of b.team){const box=node('div',undefined,'ultra-team-member');box.append(node('strong',cls),node('span',ultraOwned(cls)?'✓ Owned':'✕ Not owned',ultraOwned(cls)?'ultra-owned':'ultra-missing'));comp.append(box)}
  team.append(comp);inner.append(team);
+ const phases=node('section');phases.append(node('h4','Fight phases'));
+ for(const [label,description] of b.phases||[]){const p=node('p');p.append(node('strong',label+' — '),node('span',description));phases.append(p)}
+ inner.append(phases);
+ const reviewed=ultraReviewedTactics[b.id]||[];
+ if(reviewed.length){const tactics=node('section');tactics.append(node('h4','Additional encounter checks'));for(const [label,description] of reviewed){const p=node('p');p.append(node('strong',label+' — '),node('span',description));tactics.append(p)}inner.append(tactics)}
  const cues=ultraBattleCues[b.id]||[];
  const uniqueCallouts=[];
  const seenCallouts=new Set();
@@ -1627,17 +1843,19 @@ function renderUltraDetail(b){
  if(others.children.length>1)inner.append(others);
  details.append(inner);root.append(details);
  const footer=node('div',undefined,'ultra-focus-footer');
- const link=node('a','↗ Full community strategy');link.href=b.source;link.target='_blank';link.rel='noopener noreferrer';footer.append(link,node('span','Team ownership ≠ boss access · verify encounter-specific gear','muted tiny'));root.append(footer);
+ const link=node('a','↗ Full community strategy');link.href=b.source;link.target='_blank';link.rel='noopener noreferrer';footer.append(link,node('span','Team ownership ≠ boss access · verify encounter-specific gear','muted tiny'));for(const [label,url] of ultraReviewedSources[b.id]||[]){const a=node('a',label+' ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';footer.append(a)}root.append(footer);
  function updateRole(){
   const cls=select.value,play=ultraRolePlaybooks[b.id]?.[cls];
   // Bard is a Kathool support class. Official guidance endorses Healer/Wizard/Lucky;
   // Awe Blast + defensive Forge is a suggested group utility setup, not a hard requirement.
   const bardSupport={weapon:'Awe Blast',helm:'Forge',cape:'Absolution',
     note:'Healer base/armor for safer support; Wizard or Lucky are alternatives. Penitence is a defensive cape option.'};
-  const build=starterBuilds[cls]?.group||(cls==='Bard'?bardSupport:null);
+  const generic=starterBuilds[cls]?.group||(cls==='Bard'?bardSupport:null);
+  const encounter=encounterUltraBuild(b.id,cls,generic);
+  const build=encounter||generic;
   gear.replaceChildren();
   if(build){
-   for(const [label,value] of [['Weapon',build.weapon],['Helm',build.helm],['Cape',build.cape]]){
+   for(const [label,value] of [['Weapon',build.weapon],['Helm',build.helm],['Cape',build.cape],['Base',build.base],['Consumable',build.consumable]].filter(([,v])=>v)){
     const cell=node('div',undefined,'ultra-focus-gear-cell');cell.append(node('small',label),node('strong',value));gear.append(cell)
    }
    if(cls==='Bard'){
@@ -1645,7 +1863,7 @@ function renderUltraDetail(b){
     source.href='https://www.aq.com/lore/classes/bard';source.target='_blank';source.rel='noopener noreferrer';gear.append(source);
    }
   }else gear.append(node('span','No reviewed class-specific gear preset; consult the encounter guide.','muted tiny'));
-  job.textContent=cls==='Bard'?bardSupport.note:(roleMap.get(cls)||'Coordinate your role with the team.');
+  job.textContent=[cls==='Bard'?bardSupport.note:(roleMap.get(cls)||'Coordinate your role with the team.'),encounter?'Encounter-specific recommendation. '+(encounter.note||''):build?'General group preset — adapt to this fight.':''].filter(Boolean).join(' ');
   roleName.textContent=cls;
   sequence.replaceChildren();
   const tips=[...new Set((play?.steps||[]).map(step=>String(step).trim()).filter(Boolean))];
