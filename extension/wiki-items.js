@@ -42,7 +42,7 @@
  if(ui)card.style.cssText='';
  const itemTitle=document.createElement('h2');itemTitle.className='aqwc-title';itemTitle.textContent=name;
  const line=document.createElement('div'),note=document.createElement('small');line.className='aqwc-state';note.className='aqwc-meta';note.style.cssText='display:block;color:#b6cddd;font-weight:400;margin-top:6px';
- line.setAttribute?.('role','status');card.append(itemTitle,line,note);shadow.append(card);
+ line.setAttribute?.('role','status');const heading=document.createElement('div');heading.className='aqwc-item-heading';heading.append(itemTitle,line);card.append(heading,note);shadow.append(card);
  const show=(text,detail,color)=>{line.textContent=text;line.style.color=color;note.textContent=detail;note.hidden=!detail};
  const badge=document.getElementById('aqwc-foundation-badge');if(ui)ui.mount(host,content,title);else (badge||title).insertAdjacentElement('afterend',host);
  if(!category){show('Item type not recognized','AQW Companion could not identify this Wiki category.','#ffdb93');return}
