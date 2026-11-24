@@ -3,7 +3,9 @@
  if(location.origin!=='https://aqwwiki.wikidot.com'||!/^\/[a-z0-9][a-z0-9-]*\/?$/.test(location.pathname))return;
  const title=document.getElementById('page-title'),content=document.getElementById('page-content');
  if(!title||!content||document.getElementById('aqwc-item-status'))return;
- const body=String(content.innerText||content.textContent||'');
+ const raw=String(content.textContent||'');
+ if(!/\bSellback\s*:/i.test(raw)||!/\bDescription\s*:/i.test(raw))return;
+ const body=String(content.innerText||raw);
  if(/\busually refers to\s*:/i.test(body)||!/\bSellback\s*:/i.test(body)||!/\bDescription\s*:/i.test(body))return;
  const name=String(title.innerText||title.textContent||'').trim();if(!name||name.length>350)return;
  const crumb=document.getElementById('breadcrumbs')||document.querySelector?.('.breadcrumbs, #breadcrumb, .breadcrumb');
