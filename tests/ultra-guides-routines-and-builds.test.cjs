@@ -483,7 +483,7 @@ assert.ok(siteNav118.includes('.tabs.subnav button.group-visible{display:inline-
 assert.ok(!html.includes('class="ultra-reset-tools"'));
 assert.ok(!html.includes('resetultradaily'));
 assert.ok(!html.includes('resetultraweekly'));
-assert.ok(html.includes('href="css/site.css?v=131"'));
+assert.ok(html.includes('href="css/site.css?v=132"'));
 assert.ok(html.includes('id="ultracards"')&&html.includes('id="bossguidedetail"'));
 console.log("Ultra/Boss subnav CSS no longer excludes Ultras; reset toolbar removed without touching saved quest state.");
 
@@ -530,3 +530,22 @@ for(const name of ['Nightmare Fire','Naturally Unlucky','Links To The Past','Spo
 const moglins126=active.filter(t=>t.name==='Moglin Companions');
 assert.equal(moglins126.length,1);assert.equal(moglins126[0].id,'board-moglin-companions');assert.equal(moglins126[0].farmJoin,'/join nexus');assert.ok(moglins126[0].note.includes("Aria's Pet Shoppe"));assert.ok(moglins126[0].rewards.includes('Moglin MEAL ×1'));assert.ok(moglins126[0].categories.includes('Moglin Pets'));
 console.log('Community feedback: all four Deadmoor dailies and single shared Moglin Companions daily verified.');
+
+{
+ const source=require('node:fs').readFileSync(require('node:path').join(__dirname,'../index.html'),'utf8');
+ const fn=source.slice(source.indexOf('function inventoryQuantityChanges('),source.indexOf('function comparison(){'));
+ const calc=new Function(fn+';return inventoryQuantityChanges')();
+ const row=(ID,Name,Count,Bank=0)=>({ID,Name,Count,Bank});
+ const previous=[row('1','Bone Dust',44),row('2','Void Aura',100),row('3','Moved only',10),row('4','Split stock',3),row('4','Split stock',7,1),row('5','Missing',50)];
+ const latest=[row('1','Bone Dust',129),row('2','Void Aura',80),row('3','Moved only',10,1),row('4','Split stock',9),row('4','Split stock',1,1),row('6','New item',200)];
+ const result=calc(previous,latest);
+ assert.deepEqual(result,[{name:'Bone Dust',was:44,now:129,diff:85},{name:'Void Aura',was:100,now:80,diff:-20}]);
+ assert.deepEqual(calc([],latest),[]);
+ assert.deepEqual(calc(latest,latest),[]);
+ assert.deepEqual(calc([row('4','Split stock',3),row('4','Split stock',7,1)],[row('4','Split stock',12,1)]),[{name:'Split stock',was:10,now:12,diff:2}]);
+ assert.ok(source.includes('const changed=inventoryQuantityChanges(previous.items,latest.items)'));
+ assert.ok(source.includes('let changes=inventoryQuantityChanges(old.items,newer.items)'));
+ assert.ok(source.includes('Show all '+ "'+fmt(changed.length)"));
+ assert.ok(source.includes("if(added.length||!changed.length)root.append(highlights)"));
+ console.log('Home quantity changes: positive/negative deltas, split stacks, moves, new/missing items and shared comparison verified.');
+}
