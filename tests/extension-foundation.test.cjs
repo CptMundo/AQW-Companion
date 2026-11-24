@@ -95,7 +95,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.11.7');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
+ assert.equal(manifest.version,'0.11.8');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -563,4 +563,14 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.equal(art.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.equal(art.toString('ascii',12,16),'IHDR');assert.ok(art.readUInt32BE(16)>0 && art.readUInt32BE(20)>0);
  assert.ok(art.length>10000 && art.length<15000000);
  assert.deepEqual(manifest.web_accessible_resources,[{resources:['image_2026-11-24_232002011.png'],matches:['https://aqwwiki.wikidot.com/*']}]);
+}
+
+{
+ const api=vm.runInNewContext(read('extension/wiki-materials.js')+'\nAQWCWikiMaterials',{URL});
+ assert.equal(api.recipeLabel([{slug:'dual-necrotic-swords-of-doom',name:'Dual Necrotic Swords of Doom'}],1,'necrotic-sword-of-doom'),'Exchange weapon');
+ assert.equal(api.recipeLabel([{name:'Example',slug:'example'}],0,'other'),'Example');
+ assert.ok(!read('extension/wiki-materials.js').includes('Find /join'));
+ assert.ok(read('extension/wiki-quest-shop.js').includes('questCards(panel,content,title)'));
+ assert.ok(read('extension/wiki-theme.js').includes('target.style.setProperty(bannerProps[i]'));
+ assert.ok(read('extension/wiki-theme.js').includes('restoreInline()'));
 }

@@ -105,6 +105,77 @@ function questScope(content,tabs,name){
  const panel=content.ownerDocument?.getElementById(id);
  return panel&&panel!==content&&content.contains(panel)?panel:null;
 }
+
+function questLists(scope){
+ const result=[];
+ for(const marker of scope.querySelectorAll('p,div,strong,b')){
+  const label=clean(marker.textContent);
+  if(!/^(Items Required|Items|Items Rewarded|Rewards):$/i.test(label))continue;
+  if([...marker.children].some(c=>['P','DIV','STRONG','B'].includes(c.tagName)&&clean(c.textContent)===label))continue;
+  const block=['STRONG','B'].includes(marker.tagName)&&/^(P|DIV)$/.test(marker.parentElement?.tagName)&&clean(marker.parentElement.textContent)===label?marker.parentElement:marker;
+  const list=block.nextElementSibling;if(!list||!['UL','OL'].includes(list.tagName)||result.some(x=>x.list===list))continue;
+  const rows=[...list.children].filter(x=>x.tagName==='LI').map(li=>{
+   const text=clean([...li.childNodes].filter(n=>n.nodeType===3||n.nodeType===1&&!['UL','OL'].includes(n.tagName)).map(n=>n.textContent).join(' '));
+   const drops=[];
+   for(const nested of li.querySelectorAll('ul,ol')){
+    if(!/^Dropped by\s*:/i.test(clean(nested.textContent)))continue;
+    for(const a of nested.querySelectorAll('a[href]')){const x=itemLink(a);if(x&&!drops.some(d=>d.slug===x.slug))drops.push(x)}
+   }
+   return {text,drops,linked:linkedRow(li)};
+  }).filter(x=>x.text);
+  result.push({list,role:/^Items Required:/i.test(label)?'requirement':'reward',rows});
+ }
+ return result;
+}
+function questLocationLinks(scope){
+ const links=[];
+ for(const marker of scope.querySelectorAll('p,strong,b')){
+  if(!/^Quest Locations?\s*:/i.test(clean(marker.textContent)))continue;
+  const candidates=[...marker.querySelectorAll('a[href]')];
+  if(['STRONG','B'].includes(marker.tagName))for(let n=marker.nextSibling,k=0;n&&k++<12;n=n.nextSibling){if(['BR','STRONG','B'].includes(n.nodeName))break;if(n.nodeName==='A')candidates.push(n);else if(n.nodeType===1)candidates.push(...n.querySelectorAll('a[href]'))}
+  for(const a of candidates){const x=itemLink(a);if(x&&!links.some(y=>y.slug===x.slug))links.push(x)}
+  if(links.length)break;
+ }
+ return links;
+}
+function questCards(panel,content,title){
+ const source=location.pathname.replace(/^\/|\/$/g,'');
+ const link=document.createElement('a');link.href='https://cptmundo.github.io/AQW-Companion/#aqwc-routines?source='+encodeURIComponent(source);link.target='_blank';link.rel='noopener noreferrer';link.textContent='Open Daily / Weekly Tracker ↗';link.className='aqwc-quest-link';panel.append(link);
+ const tabs=[...new Set(content.querySelectorAll('.yui-nav li a,[role="tab"],.yui-navset .yui-nav a'))];
+ const names=[...new Set(tabs.map(a=>clean(a.textContent)).filter(n=>n&&n.length<=350))];
+ const locations=questLocationLinks(content),api=globalThis.AQWCWikiMaterials;
+ const once=/These quests can only be completed once/i.test(content.textContent||'');
+ const cards=document.createElement('div');cards.className='aqwc-quest-cards';panel.append(cards);
+ const choices=names.length?names.map(name=>({name,scope:questScope(content,tabs,name)})):[{name:clean(title.textContent),scope:content}];
+ let active=null;
+ for(const {name,scope} of choices.slice(0,100)){
+  const detail=document.createElement('details');detail.className='aqwc-quest-card';const summary=document.createElement('summary');summary.textContent=name;detail.append(summary);const body=document.createElement('div');body.className='aqwc-quest-body';detail.append(body);cards.append(detail);
+  let built=false;
+  detail.addEventListener('toggle',async()=>{
+   if(!detail.open)return;if(active&&active!==detail)active.open=false;active=detail;
+   if(built)return;built=true;
+   if(!scope){body.textContent='Quest section not recognized. Check the original Wiki tab.';return}
+   const lists=questLists(scope);
+   const local=questLocationLinks(scope);const maps=local.length?local:locations;
+   if(maps.length){const section=document.createElement('div');section.className='aqwc-quest-block';const h=document.createElement('strong');h.textContent='Quest location';section.append(h);for(const x of maps){const row=document.createElement('div');row.className='aqwc-source-line';const a=document.createElement('a');a.href=origin+'/'+x.slug;a.textContent=x.name;row.append(a);api?.joinControl(row,x,origin);section.append(row)}body.append(section)}
+   const linked=[...new Set(lists.flatMap(g=>g.rows.map(x=>x.linked?.name).filter(Boolean)))].slice(0,80),stock=new Map();
+   if(linked.length)try{const result=await chrome.runtime.sendMessage({type:'wiki-material-lookup',names:linked});if(result?.ok&&result.syncedAt&&result.matches?.length===linked.length)linked.forEach((n,i)=>stock.set(n,result.matches[i]))}catch{}
+   for(const g of lists){
+    const section=document.createElement('div');section.className='aqwc-quest-block';const h=document.createElement('strong');h.textContent=g.role==='requirement'?'Objectives':'Rewards';section.append(h);
+    for(const x of g.rows){
+     const row=document.createElement('div');row.className='aqwc-quest-objective';const desc=document.createElement('span');desc.textContent=x.text;row.append(desc);
+     const hit=stock.get(x.linked?.name);if(hit&&['owned','not-found'].includes(hit.state)){const badge=document.createElement('small');badge.textContent='Stock '+(hit.state==='owned'?hit.total:0);row.append(badge)}
+     if(x.drops.length){const list=document.createElement('div');list.className='aqwc-quest-drops';list.append(document.createTextNode('Dropped by: '));for(const d of x.drops){const a=document.createElement('a');a.href=origin+'/'+d.slug;a.textContent=d.name;list.append(a)}row.append(list)}
+     section.append(row)
+    }
+    body.append(section)
+   }
+   if(!lists.length){const n=document.createElement('small');n.textContent='No structured objectives found. Check the Wiki quest text.';body.append(n)}
+   if(!once&&names.length){const add=document.createElement('button');add.type='button';add.className='aqwc-primary';add.textContent='+ Add to Tracker';const feedback=document.createElement('small');feedback.setAttribute('role','status');body.append(add,feedback);add.addEventListener('click',async e=>{if(!e.isTrusted||add.disabled)return;add.disabled=true;try{const result=await chrome.runtime.sendMessage({type:'routine-queue-add',quest:{source,name}});if(!result?.ok)throw Error(result?.error||'Could not save');feedback.textContent='Saved locally · pins if matched in recurring library.'}catch(err){feedback.textContent=String(err?.message||err)}finally{add.disabled=false}})}
+  });
+ }
+ if(choices.length>100){const n=document.createElement('small');n.textContent='Showing first 100 quests; see Wiki for the rest.';panel.append(n)}
+}
 function init(){
  if(location.origin!==origin||!/^\/[a-z0-9][a-z0-9-]*\/?$/.test(location.pathname))return;
  const content=document.getElementById('page-content'),title=document.getElementById('page-title'),crumb=document.getElementById('breadcrumbs')||document.querySelector('.breadcrumbs, #breadcrumb, .breadcrumb');
@@ -118,6 +189,7 @@ function init(){
  const b=document.createElement('button');b.type='button';b.textContent=kind==='quest'?'Check quest materials':'Show inventory status';b.style.cssText='margin-top:6px;padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;cursor:pointer';
  const status=document.createElement('small');status.setAttribute('role','status');status.style.cssText='display:block;color:#b6cddd;font-weight:400;margin-top:4px';
  const ui=globalThis.AQWCWikiUI;ui?.decorate(shadow,panel,kind==='quest'?'Quest tools':'Shop tools');if(ui)panel.style.cssText='';b.className='aqwc-primary';
+ if(kind==='quest'){questCards(panel,content,title);shadow.append(panel);if(ui)ui.mount(host,content,title);else (document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);return}
  const summary=document.createElement('section');summary.className='aqwc-section';summary.hidden=true;
  panel.append(label,note);
  if(kind==='quest'){
@@ -171,6 +243,6 @@ function init(){
   finally{b.disabled=false}
  });
 }
-globalThis.AQWCQuestShop=Object.freeze({pageKind,quantity,questQuantity,linkedRow,shopCosts,collect,labels,questScope});
+globalThis.AQWCQuestShop=Object.freeze({pageKind,quantity,questQuantity,linkedRow,shopCosts,collect,labels,questScope,questLists,questLocationLinks});
 if(typeof document!=='undefined')init();
 })();

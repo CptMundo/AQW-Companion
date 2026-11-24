@@ -22,7 +22,9 @@ function normalizeAppearance(value){
   arcane:{art:art('#73b6f9','#bde9ff'),gradient:'linear-gradient(110deg,#111c33,#22527b 65%,#112237)',accent:'#72b9ef'},
   void:{art:art('#a98aff','#e6c7ff'),gradient:'linear-gradient(110deg,#1c122a,#493161 65%,#1b152d)',accent:'#ba9af4'}
  };
- let style,revision=0;
+ let style,revision=0,originalInline=null;
+ const bannerProps=['background-image','background-size','background-position','background-repeat'];
+ function restoreInline(){if(!originalInline)return;const {target,values}=originalInline;for(const [k,v,priority] of values){if(v)target.style.setProperty(k,v,priority);else target.style.removeProperty(k)}originalInline=null;}
  function apply(value){
   const v=normalizeAppearance(value),root=document.documentElement;
   // Only the preference attributes and this owned style are touched. Original
@@ -34,7 +36,7 @@ function normalizeAppearance(value){
    rules.push('body,#container,#container-wrap,#content-wrap,#main-content,#page-content,#side-bar{background-color:'+bg+' !important;color:'+fg+' !important;}');
    rules.push('#page-content a:not([id^="aqwc-"]),#side-bar a,#breadcrumbs a{color:'+link+' !important;}');
   }
-  root.setAttribute('data-aqwc-banner',v.banner);
+  root.setAttribute('data-aqwc-banner',v.banner);restoreInline();
   if(v.banner!=='original'){
    const preset=banners[v.banner];
    const chosen=v.banner==='prometheus';
@@ -46,6 +48,7 @@ function normalizeAppearance(value){
    // the narrow, offset #header. Replace only its background; never overlay
    // or move the header links, search box or menu.
    const selector='html[data-aqwc-banner="'+v.banner+'"] div#container-wrap';
+   const target=document.getElementById('container-wrap');if(target?.style?.getPropertyValue){originalInline={target,values:bannerProps.map(k=>[k,target.style.getPropertyValue(k),target.style.getPropertyPriority(k)])};[images.join(','),sizes.join(','),positions.join(','),'no-repeat'].forEach((v,i)=>target.style.setProperty(bannerProps[i],v,'important'))}
    rules.push(selector+'{background-image:'+images.join(',')+' !important;background-size:'+sizes.join(',')+' !important;background-position:'+positions.join(',')+' !important;background-repeat:no-repeat !important;}');
    rules.push('html[data-aqwc-banner="'+v.banner+'"] #top-bar{border-top:1px solid '+preset.accent+';}');
   }
