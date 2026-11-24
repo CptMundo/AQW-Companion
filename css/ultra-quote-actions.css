@@ -98,3 +98,42 @@
 @container (max-width:480px){
  #ultras #ultradetail .ultra-setup-card .ultra-focus-gear{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+/* PR 117 — a dedicated, responsive boss guide workspace. */
+nav.tabs.subnav[aria-label="Section navigation"]:has(button[data-parent="ultras"].group-visible){display:flex!important}
+.tabs.subnav button[data-parent="ultras"].group-visible{display:inline-flex!important;align-items:center}
+#boss-guides .boss-guide-toolbar{display:grid;grid-template-columns:minmax(0,2fr) minmax(150px,1fr);gap:10px;margin:14px 0}
+#boss-guides .boss-guide-toolbar>*{min-width:0;width:100%}
+#boss-guides .boss-master-detail{display:grid;grid-template-columns:minmax(185px,235px) minmax(0,1fr);gap:18px;align-items:start}
+#boss-guides .boss-guide-list{display:flex;flex-direction:column;gap:7px;min-width:0;max-height:72vh;overflow:auto;padding:0 5px 8px 0}
+#boss-guides .boss-guide-list .ultra-group-label{font-size:11px;margin:9px 0 3px}
+#boss-guides .boss-guide-item{min-height:0!important;width:100%;padding:9px 11px!important}
+#boss-guides .boss-guide-item small{display:block;font-size:10px!important}
+#boss-guides .boss-guide-item strong{font-size:13px!important}
+#boss-guides .boss-guide-detail{margin:0;min-width:0;padding:16px;overflow-wrap:anywhere;container-type:inline-size}
+#boss-guides .boss-guide-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #34526c}
+#boss-guides .boss-guide-title{flex:1;min-width:0;text-align:center}
+#boss-guides .boss-guide-title h2{margin:0 0 3px;font-size:20px}
+#boss-guides .boss-guide-panel{min-width:0;padding:14px;border:1px solid #315572;border-radius:12px;background:#102338}
+#boss-guides .boss-guide-panel h3{margin:0 0 13px;text-align:center;color:#eef8ff}
+#boss-guides .boss-guide-team{margin-bottom:12px}
+#boss-guides .boss-guide-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:7px}
+#boss-guides .boss-guide-chip{border:1px solid #3a5368;border-radius:7px;padding:5px 8px;font-size:12px;background:#142b3c}
+#boss-guides .boss-guide-chip.is-owned{border-color:#396956;color:#82e4a4}
+#boss-guides .boss-guide-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+#boss-guides .boss-guide-loadout .ultra-role-select{width:100%;margin-bottom:10px}
+#boss-guides .ultra-focus-gear{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+#boss-guides .ultra-focus-gear-cell{display:flex;flex-direction:column;gap:4px;min-width:0;padding:8px;border:1px solid #2b516b;border-radius:8px;background:#0b1b2b}
+#boss-guides .ultra-focus-gear-cell small{color:#91b6cf;font-size:10px}
+#boss-guides .ultra-focus-gear-cell strong{color:#a1e1ff;font-size:12px;overflow-wrap:anywhere}
+#boss-guides .ultra-focus-gear-cell:nth-child(5){grid-column:1/-1}
+#boss-guides .boss-guide-steps{display:grid;gap:9px}
+#boss-guides .boss-guide-step{display:grid;grid-template-columns:24px minmax(0,1fr);gap:9px;padding:11px;border:1px solid #34526c;border-radius:8px;background:#0d2133}
+#boss-guides .boss-guide-step-number{font-size:12px;font-weight:800;color:#78d7ff}
+#boss-guides .boss-guide-step p,#boss-guides .boss-guide-consumables p{margin:0;font-size:13px;line-height:1.6}
+#boss-guides .boss-guide-consumables{margin-top:12px;padding:9px;border-radius:7px;background:#0b1b2b;font-size:12px}
+#boss-guides .boss-guide-sources{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:11px}
+@container (min-width:740px){#boss-guides .boss-guide-layout:has(.boss-guide-loadout){grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}}
+@container (max-width:520px){#boss-guides .ultra-focus-gear{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){#boss-guides .boss-master-detail{grid-template-columns:1fr}#boss-guides .boss-guide-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-height:240px}#boss-guides .boss-guide-list .ultra-group-label{grid-column:1/-1}#boss-guides .boss-guide-detail{padding:11px}}
+@media(max-width:450px){#boss-guides .boss-guide-toolbar{grid-template-columns:1fr}}
