@@ -91,6 +91,7 @@ function init(){
  const content=document.getElementById('page-content'),title=document.getElementById('page-title');if(!content||!title)return;
  const host=document.createElement('div');host.id='aqwc-list-wishlist';host.style.cssText='margin:8px 0';
  const shadow=host.attachShadow({mode:'closed'}),panel=document.createElement('div');panel.style.cssText='display:inline-block;padding:8px 12px;border:1px solid #38566d;border-radius:8px;background:#142b3e;color:#e5f5ff;font:600 13px/1.5 system-ui;max-width:100%;box-sizing:border-box';
+ const ui=globalThis.AQWCWikiUI;ui?.decorate(shadow,panel,'Wishlist');if(ui)panel.style.cssText='max-width:460px';
  const heading=document.createElement('strong');heading.textContent='Wishlist search';
  const note=document.createElement('small');note.style.cssText='display:block;font-weight:400;color:#b6cddd';note.textContent='Find an item on this page and add it directly. No ownership scan.';
  const controls=document.createElement('div');controls.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-top:5px';

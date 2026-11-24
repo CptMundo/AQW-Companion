@@ -38,14 +38,18 @@
  host.style.cssText='display:block;margin:8px 0;max-width:100%';
  const shadow=host.attachShadow({mode:'closed'});
  const card=document.createElement('div');card.style.cssText='display:inline-block;max-width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid #38566d;border-radius:8px;background:#142b3e;color:#e5f5ff;font:600 13px/1.5 system-ui,sans-serif;';
- const line=document.createElement('div'),note=document.createElement('small');note.style.cssText='display:block;color:#b6cddd;font-weight:400;margin-top:3px';
- card.append(line,note);shadow.append(card);
+ const ui=globalThis.AQWCWikiUI;ui?.decorate(shadow,card,'Item overview');
+ if(ui)card.style.cssText='';
+ const itemTitle=document.createElement('h2');itemTitle.className='aqwc-title';itemTitle.textContent=name;
+ const line=document.createElement('div'),note=document.createElement('small');line.className='aqwc-state';note.className='aqwc-meta';note.style.cssText='display:block;color:#b6cddd;font-weight:400;margin-top:6px';
+ line.setAttribute?.('role','status');card.append(itemTitle,line,note);shadow.append(card);
  const show=(text,detail,color)=>{line.textContent=text;line.style.color=color;note.textContent=detail};
- const badge=document.getElementById('aqwc-foundation-badge');(badge||title).insertAdjacentElement('afterend',host);
+ const badge=document.getElementById('aqwc-foundation-badge');if(ui)ui.mount(host,content,title);else (badge||title).insertAdjacentElement('afterend',host);
  if(!category){show('Item type not recognized','AQW Companion could not identify this Wiki category.','#ffdb93');return}
  const item={name,category,slug:location.pathname.replace(/^\/|\/$/g,'')},target=globalThis.AQWCWikiWishlist?.target(item);
  if(target){
-  const link=document.createElement('button');link.type='button';link.textContent='+ Add to Wishlist';link.style.cssText='display:inline-block;margin-top:8px;padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;font:600 12px system-ui;cursor:pointer';
+  const actions=document.createElement('div');actions.className='aqwc-actions';
+  const link=document.createElement('button');link.type='button';link.className='aqwc-primary';link.textContent='+ Add to Wishlist';link.style.cssText='display:inline-block;margin-top:8px;padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;font:600 12px system-ui;cursor:pointer';
   const wishlistNote=document.createElement('small');wishlistNote.style.cssText='display:block;color:#b6cddd;font-weight:400;margin-top:3px';
   if(target.variant){link.disabled=true;wishlistNote.textContent='Ambiguous item variant; direct addition is not supported.'}
   link.addEventListener('click',async e=>{
@@ -57,11 +61,14 @@
     link.textContent='✓ Saved to Wishlist queue';wishlistNote.textContent='Saved locally. Companion imports it automatically when open.';
    }catch(err){link.disabled=false;link.textContent='+ Add to Wishlist';wishlistNote.textContent=String(err?.message||err)}
   });
-  card.append(link,wishlistNote);
+  actions.append(link,wishlistNote);
   const href=!target.variant?globalThis.AQWCWikiWishlist?.build(item):null;
-  if(href){const view=document.createElement('a');view.href=href;view.target='_blank';view.rel='noopener noreferrer';view.textContent='View in Wishlist ↗';view.style.cssText='display:inline-block;margin-top:5px;color:#a9ddff;font:600 11px system-ui';card.append(view)}
+  if(href){const view=document.createElement('a');view.href=href;view.target='_blank';view.rel='noopener noreferrer';view.textContent='View in Wishlist ↗';view.style.cssText='display:inline-block;margin-top:5px;color:#a9ddff;font:600 11px system-ui';actions.append(view)}
+  card.append(actions);
  }
  try{globalThis.AQWCWikiMaterials?.render(card,content,location.origin)}catch{console.warn('AQW Companion: material progress unavailable on this page.')}
+ const marker=Array.from(content.querySelectorAll?.('strong,b')||[]).find(el=>/^Location\s*:\s*$/i.test(String(el.textContent||'').trim()));
+ if(marker){const section=document.createElement('section');section.className='aqwc-section';const heading=document.createElement('strong');heading.textContent='Source / Location';section.append(heading);let n=marker.nextSibling,count=0;while(n&&count++<10&&n.nodeName!=='BR'&&n.nodeName!=='STRONG'&&n.nodeName!=='B'){if(n.nodeType===3){const value=String(n.textContent||'').trim();if(value){const span=document.createElement('span');span.textContent=' '+value+' ';section.append(span)}}else if(n.nodeName==='A'){try{const u=new URL(n.getAttribute('href'),location.href);if(u.origin===location.origin){const a=document.createElement('a');a.href=u.href;a.textContent=n.textContent;section.append(a)}}catch{}}n=n.nextSibling}if(section.children.length>1)card.append(section)}
  show('Checking synced inventory…','','#b6dfff');
  const failed=()=>show('Inventory lookup unavailable','Reload AQW Companion extension and refresh this Wiki page. Check the extension popup.','#ffc2a8');
  try{chrome.runtime.sendMessage({type:'wiki-item-lookup',query:{name,category}},result=>{

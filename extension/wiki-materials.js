@@ -86,7 +86,7 @@
  function render(card,content,origin){
   const {groups,incomplete}=parse(content,origin);
   if(!groups.length&&!incomplete)return;
-  const panel=document.createElement('section');panel.style.cssText='margin-top:12px;padding-top:10px;border-top:1px solid #38566d;min-width:min(300px,100%);max-width:100%;';
+  const panel=document.createElement('section');panel.className='aqwc-section';panel.style.cssText='min-width:0;max-width:100%;';
   const heading=document.createElement('strong');heading.textContent='Required Materials';panel.append(heading);card.append(panel);
   const note=text=>{const n=document.createElement('div');n.textContent=text;n.style.cssText='font-size:11px;color:#b6cddd;margin:5px 0;font-weight:400';return n};
   panel.append(note('Direct merge ingredients · synced Inventory + Bank. Expand missing materials to view their own merge recipes. Stock is reserved once per option; alternative root recipes are independent.'));
@@ -128,9 +128,9 @@
    groups.forEach((group,i)=>{
     const p=plan(group,states,matches,rootSlug,i);
     if(groups.length>1){const label=note('Merge option '+(i+1)+' (separate recipe)');label.style.color='#a9ddff';tree.append(label)}
-    if(!busy){const ready=p.root.filter(n=>n.missing===0).length;tree.append(note(ready+' / '+p.root.length+' direct ingredients ready · nested progress below'))}
+    if(!busy){const ready=p.root.filter(n=>n.missing===0).length;tree.append(note(ready+' / '+p.root.length+' direct ingredients ready · nested progress below'));const track=document.createElement('div'),fill=document.createElement('div');track.style.cssText='height:6px;background:#0a1926;border-radius:6px;overflow:hidden';fill.style.cssText='height:100%;background:#53c7e6;width:'+(p.root.length?ready/p.root.length*100:0)+'%';track.setAttribute('aria-label',ready+' of '+p.root.length+' direct ingredients ready');track.append(fill);tree.append(track)}
     function drawNode(n,container){
-     const row=document.createElement('div');row.style.cssText='margin-top:8px;min-width:0';
+     const row=document.createElement('div');row.style.cssText='margin-top:8px;min-width:0;padding:9px;border:1px solid #2c485d;border-radius:8px;background:#101e2d';
      const top=document.createElement('div');top.style.cssText='display:flex;align-items:baseline;justify-content:space-between;gap:8px';
      const nameBox=document.createElement('div');nameBox.style.cssText='display:flex;align-items:center;gap:5px;min-width:0';
      const s=states.get(n.path);
@@ -141,7 +141,7 @@
      status.style.color=done?'#90edb5':!known||n.allocated?'#ffdb93':'#ffc2a8';
      if(known)status.title='Synced stock: '+n.stock.toLocaleString()+' · allocated to this requirement: '+n.allocated.toLocaleString();
      top.append(nameBox,status);row.append(top);
-     const track=document.createElement('div'),fill=document.createElement('div');track.style.cssText='height:5px;border-radius:4px;background:#091622;overflow:hidden;margin-top:4px';fill.style.cssText='height:100%;width:'+(known?Math.min(100,n.allocated/n.target*100):0)+'%;background:'+(done?'#57ca91':n.allocated?'#e9b958':'#e58b7c');track.append(fill);row.append(track);container.append(row);
+     const track=document.createElement('div'),fill=document.createElement('div');track.style.cssText='height:6px;border-radius:6px;background:#091622;overflow:hidden;margin-top:7px';fill.style.cssText='height:100%;width:'+(known?Math.min(100,n.allocated/n.target*100):0)+'%;background:'+(done?'#57ca91':n.allocated?'#e9b958':'#e58b7c');track.append(fill);row.append(track);container.append(row);
      if(n.reason)row.append(note(n.reason));
      if(!s?.open||!n.missing)return;
      const nested=document.createElement('div');nested.style.cssText='margin:5px 0 0 8px;padding-left:10px;border-left:1px solid #38566d';row.append(nested);
