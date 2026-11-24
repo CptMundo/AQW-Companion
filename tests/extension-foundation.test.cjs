@@ -95,7 +95,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.11.9');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
+ assert.equal(manifest.version,'0.12.0');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -489,7 +489,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  const stored={},chromeMock={runtime:{getURL:x=>'chrome-extension://test/'+x,onMessage:{addListener(){}}},storage:{local:{async get(k){return {[k]:stored[k]}},async set(v){Object.assign(stored,v)}}}};
  const api=vm.runInNewContext(read('extension/worker.js')+'\n({handle,normalizeAppearance})',{chrome:chromeMock,URL,TextEncoder});
  const popup={url:'chrome-extension://test/popup.html'},wiki={url:'https://aqwwiki.wikidot.com/classes',frameId:0};
- assert.equal((await api.handle({type:'wiki-appearance-read'},wiki)).appearance.background,'original');
+ assert.equal((await api.handle({type:'wiki-appearance-read'},wiki)).appearance.background,'neutral');
  assert.equal((await api.handle({type:'wiki-appearance-save',appearance:{background:'void'}},wiki)).ok,false);
  assert.equal((await api.handle({type:'wiki-appearance-read'},{...wiki,frameId:1})).ok,false);
  assert.equal((await api.handle({type:'wiki-appearance-read'},{url:'https://evil.example/',frameId:0})).ok,false);
@@ -503,7 +503,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  vm.runInNewContext(read('extension/wiki-theme.js'),{document,location:{origin:'https://aqwwiki.wikidot.com'},chrome:{runtime}});
  respond({ok:true,appearance:{background:'original',banner:'original',panel:'integrated'}});assert.equal(styles.length,0);assert.equal(attrs['data-aqwc-panel-theme'],'integrated');
  listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'bad',url:popup.url});assert.equal(styles.length,0);
- listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'id',url:popup.url});assert.equal(styles.length,1);assert.ok(styles[0].textContent.includes('div#container-wrap'));assert.ok(styles[0].textContent.includes('image_2026-11-24_232002011.png'));assert.ok(styles[0].textContent.includes('auto 140px'));assert.ok(!styles[0].textContent.includes('#header::before'));assert.ok(styles[0].textContent.includes('#1b1627'));
+ listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'id',url:popup.url});assert.equal(styles.length,1);assert.ok(styles[0].textContent.includes('div#container-wrap'));assert.ok(styles[0].textContent.includes('image_2026-11-24_232002011.png'));assert.ok(styles[0].textContent.includes('auto clamp(164px,12vw,240px)'));assert.ok(!styles[0].textContent.includes('#header::before'));assert.ok(styles[0].textContent.includes('#1b1627'));
  listener({type:'aqwc-appearance-preview',appearance:{}},{id:'id',url:popup.url});assert.equal(styles.length,0);
  console.log('Wiki appearance: defaults, scoped read/write, validated presets and restore original passed.');
 })().catch(e=>{console.error(e);process.exitCode=1});
@@ -609,4 +609,19 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.equal(result.length,2);assert.equal(result[0].rows[0].text,'Sharp Stinger x8');assert.equal(result[0].rows[0].drops[0].name,'Corrosive Crawler');
  assert.equal(result[0].rows[1].instructions[0],'Click blue arrows on screens 2, 3, 4 and 10');
  assert.equal(result[1].rows[0].text,'3,000 Gold');assert.equal(result[0].rows[0].linked,null);
+}
+
+{
+ const api=vm.runInNewContext(read('extension/wiki-materials.js')+'\nAQWCWikiMaterials',{URL});
+ assert.equal(api.compactData('necrotic-sword-s-blade').merge[1][1],200);
+ assert.equal(api.compactData('void-aura').sources.quests.length,5);
+ assert.equal(api.compactData('doom-heart').sources.locations[0].join,'sepulchurebattle');
+ assert.equal(api.compactData('unknown').sources,null);
+ const actual={groups:[[{name:'Updated material',target:2}]],sources:{locations:[],quests:[],drops:[],shops:[]}};
+ assert.equal(api.compactData('necrotic-sword-s-blade',actual).merge[0][0],'Updated material');
+ assert.ok(read('extension/wiki-materials.js').includes('slice(0,6)'));
+ assert.ok(read('extension/wiki-items.js').includes('farming.open=false'));
+ assert.ok(read('extension/wiki-quest-shop.js').includes('content.parentElement.insertBefore(host,content)'));
+ assert.ok(read('extension/wiki-theme.js').includes('top:var(--aqwc-banner-height)'));
+ assert.ok(read('extension/wiki-theme.js').includes('#192630'));
 }
