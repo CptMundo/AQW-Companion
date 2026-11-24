@@ -124,7 +124,7 @@
  function joinControl(line,x,origin){
   const known=x.join||(Object.hasOwn(verifiedMaps,x.slug)?verifiedMaps[x.slug]:null)||mapCache.get(x.slug);
   const copy=document.createElement('button');copy.type='button';copy.className='aqwc-copy-join';
-  function ready(command){if(!command){copy.remove();return}copy.textContent='/join '+command+' · Copy';copy.disabled=false;copy.addEventListener('click',async e=>{if(!e.isTrusted)return;try{await navigator.clipboard.writeText('/join '+command);copy.textContent='Copied /join '+command}catch{copy.textContent='/join '+command+' · copy manually'}})}
+  function ready(command){if(!command){copy.remove();return}copy.textContent='/join '+command;copy.title='Copy /join '+command;copy.disabled=false;copy.addEventListener('click',async e=>{if(!e.isTrusted)return;try{await navigator.clipboard.writeText('/join '+command);copy.textContent='Copied /join '+command}catch{copy.textContent='/join '+command+' (copy manually)'}})}
   if(known){line.append(copy);ready(known)}else{copy.disabled=true;copy.textContent='Verifying map…';line.append(copy);resolvedMap(origin,x.slug).then(ready)}
  }
  function recipeLabel(group,index,rootSlug){
@@ -178,7 +178,12 @@
  // previews only; nested allocation uses parsed recipes on explicit expansion.
  const shadowfallSource={name:'Shadowfall',slug:'shadowfall',join:'shadowfall'};
  const mergeHint=parts=>({merge:parts,locations:[shadowfallSource]});
+ // Sources: /revenant-s-spellscroll, /conquest-wreath, /exalted-crown, /legion-revenant-s-quests, /dage-challenge, /ultra-dage.
+ const legionHint=names=>({merge:[['Dage the Evil Insignia',1],['Legion Token',50]],quests:names.map(name=>({name,slug:'legion-revenant-s-quests'})),locations:[{name:'Dage Challenge',slug:'dage-challenge',join:'dage'},{name:'Ultra Dage',slug:'ultra-dage',join:'ultradage'}]});
  const compactHints={
+  'revenant-s-spellscroll':legionHint(['Legion Fealty 1']),
+  'conquest-wreath':legionHint(['Legion Fealty 2']),
+  'exalted-crown':legionHint(['Legion Fealty 3','Legion Fealty 4']),
   'necrotic-sword-s-blade':mergeHint([['Energized Blade',1],['Void Aura',200],['Barium of Doom',1]]),
   'necrotic-sword-s-hilt':mergeHint([['Energized Hilt',1],['Bones from the Void Realm',1],['Void Aura',200]]),
   'necrotic-sword-s-aura':mergeHint([['Energized Aura',1],["Time Lord's Necronomicon",1],['Void Aura',300]]),
@@ -204,17 +209,19 @@
   function line(label,items,kind){
    if(!items?.length)return;
    const line=document.createElement('div');line.className='aqwc-compact-source';const tag=document.createElement('span');tag.className='aqwc-source-tag';tag.dataset.kind=kind;tag.textContent=label;const body=document.createElement('div');body.className='aqwc-source-values';line.append(tag,body);
-   const limit=all?items.length:3;
-   items.slice(0,limit).forEach((x,j)=>{
-    if(j)body.append(document.createTextNode(' · '));
-    const el=document.createElement(x.slug?'a':'span');el.textContent=x.name;if(x.slug)el.href=origin+'/'+x.slug+(x.hash||'');body.append(el);
-    if(kind==='location'&&x.slug&&!/\b(shop|merge shop)\b/i.test(x.name)){
-     const cmd=x.join||(Object.hasOwn(verifiedMaps,x.slug)?verifiedMaps[x.slug]:null)||mapCache.get(x.slug);
-     if(cmd)joinControl(body,{...x,join:cmd},origin);
-     else if(all)joinControl(body,x,origin);
-    }
-   });
-   if(items.length>limit)body.append(document.createTextNode(' · +'+(items.length-limit)+' more'));
+   let expanded=all;
+   function fill(){
+    body.replaceChildren();const limit=expanded?items.length:3;
+    items.slice(0,limit).forEach((x,j)=>{
+     if(j)body.append(document.createTextNode(' · '));
+     const cmd=kind==='location'&&x.slug&&!/\b(shop|merge shop)\b/i.test(x.name)?x.join||(Object.hasOwn(verifiedMaps,x.slug)?verifiedMaps[x.slug]:null)||mapCache.get(x.slug):null;
+     if(cmd){joinControl(body,{...x,join:cmd},origin);return}
+     const el=document.createElement(x.slug?'a':'span');el.textContent=x.name;if(x.slug)el.href=origin+'/'+x.slug+(x.hash||'');body.append(el);
+     if(expanded&&kind==='location'&&x.slug&&!/\b(shop|merge shop)\b/i.test(x.name))joinControl(body,x,origin);
+    });
+    if(items.length>3&&!all){const more=document.createElement('button');more.type='button';more.className='aqwc-source-more';more.textContent=expanded?'Show less':'+'+(items.length-3)+' more';more.setAttribute('aria-expanded',String(expanded));more.addEventListener('click',e=>{if(e.isTrusted){expanded=!expanded;fill()}});body.append(more)}
+   }
+   fill();
    block.append(line);
   }
   if(data.merge)line('MERGE',data.merge.map(([name,qty])=>({name:name+' ×'+qty})),'merge');

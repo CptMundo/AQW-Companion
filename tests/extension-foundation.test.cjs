@@ -77,7 +77,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
   function el(){return {style:{},children:[],addEventListener(){},append(...x){this.children.push(...x)},attachShadow({mode}){closed=mode;return el()}}}
   const title={textContent:name,insertAdjacentElement(_,host){inserted=host}},content={textContent:body},crumb=crumbs===null?null:{querySelectorAll(){return crumbs.map(x=>typeof x==='string'?{href:'https://aqwwiki.wikidot.com/'+x}:{href:'https://aqwwiki.wikidot.com/'+x.slug,textContent:x.label})}};
   const doc={getElementById:id=>({'page-title':title,'page-content':content,'breadcrumbs':crumb}[id]||null),createElement:el,querySelectorAll:()=>tags.map(textContent=>({textContent}))};
-  const context={URL,URLSearchParams,location:{origin:'https://aqwwiki.wikidot.com',pathname:'/void-aura',href:'https://aqwwiki.wikidot.com/void-aura'},document:doc,chrome:{runtime:{sendMessage(m,cb){request=m;cb(response)}}}};
+  const context={URL,URLSearchParams,location:{origin:'https://aqwwiki.wikidot.com',pathname:'/void-aura',href:'https://aqwwiki.wikidot.com/void-aura'},document:doc,window:{addEventListener(){}},setInterval:()=>1,clearInterval(){},chrome:{runtime:{sendMessage(m,cb){if(m.type==='goal-status-read')return Promise.resolve({ok:true,state:'unknown'});request=m;cb(response)}}}};
   vm.runInNewContext(read('extension/wishlist-link.js'),context);vm.runInNewContext(read('extension/wiki-items.js'),context);
   return {request,inserted,closed};
  };
@@ -95,7 +95,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.12.0');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
+ assert.equal(manifest.version,'0.12.1');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -503,7 +503,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  vm.runInNewContext(read('extension/wiki-theme.js'),{document,location:{origin:'https://aqwwiki.wikidot.com'},chrome:{runtime}});
  respond({ok:true,appearance:{background:'original',banner:'original',panel:'integrated'}});assert.equal(styles.length,0);assert.equal(attrs['data-aqwc-panel-theme'],'integrated');
  listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'bad',url:popup.url});assert.equal(styles.length,0);
- listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'id',url:popup.url});assert.equal(styles.length,1);assert.ok(styles[0].textContent.includes('div#container-wrap'));assert.ok(styles[0].textContent.includes('image_2026-11-24_232002011.png'));assert.ok(styles[0].textContent.includes('auto clamp(164px,12vw,240px)'));assert.ok(!styles[0].textContent.includes('#header::before'));assert.ok(styles[0].textContent.includes('#1b1627'));
+ listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'id',url:popup.url});assert.equal(styles.length,1);assert.ok(styles[0].textContent.includes('div#container-wrap'));assert.ok(styles[0].textContent.includes('image_2026-11-24_232002011.png'));assert.ok(styles[0].textContent.includes('auto clamp(150px,10vw,210px)'));assert.ok(!styles[0].textContent.includes('#header::before'));assert.ok(styles[0].textContent.includes('#1b1627'));
  listener({type:'aqwc-appearance-preview',appearance:{}},{id:'id',url:popup.url});assert.equal(styles.length,0);
  console.log('Wiki appearance: defaults, scoped read/write, validated presets and restore original passed.');
 })().catch(e=>{console.error(e);process.exitCode=1});
@@ -620,8 +620,32 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  const actual={groups:[[{name:'Updated material',target:2}]],sources:{locations:[],quests:[],drops:[],shops:[]}};
  assert.equal(api.compactData('necrotic-sword-s-blade',actual).merge[0][0],'Updated material');
  assert.ok(read('extension/wiki-materials.js').includes('slice(0,6)'));
- assert.ok(read('extension/wiki-items.js').includes('farming.open=false'));
+ assert.ok(!read('extension/wiki-items.js').includes('farming.open=false'));assert.ok(read('extension/wiki-materials.js').includes('panel.open=true'));
  assert.ok(read('extension/wiki-quest-shop.js').includes('content.parentElement.insertBefore(host,content)'));
  assert.ok(read('extension/wiki-theme.js').includes('top:var(--aqwc-banner-height)'));
  assert.ok(read('extension/wiki-theme.js').includes('#192630'));
+}
+
+{
+ const bridge=read('extension/bridge.js'),quest=read('extension/wiki-quest-shop.js'),materials=read('extension/wiki-materials.js');
+ assert.ok(bridge.includes('display:none;width:fit-content'));
+ assert.ok(quest.includes('panel.append(cards,selected)'));
+ assert.ok(quest.includes('content.hidden=!content.hidden'));
+ assert.ok(materials.includes('Show less'));
+ assert.ok(read('extension/wiki-theme.js').includes('aqwc-banner-backdrop'));
+ assert.ok(read('extension/wishlist-queue.js').includes('status-request'));
+ assert.ok(read('index.html').includes('entry.quest.complete===true'));
+ const api=vm.runInNewContext(read('extension/worker.js')+'\n({cleanGoalStatus,goalStatus})',{chrome:{runtime:{onMessage:{addListener(){}}}},URL,TextEncoder});
+ const state=api.cleanGoalStatus({goals:[{name:'Sword',progress:42,secret:'discard'}],pins:[{name:'Quest',source:'page',completed:false}],complete:true});
+ assert.equal(state.goals[0].secret,undefined);assert.equal(api.goalStatus(state,{kind:'item',name:'Sword'},'').progress,42);
+ assert.equal(api.goalStatus(state,{kind:'quest',name:'Quest'},'page').completed,false);assert.equal(api.goalStatus(state,{kind:'quest',name:'Quest'},'other').state,'absent');
+ assert.equal(api.goalStatus({...state,complete:false},{kind:'item',name:'Missing'},'').state,'unknown');
+ assert.equal(api.cleanGoalStatus({goals:[{name:'Sword',progress:999}],pins:[]}),null);
+}
+
+{
+ const api=vm.runInNewContext(read('extension/wiki-materials.js')+'\nAQWCWikiMaterials',{URL});
+ assert.equal(api.compactData('revenant-s-spellscroll').sources.quests[0].name,'Legion Fealty 1');
+ assert.equal(api.compactData('exalted-crown').sources.quests.length,2);
+ assert.equal(api.compactData('conquest-wreath').sources.locations[1].join,'ultradage');
 }

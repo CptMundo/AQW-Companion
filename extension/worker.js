@@ -120,7 +120,7 @@ let wishlistLock=Promise.resolve();
 function queueWishlist(message,sender){
  const run=async()=>{
   const wiki=wikiSender(sender),main=mainSender(sender),type=message?.type;
-  if(!(wiki&&['wishlist-queue-add','routine-queue-add','quest-pin-add'].includes(type)||main&&['wishlist-queue-read','wishlist-queue-ack'].includes(type)))return {ok:false,error:'Unsupported Wishlist request.'};
+  if(!(wiki&&['wishlist-queue-add','routine-queue-add','quest-pin-add','quest-pin-complete'].includes(type)||main&&['wishlist-queue-read','wishlist-queue-ack'].includes(type)))return {ok:false,error:'Unsupported Wishlist request.'};
   await restrictStorage();
   const raw=(await chrome.storage.local.get(WISHLIST_QUEUE))[WISHLIST_QUEUE],entries=Array.isArray(raw)?raw:[];
   if(type==='wishlist-queue-read')return {ok:true,entries};
@@ -128,12 +128,13 @@ function queueWishlist(message,sender){
    if(!Array.isArray(message.ids)||message.ids.length>200||message.ids.some(id=>typeof id!=='string'||id.length>64))return {ok:false,error:'Invalid acknowledgement.'};
    await chrome.storage.local.set({[WISHLIST_QUEUE]:entries.filter(e=>!message.ids.includes(e.id))});return {ok:true};
   }
-  if(type==='routine-queue-add'||type==='quest-pin-add'){
+  if(type==='routine-queue-add'||type==='quest-pin-add'||type==='quest-pin-complete'){
    const quest=message.quest,source=new URL(sender.url).pathname.replace(/^\/|\/$/g,'');
    if(!quest||quest.source!==source||typeof quest.name!=='string'||!quest.name.trim()||quest.name.length>350||/[\u0000-\u001f\u007f]/.test(quest.name))return {ok:false,error:'Invalid quest.'};
-   if(entries.some(e=>e.quest?.source===source&&nameKey(e.quest.name)===nameKey(quest.name)&&!!e.quest.pin===(type==='quest-pin-add')))return {ok:true,already:true};
+   if(type==='quest-pin-complete'){const data=(await chrome.storage.local.get(GOAL_STATUS))[GOAL_STATUS];if(goalStatus(data,{kind:'quest',name:quest.name},source).state!=='saved')return {ok:false,error:'Pin and sync this quest first.'};}
+   if(entries.some(e=>e.quest?.source===source&&nameKey(e.quest.name)===nameKey(quest.name)&&!!e.quest.pin===(type!=='routine-queue-add')&&!!e.quest.complete===(type==='quest-pin-complete')))return {ok:true,already:true};
    if(entries.length>=200)return {ok:false,error:'Pending queue is full. Open Companion to sync.'};
-   await chrome.storage.local.set({[WISHLIST_QUEUE]:[...entries,{id:crypto.randomUUID(),quest:{source,name:quest.name.trim(),...(type==='quest-pin-add'?{pin:true}:{})}}]});return {ok:true};
+   await chrome.storage.local.set({[WISHLIST_QUEUE]:[...entries,{id:crypto.randomUUID(),quest:{source,name:quest.name.trim(),...(type!=='routine-queue-add'?{pin:true}:{}),...(type==='quest-pin-complete'?{complete:true}:{})}}]});return {ok:true};
   }
   const item=message.item;
   if(!item||typeof item.name!=='string'||!item.name.trim()||item.name.length>350||/[\u0000-\u001f\u007f]/.test(item.name)||typeof item.slug!=='string'||! /^[a-z0-9][a-z0-9-]{0,199}$/.test(item.slug)||typeof item.category!=='string'||!Object.hasOwn(wikiTypes,item.category)||(new URL(sender.url).pathname.replace(/^\/|\/$/g,'')!==item.slug&&wikiListCategory(sender)!==item.category))return {ok:false,error:'Invalid Wiki item.'};
@@ -203,7 +204,28 @@ function normalizeAppearance(value){
   panel:['integrated','blue'].includes(v.panel)?v.panel:'integrated'
  };
 }
+
+const GOAL_STATUS='aqwc-goal-status-v1';
+function cleanGoalStatus(v){
+ if(!v||!Array.isArray(v.goals)||!Array.isArray(v.pins)||v.goals.length>500||v.pins.length>500)return null;
+ const name=x=>typeof x==='string'&&x.trim()&&x.length<=350&&!/[\u0000-\u001f\u007f]/.test(x);
+ if(v.goals.some(x=>!name(x?.name)||!Number.isFinite(x.progress)||x.progress<0||x.progress>100)||v.pins.some(x=>!name(x?.name)||typeof x.source!=='string'||! /^[a-z0-9][a-z0-9-]{0,199}$/.test(x.source)||typeof x.completed!=='boolean'))return null;
+ return {goals:v.goals.map(x=>({name:x.name,progress:x.progress})),pins:v.pins.map(x=>({name:x.name,source:x.source,completed:x.completed})),complete:v.complete===true,at:Date.now()};
+}
+function goalStatus(data,query,source){
+ if(!data||!Array.isArray(data.goals)||!Array.isArray(data.pins))return {state:'unknown'};
+ const matches=query.kind==='quest'?data.pins.filter(x=>x.source===source&&nameKey(x.name)===nameKey(query.name)):data.goals.filter(x=>nameKey(x.name)===nameKey(query.name));
+ return {state:matches.length===1?'saved':matches.length>1?'unknown':data.complete?'absent':'unknown',...(matches.length===1?(query.kind==='quest'?{completed:matches[0].completed}:{progress:matches[0].progress}):{}),at:data.at};
+}
 async function handle(message,sender){
+ if(message?.type==='goal-status-publish'){
+  if(!mainSender(sender))return {ok:false};const data=cleanGoalStatus(message.status);if(!data)return {ok:false};await restrictStorage();await chrome.storage.local.set({[GOAL_STATUS]:data});return {ok:true};
+ }
+ if(message?.type==='goal-status-read'){
+  const q=message.query;if(!wikiSender(sender)||!q||!['item','quest'].includes(q.kind)||typeof q.name!=='string'||!q.name.trim()||q.name.length>350)return {ok:false};
+  await restrictStorage();const source=new URL(sender.url).pathname.replace(/^\/|\/$/g,'');const data=(await chrome.storage.local.get(GOAL_STATUS))[GOAL_STATUS];return {ok:true,...goalStatus(data,q,source)};
+ }
+
  if(message?.type==='wiki-appearance-read'||message?.type==='wiki-appearance-save'){
   let wiki=false;try{wiki=sender.frameId===0&&new URL(sender.url).origin==='https://aqwwiki.wikidot.com'}catch{}
   const popup=popupSender(sender);
@@ -216,7 +238,7 @@ async function handle(message,sender){
   const stored=await chrome.storage.local.get(APPEARANCE_KEY);return {ok:true,appearance:normalizeAppearance(stored[APPEARANCE_KEY]??{background:'neutral',banner:'prometheus'})};
  }
 
- if(['wishlist-queue-add','routine-queue-add','quest-pin-add','wishlist-queue-read','wishlist-queue-ack'].includes(message?.type))return queueWishlist(message,sender);
+ if(['wishlist-queue-add','routine-queue-add','quest-pin-add','quest-pin-complete','wishlist-queue-read','wishlist-queue-ack'].includes(message?.type))return queueWishlist(message,sender);
  const account=await accountStage(message,sender);if(account)return account;
  if(message?.type==='wiki-list-preference'){
   if(!wikiListCategory(sender))return {ok:false,error:'Invalid list settings request.'};

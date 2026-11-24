@@ -145,10 +145,15 @@ function questLists(scope){
 }
 function questLocationLinks(scope){
  const links=[];
- for(const marker of scope.querySelectorAll('p,strong,b')){
-  if(!/^Quest Locations?\s*:/i.test(clean(marker.textContent)))continue;
-  const candidates=[...marker.querySelectorAll('a[href]')];
-  if(['STRONG','B'].includes(marker.tagName))for(let n=marker.nextSibling,k=0;n&&k++<12;n=n.nextSibling){if(['BR','STRONG','B'].includes(n.nodeName))break;if(n.nodeName==='A')candidates.push(n);else if(n.nodeType===1)candidates.push(...n.querySelectorAll('a[href]'))}
+ for(const marker of scope.querySelectorAll('strong,b,p')){
+  const text=clean(marker.textContent);if(!/^Quest Locations?\s*:/i.test(text))continue;
+  const candidates=[];
+  if(['STRONG','B'].includes(marker.tagName)){
+   for(let n=marker.nextSibling,k=0;n&&k++<16;n=n.nextSibling){if(['BR','STRONG','B','P','DIV'].includes(n.nodeName))break;if(n.nodeName==='A')candidates.push(n);else if(n.nodeType===1)candidates.push(...n.querySelectorAll('a[href]'))}
+  }else{
+   // A Wikidot paragraph may also contain NPC and prerequisite lines.
+   for(const n of marker.childNodes){if(n.nodeName==='BR')break;if(n.nodeName==='A')candidates.push(n);else if(n.nodeType===1&&!['STRONG','B'].includes(n.nodeName))candidates.push(...n.querySelectorAll('a[href]'))}
+  }
   for(const a of candidates){const x=itemLink(a);if(x&&!links.some(y=>y.slug===x.slug))links.push(x)}
   if(links.length)break;
  }
@@ -161,17 +166,21 @@ function questCards(panel,content,title){
  const names=[...new Set(tabs.map(a=>clean(a.textContent)).filter(n=>n&&n.length<=350))];
  const locations=questLocationLinks(content),api=globalThis.AQWCWikiMaterials;
 
- const cards=document.createElement('div');cards.className='aqwc-quest-cards';panel.append(cards);
+ const cards=document.createElement('div');cards.className='aqwc-quest-cards';const selected=document.createElement('div');selected.className='aqwc-selected-quest';panel.append(cards,selected);
  const choices=tabs.length?tabs.filter(a=>clean(a.textContent)&&clean(a.textContent).length<=350).map(a=>({name:clean(a.textContent),tab:a})): [{name:clean(title.textContent),tab:null}];
- let active=null;
+ let active=null,activeButton=null;
  for(const {name,tab} of choices.slice(0,100)){
-  const detail=document.createElement('details');detail.className='aqwc-quest-card';const summary=document.createElement('summary');summary.textContent=name;detail.append(summary);const body=document.createElement('div');body.className='aqwc-quest-body';detail.append(body);cards.append(detail);
+  const tabButton=document.createElement('button');tabButton.type='button';tabButton.className='aqwc-quest-choice';tabButton.textContent=name;tabButton.setAttribute('aria-pressed','false');cards.append(tabButton);
+  const detail=document.createElement('section');detail.className='aqwc-quest-card';detail.hidden=true;const summary=document.createElement('strong');summary.className='aqwc-selected-heading';summary.textContent=name;detail.append(summary);const body=document.createElement('div');body.className='aqwc-quest-body';detail.append(body);selected.append(detail);
   let built=false;
-  detail.addEventListener('toggle',async()=>{
-   if(!detail.open){if(active===detail)active=null;detail.classList.remove('aqwc-quest-expanded');return}if(active&&active!==detail){active.open=false;active.classList.remove('aqwc-quest-expanded')}active=detail;detail.classList.add('aqwc-quest-expanded');
+  tabButton.addEventListener('click',async e=>{
+   if(!e.isTrusted)return;
+   if(active===detail){detail.hidden=true;tabButton.setAttribute('aria-pressed','false');active=null;activeButton=null;return}
+   if(active){active.hidden=true;activeButton.setAttribute('aria-pressed','false')}
+   active=detail;activeButton=tabButton;detail.hidden=false;tabButton.setAttribute('aria-pressed','true');
    if(built)return;
    const scope=tab?questScope(content,[tab],name):content;
-   if(!scope){body.textContent='Quest section not recognized. Close and reopen after selecting the Wiki tab.';return}
+   if(!scope){body.textContent='Quest section not recognized. Select the original Wiki tab, then try again.';return}
    built=true;body.replaceChildren();
    const lists=questLists(scope);
    const requirement=[...scope.querySelectorAll('p')].map(n=>clean(n.textContent)).find(s=>/^Requirements?:/i.test(s)&&s.length<=600);
@@ -192,9 +201,11 @@ function questCards(panel,content,title){
     body.append(section)
    }
    if(!lists.length){const n=document.createElement('small');n.textContent='No structured objectives found. Check the Wiki quest text.';body.append(n)}
-   if(name){const add=document.createElement('button');add.type='button';add.className='aqwc-primary';add.textContent='📌 Pin quest to Companion';const feedback=document.createElement('small');feedback.setAttribute('role','status');body.append(add,feedback);add.addEventListener('click',async e=>{if(!e.isTrusted||add.disabled)return;add.disabled=true;try{const result=await chrome.runtime.sendMessage({type:'quest-pin-add',quest:{source,name}});if(!result?.ok)throw Error(result?.error||'Could not save');feedback.textContent='Pin queued · open Companion to sync.';add.textContent='✓ Pin queued'}catch(err){feedback.textContent=String(err?.message||err)}finally{add.disabled=false}})}
+   if(name){const add=document.createElement('button');add.type='button';add.className='aqwc-primary';add.textContent='📌 Pin quest to Companion';const feedback=document.createElement('small');feedback.setAttribute('role','status');let queued=false;const complete=document.createElement('button');complete.type='button';complete.className='aqwc-primary';complete.textContent='Mark quest complete';complete.hidden=true;body.append(add,complete,feedback);async function readPin(){if(detail.hidden||document.hidden)return;try{const r=await chrome.runtime.sendMessage({type:'goal-status-read',query:{kind:'quest',name}});if(!r?.ok)return;if(r.state==='saved'){queued=false;add.textContent=r.completed?'✓ Completed (manual)':'✓ Pinned';add.disabled=true;complete.hidden=!!r.completed;if(r.completed){complete.disabled=false;complete.textContent='Mark quest complete'}feedback.textContent='Companion synced '+new Date(r.at).toLocaleTimeString()}else if(r.state==='absent'&&!queued){add.textContent='📌 Pin quest to Companion';add.disabled=false;complete.hidden=true}else if(r.state==='unknown'){feedback.textContent='Open Companion to sync pin status'}}catch{}}complete.addEventListener('click',async e=>{if(!e.isTrusted||complete.disabled)return;complete.disabled=true;try{const r=await chrome.runtime.sendMessage({type:'quest-pin-complete',quest:{source,name}});if(!r?.ok)throw Error(r?.error||'Could not queue completion');complete.textContent='✓ Completion queued';feedback.textContent='Manual completion queued · open Companion to sync.'}catch(err){feedback.textContent=String(err?.message||err);complete.disabled=false}});readPin();const timer=setInterval(readPin,10000);window.addEventListener('pagehide',()=>clearInterval(timer),{once:true});add.addEventListener('click',async e=>{if(!e.isTrusted||add.disabled)return;add.disabled=true;try{const result=await chrome.runtime.sendMessage({type:'quest-pin-add',quest:{source,name}});if(!result?.ok)throw Error(result?.error||'Could not save');feedback.textContent='Pin queued · open Companion to sync.';add.textContent='✓ Pin queued';queued=true}catch(err){feedback.textContent=String(err?.message||err)}finally{add.disabled=false}})}
   });
  }
+ const hideStyle=document.createElement('style');hideStyle.textContent='#page-content[hidden]{display:none!important}';(document.head||document.documentElement).append(hideStyle);
+ const original=document.createElement('button');original.type='button';original.className='aqwc-original-toggle';original.textContent='Hide original Wiki content';original.setAttribute('aria-expanded','true');panel.append(original);original.addEventListener('click',e=>{if(!e.isTrusted)return;content.hidden=!content.hidden;original.textContent=content.hidden?'Show original Wiki content':'Hide original Wiki content';original.setAttribute('aria-expanded',String(!content.hidden))});
  if(choices.length>100){const n=document.createElement('small');n.textContent='Showing first 100 quests; see Wiki for the rest.';panel.append(n)}
 }
 function init(){
