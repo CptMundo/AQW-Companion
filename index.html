@@ -24,7 +24,7 @@
 <link rel="stylesheet" href="css/planner-routines.css?v=116">
 <link rel="stylesheet" href="css/recipe-coverage.css">
 <link rel="stylesheet" href="css/stack-alerts.css?v=95">
-<link rel="stylesheet" href="css/ultra-quote-actions.css?v=119">
+<link rel="stylesheet" href="css/ultra-quote-actions.css?v=120">
 </head><body><div class="wrap"><header class="top"><div class="brand"><div class="logo"><img src="assets/brand-logo.png" width="52" height="52" alt="AQW Companion Prometheus-inspired helmet logo"></div><div><h1>AQW Companion <span class="tag">ALPHA 0.9.9.24</span></h1><small>AdventureQuest Worlds Inventory & Farming · Created by CptMundo</small></div></div><div class="actions"><label class="upload primary">📂 Import JSON export<input id="file" type="file" accept=".json,application/json" multiple></label><button id="backup">⬇️ Backup</button><button id="clear">Clear data</button></div></header><div id="alert" class="alert"></div><div class="notice aqw-storage-diagnostics" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><strong id="inventory-storage-status" aria-live="polite">💾 Inventory: checking browser storage…</strong><button id="inventory-storage-diagnostic" class="smallbutton" type="button">📋 Copy storage diagnostic</button></div><div class="notice"><strong>🔒 Your game data stays in this browser.</strong> Inventory, Wishlist and progress are stored locally. Cookie-free visit statistics via Umami. <a href="privacy.html">Privacy details</a>.</div>
 <nav class="primarynav" aria-label="Main navigation"><button class="active" data-group="home">📊 Home</button><button data-group="projects">🎯 Wishlist</button><button data-group="planner">📅 Daily / Weekly Tracker</button><button data-group="ultras">⚡ Ultras &amp; Bosses</button><button data-group="builds">🛡️ Class Builds</button><button data-group="story">📖 Story</button><button data-group="explore">✨ Explore</button><button data-group="inventory">📦 Inventory</button></nav>
 <nav class="tabs subnav" aria-label="Section navigation"><button data-tab="discover" data-parent="explore">Item Explorer</button><button data-tab="database" data-parent="explore" style="display:none" aria-hidden="true" tabindex="-1">Community Database (advanced)</button><button data-tab="unlocks" data-parent="projects">Item Tracker</button><button data-tab="goals" data-parent="projects">Farming Goals</button><button data-tab="story" data-parent="story">Story &amp; Sagas</button><button data-tab="account-stats" data-parent="inventory">Account Statistics</button><button data-tab="alerts" data-parent="inventory">Alerts</button><button data-tab="milestones" data-parent="inventory">Companion Milestones</button><button data-tab="inventory" data-parent="inventory">Inventory &amp; Bank</button><button data-tab="compare" data-parent="inventory">Compare Exports</button><button data-tab="history" data-parent="inventory">History</button><button data-tab="planner" data-parent="planner">📅 My Tracker</button><button data-tab="planner-discover" data-parent="planner">📚 Quest Library</button><button data-tab="planner-history" data-parent="planner" hidden tabindex="-1">History</button><button data-tab="ultras" data-parent="ultras">⚡ Ultras</button><button data-tab="boss-guides" data-parent="ultras">⚔️ Boss Guides</button><button data-tab="builds" data-parent="builds">Class Builds</button><button data-tab="forge" data-parent="builds">Forge Tracker</button></nav>
@@ -59,7 +59,7 @@
 <p class="muted tiny">These are specific documented requirements, not claims that entire Adventures are mandatory. Unknown means not checked.</p><div id="storyaccess"></div></div>
 <div id="storylist" class="sagagrid"></div><div class="muted tiny" style="margin-top:14px">Sources: <a href="https://www.aq.com/lore/guides/shadowsofwarsaga" target="_blank" rel="noopener noreferrer">Official Shadows of War</a> · <a href="https://aqwwiki.wikidot.com/the-story" target="_blank" rel="noopener noreferrer">AQWWiki Story Index</a> · <a href="https://www.aq.com/gamedesignnotes/date/2026/04" target="_blank" rel="noopener noreferrer">Age of Ruin guide</a>. Not a complete list of every map or quest.</div></div></section>
 <section id="ultras" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle">⚡ Ultra Boss Strategy Guides</h3><p class="muted tiny">Choose a boss and your class to see a suggested team, a role-specific plan, fight phases and common wipe causes. Strategies are community-sourced and may change. Guides are community references, not live combat instructions.</p></div><span class="pill">12 strategy guides · Community references</span></div><div class="toolbar"><input id="ultrasearch" type="search" placeholder="Search bosses, mechanics or classes…"><select id="ultrafilter"><option value="all">All guides</option><option value="ready">All suggested classes owned</option></select></div><div class="ultra-master-detail"><div id="ultracards" class="ultracards"></div><div id="ultradetail" class="ultradetail hidden"></div></div>
-</div></section><section id="boss-guides" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle">⚔️ Boss Guides</h3><p class="muted tiny">Browse group encounters, solo arenas, dungeons and seasonal bosses. Community strategies and suggested loadouts; not encounter-tested by Companion.</p></div><span id="bossguidecount" class="pill">Boss encounters</span></div><div class="toolbar boss-guide-toolbar"><input id="bossguidesearch" type="search" placeholder="Search bosses, maps or classes…" aria-label="Search boss guides"><select id="bossguidecategory" aria-label="Boss category"><option value="all">All categories</option><option>Void Bosses</option><option>Shrines</option><option>Solo arenas</option><option>Grim Gaol</option><option>Grim Challenge</option><option>Lavarock Shore</option><option>Seasonal challenges</option><option>Legacy / special</option><option>Seasonal</option></select></div><div class="boss-master-detail"><div id="ultracatalog" class="boss-guide-list" aria-label="Boss encounters"></div><div id="bossguidedetail" class="ultradetail boss-guide-detail" aria-live="polite"></div></div></div></section><section id="builds" class="view">
+</div></section><section id="boss-guides" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle">⚔️ Boss Guides</h3><p class="muted tiny">Browse group encounters, solo arenas, dungeons and seasonal bosses. Community strategies and suggested loadouts; not encounter-tested by Companion.</p></div><span id="bossguidecount" class="pill">Boss encounters</span></div><div class="toolbar boss-guide-toolbar"><input id="bossguidesearch" type="search" placeholder="Search bosses, maps or classes…" aria-label="Search boss guides"><select id="bossguidecategory" aria-label="Boss category"><option value="all">All categories</option><option>Void Bosses</option><option>Shrines</option><option>Solo arenas</option><option>Grim Challenge</option><option>Grim Gaol</option><option>Lavarock Shore</option><option>Seasonal challenges</option><option>Seasonal</option><option>Legacy / special</option></select></div><div class="boss-master-detail"><div id="ultracatalog" class="boss-guide-list" aria-label="Boss encounters"></div><div id="bossguidedetail" class="ultradetail boss-guide-detail" aria-live="polite"></div></div></div></section><section id="builds" class="view">
 
 <div class="card build-planner-card"><div class="unlocktop"><div><h3 class="sectiontitle">🛡️ Class Build Planner</h3><p class="muted tiny">Class enhancement loadouts for solo bosses and farming, with Forge effects and consumables.</p></div><span class="pill">Alpha · Class builds · 2026 meta</span></div><div class="build-controls"><label>Search class<input id="build-search" type="search" placeholder="Search by class name…" autocomplete="off"></label><label>Class<select id="build-class"></select></label><label>Activity<select id="build-role"></select></label></div><div id="build-results" aria-live="polite"></div></div>
 
@@ -2014,7 +2014,8 @@ simplifiedSpeakerPatterns.push(
  ])
 );
 
-const bossGuideOrder=['Void Bosses','Shrines','Solo arenas','Grim Gaol','Grim Challenge','Lavarock Shore','Seasonal challenges','Legacy / special','Seasonal'];
+// Editorial priority: common endgame farms and progression first; no measured popularity data.
+const bossGuideOrder=["Void Bosses","Shrines","Solo arenas","Grim Challenge","Grim Gaol","Lavarock Shore","Seasonal challenges","Seasonal","Legacy / special"];
 let selectedBossGuide='';const selectedBossClasses=new Map();
 function bossGuideEntries(profiles,legacy){
  return [...profiles.map((profile,i)=>({id:'guide-'+i,name:profile.name,group:profile.group,join:profile.join,wiki:profile.wiki,profile})),
@@ -2025,7 +2026,76 @@ function filterBossGuides(entries,term,category,classNames){
  return entries.filter(e=>(category==='all'||e.group===category)&&[e.name,e.group,e.join,...(e.profile?.tips||[]),...(e.profile?.team||[]).map(t=>t.cls),...(e.profile?.classes||[]),...(e.profile?.premium||[]),...(e.profile?classNames(e.profile):[])].join(' ').toLowerCase().includes(query));
 }
 function bossGuideSelection(entries,selected){return entries.some(e=>e.id===selected)?selected:entries[0]?.id||''}
+function bossGuideSorted(entries){return [...entries].sort((a,b)=>bossGuideOrder.indexOf(a.group)-bossGuideOrder.indexOf(b.group))}
+function bossGuideClassGroups(groups,query){const term=ultraClassKey(query);return groups.map(g=>({...g,names:g.names.filter(n=>ultraClassKey(n).includes(term))})).filter(g=>g.names.length)}
 function bossGuideWiki(slug,label){const link=node('a',label);link.href='https://aqwwiki.wikidot.com/'+slug;link.target='_blank';link.rel='noopener noreferrer';return link}
+// Encounter assignments transcribed from the existing community workbook summaries.
+// General role suggestions are explicitly distinguished from documented assignments.
+function bossGuideRoleTips(profile,cls,role){
+ if(!cls)return [];
+ const name=profile.name,is=n=>sameUltraClass(cls,n),rows=[];
+ const add=(title,text,source='Community guide')=>rows.push({title,text,source});
+ const exact=(n,title,tip)=>{if(is(n))add(title,tip)};
+ if(name==='Void Flibbi')exact('Shaman','Skill restriction','Do not use skill 5.');
+ if(name==='Void Nightbane'){
+  add('Survival and damage','Avoid Vainglory; favor rapid sustained hits over large individual nukes. Decay is ineffective.');
+ }else if(name==='Void Xyfrag'){
+  if(is('Legion Revenant')||is('Verus DoomKnight'))add('Assigned taunt','Taunt on the BLEEEECH cue if assigned.');
+  add('Damage window','Favor fast sustained damage; finish before invulnerability.');
+ }else if(name==='Void NerfKitten'){
+  if(is('Legion Revenant'))add('Assigned taunt','Coordinate alternating taunts with another durable support on the Meow cue.');
+  else add('Taunt coordination','If assigned as the second durable taunter, alternate with Legion Revenant on the Meow cue.');
+  add('Damage window','Favor rapid damage.');
+ }else if(name==='Temple Shrine — Left'){
+  exact('Lord of Order','Lunar Haze','Taunt after the gaze message vanishes.');
+  exact('Legion Revenant','Moon Converges','Use Praxis and taunt on the Moon Converges cue.');
+ }else if(name==='Temple Shrine — Right'){
+  exact('Legion Revenant','Dawn Knight / Sun Converges','Taunt after the warmth message vanishes; use Praxis with taunt on Sun Converges.');
+  add('Survival','Check HP when using reduced-HP helms.');
+ }else if(name==='Temple Shrine — Middle'){
+  exact('ArchPaladin','Dying Light','Use skill 4 at Sunlight Gathers; alternate Ascended Moonlight with Lord of Order.');
+  exact('Lord of Order','Lunar Haze','Handle Lunar Haze and alternate Ascended Moonlight with ArchPaladin.');
+  exact('Legion Revenant','Dawn Knight','Handle Dawn Knight; alternate Ascended Sunlight with the assigned DPS using Praxis.');
+  if(/DPS/.test(role||''))add('Ascended Sunlight','If assigned to the DPS position, alternate with Legion Revenant using Praxis.');
+ }else if(name==='Astral Empyrean'){
+  if(is('Legion Revenant')||is('Verus DoomKnight'))add('Starfire taunt','Alternate taunts with the other assigned taunter on “Behold our starfire!”.');
+  add('Survival','Avoid the red zone and deaths; the boss gains stats on deaths. Prefer a safer cape than Vainglory.');
+ }else if(name==='Mechabinky & Raxborg 2.0'){
+  add('Before pulling','Agree on two taunters; all other players equip Vigil.');
+  add('45M / 40M / 35M','Taunt only when assigned; stop healing during the 45M inversion.');
+  if(role==='Healer'||is('ArchPaladin'))add('30M HP','Heal after HP drops to 1.');
+  add('15M / 10M / 5M','Coordinate Decay and mitigation at 15M, use Vigil if assigned at 10M and finish the DPS check at 5M.');
+ }else if(name==='Kasuko & Whirlpool'){
+  if(role==='Healer')add('HP-based nukes','Maintain near-full team HP and regular healing.');
+  else add('Target priority','Focus Whirlpool first unless the team has agreed that multi-target damage makes direct Kasuko focus safe.');
+ }else if(name==='Fourth Lynaria'){
+  if(role==='Healer'||role==='Support')add('Fourth Repel','Maintain haste support and recovery after the 80% current-HP attack.');
+  else add('The Fourth Sense','Expect extreme dodge for three seconds; account for the INT reduction and stronger defenses later.');
+ }
+ if(profile.group==='Solo arenas'||profile.group==='Grim Gaol'){
+  for(const tip of profile.tips||[])if(!/boss shield\. Enter the dungeon/.test(tip))add('Solo encounter',tip);
+  if(profile.potions?.length)add('Consumables',profile.potions.join(' · '));
+ }
+ if(!rows.length)add('Encounter assignment','No class-specific rotation is documented for this class. Follow the agreed team assignments and the fight overview.','Coverage note');
+ if(profile.group!=='Solo arenas'&&profile.group!=='Grim Gaol'){
+  if(role==='Healer')add('Your role','Coordinate healing and buffs with the team; respect healing-inversion mechanics where applicable.','General role guidance');
+  else if(role==='Support')add('Your role','Maintain your assigned buffs and debuffs; only take taunts agreed by the team.','General role guidance');
+  else if(/DPS/.test(role||''))add('Your role','Maintain damage during safe windows and follow the team’s target and mechanic calls.','General role guidance');
+ }
+ return rows;
+}
+function drawBossGuideRoleTips(root,profile,cls){
+ root.replaceChildren();root.append(node('h3','Role-specific Tips'));
+ if(!cls){root.append(node('p','No class-specific loadout is documented for this encounter.','muted tiny'));return}
+ const role=ultraSelectedRating(profile.name,cls)?.role;
+ const context=node('p','Playing as '+cls+(role?' · '+role:''),'boss-guide-role-context');root.append(context);
+ const list=node('div',undefined,'boss-guide-steps');
+ for(const [i,tip] of bossGuideRoleTips(profile,cls,role).entries()){
+  const step=node('div',undefined,'boss-guide-step'),body=node('div'),p=node('p');
+  ultraExplainText(p,tip.text,profile.name);
+  body.append(node('strong',tip.title),p,node('small',tip.source,'muted tiny'));step.append(node('span',String(i+1).padStart(2,'0'),'boss-guide-step-number'),body);list.append(step);
+ }root.append(list);
+}
 function renderBossGuideDetail(entry){
  const root=$('bossguidedetail');root.replaceChildren();
  if(!entry){root.append(node('p','No bosses match these filters.','muted tiny'));return}
@@ -2035,31 +2105,34 @@ function renderBossGuideDetail(entry){
  if(!profile){const note=node('div',undefined,'boss-guide-panel');note.append(node('h3','Guide not yet verified'),node('p','This encounter is listed for discovery. No reviewed strategy or loadout is available; verify the location and seasonal availability.','muted'),bossGuideWiki(entry.wiki,'Wiki location ↗'));root.append(note);return}
  const key=profile.name;
  if(profile.team?.length){const team=node('section',undefined,'boss-guide-panel boss-guide-team');team.append(node('h3','Example team'));const chips=node('div',undefined,'boss-guide-chips');for(const member of profile.team){const owned=ultraOwned(member.cls);const chip=node('span',(owned?'✓ ':'')+member.cls,'boss-guide-chip'+(owned?' is-owned':''));chips.append(chip)}team.append(chips);root.append(team)}
- const layout=node('div',undefined,'boss-guide-layout');
- const names=ultraClassOptions(key,profile).flatMap(g=>g.names);
+ const layout=node('div',undefined,'boss-guide-layout'),rolePanel=node('section',undefined,'boss-guide-panel boss-guide-role-panel');
+ const groups=ultraClassOptions(key,profile),names=groups.flatMap(g=>g.names);
  if(names.length){
   const setup=node('section',undefined,'boss-guide-panel boss-guide-loadout');setup.append(node('h3','Your Loadout'));
-  const select=node('select',undefined,'ultra-role-select');select.setAttribute('aria-label',key+' class');fillUltraClassSelect(select,key,profile);
-  if(names.includes(selectedBossClasses.get(key)))select.value=selectedBossClasses.get(key);
+  const search=node('input',undefined,'boss-class-search');search.type='search';search.placeholder='Search class…';search.setAttribute('aria-label','Search classes for '+key);
+  const select=node('select',undefined,'ultra-role-select');select.setAttribute('aria-label',key+' class');
+  const searchNotice=node('p',undefined,'boss-class-search-status muted tiny');searchNotice.setAttribute('aria-live','polite');
+  const refill=()=>{const filtered=bossGuideClassGroups(groups,search.value),available=filtered.flatMap(g=>g.names);select.replaceChildren();for(const g of filtered){const optgroup=node('optgroup');optgroup.label=g.label;for(const n of g.names){const score=ultraSelectedRating(key,n),option=new Option((g.owned?'✓ ':'')+n+(score?' · '+score.rating+'/5':''),n);option.className=g.owned?'ultra-option-owned':'ultra-option-missing';optgroup.append(option)}select.append(optgroup)}const previous=selectedBossClasses.get(key);select.disabled=!available.length;if(!available.length){const empty=new Option('No matching classes','');select.append(empty);searchNotice.textContent='No matching classes. Clear the search to return to your loadout.';return false}select.value=available.includes(previous)?previous:available[0];searchNotice.textContent=search.value?available.length+' matching classes':'';return true};
+  refill();
   const rating=node('div',undefined,'ultra-selected-rating'),gear=node('div',undefined,'ultra-focus-gear'),notice=node('p',undefined,'muted tiny');
-  const draw=()=>{selectedBossClasses.set(key,select.value);renderUltraSelectedRating(rating,key,select.value);gear.replaceChildren();const genericKey=Object.keys(starterBuilds).find(x=>sameUltraClass(x,select.value));const build=ultraSuggestedGear(key,select.value,profile,starterBuilds[genericKey]?.group);appendUltraGearCells(gear,build,key);notice.textContent=build?.estimated?'Suggested general enhancements — not verified for this encounter.':'Enhancements from the encounter guide.';};
-  setup.append(select,rating,gear,notice);select.onchange=draw;draw();layout.append(setup);
+  const draw=()=>{selectedBossClasses.set(key,select.value);renderUltraSelectedRating(rating,key,select.value);gear.replaceChildren();const genericKey=Object.keys(starterBuilds).find(x=>sameUltraClass(x,select.value));const build=ultraSuggestedGear(key,select.value,profile,starterBuilds[genericKey]?.group);appendUltraGearCells(gear,build,key);notice.textContent=build?.estimated?'Suggested general enhancements — not verified for this encounter.':'Enhancements from the encounter guide.';drawBossGuideRoleTips(rolePanel,profile,select.value);};
+  setup.append(search,select,searchNotice,rating,gear,notice);select.onchange=draw;search.oninput=()=>{if(refill())draw()};draw();layout.append(setup);
  }
  const fight=node('section',undefined,'boss-guide-panel boss-guide-fight');fight.append(node('h3','Fight at a glance'));
  const list=node('div',undefined,'boss-guide-steps');for(const [i,tip] of (profile.tips||[]).entries()){const step=node('div',undefined,'boss-guide-step'),p=node('p');ultraExplainText(p,ultraBeginnerText(tip,''),key);step.append(node('span',String(i+1),'boss-guide-step-number'),p);list.append(step)}fight.append(list);
  if(profile.potions?.length){const consumables=node('div',undefined,'boss-guide-consumables');consumables.append(node('strong','Suggested consumables'),node('p',profile.potions.join(' · ')));fight.append(consumables)}
- layout.append(fight);root.append(layout);
+ layout.append(fight);root.append(layout);if(!names.length)drawBossGuideRoleTips(rolePanel,profile,'');root.append(rolePanel);
  const sources=node('div',undefined,'boss-guide-sources');sources.append(bossGuideWiki(entry.wiki,'Wiki location ↗'));const link=node('a','↗ Simplified Bosses Guide — '+profile.sheet);link.href=simplifiedGuideSource;link.target='_blank';link.rel='noopener noreferrer';sources.append(link);root.append(sources);
 }
 function renderBossGuides(root,term,category){
  const entries=bossGuideEntries(simplifiedExtraEncounters,ultraBossCatalog);
- const matches=filterBossGuides(entries,term,category,p=>ultraClassOptions(p.name,p).flatMap(g=>g.names));
+ const matches=bossGuideSorted(filterBossGuides(entries,term,category,p=>ultraClassOptions(p.name,p).flatMap(g=>g.names)));
  selectedBossGuide=bossGuideSelection(matches,selectedBossGuide);
  $('bossguidecount').textContent=matches.length+' / '+entries.length+' encounters · '+entries.filter(e=>e.profile).length+' guides';
- root.replaceChildren();
- for(const group of bossGuideOrder){const rows=matches.filter(x=>x.group===group);if(!rows.length)continue;root.append(node('div',group+' · '+rows.length,'ultra-group-label'));for(const e of rows){const button=node('button',undefined,'ultracard boss-guide-item'+(e.id===selectedBossGuide?' active':''));button.type='button';button.setAttribute('aria-pressed',String(e.id===selectedBossGuide));button.append(node('small',e.profile?'Community guide':'Catalog only'),node('strong',e.name));button.onclick=()=>{selectedBossGuide=e.id;renderBossGuides(root,term,category)};root.append(button)}}
+ const scroll=root.scrollTop;root.replaceChildren();
+ for(const group of bossGuideOrder){const rows=matches.filter(x=>x.group===group);if(!rows.length)continue;root.append(node('div',group+' · '+rows.length,'ultra-group-label'));for(const e of rows){const button=node('button',undefined,'ultracard boss-guide-item'+(e.id===selectedBossGuide?' active':''));button.type='button';button.setAttribute('aria-pressed',String(e.id===selectedBossGuide));button.append(node('strong',e.name));if(!e.profile)button.append(node('small','Guide pending','boss-guide-pending'));button.onclick=()=>{selectedBossGuide=e.id;renderBossGuides(root,term,category);root.querySelector?.('[aria-pressed="true"]')?.focus({preventScroll:true})};root.append(button)}}
  if(!matches.length)root.append(node('p','No matching bosses.','muted tiny'));
- renderBossGuideDetail(matches.find(e=>e.id===selectedBossGuide));
+ root.scrollTop=scroll;renderBossGuideDetail(matches.find(e=>e.id===selectedBossGuide));
 }
 
 
