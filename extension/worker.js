@@ -152,7 +152,13 @@ function matchWikiListItem(snapshot,name,category){
  const key=nameKey(name),suffix=key.match(/^(.*) \((sword|axe|bow|dagger|gauntlet|gun|handgun|mace|polearm|rifle|staff|wand|armor|class|helm|cape|pet|item)\)$/);
  // A qualifier such as (AC), (Merge), (Legend) or (1) may be absent
  // from exports. Never mark it absent based on a failed exact-name match.
- if(result.state==='not-found'&&/\s\([^)]+\)$/.test(key)&&!suffix)return {state:'ambiguous'};
+ if(result.state==='not-found'&&/\s\([^)]+\)$/.test(key)&&!suffix){
+  // Only well-known acquisition qualifiers may be reduced to a family for
+  // absence checks. A family match is never proof of variant ownership.
+  const family=k=>k.replace(/(?:\s*\((?:0 ac|ac|non-legend|legend|merge|rare|seasonal|member|non-member|class|sword|armor|helm|cape|pet|misc|item|\d+)\))+$/i,'').trim();
+  const base=family(key);
+  if(base===key||snapshot.items.some(r=>r.Count>0&&family(nameKey(r.Name))===base))return {state:'ambiguous'};
+ }
  if(suffix&&Object.hasOwn(wikiTypes,category)&&wikiTypes[category].includes(suffix[2])){
   const ids=new Set(snapshot.items.filter(r=>r.Count>0&&wikiTypes[category].includes(nameKey(r.Type))&&[key,suffix[1]].includes(nameKey(r.Name))).map(r=>r.ID));
   if(ids.size>1)return {state:'ambiguous'};
@@ -160,6 +166,18 @@ function matchWikiListItem(snapshot,name,category){
  return result;
 }
 
+function searchLocalInventory(snapshot,query,location){
+ if(!snapshot||!Array.isArray(snapshot.items))return {rows:[],total:0,syncedAt:null};
+ const q=nameKey(query),rows=new Map();
+ if(q.length<2||q.length>120||!['all','bag','bank'].includes(location))return {rows:[],total:0,syncedAt:snapshot.syncedAt};
+ for(const r of snapshot.items){
+  if(!r.Count||!nameKey(r.Name).includes(q)||location==='bag'&&r.Bank!==0||location==='bank'&&r.Bank!==1)continue;
+  const key=JSON.stringify([r.ID,r.Bank]);const old=rows.get(key);
+  if(!old||old.count<r.Count)rows.set(key,{name:r.Name,type:r.Type,count:r.Count,bank:r.Bank});
+ }
+ const sorted=[...rows.values()].sort((a,b)=>Number(nameKey(b.name)===q)-Number(nameKey(a.name)===q)||a.name.localeCompare(b.name)||a.bank-b.bank);
+ return {rows:sorted.slice(0,50),total:sorted.length,syncedAt:snapshot.syncedAt};
+}
 async function handle(message,sender){
  if(['wishlist-queue-add','wishlist-queue-read','wishlist-queue-ack'].includes(message?.type))return queueWishlist(message,sender);
  const account=await accountStage(message,sender);if(account)return account;
@@ -183,6 +201,11 @@ async function handle(message,sender){
   const data=cleanSnapshot(message.snapshot);
   await restrictStorage();await chrome.storage.local.set({[KEY]:data});
   return {ok:true,count:data.items.length,syncedAt:data.syncedAt};
+ }
+ if(message?.type==='inventory-search'){
+  if(!popupSender(sender)||typeof message.query!=='string'||message.query.length>120||!['all','bag','bank'].includes(message.location))return {ok:false,error:'Invalid inventory search.'};
+  await restrictStorage();const snapshot=(await chrome.storage.local.get(KEY))[KEY];
+  return {ok:true,...searchLocalInventory(snapshot,message.query,message.location)};
  }
  if(popupSender(sender)&&message?.type==='inventory-summary'){
   await restrictStorage();const stored=(await chrome.storage.local.get(KEY))[KEY];
