@@ -55,6 +55,8 @@
    }catch(err){link.disabled=false;link.textContent='+ Add to Wishlist';wishlistNote.textContent=String(err?.message||err)}
   });
   card.append(link,wishlistNote);
+  const href=!target.variant?globalThis.AQWCWikiWishlist?.build(item):null;
+  if(href){const view=document.createElement('a');view.href=href;view.target='_blank';view.rel='noopener noreferrer';view.textContent='View in Wishlist ↗';view.style.cssText='display:inline-block;margin-top:5px;color:#a9ddff;font:600 11px system-ui';card.append(view)}
  }
  try{globalThis.AQWCWikiMaterials?.render(card,content,location.origin)}catch{console.warn('AQW Companion: material progress unavailable on this page.')}
  show('Checking synced inventory…','','#b6dfff');
