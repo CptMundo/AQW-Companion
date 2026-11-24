@@ -146,3 +146,12 @@ nav.tabs.subnav[aria-label="Section navigation"]:has(button[data-parent="planner
 #planner .planner-my-toolbar :is(button,select):focus-visible{outline:2px solid #8edcff;outline-offset:2px}
 @media(max-width:760px){#planner .planner-board .planner-my-toolbar{gap:8px}#planner .planner-board .planner-board-actions{margin-left:0;justify-content:flex-start}#planner .planner-toolbar-filters{flex:1 1 auto}}
 @media(max-width:480px){#planner .planner-frequency-controls{width:100%;box-sizing:border-box}#planner .planner-frequency-controls button{flex:1}#planner .planner-toolbar-filters{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}#planner .planner-toolbar-filters select{width:100%;min-width:0}#planner .planner-board .planner-board-actions{width:100%}#planner .planner-board-actions button:first-child{flex:1}}
+
+/* PR 114: compact pin / unpin pictograms, with accessible button names. */
+.planner-quest-actions .planner-pin-action{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;width:27px;min-width:27px;height:27px;min-height:27px;padding:0!important;border:1px solid #416681;border-radius:6px;background:#102335;color:#a2c7da}
+.planner-quest-actions .planner-pin-action::before{content:"";display:block;width:16px;height:16px;background:currentColor;mask:var(--planner-pin-icon) center/contain no-repeat;-webkit-mask:var(--planner-pin-icon) center/contain no-repeat}
+.planner-quest-actions .planner-pin-action.is-unpinned{--planner-pin-icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 17v5M9 3h6l-1 6 4 4v3H6v-3l4-4-1-6Z'/%3E%3C/svg%3E")}
+.planner-quest-actions .planner-pin-action.is-pinned{--planner-pin-icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 17v5M9 3h6l-1 6 4 4v3H6v-3l4-4-1-6Z'/%3E%3Cpath d='M3 3l18 18'/%3E%3C/svg%3E")}
+.planner-quest-actions .planner-pin-action.is-unpinned:hover{color:#e5f7ff;background:#214e70;border-color:#67bcdf}
+.planner-quest-actions .planner-pin-action.is-pinned:hover{color:#ffb4b4;background:#492a34;border-color:#be777d}
+.planner-quest-actions .planner-pin-action:focus-visible{outline:2px solid #8edcff;outline-offset:2px}
