@@ -93,7 +93,7 @@ assert.ok(html.includes('id="stack-alert-list"'));
 assert.ok(html.includes('id="home-stack-card"'));
 assert.ok(html.includes('id="stack-cap-save"'));
 assert.ok(html.includes('id="stack-cap-clear"'));
-assert.ok(html.includes('src="js/stack-alerts.js"'));
+assert.ok(html.includes('src="js/stack-alerts.js?v=137"'));
 assert.ok(html.includes('href="css/stack-alerts.css?v=95"'));
 assert.ok(html.includes("renderUnlocks();renderStackAlerts();showUnlockSuggestions()"),"Alerts refresh with inventory snapshots");
 assert.ok(html.includes("initStackAlerts();"));
@@ -141,4 +141,5 @@ assert.ok(css.includes("#unlocks #unlocklist .wishlist-completion-remove"));
  assert.equal(api.cleanup(items,{wishlist:[{name:'goal',steps:[{kind:'material',item:"Necrotic Sword's Blade"}]}]}).rows.find(r=>r.name==="Necrotic Sword's Blade").status,'protected');
  assert.equal(api.cleanup(items,{routines:[{name:'test',targets:['Wheel of Bacon Token ×1']}]}).rows.find(r=>r.name==='Wheel of Bacon Token').status,'protected');
  assert.equal(api.cleanup(items.filter(r=>r.ID!=='2')).rows.find(r=>r.name==="Necrotic Sword's Blade").status,'protected');
+ assert.equal(api.cleanup(items,{reviewed:[{name:'Other goal',ingredients:[["Necrotic Sword's Blade",1]]}]}).rows.find(r=>r.name==="Necrotic Sword's Blade").status,'protected');
 }
