@@ -50,3 +50,40 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.ok(read('extension/sync.js').includes('if(!event.isTrusted||pending)return'));
  console.log('Inventory sync: scope, sanitized snapshot, storage, summary and clear passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
+
+(async()=>{
+ const stored={},chromeMock={runtime:{getURL:x=>'chrome-extension://test/'+x,onMessage:{addListener(){}}},storage:{local:{async setAccessLevel(){},async get(k){return {[k]:stored[k]}}}}};
+ const api=vm.runInNewContext(read('extension/worker.js')+'\n({handle,matchWikiItem})',{chrome:chromeMock,URL,TextEncoder});
+ const row=(ID,Name,Type,Count,Bank)=>({ID,Name,Type,Count,Bank});
+ const snap={items:[row('1','Void Aura','Item',750,1),row('1','Void Aura','Item',25,0),row('2','Necrotic Sword of Doom','Sword',1,0),row('3','StoneCrusher','Class',1,0),row('4','Same Name','Sword',1,0),row('5','Same Name','Sword',1,1)],syncedAt:'2026-11-24',exportedAt:'2026-11-24'};
+ const match=(name,category)=>api.matchWikiItem(snap,{name,category});
+ assert.equal(match('Void Aura','misc-items').total,775);assert.equal(match('Void Aura','misc-items').bank,750);assert.equal(match('Void Aura','misc-items').inventory,25);
+ assert.equal(match('Necrotic Sword of Doom (Sword)','swords').state,'owned');
+ assert.equal(match('StoneCrusher (Merge)','classes').state,'ambiguous');
+ assert.equal(match('Same Name','swords').state,'ambiguous');
+ assert.equal(match('Unknown','swords').state,'not-found');
+ assert.equal(match('Void Aura','shops').state,'unsupported');
+ assert.equal(match('Void Aura','swords').state,'ambiguous');
+ assert.equal(api.matchWikiItem(undefined,{name:'Void Aura',category:'misc-items'}).state,'unsynced');
+ const msg={type:'wiki-item-lookup',query:{name:'Void Aura',category:'misc-items'}};
+ stored['aqwc-inventory-v1']=snap;
+ assert.equal((await api.handle(msg,{url:'https://evil.example/void-aura',frameId:0})).ok,false);
+ assert.equal((await api.handle(msg,{url:'https://aqwwiki.wikidot.com/void-aura',frameId:1})).ok,false);
+ const result=await api.handle(msg,{url:'https://aqwwiki.wikidot.com/void-aura',frameId:0});
+ assert.equal(result.total,775);assert.equal(result.items,undefined);
+ const runWiki=(crumbs,body='Description: item',response=result)=>{
+  let request,inserted,closed;
+  function el(){return {style:{},children:[],append(...x){this.children.push(...x)},attachShadow({mode}){closed=mode;return el()}}}
+  const title={textContent:'Void Aura',insertAdjacentElement(_,host){inserted=host}},content={textContent:body},crumb={querySelectorAll(){return crumbs.map(x=>({href:'https://aqwwiki.wikidot.com/'+x}))}};
+  const doc={getElementById:id=>({'page-title':title,'page-content':content,'breadcrumbs':crumb}[id]||null),createElement:el};
+  vm.runInNewContext(read('extension/wiki-items.js'),{URL,location:{origin:'https://aqwwiki.wikidot.com',pathname:'/void-aura',href:'https://aqwwiki.wikidot.com/void-aura'},document:doc,chrome:{runtime:{sendMessage(m,cb){request=m;cb(response)}}}});
+  return {request,inserted,closed};
+ };
+ assert.ok(runWiki(['items','misc-items']).inserted);
+ assert.equal(runWiki(['items','misc-items']).closed,'closed');
+ assert.equal(runWiki(['world','shops']).request,undefined);
+ assert.equal(runWiki(['items','swords'],'Void Aura usually refers to:').request,undefined);
+ assert.equal(runWiki(['items','misc-items'],'Description: item',{ok:true,state:'unsupported'}).inserted,undefined);
+ assert.equal(manifest.version,'0.3.0');assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
+ console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
+})().catch(error=>{console.error(error);process.exitCode=1});
