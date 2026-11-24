@@ -1750,8 +1750,8 @@ function renderUltraSelectedRating(target,key,cls){
 // Small, source-reviewed glossary. No dependency on later Class Builds globals.
 const ultraGlossary={
  'Noxious Decay':{text:'Dage reverses direct heals and healing over time for 11 seconds. Life steal still works. Do not confuse this debuff on you with Decay on the boss.',icon:'https://aqw.app/assets/NoxiusDecay.png',source:'https://aqw.app/monsters/ultradage'},
- 'Decay':{text:'Blocks ordinary healing on the affected target. On Dage, apply it to the boss during regeneration only if assigned.'},
- 'Health Vamp':{text:'Awe weapon enhancement. Auto attacks can restore HP through life steal. Useful against Dage.'},
+ 'Decay':{text:'Blocks ordinary healing on the affected target.'},
+ 'Health Vamp':{text:'Awe weapon enhancement. Auto attacks can restore HP through life steal.'},
  'Dauntless':{text:'Forge weapon enhancement. Skill 2 triggers damage and life steal; temporarily blocks ordinary healing.'},
  'Scroll of Enrage':{text:'Consumable that forces eligible attacks onto you. Use only on your assigned taunt turn.'},
  'Scroll of Decay':{text:'Consumable to block the target’s ordinary healing. Coordinate with the assigned Decay player.'},
@@ -1768,9 +1768,9 @@ const ultraGlossary={
  'Sanctity':{text:'Speaker debuff: do not enter another Zone while affected.'},
  'Truth':{text:'Speaker attack that must follow the agreed taunt and mitigation rotation.'},
  'Listen':{text:'Speaker petrification attack. Only the assigned player intercepts it.'},
- 'Zone':{text:'A location-based mechanic. Follow the encounter’s instruction; Dage requires entering the lit circle, Speaker only your assigned Zone.'},
- 'HoT':{text:'Healing over time; repeated healing ticks. Dage can invert this into damage.'},
- 'HoTs':{text:'Healing over time; repeated healing ticks. Dage can invert this into damage.'},
+ 'Zone':{text:'A marked area of the battlefield used for a special mechanic.'},
+ 'HoT':{text:'Healing over time; repeated healing ticks.'},
+ 'HoTs':{text:'Healing over time; repeated healing ticks.'},
  'DPS':{text:'Damage per second; the damage-dealing role.'},
  'Life steal':{text:'Restores health from damage dealt; not the same as ordinary healing.'},
  'lifesteal':{text:'Restores health from damage dealt; not the same as ordinary healing.'},
@@ -1821,12 +1821,73 @@ const ultraGlossary={
  'Healer':{text:'Standard enhancement focused on health and healing.'}
 };
 const ultraTermIndex=new Map(Object.entries(ultraGlossary).map(([name,info])=>[name.toLowerCase(),{name,...info}]));
-const ultraTermPattern=new RegExp('('+[...Object.keys(ultraGlossary)].sort((a,b)=>b.length-a.length).map(x=>x.replace(/[.*+?^$(){}|[\]\\]/g,'\\function appendUltraGearCells(gear,build){')).map(x=>'\\b'+x+'\\b').join('|')+'|“[^”]+”|"[^"]+")','gi');
-function ultraExplainText(target,value){
+const ultraTermPattern=new RegExp('('+[...Object.keys(ultraGlossary)].sort((a,b)=>b.length-a.length).map(x=>x.replace(/[.*+?^$(){}|[\]\\]/g,'\\
+const ultraBaseStyles={
+ 'Wizard':['Legion Revenant','Shaman','LightCaster','Hollowborn Vindicator','Lich','ArchMage','Blaze Binder','Immortal DarkCaster','Timeless DarkCaster','Master of Moglins','Arachnomancer'],
+ 'Healer':['Dragon of Time','Frostval Barbarian','Bard'],
+ 'Fighter':['StoneCrusher','Paladin Chronomancer']
+};
+function ultraBaseFor(cls){
+ for(const [base,names] of Object.entries(ultraBaseStyles))if(names.some(n=>sameUltraClass(n,cls)))return base;
+ return 'Lucky';
+}
+function ultraSuggestedGear(key,cls,profile,generic=null,encounter=null){
+ const exact=ultraWorkbookBuild(profile,cls);
+ // Other source rows establish the class's usual base; never import a
+ // reduced-HP helm or a risky cape from an unrelated encounter.
+ const known=[...Object.values(simplifiedProfiles),...simplifiedExtraEncounters].map(p=>ultraWorkbookBuild(p,cls)).filter(Boolean);
+ const base=exact?.base||encounter?.base||generic?.base||known[0]?.base||ultraBaseFor(cls);
+ const role=ultraSelectedRating(key,cls)?.role;
+ const support=role==='Support'||role==='Healer';
+ const magical=base==='Wizard'||base==='Healer';
+ const fallback={weapon:support?'Awe Blast':magical?'Valiance':'Valiance',helm:'Base Forge',cape:'Penitence',base};
+ const usable=(v)=>typeof v==='string'&&v.trim()&&!/^choose/i.test(v);
+ const preferred=exact||encounter||generic;
+ const out={...fallback};
+ for(const k of ['weapon','helm','cape','base'])if(usable(preferred?.[k]))out[k]=preferred[k];
+ if(key==='dage'){
+  if(!/Health Vamp|Dauntless/i.test(out.weapon))out.weapon='Health Vamp';
+  if(!exact) {out.helm='Base Forge';out.cape='Penitence';}
+  if(sameUltraClass(cls,'Chaos Avenger'))out.consumable='Scroll of Enrage (if assigned)';
+  else out.consumable='Scroll of Decay (backup if needed)';
+ }else if(key==='kathool')out.consumable='Vigil';
+ else if(usable(preferred?.consumable))out.consumable=preferred.consumable;
+ if(key==='darkon'||key==='Void Nightbane'||key==='Astral Empyrean')if(out.cape==='Vainglory')out.cape='Penitence';
+ out.estimated=!exact&&!encounter;
+ return out;
+}
+function ultraRecommendedTeam(b,profile){
+ // Keep a complete established strategy intact; do not assemble a party
+ // out of the highest individual ratings. The main guide uses b.team.
+ return (b.team?.length?b.team:profile?.team?.map(r=>r.cls)||[]).slice();
+}
+function appendUltraRecommendedTeam(root,b,profile){
+ const names=ultraRecommendedTeam(b,profile);if(!names.length)return;
+ const wrap=node('section',undefined,'ultra-recommended-team');
+ const header=node('div',undefined,'ultra-recommended-heading');
+ header.append(node('h3','Recommended team'),node('small',names.length+' players','muted tiny'));wrap.append(header);
+ const list=node('div',undefined,'ultra-recommended-classes');
+ for(const name of names){const owned=ultraOwned(name),chip=node('span',undefined,'ultra-team-chip'+(owned?' is-owned':''));
+ chip.append(node('span',owned?'✓':'○','ultra-team-mark'),node('span',name));chip.title=owned?'Class owned':'Class not owned';list.append(chip)}
+ wrap.append(list);root.append(wrap);
+}
+
+function appendUltraGearCells(gear,build,boss){')).map(x=>'\\b'+x+'\\b').join('|')+'|“[^”]+”|"[^"]+")','gi');
+const ultraContextTerms={
+ dage:{Zone:'Enter the glowing blue floor platform within 3 seconds of the protection-spells quote. Follow the lit platform, not a fixed side.',Decay:'Apply this to Dage during his regeneration only if you are assigned. This is different from Noxious Decay on you.',HoT:'Healing over time. Noxious Decay turns its healing ticks into damage.',HoTs:'Healing over time. Noxious Decay turns its healing ticks into damage.'},
+ speaker:{Zone:'Enter only your assigned glowing Zone in your chosen rotation. Do not enter while affected by Magia Burn, Stasis or Sanctity.'},
+ gramiel:{Decay:'Do not apply Decay during the crystal phase; it can strengthen Gramiel.'}
+};
+function ultraTermInfo(term,boss){
+ const info=ultraTermIndex.get(String(term).toLowerCase());if(!info)return null;
+ const context=ultraContextTerms[boss]?.[info.name];
+ return context?{...info,text:context}:info;
+}
+function ultraExplainText(target,value,boss){
  for(const part of String(value||'').split(ultraTermPattern)){
   if(!part)continue;
-  const info=ultraTermIndex.get(part.toLowerCase());
-  if(!info){target.append(/^["“]/.test(part)?node('strong',part,'ultra-guide-emphasis'):document.createTextNode(part));continue}
+  const info=ultraTermInfo(part,boss);
+  if(!info){target.append(/^["“]/.test(part)?node('strong',part,'ultra-guide-emphasis ultra-react-quote'):document.createTextNode(part));continue}
   const term=node('span',part,'ultra-help-term');term.tabIndex=0;
   const tip=node('span',undefined,'ultra-help-popup');tip.setAttribute('role','tooltip');
   if(info.icon){const img=node('img');img.alt=info.name+' icon';img.referrerPolicy='no-referrer';img.width=36;img.height=36;img.onerror=()=>img.remove();const load=()=>{if(!img.getAttribute('src'))img.src=info.icon};term.addEventListener('mouseenter',load,{once:true});term.addEventListener('focus',load,{once:true});tip.append(img);}
@@ -1855,23 +1916,40 @@ function ultraBeginnerActions(key,cls,existing){
   if(sameUltraClass(cls,'Chrono ShadowHunter'))tips.push('Use FMJ Rounds (4) for damage; save Silver Bullet (5) for the sword when needed. Reload (2) afterward.');
   return tips;
  }
+ if(key==='dage'&&sameUltraClass(cls,'ArchPaladin'))return [
+ 'Equip Health Vamp or Dauntless. Do not use Hymn of Light (3) while Noxious Decay is active.',
+ 'Keep Commandment (2) and Righteous Seal (4) active; use Sacred Magic: Eden (5) for planned mitigation.',
+ '“Cower behind your meager protection spells!” — move onto the glowing blue platform within 3 seconds.',
+ 'If no one else covers regeneration, bring Scroll of Decay as backup. Use it on “I possess the full power of the Legion at my disposal.” only if assigned.'
+ ];
+ if(key==='dage'&&sameUltraClass(cls,'Lord of Order'))return [
+ 'Equip Health Vamp or Dauntless. Maintain non-healing buffs; avoid your heal during Noxious Decay.',
+ '“Cower behind your meager protection spells!” — move onto the glowing blue platform within 3 seconds.',
+ 'Prepare Blessing of Order (5) for the assigned mitigation window. If no one else covers regeneration, bring Scroll of Decay as backup; use it on “I possess the full power of the Legion at my disposal.” only if assigned.'
+ ];
  if(key==='dage'&&sameUltraClass(cls,'Chrono ShadowHunter'))return [
  'Equip Health Vamp for life steal. Do not use Tracer Rounds (3) while Noxious Decay is active; it applies a HoT.',
  '“Cower behind your meager protection spells!” — move to the glowing blue platform within 3 seconds. Resume damage after the blast.',
- 'Use FMJ Rounds (4) for DPS, Silver Bullet (5) for burst, then Reload (2). Avoid ordinary heals. Let the assigned Decay player handle Dage’s regeneration.'
+ 'Use FMJ Rounds (4) for DPS, Silver Bullet (5) for burst, then Reload (2). Avoid ordinary heals. If no one covers regeneration, bring Scroll of Decay as backup.'
  ];
  if(key==='dage'&&sameUltraClass(cls,'Verus DoomKnight'))return [
  'Equip Dauntless or Health Vamp. Use Soul Fracture (2) to weaken Dage. Watch Noxious Decay before using empowered Life Carve (3), which can apply a HoT.',
  '“Cower behind your meager protection spells!” — reach the glowing blue platform within 3 seconds.',
  'If assigned Decay: use Unleash Doom (5) as Dage starts the regeneration cast; coordinate another Decay source if necessary.'
  ];
+ if(key==='dage'){
+  const decay=sameUltraClass(cls,'Legion DoomKnight')?'Use Imminent Doom (5) on “I possess the full power of the Legion at my disposal.” if assigned to prevent regeneration.':sameUltraClass(cls,'Legion Revenant')?'Use Atramentous Shade (2) on “I possess the full power of the Legion at my disposal.” only if assigned to prevent regeneration.': 'If your team has no Decay source, bring Scroll of Decay as backup. Use it on “I possess the full power of the Legion at my disposal.” only if assigned.';
+  const tips=['Equip Health Vamp or Dauntless for life steal. Avoid normal healing and HoTs during Noxious Decay.','“Cower behind your meager protection spells!” — reach the glowing blue platform within 3 seconds.',decay];
+  if(sameUltraClass(cls,'Chaos Avenger'))tips.push('If assigned loop taunt, open with Scroll of Enrage and use Flux (3) just before the taunt expires. Watch the first auto after each safe zone.');
+  return tips;
+ }
  return existing.map(x=>ultraBeginnerText(x,cls));
 }
 
 function appendUltraGearCells(gear,build){
  if(!build){gear.append(node('span','No reviewed class-specific gear preset; consult the encounter guide.','muted tiny'));return}
  for(const [label,value] of [['Weapon',build.weapon],['Helm',build.helm],['Cape',build.cape],['Base',build.base],['Consumable',build.consumable]].filter(([,v])=>v)){
-  const cell=node('div',undefined,'ultra-focus-gear-cell'),name=node('strong');ultraExplainText(name,value);cell.append(node('small',label),name);gear.append(cell);
+  const cell=node('div',undefined,'ultra-focus-gear-cell'),name=node('strong');ultraExplainText(name,value,boss);cell.append(node('small',label),name);gear.append(cell);
  }
 }
 // Add only useful source guidance for the selected class; conditional on the
@@ -1962,10 +2040,11 @@ function appendSimplifiedProfile(root,profile){
   const label=node('label','Your loadout','muted tiny'),select=node('select',undefined,'ultra-role-select');select.setAttribute('aria-label',profile.name+' class');
   fillUltraClassSelect(select,key,profile);
   const rating=node('div',undefined,'ultra-selected-rating'),gear=node('div',undefined,'ultra-focus-gear');
-  const draw=()=>{renderUltraSelectedRating(rating,key,select.value);gear.replaceChildren();const build=ultraWorkbookBuild(profile,select.value);appendUltraGearCells(gear,build);};
-  label.append(select);content.append(label,rating,gear);select.onchange=draw;draw();
+  const note=node('p',undefined,'muted tiny');
+  const draw=()=>{renderUltraSelectedRating(rating,key,select.value);gear.replaceChildren();const genericKey=Object.keys(starterBuilds).find(x=>sameUltraClass(x,select.value));const build=ultraSuggestedGear(key,select.value,profile,starterBuilds[genericKey]?.group);appendUltraGearCells(gear,build,key);note.textContent=build.estimated?'Suggested general setup — not encounter-tested.':'Guide setup.';};
+  label.append(select);content.append(label,rating,gear,note);select.onchange=draw;draw();
  }
- for(const tip of profile.tips||[]){const p=node('p');ultraExplainText(p,ultraBeginnerText(tip,''));content.append(p)}
+ for(const tip of profile.tips||[]){const p=node('p');ultraExplainText(p,ultraBeginnerText(tip,''),key);content.append(p)}
  if(profile.potions?.length)content.append(node('p','Suggested consumables: '+profile.potions.join(' · ')));
  if(profile.team?.length)content.append(node('p','Example team: '+profile.team.map(r=>r.cls).join(' · '),'muted tiny'));
  const link=node('a','↗ Simplified Bosses Guide — '+profile.sheet);link.href=simplifiedGuideSource;link.target='_blank';link.rel='noopener noreferrer';content.append(link);detail.append(content);root.append(detail);
@@ -1985,6 +2064,7 @@ function renderUltraDetail(b){
  const actions=node('div',undefined,'ultra-title-actions');
  actions.append(makeCopyJoin(b.join),node('span',b.type,'quick-pill'),node('span',b.difficulty,'pill'));
  titleBar.append(node('h2',ultraEmojiFor(b)+' '+b.name),actions);root.append(titleBar);
+ appendUltraRecommendedTeam(root,b,profile);
  const compact=node('div',undefined,'ultra-guide-layout');
  const setup=node('section',undefined,'ultra-focus-card ultra-setup-card');
  setup.append(node('h3','⚔️ Your loadout'));
@@ -2002,7 +2082,7 @@ function renderUltraDetail(b){
  const focus=node('div',undefined,'ultra-focus-grid');
  function focusCard(icon,label,content,kind){
   const card=node('div',undefined,'ultra-focus-item '+(kind||''));
-  const body=node('strong');ultraExplainText(body,ultraBeginnerText(content,''));card.append(node('small',icon+' '+label),body);
+  const body=node('strong');ultraExplainText(body,ultraBeginnerText(content,''),b.id);card.append(node('small',icon+' '+label),body);
   return card;
  }
  focus.append(focusCard('✅','YOUR GOAL',quick.priority||b.phases[0]?.[1]||'Follow your assigned role','ultra-focus-good'));
@@ -2080,32 +2160,31 @@ function renderUltraDetail(b){
   const genericKey=Object.keys(starterBuilds).find(x=>sameUltraClass(x,cls));
   const generic=starterBuilds[genericKey]?.group||(cls==='Bard'?bardSupport:null);
   const encounter=encounterUltraBuild(b.id,cls,generic);
-  const baseBuild=workbook||encounter||generic;
-  const build=b.id==='kathool'?{...(baseBuild||{}),consumable:'Vigil'}:baseBuild;
+  const build=ultraSuggestedGear(b.id,cls,profile,generic,encounter);
   renderUltraSelectedRating(rating,b.id,cls);
   gear.replaceChildren();
   if(build){
-   appendUltraGearCells(gear,build);
+   appendUltraGearCells(gear,build,b.id);
    if(cls==='Bard'){
     const source=node('a','Bard enhancement reference ↗','ultra-gear-source');
     source.href='https://www.aq.com/lore/classes/bard';source.target='_blank';source.rel='noopener noreferrer';gear.append(source);
    }
   }else gear.append(node('span','No reviewed class-specific gear preset; consult the encounter guide.','muted tiny'));
-  job.textContent=[workbook?'Recommended setup for this fight.':encounter?ultraBeginnerText(encounter.note||'',cls):build?'General setup; adjust for this fight.':'No specific gear confirmed.',cls==='Bard'?bardSupport.note:''].filter(Boolean).join(' ');
+  job.textContent=build.estimated?'Suggested general setup — not encounter-tested.':workbook?'Recommended setup for this fight.':ultraBeginnerText(encounter?.note||'Suggested setup for this fight.',cls);
   roleName.textContent=cls;
   sequence.replaceChildren();
   const baseTips=[...new Set((play?.steps||[]).map(step=>String(step).trim()).filter(Boolean))];
   const tips=ultraBeginnerActions(b.id,cls,ultraActionTips(b.id,cls,baseTips));
-  const callouts=(window.AQWUltraQuoteActions?.forRole(b.id,playKey||cls)||[]).filter(c=>b.id!=='nulgath').map(c=>({...c,response:ultraBeginnerText(c.response,cls)}));
-  const rows=window.AQWCGuideRows?.rows({tips,quotes:callouts,warning:b.id==='nulgath'?undefined:ultraBeginnerText(play?.warning||'',cls),
+  const callouts=(window.AQWUltraQuoteActions?.forRole(b.id,playKey||cls)||[]).filter(c=>b.id!=='nulgath'&&b.id!=='dage').map(c=>({...c,response:ultraBeginnerText(c.response,cls)}));
+  const rows=window.AQWCGuideRows?.rows({tips,quotes:callouts,warning:['nulgath','dage'].includes(b.id)?undefined:ultraBeginnerText(play?.warning||'',cls),
    fallback:role||quick.priority||b.phases[0]?.[1]||''})||[];
   for(const part of rows){
    const step=node('div',undefined,'ultra-role-step');
    const body=node('div',undefined,'ultra-role-step-body');
    const heading=node('h4',part.title,'ultra-role-mini-title');
-   if(part.quote)heading.classList.add('ultra-role-quote-heading');
+   if(part.quote||/“[^”]+”/.test(part.text)){heading.classList.add('ultra-role-quote-heading');step.classList.add('ultra-react-step')}
    const description=node('p');
-   ultraExplainText(description,part.text);
+   ultraExplainText(description,part.text,b.id);
    body.append(heading,description);
    step.append(node('span',part.number,'ultra-step-number'),body);
    sequence.append(step);
