@@ -58,5 +58,15 @@
   },
   "optional_host_permissions": [
     "https://account.aq.com/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "wiki-banner-prometheus.webp"
+      ],
+      "matches": [
+        "https://aqwwiki.wikidot.com/*"
+      ]
+    }
   ]
 }
