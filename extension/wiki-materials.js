@@ -165,6 +165,22 @@
    return template.content;
   }finally{clearTimeout(timer)}
  }
+ const monsterCache=new Map();let monsterRequests=0,monsterQueue=Promise.resolve();
+ function monsterImage(doc,origin,slug){
+  const crumb=doc.querySelector('#breadcrumbs')||doc.querySelector('.breadcrumbs, #breadcrumb, .breadcrumb'),content=doc.querySelector('#page-content');
+  if(!content||![...(crumb?.querySelectorAll('a[href]')||[])].some(a=>sourceLink(a,origin)?.slug==='monsters'))return null;
+  const urls=new Set();
+  for(const img of content.querySelectorAll('img[src]')){
+   if(img.closest('table,.page-rate-widget-box')||/small\.|large\.|icon|badge|logo|star|button|blank/i.test(img.getAttribute('src')||''))continue;
+   try{const u=new URL(img.getAttribute('src'),origin+'/'+slug);if(u.protocol!=='https:'||u.username||u.password||!/\.(png|jpe?g|webp|gif)$/i.test(u.pathname)||!(u.hostname==='aqwwiki.wikidot.com'||u.hostname.endsWith('.wdfiles.com')||u.hostname==='i.imgur.com'))continue;urls.add(u.href)}catch{}
+  }
+  return urls.size===1?[...urls][0]:null;
+ }
+ function monsterPreview(origin,slug){
+  if(monsterCache.has(slug))return monsterCache.get(slug);
+  if(monsterRequests>=12)return Promise.resolve(null);monsterRequests++;
+  const p=monsterQueue.then(()=>loadDocument(origin,slug)).then(doc=>monsterImage(doc,origin,slug)).catch(()=>null);monsterQueue=p.then(()=>{});monsterCache.set(slug,p);return p;
+ }
  async function loadRecipe(origin,slug){
    const doc=await loadDocument(origin,slug),content=doc.querySelector('#page-content'),url=origin+'/'+slug;
    const body=String(content?.textContent||'');
@@ -322,5 +338,5 @@
   }
   draw();lookup().catch(()=>{statusLine.textContent='Inventory unavailable. Sync in Companion and refresh this page.'}).finally(()=>{busy=false;draw()});return panel;
  }
- globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources,mapCommand,joinControl,recipeLabel,sourceLink,compactData});
+ globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources,mapCommand,joinControl,recipeLabel,sourceLink,compactData,monsterPreview,monsterImage});
 })();
