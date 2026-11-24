@@ -1,5 +1,26 @@
+// activeTab is granted by the user opening the extension popup.
+// Never inject automatically, into another origin, or into subframes.
+async function activateWiki(api){
+ const tabs=await api.tabs.query({active:true,currentWindow:true});
+ const tab=tabs[0];
+ if(!tab||!Number.isInteger(tab.id)||typeof tab.url!=='string')throw Error('Open an AQW Wiki page first.');
+ const url=new URL(tab.url);
+ if(url.origin!=='https://aqwwiki.wikidot.com'||!/^\/[a-z0-9][a-z0-9-]*\/?$/.test(url.pathname))throw Error('Open a supported AQW Wiki page first.');
+ // Probe the current top-level document. Pin the actual document ID so a
+ // navigation during activation cannot inject tools into a replacement page.
+ const probe=await api.scripting.executeScript({target:{tabId:tab.id},func:expected=>location.href===expected&&!!document.getElementById('page-title')&&!!document.getElementById('page-content'),args:[tab.url]});
+ const frame=probe.find(x=>x.frameId===0);
+ if(!frame?.result||!frame.documentId)throw Error('The Wiki page changed, is unsupported, or is still loading. Try again.');
+ await api.scripting.executeScript({target:{tabId:tab.id,documentIds:[frame.documentId]},files:['bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']});
+}
 (() => {
  const status=document.getElementById('inventory-summary'),clear=document.getElementById('clear-inventory');
+ const activate=document.getElementById('activate-wiki'),activationStatus=document.getElementById('wiki-activation-status');
+ if(activate&&activationStatus)activate.addEventListener('click',async e=>{
+  if(!e.isTrusted||activate.disabled)return;activate.disabled=true;activationStatus.textContent='Activating Wiki tools…';
+  try{await activateWiki(chrome);activationStatus.textContent='Activated for this page only. Return to the Wiki.'}
+  catch(err){activationStatus.textContent=String(err?.message||err)}finally{activate.disabled=false}
+ });
  function send(type){clear.disabled=true;chrome.runtime.sendMessage({type},result=>{
   clear.disabled=false;if(chrome.runtime.lastError||!result?.ok){status.textContent='Could not access local inventory.';return}
   status.textContent=result.count===null?'No inventory synced yet.':result.count.toLocaleString()+' inventory records · '+new Date(result.syncedAt).toLocaleString();
