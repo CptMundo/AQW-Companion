@@ -3,7 +3,7 @@ const read=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
 const manifest=JSON.parse(read('extension/manifest.json'));
 assert.equal(manifest.manifest_version,3);
 assert.deepEqual(manifest.content_scripts[0].matches,['https://cptmundo.github.io/AQW-Companion/extension-connect.html']);
-assert.deepEqual(manifest.permissions,['storage']);assert.equal(manifest.background.service_worker,'worker.js');assert.deepEqual(manifest.content_scripts[1].matches,['https://cptmundo.github.io/AQW-Companion/','https://cptmundo.github.io/AQW-Companion/index.html']);assert.equal(manifest.host_permissions,undefined);
+assert.deepEqual(manifest.permissions,['storage','activeTab','scripting']);assert.equal(manifest.background.service_worker,'worker.js');assert.deepEqual(manifest.content_scripts[1].matches,['https://cptmundo.github.io/AQW-Companion/','https://cptmundo.github.io/AQW-Companion/index.html']);assert.equal(manifest.host_permissions,undefined);
 const origin='https://cptmundo.github.io', pathname='/AQW-Companion/extension-connect.html';
 const sent=[],listeners={};const win={addEventListener(k,f){listeners[k]=f},postMessage(msg,target){sent.push({msg,target})}};
 const ctx={window:win,location:{origin,pathname},chrome:{runtime:{getManifest:()=>manifest}}};
@@ -73,7 +73,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(result.total,775);assert.equal(result.items,undefined);
  const runWiki=(crumbs,body='Sellback: 0 AC; Description: item',response=result,name='Void Aura',tags=[])=>{
   let request,inserted,closed;
-  function el(){return {style:{},children:[],append(...x){this.children.push(...x)},attachShadow({mode}){closed=mode;return el()}}}
+  function el(){return {style:{},children:[],addEventListener(){},append(...x){this.children.push(...x)},attachShadow({mode}){closed=mode;return el()}}}
   const title={textContent:name,insertAdjacentElement(_,host){inserted=host}},content={textContent:body},crumb=crumbs===null?null:{querySelectorAll(){return crumbs.map(x=>typeof x==='string'?{href:'https://aqwwiki.wikidot.com/'+x}:{href:'https://aqwwiki.wikidot.com/'+x.slug,textContent:x.label})}};
   const doc={getElementById:id=>({'page-title':title,'page-content':content,'breadcrumbs':crumb}[id]||null),createElement:el,querySelectorAll:()=>tags.map(textContent=>({textContent}))};
   const context={URL,URLSearchParams,location:{origin:'https://aqwwiki.wikidot.com',pathname:'/void-aura',href:'https://aqwwiki.wikidot.com/void-aura'},document:doc,chrome:{runtime:{sendMessage(m,cb){request=m;cb(response)}}}};
@@ -94,7 +94,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.5.0');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
+ assert.equal(manifest.version,'0.6.1');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -152,3 +152,47 @@ console.log('Wiki Wishlist: scoped links, category suffixes, variant guard and e
  assert.ok(read('extension/wiki-items.js').includes('AQWCWikiMaterials?.render'));
  console.log('Direct material progress: separate merge lists, strict counts, bounded local lookup and ambiguity passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
+
+(async()=>{
+ const accountOrigin='https://account.aq.com',rows=Array.from({length:101},(_,i)=>({ID:i+1,Name:'Item '+i,Type:'Item',Count:1,Bank:i%2,Added:'2026-11-24',secret:'not copied'}));
+ let calls=[];
+ const ctx={URL,AbortSignal,location:{origin:accountOrigin,pathname:'/AQW/Inventory'},performance:{getEntriesByType:()=>[{name:accountOrigin+'/AQW/InventoryData?filter=ignored'}]},setTimeout:f=>f(),fetch:async (url,opts)=>{const u=new URL(url);calls.push(u);assert.equal(opts.method,'GET');assert.equal(opts.credentials,'same-origin');assert.equal(u.searchParams.has('filter'),false);return {ok:true,json:async()=>({data:rows.slice(Number(u.searchParams.get('skip')),Number(u.searchParams.get('skip'))+100),totalCount:101})}}};
+ const capture=vm.runInNewContext(read('extension/account-capture.js')+'\ncaptureAccountInventory',ctx);
+ const snap=await capture();assert.equal(snap.items.length,101);assert.equal(calls.length,2);assert.equal(snap.items[0].secret,undefined);assert.equal(snap.items[0].Added,'2026-11-24');
+ ctx.location.pathname='/AQW/Account';await assert.rejects(capture(),/Inventory tab/);ctx.location.pathname='/AQW/Inventory';
+ ctx.fetch=async()=>({ok:true,json:async()=>({data:rows.slice(0,1),totalCount:101})});await assert.rejects(capture(),/Incomplete/);
+ ctx.performance.getEntriesByType=()=>[{name:'https://example.com/InventoryData'}];await assert.rejects(capture(),/endpoint/);
+ const stored={},chromeMock={runtime:{onMessage:{addListener(){}},getURL:x=>'chrome-extension://test/'+x},storage:{local:{async get(k){return {[k]:stored[k]}},async set(x){Object.assign(stored,x)},async remove(k){delete stored[k]}}}};
+ const api=vm.runInNewContext(read('extension/worker.js')+'\n({handle,cleanAccountSnapshot})',{chrome:chromeMock,URL,TextEncoder,crypto:{randomUUID:()=>'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa'}});
+ const popup={url:'chrome-extension://test/popup.html'},main={url:'https://cptmundo.github.io/AQW-Companion/',frameId:0},wiki={url:'https://aqwwiki.wikidot.com/item',frameId:0};
+ assert.throws(()=>api.cleanAccountSnapshot({...snap,reportedTotal:100}));
+ assert.equal((await api.handle({type:'account-stage',snapshot:snap},wiki)).ok,false);
+ assert.equal((await api.handle({type:'account-stage',snapshot:snap},popup)).count,101);
+ assert.equal(stored['aqwc-inventory-v1'],undefined);
+ assert.equal((await api.handle({type:'account-stage-read'},wiki)).ok,false);
+ const pending=await api.handle({type:'account-stage-read'},main);assert.equal(pending.snapshot.items.length,101);
+ assert.equal((await api.handle({type:'account-stage-commit',id:'wrong'},main)).ok,false);
+ assert.equal((await api.handle({type:'account-stage-commit',id:pending.id},main)).ok,true);
+ assert.equal(stored['aqwc-inventory-v1'].items.length,101);assert.equal(stored['aqwc-account-stage-v1'],undefined);
+ const html=read('index.html');assert.ok(html.includes('await importFile(file);'));assert.ok(html.includes("type:'imported',nonce,id:stageId"));assert.ok(html.includes("if(!confirm('Import '"));assert.ok(read('extension/account-bridge.js').includes('if(e.isTrusted)gesture=Date.now()'));
+ assert.equal(manifest.host_permissions,undefined);assert.deepEqual(manifest.content_scripts[1].js,['sync.js','account-bridge.js','wishlist-queue.js']);
+ console.log('Account import: pagination, completeness, scope, allowlisted fields, staging and commit checked.');
+})().catch(e=>{console.error(e);process.exitCode=1});
+
+(async()=>{
+ const stored={},chromeMock={runtime:{onMessage:{addListener(){}},getURL:x=>'chrome-extension://test/'+x},storage:{local:{async get(k){return {[k]:stored[k]}},async set(x){Object.assign(stored,x)}}}};
+ const api=vm.runInNewContext(read('extension/worker.js')+'\n({handle})',{chrome:chromeMock,URL,TextEncoder,crypto:{randomUUID:()=>'test-id'}});
+ const wiki={url:'https://aqwwiki.wikidot.com/void-aura',frameId:0},main={url:'https://cptmundo.github.io/AQW-Companion/',frameId:0};
+ const item={name:'Void Aura',slug:'void-aura',category:'misc-items',secret:'ignored'},msg={type:'wishlist-queue-add',item};
+ assert.equal((await api.handle(msg,main)).ok,false);
+ assert.equal((await api.handle({...msg,item:{...item,slug:'other'}},wiki)).ok,false);
+ const [first,second]=await Promise.all([api.handle(msg,wiki),api.handle(msg,wiki)]);assert.ok(first.ok&&second.ok);assert.equal(second.already,true);
+ assert.equal((await api.handle({type:'wishlist-queue-read'},wiki)).ok,false);
+ const queue=await api.handle({type:'wishlist-queue-read'},main);assert.equal(queue.entries.length,1);assert.equal(queue.entries[0].item.secret,undefined);
+ assert.equal((await api.handle({type:'wishlist-queue-ack',ids:['test-id']},wiki)).ok,false);
+ assert.equal((await api.handle({type:'wishlist-queue-ack',ids:['test-id']},main)).ok,true);assert.equal((await api.handle({type:'wishlist-queue-read'},main)).entries.length,0);
+ const html=read('index.html'),section=html.slice(html.indexOf('function initWikiWishlistQueue'),html.indexOf('function initAccountInventoryImport'));
+ assert.ok(section.includes('localStorage.setItem(key,JSON.stringify(latest))'));assert.ok(!section.includes('confirm('));assert.ok(!section.includes('selectTab('));
+ const js=read('extension/wiki-items.js');assert.ok(js.includes("type:'wishlist-queue-add'"));assert.ok(!js.includes("link.target='_blank'"));
+ console.log('One-click Wishlist queue: scoped sender, duplicate suppression, persistence acknowledgement and no navigation.');
+})().catch(e=>{console.error(e);process.exitCode=1});
