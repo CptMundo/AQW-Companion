@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "AQW Companion",
-  "version": "0.1.0",
-  "description": "Experimental connection between AQW Companion and the AQWorlds Wiki. No account access or inventory sync yet.",
+  "version": "0.2.0",
+  "description": "Local inventory snapshot sync between AQW Companion and its browser extension.",
   "action": {
     "default_title": "AQW Companion",
     "default_popup": "popup.html"
@@ -18,6 +18,23 @@
       ],
       "run_at": "document_idle",
       "all_frames": false
+    },
+    {
+      "matches": [
+        "https://cptmundo.github.io/AQW-Companion/",
+        "https://cptmundo.github.io/AQW-Companion/index.html"
+      ],
+      "js": [
+        "sync.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
     }
-  ]
+  ],
+  "permissions": [
+    "storage"
+  ],
+  "background": {
+    "service_worker": "worker.js"
+  }
 }
