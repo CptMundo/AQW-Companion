@@ -137,7 +137,7 @@ assert.ok(names.includes("Void Highlord"),"Existing DPS class remains");
 assert.equal(names.filter(x=>compact.sameUltraClass(x,"Void HighLord")).length,1,"Case/spacing aliases must not duplicate options");
 assert.equal(compact.ultraSelectedRating("drakath","Void Highlord").rating,3);
 assert.equal(compact.ultraSelectedRating("drakath","Lord of Order").role,"Healer");
-assert.equal(compact.ultraSelectedRating("drakath","Master of Moglins"),null,"Missing rating is not zero");
+assert.equal(compact.ultraSelectedRating("drakath","Bard"),null,"Missing rating is not zero");
 assert.equal(compact.ultraSelectedRating("drago","Legion DoomKnight").rating,0,"Real zero stays zero");
 assert.equal(compact.ultraSelectedRating("drakath","LightCaster").role,"Early DPS","Spacing alias resolves");
 assert.equal(compact.ultraWorkbookBuild(profile,"Chrono ShadowHunter").weapon,"Arcana Concerto");
@@ -159,7 +159,7 @@ assert.ok(select.children.flatMap(g=>g.children).some(o=>o.value==="Chrono Shado
 const rating={children:[],append(...x){this.children.push(...x)},replaceChildren(...x){this.children=x}};
 compact.renderUltraSelectedRating(rating,"drakath","Lord of Order");
 assert.ok(rating.children.some(x=>x.text.includes("Healer")));
-compact.renderUltraSelectedRating(rating,"drakath","Master of Moglins");
+compact.renderUltraSelectedRating(rating,"drakath","Bard");
 assert.ok(rating.children.some(x=>x.text==="Not rated in the guide"));
 assert.ok(!rating.children.some(x=>x.text.includes("Healer")),"Class change clears previous rating");
 assert.ok(html.includes("fillUltraClassSelect(select,b.id,profile,"));
