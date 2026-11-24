@@ -94,7 +94,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.10.0');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js','wiki-quest-shop.js','wiki-list-ownership.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
+ assert.equal(manifest.version,'0.10.1');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js','wiki-quest-shop.js','wiki-list-ownership.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -377,5 +377,30 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.equal(worker.matchWikiListItem(snapshot,'Absent (Legend)','classes').state,'not-found');
  (async()=>{const msg={type:'inventory-search',query:'void',location:'all'};assert.equal((await worker.handle(msg,{url:'https://aqwwiki.wikidot.com/classes',frameId:0})).ok,false);assert.equal((await worker.handle(msg,{url:'chrome-extension://test/popup.html'})).total,2)})().catch(e=>{console.error(e);process.exitCode=1});
  assert.ok(read('index.html').includes('function showWikiRoutineReview()'));assert.ok(read('index.html').includes('pinTask(t);showWikiRoutineReview()'));
- assert.ok(read('extension/wiki-list-ownership.js').includes('Review or add to Wishlist'));
+ assert.ok(read('extension/wiki-list-ownership.js').includes('Add to Wishlist without leaving Wiki'));
 }
+
+{
+ 
+ // Existing worker integration tests cover typed lookups; static UI safeguards.
+ assert.ok(read('extension/wiki-list-ownership.js').includes("search.addEventListener('input',renderSearch)"));
+ assert.ok(read('extension/wiki-quest-shop.js').includes("type:'routine-queue-add'"));
+ assert.ok(read('index.html').includes("if(entry.quest)"));
+}
+
+{
+ const snap={items:[{ID:'1',Name:'Test',Type:'Class',Count:1,Bank:0},{ID:'1',Name:'Test',Type:'Class',Count:1,Bank:0},{ID:'1',Name:'Test',Type:'Class',Count:1,Bank:1}]};
+ const api=vm.runInNewContext(read('extension/worker.js')+'\n({buildListMatcher})',{chrome:{runtime:{onMessage:{addListener(){}}}},URL,TextEncoder});
+ assert.equal(api.buildListMatcher(snap,'classes')('Test').total,2);
+}
+(async()=>{
+ const stored={};let id=0;const api=vm.runInNewContext(read('extension/worker.js')+'\n({handle})',{chrome:{runtime:{onMessage:{addListener(){}},getURL:x=>'chrome-extension://test/'+x},storage:{local:{async get(k){return {[k]:stored[k]}},async set(v){Object.assign(stored,v)}}}},URL,TextEncoder,crypto:{randomUUID:()=>String(++id)}});
+ const main={url:'https://cptmundo.github.io/AQW-Companion/',frameId:0},wiki={url:'https://aqwwiki.wikidot.com/classes',frameId:0},quest={url:'https://aqwwiki.wikidot.com/daily-quest-board-s-quests',frameId:0};
+ const item={name:'Bard',slug:'bard',category:'classes'};
+ assert.equal((await api.handle({type:'wishlist-queue-add',item},wiki)).ok,true);
+ assert.equal((await api.handle({type:'wishlist-queue-add',item:{...item,category:'armors'}},wiki)).ok,false);
+ assert.equal((await api.handle({type:'routine-queue-add',quest:{source:'wrong',name:'Moglin Companions'}},quest)).ok,false);
+ const msg={type:'routine-queue-add',quest:{source:'daily-quest-board-s-quests',name:'Moglin Companions'}};
+ assert.equal((await api.handle(msg,quest)).ok,true);assert.equal((await api.handle(msg,quest)).already,true);
+ assert.equal((await api.handle({type:'wishlist-queue-read'},main)).entries.length,2);
+})().catch(e=>{console.error(e);process.exitCode=1});

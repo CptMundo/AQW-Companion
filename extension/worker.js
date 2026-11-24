@@ -70,7 +70,7 @@ function matchWikiMaterial(snapshot,name){
  }
  if(!found.length)return {state:'not-found'};
  if(new Set(found.map(row=>row.ID)).size!==1||new Set(found.map(row=>nameKey(row.Type))).size!==1)return {state:'ambiguous'};
- const bank=found.filter(r=>r.Bank===1).reduce((n,r)=>n+r.Count,0),inventory=found.filter(r=>r.Bank===0).reduce((n,r)=>n+r.Count,0);
+ const bank=Math.max(0,...found.filter(r=>r.Bank===1).map(r=>r.Count)),inventory=Math.max(0,...found.filter(r=>r.Bank===0).map(r=>r.Count));
  return {state:'owned',bank,inventory,total:bank+inventory,itemId:String(found[0].ID)};
 }
 
@@ -120,7 +120,7 @@ let wishlistLock=Promise.resolve();
 function queueWishlist(message,sender){
  const run=async()=>{
   const wiki=wikiSender(sender),main=mainSender(sender),type=message?.type;
-  if(!(wiki&&type==='wishlist-queue-add'||main&&['wishlist-queue-read','wishlist-queue-ack'].includes(type)))return {ok:false,error:'Unsupported Wishlist request.'};
+  if(!(wiki&&['wishlist-queue-add','routine-queue-add'].includes(type)||main&&['wishlist-queue-read','wishlist-queue-ack'].includes(type)))return {ok:false,error:'Unsupported Wishlist request.'};
   await restrictStorage();
   const raw=(await chrome.storage.local.get(WISHLIST_QUEUE))[WISHLIST_QUEUE],entries=Array.isArray(raw)?raw:[];
   if(type==='wishlist-queue-read')return {ok:true,entries};
@@ -128,9 +128,16 @@ function queueWishlist(message,sender){
    if(!Array.isArray(message.ids)||message.ids.length>200||message.ids.some(id=>typeof id!=='string'||id.length>64))return {ok:false,error:'Invalid acknowledgement.'};
    await chrome.storage.local.set({[WISHLIST_QUEUE]:entries.filter(e=>!message.ids.includes(e.id))});return {ok:true};
   }
+  if(type==='routine-queue-add'){
+   const quest=message.quest,source=new URL(sender.url).pathname.replace(/^\/|\/$/g,'');
+   if(!quest||quest.source!==source||typeof quest.name!=='string'||!quest.name.trim()||quest.name.length>350||/[\u0000-\u001f\u007f]/.test(quest.name))return {ok:false,error:'Invalid quest.'};
+   if(entries.some(e=>e.quest?.source===source&&nameKey(e.quest.name)===nameKey(quest.name)))return {ok:true,already:true};
+   if(entries.length>=200)return {ok:false,error:'Pending queue is full. Open Companion to sync.'};
+   await chrome.storage.local.set({[WISHLIST_QUEUE]:[...entries,{id:crypto.randomUUID(),quest:{source,name:quest.name.trim()}}]});return {ok:true};
+  }
   const item=message.item;
-  if(!item||typeof item.name!=='string'||!item.name.trim()||item.name.length>350||/[\u0000-\u001f\u007f]/.test(item.name)||typeof item.slug!=='string'||! /^[a-z0-9][a-z0-9-]{0,199}$/.test(item.slug)||typeof item.category!=='string'||!Object.hasOwn(wikiTypes,item.category)||new URL(sender.url).pathname.replace(/^\/|\/$/g,'')!==item.slug)return {ok:false,error:'Invalid Wiki item.'};
-  if(entries.some(e=>e.item.slug===item.slug&&e.item.category===item.category))return {ok:true,already:true};
+  if(!item||typeof item.name!=='string'||!item.name.trim()||item.name.length>350||/[\u0000-\u001f\u007f]/.test(item.name)||typeof item.slug!=='string'||! /^[a-z0-9][a-z0-9-]{0,199}$/.test(item.slug)||typeof item.category!=='string'||!Object.hasOwn(wikiTypes,item.category)||(new URL(sender.url).pathname.replace(/^\/|\/$/g,'')!==item.slug&&wikiListCategory(sender)!==item.category))return {ok:false,error:'Invalid Wiki item.'};
+  if(entries.some(e=>e.item?.slug===item.slug&&e.item?.category===item.category))return {ok:true,already:true};
   if(entries.length>=200)return {ok:false,error:'Pending Wishlist is full. Open Companion to sync.'};
   const entry={id:crypto.randomUUID(),item:{name:item.name.trim(),slug:item.slug,category:item.category}};
   await chrome.storage.local.set({[WISHLIST_QUEUE]:[...entries,entry]});return {ok:true};
@@ -146,26 +153,35 @@ function wikiListCategory(sender){
  if(listCategories.includes(slug))return slug;
  return /^sort-by-[a-z0-9-]+$/.test(slug)?listCategories.find(c=>slug.endsWith('-'+c))||null:null;
 }
-function matchWikiListItem(snapshot,name,category){
- const result=matchWikiItem(snapshot,{name,category});
- if(!snapshot||!Array.isArray(snapshot.items)||!['owned','not-found'].includes(result.state))return result;
- const key=nameKey(name),suffix=key.match(/^(.*) \((sword|axe|bow|dagger|gauntlet|gun|handgun|mace|polearm|rifle|staff|wand|armor|class|helm|cape|pet|item)\)$/);
- // A qualifier such as (AC), (Merge), (Legend) or (1) may be absent
- // from exports. Never mark it absent based on a failed exact-name match.
- if(result.state==='not-found'&&/\s\([^)]+\)$/.test(key)&&!suffix){
-  // Only well-known acquisition qualifiers may be reduced to a family for
-  // absence checks. A family match is never proof of variant ownership.
-  const family=k=>k.replace(/(?:\s*\((?:0 ac|ac|non-legend|legend|merge|rare|seasonal|member|non-member|class|sword|armor|helm|cape|pet|misc|item|\d+)\))+$/i,'').trim();
-  const base=family(key);
-  if(base===key||snapshot.items.some(r=>r.Count>0&&family(nameKey(r.Name))===base))return {state:'ambiguous'};
+const listFamily=k=>k.replace(/(?:\s*\((?:0 ac|ac|non-legend|legend|merge|rare|seasonal|member|non-member|class|sword|armor|helm|cape|pet|misc|item|\d+)\))+$/i,'').trim();
+function buildListMatcher(snapshot,category){
+ if(!snapshot||!Array.isArray(snapshot.items))return ()=>({state:'unsynced'});
+ const allowed=Object.hasOwn(wikiTypes,category)?wikiTypes[category]:null;if(!allowed)return ()=>({state:'unsupported'});
+ const all=new Set(),families=new Map(),typed=new Map();
+ for(const row of snapshot.items){
+  if(!(row.Count>0))continue;const key=nameKey(row.Name),family=listFamily(key);all.add(key);
+  if(!families.has(family))families.set(family,new Set());families.get(family).add(row.Name);
+  if(!allowed.includes(nameKey(row.Type)))continue;
+  if(!typed.has(key))typed.set(key,[]);typed.get(key).push(row);
  }
- if(suffix&&Object.hasOwn(wikiTypes,category)&&wikiTypes[category].includes(suffix[2])){
-  const ids=new Set(snapshot.items.filter(r=>r.Count>0&&wikiTypes[category].includes(nameKey(r.Type))&&[key,suffix[1]].includes(nameKey(r.Name))).map(r=>r.ID));
-  if(ids.size>1)return {state:'ambiguous'};
- }
- return result;
+ return name=>{
+  const key=nameKey(name),suffix=key.match(/^(.*) \((sword|axe|bow|dagger|gauntlet|gun|handgun|mace|polearm|rifle|staff|wand|armor|class|helm|cape|pet|item)\)$/);
+  let found=typed.get(key)||[];
+  if(suffix&&allowed.includes(suffix[2]))found=[...found,...(typed.get(suffix[1])||[])];
+  if(found.length&&new Set(found.map(r=>r.ID)).size===1){
+   const bank=Math.max(0,...found.filter(r=>r.Bank===1).map(r=>r.Count)),inventory=Math.max(0,...found.filter(r=>r.Bank===0).map(r=>r.Count));
+   return {state:'owned',bank,inventory,total:bank+inventory};
+  }
+  if(found.length||all.has(key))return {state:'ambiguous'};
+  const base=listFamily(key),possible=families.get(base);
+  if(base!==key&&possible?.size)return {state:'ambiguous',possible:[...possible].slice(0,3)};
+  if(/\s\([^)]+\)$/.test(key)&&base===key)return {state:'ambiguous'};
+  // A plain index name can also have a qualified inventory variant.
+  if(possible?.size)return {state:'ambiguous',possible:[...possible].slice(0,3)};
+  return {state:'not-found'};
+ };
 }
-
+function matchWikiListItem(snapshot,name,category){return buildListMatcher(snapshot,category)(name)}
 function searchLocalInventory(snapshot,query,location){
  if(!snapshot||!Array.isArray(snapshot.items))return {rows:[],total:0,syncedAt:null};
  const q=nameKey(query),rows=new Map();
@@ -179,13 +195,13 @@ function searchLocalInventory(snapshot,query,location){
  return {rows:sorted.slice(0,50),total:sorted.length,syncedAt:snapshot.syncedAt};
 }
 async function handle(message,sender){
- if(['wishlist-queue-add','wishlist-queue-read','wishlist-queue-ack'].includes(message?.type))return queueWishlist(message,sender);
+ if(['wishlist-queue-add','routine-queue-add','wishlist-queue-read','wishlist-queue-ack'].includes(message?.type))return queueWishlist(message,sender);
  const account=await accountStage(message,sender);if(account)return account;
  if(message?.type==='wiki-list-lookup'){
   const category=wikiListCategory(sender),names=message.names;
   if(!category||message.category!==category||!Array.isArray(names)||!names.length||names.length>80||names.some(n=>typeof n!=='string'||!n.trim()||n.length>350||/[\u0000-\u001f\u007f]/.test(n))||new Set(names).size!==names.length)return {ok:false,error:'Invalid item list request.'};
   await restrictStorage();const snapshot=(await chrome.storage.local.get(KEY))[KEY];
-  return {ok:true,matches:names.map(name=>{const m=matchWikiListItem(snapshot,name,category);return {state:m.state,...(m.state==='owned'?{inventory:m.inventory,bank:m.bank,total:m.total}:{})}}),syncedAt:snapshot?.syncedAt||null,exportedAt:snapshot?.exportedAt||null};
+  const match=buildListMatcher(snapshot,category);return {ok:true,matches:names.map(match),syncedAt:snapshot?.syncedAt||null,exportedAt:snapshot?.exportedAt||null};
  }
  if(message?.type==='wiki-material-lookup'&&wikiSender(sender)){
   const names=message.names;

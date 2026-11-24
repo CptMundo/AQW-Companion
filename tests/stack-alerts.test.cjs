@@ -93,7 +93,7 @@ assert.ok(html.includes('id="stack-alert-list"'));
 assert.ok(html.includes('id="home-stack-card"'));
 assert.ok(html.includes('id="stack-cap-save"'));
 assert.ok(html.includes('id="stack-cap-clear"'));
-assert.ok(html.includes('src="js/stack-alerts.js?v=137"'));
+assert.ok(html.includes('src="js/stack-alerts.js?v=138a"'));
 assert.ok(html.includes('href="css/stack-alerts.css?v=95"'));
 assert.ok(html.includes("renderUnlocks();renderStackAlerts();showUnlockSuggestions()"),"Alerts refresh with inventory snapshots");
 assert.ok(html.includes("initStackAlerts();"));
@@ -142,4 +142,17 @@ assert.ok(css.includes("#unlocks #unlocklist .wishlist-completion-remove"));
  assert.equal(api.cleanup(items,{routines:[{name:'test',targets:['Wheel of Bacon Token ×1']}]}).rows.find(r=>r.name==='Wheel of Bacon Token').status,'protected');
  assert.equal(api.cleanup(items.filter(r=>r.ID!=='2')).rows.find(r=>r.name==="Necrotic Sword's Blade").status,'protected');
  assert.equal(api.cleanup(items,{reviewed:[{name:'Other goal',ingredients:[["Necrotic Sword's Blade",1]]}]}).rows.find(r=>r.name==="Necrotic Sword's Blade").status,'protected');
+}
+
+{
+ const api=require('../js/stack-alerts.js'),rows=[{ID:'1',Name:'Aegis Armor',Type:'Item',Count:1,Bank:0},{ID:'2',Name:'Armor of Awe Pass',Type:'Item',Count:1,Bank:0},{ID:'3',Name:'[Class Item] Timepiece of Madness',Type:'Item',Count:99,Bank:0}];
+ const by=new Map(api.cleanup(rows).rows.map(r=>[r.name,r]));assert.equal(by.get('Aegis Armor').status,'situational');assert.equal(by.get('Armor of Awe Pass').status,'protected');assert.equal(by.get('[Class Item] Timepiece of Madness').status,'protected');assert.equal(api.cleanup(rows,{wishlist:[{name:'goal',steps:[{kind:'material',item:'Aegis Armor'}]}]}).rows.find(r=>r.name==='Aegis Armor').status,'protected');
+}
+
+{
+ const api=require('../js/stack-alerts.js'),rows=[{ID:'a',Name:'Mystic Parchment',Type:'Item',Bank:0,Count:2},{ID:'b',Name:'Gear of Doom',Type:'Item',Bank:0,Count:3},{ID:'c',Name:'Unlisted Merge Ingredient',Type:'Item',Bank:0,Count:1}];
+ const result=api.cleanup(rows,{community:[{name:'Test Merge',cleanupMergeRoutes:[{source:'https://aqwwiki.wikidot.com/test-shop',ingredients:[['Unlisted Merge Ingredient',2]]}]}]});
+ assert.equal(result.rows.find(r=>r.id==='a').status,'situational');assert.equal(result.rows.find(r=>r.id==='b').status,'protected');assert.equal(result.rows.find(r=>r.id==='c').status,'protected');
+ assert.ok(result.rows.find(r=>r.id==='c').reason.includes('test merge'));
+ assert.ok(html.includes('entry.cleanupMergeRoutes.push({source:link,ingredients})'));assert.ok(html.includes('r.qty??r.quantity'));
 }
