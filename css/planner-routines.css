@@ -129,6 +129,6 @@
 @media(max-width:560px){#planner .planner-section-heading{flex-wrap:wrap}#planner .planner-heading-actions{justify-content:flex-start}}
 
 /* Planner is a multi-view group. Override the legacy single-view navigation rule. */
-.tabs.subnav:has(button[data-parent="planner"].group-visible){display:flex!important}
+nav.tabs.subnav[aria-label="Section navigation"]:has(button[data-parent="planner"].group-visible:not([hidden])){display:flex!important}
 .tabs.subnav button[data-parent="planner"].group-visible:not([hidden]){display:inline-flex!important;align-items:center}
 .tabs.subnav button[data-parent="planner"][hidden]{display:none!important}
