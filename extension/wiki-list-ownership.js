@@ -155,7 +155,7 @@ function init(){
     status.textContent=progress.offset.toLocaleString()+' / '+selected.length.toLocaleString()+' checked · '+owned+' owned · '+absent+' not in snapshot · '+unknown+' unknown · synced '+new Date(progress.syncedAt).toLocaleString();
    });
    clear.hidden=false;renderSearch();
-  }catch(err){reset();status.textContent=String(err?.message||err)}
+  }catch(err){reset();matched.clear();renderSearch();status.textContent=String(err?.message||err)}
   finally{busy=false;show.disabled=clear.disabled=search.disabled=false}
  }
  show.addEventListener('click',e=>{if(e.isTrusted&&!busy)scan()});
