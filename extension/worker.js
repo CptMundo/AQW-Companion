@@ -169,7 +169,7 @@ function buildListMatcher(snapshot,category){
   let found=typed.get(key)||[];
   if(suffix&&allowed.includes(suffix[2]))found=[...found,...(typed.get(suffix[1])||[])];
   if(found.length&&new Set(found.map(r=>r.ID)).size===1){
-   const bank=found.filter(r=>r.Bank===1).reduce((n,r)=>n+r.Count,0),inventory=found.filter(r=>r.Bank===0).reduce((n,r)=>n+r.Count,0);
+   const bank=Math.max(0,...found.filter(r=>r.Bank===1).map(r=>r.Count)),inventory=Math.max(0,...found.filter(r=>r.Bank===0).map(r=>r.Count));
    return {state:'owned',bank,inventory,total:bank+inventory};
   }
   if(found.length||all.has(key))return {state:'ambiguous'};
