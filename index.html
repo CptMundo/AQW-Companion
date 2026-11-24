@@ -1665,15 +1665,15 @@ const taskCatalog=[
 {id:'ultra-nulgath',name:'Ultra Nulgath',group:'Ultra Boss',freq:'weekly',join:'/join ultranulgath',packs:['ultras','nulgath']},
 {id:'drakath',name:'Champion Drakath',group:'Ultra Boss',freq:'weekly',join:'/join championdrakath',packs:['ultras']},
 {id:'ultra-speaker',name:'Ultra Speaker',group:'Ultra Boss',freq:'weekly',join:'/join ultraspeaker',packs:['ultras']},
-{id:'tyndarius',name:'Ultra Avatar Tyndarius',group:'Ultra Boss',freq:'weekly',join:'/join ultratyndarius',packs:['ultras']}
+{id:'tyndarius',name:'Ultra Avatar Tyndarius',group:'Ultra Boss',freq:'daily',join:'/join ultratyndarius',packs:['ultras']}
 ];
 // All quests at the Daily Quest Board from our reviewed index, plus Ultras
 // already present in Companion's guide. Not all quests elsewhere in the game.
 for(const task of (window.AQWCRoutineLibrary?.entries||[]))
  if(!taskCatalog.some(x=>x.id===task.id))taskCatalog.push({...task});
-const extraReviewedTasks=[{id:'gramiel-weekly',name:'Trial of the Vessel (Weekly Quest)',group:'Ultra Boss',freq:'weekly',join:'',packs:[],wiki:'https://aqwwiki.wikidot.com/mysterious-figure-s-quests',categories:['Ultras','Materials','Endgame'],rewards:["Gramiel the Graceful's Insignia"]}];
+const extraReviewedTasks=[{id:'swordhaven-daily',name:'Putting the Sword in Swordhaven (Daily)',group:'Swordhaven',freq:'daily',join:'',packs:[],wiki:'https://aqwwiki.wikidot.com/jessor-s-quests',categories:['Reputation','Factions'],rewards:['Swordhaven reputation ×1000']},{id:'gramiel-weekly',name:'Trial of the Vessel (Weekly Quest)',group:'Ultra Boss',freq:'weekly',join:'',packs:[],wiki:'https://aqwwiki.wikidot.com/mysterious-figure-s-quests',categories:['Ultras','Materials','Endgame'],rewards:["Gramiel the Graceful's Insignia"]}];
 for(const t of extraReviewedTasks)if(!taskCatalog.some(x=>x.id===t.id||x.name.toLowerCase().includes('gramiel')||x.name===t.name))taskCatalog.push(t);
-const reviewedTaskTags={encroach:{categories:['Materials','Endgame'],rewards:['Void Aura']},glimpse:{categories:['Materials','Endgame'],rewards:['Void Aura']},ex107:{categories:['Materials'],rewards:["Elder's Blood"]},drakath:{categories:['Materials','Endgame'],rewards:['Champion Drakath Insignia']}};
+const reviewedTaskTags={encroach:{categories:['Materials','Endgame'],rewards:['Void Aura']},glimpse:{categories:['Materials','Endgame'],rewards:['Void Aura']},ex107:{categories:['Materials','Reputation','Arcangrove','Factions'],rewards:["Elders' Blood",'Arcangrove reputation ×800']},wrongturn:{categories:['Materials','Endgame'],rewards:['Unidentified 13','Tainted Gem','Dark Crystal Shard','Diamond of Nulgath','Gem of Nulgath','Blood Gem of the Archfiend','Totem of Nulgath']},tyndarius:{categories:['Ultras','Materials','Endgame'],rewards:['Avatar Tyndarius Insignia ×2']},drakath:{categories:['Materials','Endgame'],rewards:['Champion Drakath Insignia']}};
 for(const t of taskCatalog)Object.assign(t,reviewedTaskTags[t.id]||{});
 for(const boss of ultraGuides){
  const freq=String(boss.type||'').toLowerCase();
