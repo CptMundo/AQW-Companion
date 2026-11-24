@@ -18,7 +18,7 @@
  script.onload=()=>{
   if(typeof window.umami?.track!=='function')return;
   // Explicit sanitized pageview, never attach imported data or URL parameters.
-  window.umami.track({url:'/AQW-Companion/',title:'AQW Companion',referrer:document.referrer?document.referrer.split(/[?#]/)[0]:''});
+  window.umami.track({website:'6991fe97-a5a7-49ab-9619-384710fba182',hostname:window.location.hostname,language:navigator.language,screen:window.screen?window.screen.width+'x'+window.screen.height:undefined,url:'/AQW-Companion/',title:'AQW Companion',referrer:document.referrer?document.referrer.split(/[?#]/)[0]:''});
  };
  document.head.appendChild(script);
 })();
