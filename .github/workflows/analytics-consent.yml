@@ -1,10 +1,9 @@
-name: Optional analytics privacy checks
+name: Umami analytics privacy checks
 on:
   pull_request:
     paths:
       - 'index.html'
-      - 'js/analytics-consent.js'
-      - 'css/analytics-consent.css'
+      - 'js/umami-analytics.js'
       - 'privacy.html'
       - 'tests/analytics-consent.test.cjs'
       - '.github/workflows/analytics-consent.yml'
@@ -14,8 +13,7 @@ on:
       - main
     paths:
       - 'index.html'
-      - 'js/analytics-consent.js'
-      - 'css/analytics-consent.css'
+      - 'js/umami-analytics.js'
       - 'privacy.html'
       - 'tests/analytics-consent.test.cjs'
       - '.github/workflows/analytics-consent.yml'
@@ -28,5 +26,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Check opt-in analytics and withdrawal behavior
+      - name: Check Umami privacy and pageview behavior
         run: node tests/analytics-consent.test.cjs

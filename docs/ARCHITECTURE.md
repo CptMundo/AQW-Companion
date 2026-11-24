@@ -17,11 +17,10 @@ Updated 2026-11-23. Base commit: `e8d19a910b8f6e0cc3cf35958d80a8f938d03f8d` (aft
 |---|---|
 | `index.html` | HTML sections/navigation plus the existing main inline JavaScript. Its function definitions, event registration order and storage keys remain untouched by this extraction. |
 | `css/site.css` | Previous inline CSS blocks 0–34, same order, original patch IDs recorded in comments. |
-| `css/analytics-consent.css` | Optional analytics consent UI. |
 | `css/item-icons.css` | Previous inline blocks 35–38 for item category icon layouts. |
 | `css/account-statistics.css` | Dedicated responsive Account Statistics styles. |
 | `js/account-statistics.js` | Browser-only pure snapshot analysis and Account Statistics renderer. |
-| `js/analytics-consent.js` | Load GA4 only after opt-in, no private game data transmissions. |
+| `js/umami-analytics.js` | Cookie-free page visits; respects prior declines and browser privacy signals. |
 | `assets/brand-logo.png`, `assets/brand-favicon.png` | Exact existing images moved from Base64 into local assets. |
 | `data/companion_database.json` | Community-derived static public catalog, not the user's inventory. |
 | `data/aqw-calendar.json` | Curated event calendar. |
@@ -31,7 +30,6 @@ Updated 2026-11-23. Base commit: `e8d19a910b8f6e0cc3cf35958d80a8f938d03f8d` (aft
 ### Critical CSS cascade order
 
 1. `css/site.css`
-2. `css/analytics-consent.css`
 3. `css/item-icons.css`
 4. `css/account-statistics.css`
 
@@ -39,7 +37,7 @@ This sequence reproduces the original inline style order **without changing CSS 
 
 ### JavaScript loading order
 
-`js/account-statistics.js` loads before the existing main inline application script. Analytics consent loads with `defer`. The archived combat engine scripts are not loaded; the Damage Simulator was removed because theoretical DPS was not verified.
+`js/account-statistics.js` loads before the existing main inline application script. Umami pageview integration loads with `defer`. The archived combat engine scripts are not loaded; the Damage Simulator was removed because theoretical DPS was not verified.
 
 ## Runtime data flow
 
@@ -50,7 +48,7 @@ Player imports JSON manually
   → Wishlist goals and Account Statistics
 Public community catalog → Explore and item/quest references
 Manual checkmarks → Forge, Ultras, Daily/Weekly, Story
-Optional opt-in Analytics → page visit metadata, not imported JSON
+Umami Analytics → sanitized page visit metadata, not imported JSON
 ```
 
 The catalogue does not prove a user owns an item. `Bank=0` is not necessarily an inventory slot. A snapshot change means first/last *observation*, not confirmed acquisition/deletion dates. Partial Character Page data cannot replace authoritative full imports.

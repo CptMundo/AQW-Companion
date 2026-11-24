@@ -27,7 +27,7 @@ assert.equal(getTag("og:image","property"),publicUrl+"assets/brand-logo.png");
 assert.equal(getTag("twitter:image"),publicUrl+"assets/brand-logo.png");
 assert.ok(fs.existsSync(path.join(__dirname,"../assets/brand-logo.png")));
 assert.ok(html.includes("Your game data stays in this browser"),"honest local-game-data privacy statement must remain");
-assert.ok(html.includes("Optional Google Analytics")||html.includes("only if you agree"),"site must disclose optional analytics");
+assert.ok(html.includes("Cookie-free visit statistics via Umami"),"site must disclose optional analytics");
 assert.ok(html.includes('id="forge-list"'),"Forge Tracker preserved");
 assert.ok(html.includes('id="build-results"'),"Class Builds preserved");
 console.log("AQW Companion SEO and privacy metadata smoke passed");
