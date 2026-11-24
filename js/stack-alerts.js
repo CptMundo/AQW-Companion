@@ -51,12 +51,12 @@
    const rowKey=key+"|"+bank+"|"+identifier;
    const previous=byRow.get(rowKey);
    const cap=validCap(item.MaxStack??item.MaxStackSize??item.MaxQuantity);
-   if(!previous||qty>previous.qty)byRow.set(rowKey,{key,name:item.Name,bank,qty,cap});
+   if(!previous||qty>previous.qty)byRow.set(rowKey,{key,name:item.Name,bank,qty,cap,material:!item.Type||/(?:misc|resource|quest|material|consumable|^item$)/i.test(String(item.Type))});
   }
   for(const item of byRow.values()){
    const gkey=item.key+"|"+item.bank;
-   if(!group.has(gkey))group.set(gkey,{key:item.key,name:item.name,bank:item.bank,qty:0,exportCaps:new Set()});
-   const row=group.get(gkey);row.qty+=item.qty;
+   if(!group.has(gkey))group.set(gkey,{key:item.key,name:item.name,bank:item.bank,qty:0,exportCaps:new Set(),material:false});
+   const row=group.get(gkey);row.qty+=item.qty;row.material=row.material||item.material;
    if(item.cap)row.exportCaps.add(item.cap);
   }
   const alerts=[];let unknown=0,known=0;
@@ -65,7 +65,7 @@
    const exportCap=row.exportCaps.size===1?[...row.exportCaps][0]:null;
    const wiki=caps.get(row.key);
    const cap=manual??exportCap??wiki?.cap??null;
-   if(!cap){unknown++;continue}
+   if(!cap){if(row.material)unknown++;continue}
    known++;
    const status=row.qty>=cap?"maxed":row.qty>=Math.ceil(cap*near)?"near":null;
    if(!status)continue;
