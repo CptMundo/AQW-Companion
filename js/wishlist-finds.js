@@ -24,7 +24,7 @@
   rows.sort((a,b)=>(a.time??Number.MAX_SAFE_INTEGER)-(b.time??Number.MAX_SAFE_INTEGER)||a.order-b.order);
   return rows;
  }
- function find(snapshots,projects,{limit=12}={}){
+ function find(snapshots,projects,{limit=12,onlyUid=null}={}){
   const wishes=new Map();
   for(const p of Array.isArray(projects)?projects:[]){
    if(!p||typeof p.name!=="string")continue;
@@ -53,13 +53,14 @@
      name:wish.name,type:wish.type||item.type,
      firstSeenAt:now.time,importedAt:now.importedAt,
      source:now.fileName,previousSource:prior.fileName,
-     targetId:item.id
+     targetId:item.id,snapshotUid:now.uid
     });
    }
    for(const key of now.names.keys())seen.add(key);
   }
   events.sort((a,b)=>(b.firstSeenAt??0)-(a.firstSeenAt??0)||a.name.localeCompare(b.name));
-  return {count:events.length,recent:events.slice(0,Math.max(0,Math.min(50,Number(limit)||12))),compared:Math.max(0,rows.length-1)};
+  const selected=onlyUid===null?events:events.filter(e=>e.snapshotUid===String(onlyUid));
+  return {count:selected.length,recent:selected.slice(0,Math.max(0,Math.min(50,Number(limit)||12))),compared:Math.max(0,rows.length-1)};
  }
  return Object.freeze({find,captures,normalize});
 });
