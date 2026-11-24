@@ -20,7 +20,9 @@ function candidate(a,category){
  return {name,slug,anchor:a};
 }
 function sectionMarker(el){
- const tag=String(el.tagName||'').toUpperCase(),name=clean(el.textContent);
+ const tag=String(el.tagName||'').toUpperCase();
+ if(el.childElementCount>4&&!/^H[1-6]$/.test(tag))return null;
+ const name=clean(el.textContent);
  const letter=/^(?:[A-Z]|#|0-9)$/i;
  if(/^H[1-6]$/.test(tag))return letter.test(name)?'start':'end';
  if(tag==='A'){
@@ -45,7 +47,7 @@ function collect(content,category,sorted){
    const item=candidate(el,category);if(item)rows.push(item);
    continue;
   }
-  if(sorted&&/^(?:auto[ -]updating list of|list of all)\b/i.test(clean(el.textContent))&&/^(P|STRONG|B|SPAN|H[1-6])$/.test(el.tagName)&&!el.querySelector?.('a[href]'))autoList=true;
+  if(sorted&&/^(P|STRONG|B|SPAN|H[1-6])$/.test(el.tagName)&&!(el.childElementCount>4)&&/^(?:auto[ -]updating list of|list of all)\b/i.test(clean(el.textContent))&&!el.querySelector?.('a[href]'))autoList=true;
   const marker=sectionMarker(el);
   if(marker==='start')inList=true;
   if(marker==='end'){inList=false;autoList=false}
@@ -87,7 +89,7 @@ function init(){
  const content=document.getElementById('page-content'),title=document.getElementById('page-title');if(!content||!title)return;
  const crumb=document.getElementById('breadcrumbs')||document.querySelector('.breadcrumbs,#breadcrumb,.breadcrumb');
  if(crumb){const links=[...crumb.querySelectorAll('a[href]')];if(links.length&&!links.some(a=>{try{return new URL(a.getAttribute('href'),origin).pathname.replace(/^\/|\/$/g,'')==='items'}catch{return false}}))return}
- const groups=groupRows(collect(content,category,location.pathname.startsWith('/sort-by-')));
+ const parseStarted=performance.now(),groups=groupRows(collect(content,category,location.pathname.startsWith('/sort-by-'))),parseMs=Math.round(performance.now()-parseStarted);
  const host=document.createElement('div');host.id='aqwc-list-ownership';host.style.cssText='margin:8px 0';
  const shadow=host.attachShadow({mode:'closed'}),panel=document.createElement('div');
  panel.style.cssText='display:inline-block;padding:8px 12px;border:1px solid #38566d;border-radius:8px;background:#142b3e;color:#e5f5ff;font:600 13px/1.5 system-ui;max-width:100%;box-sizing:border-box';
@@ -98,9 +100,14 @@ function init(){
  function btn(text){const b=document.createElement('button');b.type='button';b.textContent=text;b.style.cssText='padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;cursor:pointer';return b}
  const show=btn('Refresh ownership'),clear=btn('Clear labels');clear.hidden=true;
  const status=document.createElement('small');status.setAttribute('role','status');status.style.cssText='display:block;color:#b6cddd;font-weight:400;margin-top:4px';
- controls.append(search,show,clear);panel.append(titleLine,note,controls,status);shadow.append(panel);(document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);
+ const auto=document.createElement('input');auto.type='checkbox';auto.disabled=true;auto.setAttribute('aria-label','Automatic ownership checks');
+ const autoLabel=document.createElement('label');autoLabel.style.cssText='display:block;font-size:11px;margin-top:6px;color:#b6cddd';autoLabel.append(auto,document.createTextNode(' Automatic ownership checks'));
+ const diagnostics=document.createElement('details');diagnostics.style.cssText='font-size:11px;color:#b6cddd;margin-top:5px';const diagnosticTitle=document.createElement('summary');diagnosticTitle.textContent='Navigation diagnostics';const diagnosticBody=document.createElement('div');diagnostics.append(diagnosticTitle,diagnosticBody);
+ function report(scanMs=null){const n=performance.getEntriesByType('navigation')[0],waiting=n&&n.responseStart>=n.requestStart&&n.requestStart>0?Math.round(n.responseStart-n.requestStart):null;diagnosticBody.textContent='Document response wait: '+(waiting===null?'unavailable':waiting+' ms')+' · list parsing: '+parseMs+' ms · local scan: '+(scanMs===null?'not finished':scanMs+' ms')+'. Response wait includes network and server time; timings stay on this page.'}
+ report();
+ controls.append(search,show,clear);panel.append(titleLine,note,controls,autoLabel,status,diagnostics);shadow.append(panel);(document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);
  if(!groups.length){search.disabled=show.disabled=true;status.textContent='No supported item links detected on this index. Refresh the page; if this persists, report the page URL.';return}
- let busy=false,owned=0,unknown=0,absent=0,activeScan=0,departing=false,autoTimer=null;
+ let busy=false,owned=0,unknown=0,absent=0,activeScan=0,departing=false,autoTimer=null,automatic=false,loadedPreference=false,pausedByUser=false;
  const labels=new Set(),pendingAnchors=new Map();
  const observer=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{
   if(departing)return;
@@ -122,7 +129,7 @@ function init(){
   for(const g of hits.slice(0,40)){
    const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:6px;margin:4px 0';
    const a=document.createElement('a');a.href=origin+'/'+[...g.slugs][0];a.textContent=g.name;a.style.color='#a9ddff';row.append(a);
-   const m=matched.get(g.name),s=document.createElement('small');s.textContent=m?label(m,g.slugs.size!==1).text:'Checking…';row.append(s);
+   const m=matched.get(g.name),s=document.createElement('small');s.textContent=m?label(m,g.slugs.size!==1).text:busy?'Checking…':'Not checked';row.append(s);
    const data={name:g.name,slug:[...g.slugs][0],category},target=globalThis.AQWCWikiWishlist?.target(data);
    if(g.slugs.size===1&&target&&!target.variant)row.append(makeAdd(data));results.append(row);
   }
@@ -156,7 +163,8 @@ function init(){
  }
  async function scan(){
   if(busy||departing)return;
-  const token=++activeScan;
+  const token=++activeScan,started=performance.now();
+  report();
   reset();matched.clear();const selected=groups;
   if(!selected.length){status.textContent='No matching candidate names.';return}
   busy=true;show.disabled=clear.disabled=true;
@@ -167,18 +175,25 @@ function init(){
     status.textContent=progress.offset.toLocaleString()+' / '+selected.length.toLocaleString()+' checked · '+owned+' owned · '+absent+' not in snapshot · '+unknown+' unknown · synced '+new Date(progress.syncedAt).toLocaleString();
    },()=>new Promise(resolve=>setTimeout(resolve,20)),()=>departing||token!==activeScan);
    if(departing||token!==activeScan)return;
-   clear.hidden=false;renderSearch();
+   clear.hidden=false;renderSearch();report(Math.round(performance.now()-started));
   }catch(err){if(!departing&&token===activeScan){reset();matched.clear();renderSearch();status.textContent=String(err?.message||err)}}
   finally{if(token===activeScan){busy=false;show.disabled=clear.disabled=search.disabled=false}}
  }
- show.addEventListener('click',e=>{if(e.isTrusted&&!busy){clearTimeout(autoTimer);scan()}});
- clear.addEventListener('click',e=>{if(!e.isTrusted||busy)return;reset();matched.clear();renderSearch();status.textContent='Labels cleared. Refresh ownership to check again.'});
+ show.addEventListener('click',e=>{if(e.isTrusted&&!busy){clearTimeout(autoTimer);pausedByUser=false;scan()}});
+ clear.addEventListener('click',e=>{if(!e.isTrusted||busy)return;clearTimeout(autoTimer);pausedByUser=true;reset();matched.clear();renderSearch();status.textContent='Labels cleared. Refresh ownership to check again.'});
  // Local read-only comparison on recognized category pages. No network requests,
  // no new permissions, and no simulated click or write to the inventory.
- function scheduleScan(){clearTimeout(autoTimer);autoTimer=setTimeout(()=>{if(!departing&&!busy)scan()},350)}
- if(document.readyState==='complete')scheduleScan();else window.addEventListener('load',scheduleScan,{once:true});
+ function scheduleScan(){clearTimeout(autoTimer);if(!loadedPreference||!automatic||pausedByUser||document.hidden||document.readyState!=='complete')return;autoTimer=setTimeout(()=>{if(!departing&&!busy&&!document.hidden&&!pausedByUser)scan()},750)}
+ async function loadPreference(){try{const r=await chrome.runtime.sendMessage({type:'wiki-list-preference'});if(!r?.ok)throw Error('Preference unavailable');automatic=r.automatic===true;auto.checked=automatic;loadedPreference=true;auto.disabled=false;if(automatic)scheduleScan();else status.textContent='Automatic checks paused. Refresh ownership to check manually.'}catch(err){status.textContent='Manual checks available; automatic preference unavailable.'}}
+ auto.addEventListener('change',async e=>{if(!e.isTrusted)return;auto.disabled=true;const previous=automatic;automatic=auto.checked;clearTimeout(autoTimer);if(!automatic){activeScan++;busy=false;show.disabled=false;clear.disabled=false;reset();matched.clear();renderSearch();status.textContent='Automatic checks paused.'}
+  try{const r=await chrome.runtime.sendMessage({type:'wiki-list-preference',automatic});if(!r?.ok)throw Error('Could not save preference');pausedByUser=false;if(automatic)scheduleScan()}
+  catch(err){automatic=previous;auto.checked=previous;status.textContent='Could not save automatic preference.';if(automatic)scheduleScan()}finally{auto.disabled=false}
+ });
+ if(document.readyState!=='complete')window.addEventListener('load',scheduleScan,{once:true});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden){clearTimeout(autoTimer);if(busy){activeScan++;busy=false;show.disabled=clear.disabled=false;reset();matched.clear();renderSearch();status.textContent='Check paused while tab is hidden.'}}else if(!matched.size)scheduleScan()});
+ loadPreference();
  window.addEventListener('pagehide',()=>{departing=true;activeScan++;clearTimeout(autoTimer);observer?.disconnect()});
- window.addEventListener('pageshow',e=>{if(e.persisted){departing=false;busy=false;show.disabled=clear.disabled=search.disabled=false;scheduleScan()}});
+ window.addEventListener('pageshow',e=>{if(e.persisted){departing=false;busy=false;show.disabled=clear.disabled=search.disabled=false;loadPreference()}});
  
 }
 globalThis.AQWCListOwnership=Object.freeze({categoryFor,candidate,sectionMarker,collect,groupRows,label,checkAll});

@@ -84,3 +84,17 @@
 .home-wishlist-win-badge,.wishlist-win-count{color:#8ceac4;font-size:11px;font-weight:700}
 .home-wishlist-win-badge{padding:4px 8px;background:#204c3e;border:1px solid #3e8067;border-radius:999px;white-space:nowrap}
 @media(max-width:520px){.home-inventory-changes .home-wishlist-win{flex-wrap:wrap}.home-wishlist-win-details{flex-basis:calc(100% - 42px)}.home-wishlist-win-badge{margin-left:40px}}
+
+/* Cleanup: group by actual use, make reasons visible and keep decisions explicit. */
+.cleanup-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}
+.cleanup-metric{display:grid;gap:4px;text-align:left;padding:12px;border:1px solid #315371;border-radius:9px;background:#10273a;color:#e1f1ff;cursor:pointer}
+.cleanup-metric strong{font-size:23px;color:#b7e3ff}.cleanup-metric small{font-size:11px;color:#b5cede}
+.cleanup-guide{border-left:3px solid #65a8cf;padding:7px 12px;margin:10px 0 15px;color:#bdd4e6;font-size:12px}
+.cleanup-guide p{margin:4px 0}.cleanup-guide a,.cleanup-links a{color:#96dcff;text-decoration:underline;text-underline-offset:2px}
+.cleanup-list{display:grid;gap:14px;margin-top:12px}.cleanup-group{border:1px solid #315371;border-radius:9px;overflow:hidden;background:#10273a}
+.cleanup-group-header{display:grid;gap:4px;padding:12px 14px;background:#182f44;color:#e1f1ff}.cleanup-group-header small{font-size:12px;color:#b5cede}
+.cleanup-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,200px);gap:14px;padding:12px 14px;border-top:1px solid #2b4359}
+.cleanup-item-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.cleanup-item-head strong{font-size:13px;color:#e1f1ff;overflow-wrap:anywhere}.cleanup-qty,.cleanup-ac{font-size:11px;color:#9dc9e8}
+.cleanup-ac{color:#7ee4bd}.cleanup-reason{font-size:12px;line-height:1.45;color:#c0d3e2;margin:5px 0}.cleanup-links{display:flex;gap:10px;flex-wrap:wrap;font-size:11px}.cleanup-uses{font-size:11px;color:#a8c5da;margin:5px 0}.cleanup-uses summary{cursor:pointer}.cleanup-uses p{overflow-wrap:anywhere}
+.cleanup-action{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:6px;text-align:right}.cleanup-action small{font-size:10px;color:#adc5d8}.cleanup-keep{font-size:12px;color:#c1d3e0;font-weight:600}.cleanup-action .smallbutton{white-space:normal}
+@media(max-width:700px){.cleanup-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.cleanup-row{grid-template-columns:1fr}.cleanup-action{align-items:flex-start;text-align:left}}

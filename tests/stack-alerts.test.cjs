@@ -93,8 +93,8 @@ assert.ok(html.includes('id="stack-alert-list"'));
 assert.ok(html.includes('id="home-stack-card"'));
 assert.ok(html.includes('id="stack-cap-save"'));
 assert.ok(html.includes('id="stack-cap-clear"'));
-assert.ok(html.includes('src="js/stack-alerts.js?v=138a"'));
-assert.ok(html.includes('href="css/stack-alerts.css?v=95"'));
+assert.ok(html.includes('src="js/stack-alerts.js?v=140"'));
+assert.ok(html.includes('href="css/stack-alerts.css?v=140"'));
 assert.ok(html.includes("renderUnlocks();renderStackAlerts();showUnlockSuggestions()"),"Alerts refresh with inventory snapshots");
 assert.ok(html.includes("initStackAlerts();"));
 assert.ok(html.includes("MaxStack:window.AQWCStackAlerts?.validCap"));
@@ -155,4 +155,22 @@ assert.ok(css.includes("#unlocks #unlocklist .wishlist-completion-remove"));
  assert.equal(result.rows.find(r=>r.id==='a').status,'situational');assert.equal(result.rows.find(r=>r.id==='b').status,'protected');assert.equal(result.rows.find(r=>r.id==='c').status,'protected');
  assert.ok(result.rows.find(r=>r.id==='c').reason.includes('test merge'));
  assert.ok(html.includes('entry.cleanupMergeRoutes.push({source:link,ingredients})'));assert.ok(html.includes('r.qty??r.quantity'));
+}
+
+{
+ const result=api.cleanup([{ID:'ink',Name:'ArchMage Ink',Type:'Item',Count:34,Bank:0,Coins:0},{ID:'quill',Name:'Arcane Quill',Type:'Item',Count:18,Bank:0,Coins:1},{ID:'u',Name:'Unclassified',Type:'Item',Count:1,Bank:0}],{community:[{name:'A scroll',ingredients:[['ArchMage Ink',1]]}]});
+ const ink=result.rows.find(x=>x.id==='ink'),quill=result.rows.find(x=>x.id==='quill'),unknown=result.rows.find(x=>x.id==='u');
+ assert.equal(ink.group,'spellcraft');assert.equal(ink.acTagged,false);assert.ok(ink.knownUses.includes('a scroll'));
+ assert.equal(quill.acTagged,true);assert.equal(unknown.group,'unknown');
+ const protectedResult=api.cleanup([{ID:'ink',Name:'ArchMage Ink',Type:'Item',Count:34,Bank:0}],{wishlist:[{name:'Scroll',steps:[{kind:'material',item:'ArchMage Ink'}]}]});
+ assert.equal(protectedResult.rows[0].group,'protected');
+ assert.ok(html.includes('My banking shortlist'));assert.ok(html.includes('fingerprint(r)===key'));assert.ok(html.includes('No item will be moved.'));
+ assert.ok(css.includes('.cleanup-group-header'));
+}
+
+{
+ const rows=api.cleanup([{ID:'sigil',Name:'Ancient Sigil',Type:'Item',Count:15,Bank:0},{ID:'blood',Name:'Enchanted Dark Blood',Type:'Item',Count:1,Bank:0},{ID:'pot',Name:'Potent Battle Elixir',Type:'Item',Count:20,Bank:0}]).rows;
+ assert.ok(rows.every(r=>r.status==='protected'&&api.safeWiki(r.url)));
+ assert.ok(html.includes('AQW_Unclassified_Materials.json'));
+ assert.ok(html.includes("filter(r=>r.status==='unknown').map(r=>({name:r.name,quantity:r.quantity,acTagged:r.acTagged}))"));
 }

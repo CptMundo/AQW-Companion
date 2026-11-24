@@ -137,13 +137,25 @@
  // Narrow, source-reviewed use notes. These are review prompts, never claims
  // of exhaustive uses or automatic recommendations to discard.
  const cleanupNotes=[
+  {"name":"Ancient Sigil","kind":"keep","note":"Used in Forgotten Tombs shop merges.","url":"https://aqwwiki.wikidot.com/ancient-sigil"},
+  {"name":"Enchanted Dark Blood","kind":"keep","note":"Used to merge Iaste Armor and Legion Arcane Dark Caster.","url":"https://aqwwiki.wikidot.com/enchanted-dark-blood"},
+  {"name":"Dark Energy","kind":"keep","note":"A similarly named Misc variant appears in Lae's quest requirements; retain until exact variant is confirmed.","url":"https://aqwwiki.wikidot.com/lae-s-quests"},
+  {"name":"Hollow Soul","kind":"keep","note":"A similarly named Misc variant appears in Lae's quests; retain until exact variant is confirmed.","url":"https://aqwwiki.wikidot.com/lae-s-quests"},
+  {"name":"Potent Battle Elixir","kind":"keep","note":"Listed combat use-item variants; keep for combat unless exact use and current need are reviewed.","url":"https://aqwwiki.wikidot.com/use-items"},
+  {"name":"Potent Destruction Elixir","kind":"keep","note":"Listed combat use-item variants; keep for combat unless exact use and current need are reviewed.","url":"https://aqwwiki.wikidot.com/use-items"},
+  {"name":"Potent Life Potion","kind":"keep","note":"Listed combat use-item variants; keep for combat unless exact use and current need are reviewed.","url":"https://aqwwiki.wikidot.com/use-items"},
+  {"name":"Potent Malice Potion","kind":"keep","note":"Listed combat use-item variants; keep for combat unless exact use and current need are reviewed.","url":"https://aqwwiki.wikidot.com/use-items"},
+  {"name":"Potent Soul Potion","kind":"keep","note":"Listed combat use-item variants; keep for combat unless exact use and current need are reviewed.","url":"https://aqwwiki.wikidot.com/use-items"},
+  {"name":"Potent Vigor Potion","kind":"keep","note":"Listed combat use-item variants; keep for combat unless exact use and current need are reviewed.","url":"https://aqwwiki.wikidot.com/use-items"},
+  {"name":"Health Potion","kind":"keep","note":"Listed combat use-item variants; keep for combat unless exact use and current need are reviewed.","url":"https://aqwwiki.wikidot.com/use-items"},
+  {"name":"Scroll of Psychic Wave","kind":"keep","note":"Listed combat use-item variants; keep for combat unless exact use and current need are reviewed.","url":"https://aqwwiki.wikidot.com/use-items"},
   // Additional conservative use classifications from the 15 Nov 2026 WikiItems snapshot; not exhaustive live checks.
   {"name":"Gear of Doom","kind":"keep","note":"Collect three for a Wheel of Doom spin.","url":"https://aqwwiki.wikidot.com/gear-of-doom"},
   {"name":"Mystic Parchment","kind":"situational","note":"SpellCrafting reagent exchanged for ink. Consider banking when not crafting.","url":"https://aqwwiki.wikidot.com/mystic-parchment"},
   {"name":"Datadisk 3","kind":"keep","note":"Accesses Chapter 3 in Hyperium's VR room.","url":"https://aqwwiki.wikidot.com/datadisk-3"},
   {"name":"Datadisk 4","kind":"keep","note":"Contains the record of the Bonzai Planet trip; retain for the J6 storyline.","url":"https://aqwwiki.wikidot.com/datadisk-4"},
   {"name":"Datadisk 5","kind":"keep","note":"Accesses Chapter 5 in Hyperium's VR room.","url":"https://aqwwiki.wikidot.com/datadisk-5"},
-  {"name":"Fishing Bait","kind":"situational","note":"Used to rank up Fishing. Consider banking if not fishing.","url":"https://aqwwiki.wikidot.com/fishing-bait"},
+  {"name":"Fishing Bait","kind":"situational","note":"Used in Fishing quests (including Faith's quests). Store only if not fishing or doing those quests.","url":"https://aqwwiki.wikidot.com/fishing-bait"},
   {"name":"Roc Tongue","kind":"situational","note":"Alchemy reagent. Consider banking if not using Alchemy.","url":"https://aqwwiki.wikidot.com/roc-tongue"},
   {"name":"Searbush","kind":"situational","note":"Alchemy reagent. Consider banking if not using Alchemy.","url":"https://aqwwiki.wikidot.com/searbush"},
   {"name":"Moglin Tears","kind":"situational","note":"Alchemy reagent. Consider banking if not using Alchemy.","url":"https://aqwwiki.wikidot.com/moglin-tears"},
@@ -160,7 +172,7 @@
   {"name":"Viper's Blood","kind":"keep","note":"Combat consumable that grants haste and critical chance.","url":"https://aqwwiki.wikidot.com/viper-s-blood"},
   {"name":"Potent Honor Potion","kind":"keep","note":"Combat damage consumable.","url":"https://aqwwiki.wikidot.com/potent-honor-potion"},
   {"name":"Potent Heart Potion","kind":"keep","note":"Healing consumable.","url":"https://aqwwiki.wikidot.com/potent-heart-potion"},
-  {"name":"Shriekward Potion","kind":"situational","note":"Specific Harpy Naga combat mechanic. Consider banking when not needed.","url":"https://aqwwiki.wikidot.com/shriekward-potion"},
+  {"name":"Shriekward Potion","kind":"situational","note":"Quest-related combat potion in the Mirror Drakath storyline. Store only when no active quest or fight needs it.","url":"https://aqwwiki.wikidot.com/shriekward-potion"},
   {"name":"Infinity Codex","kind":"keep","note":"Used for the obelisk/gate progression; retain for unlocks.","url":"https://aqwwiki.wikidot.com/infinity-codex"},
   {"name":"Golden Item of Digital Awesomeness","kind":"keep","note":"Special redemption item; check redemption before spending or moving.","url":"https://aqwwiki.wikidot.com/golden-item-of-digital-awesomeness"},
   {"name":"Mythic Item of Digital Awesomeness","kind":"keep","note":"Special item; retain until redemption eligibility is verified.","url":"https://aqwwiki.wikidot.com/mythic-item-of-digital-awesomeness"},
@@ -181,11 +193,11 @@
   {"name":"Unstable Battle Elixir","kind":"keep","note":"Combat consumable. Retain for relevant combat builds; not a discard candidate.","url":"https://aqwwiki.wikidot.com/unstable-battle-elixir"},
   {"name":"Unstable Velocity Elixir","kind":"keep","note":"Combat consumable. Retain for relevant combat builds; not a discard candidate.","url":"https://aqwwiki.wikidot.com/unstable-velocity-elixir"},
   {"name":"Armor of Awe Pass","kind":"keep","note":"Unlocks Valencia's Armor of Awe quests; keep if you need access.","url":"https://aqwwiki.wikidot.com/armor-of-awe-pass"},
-  {"name":"Aegis Armor","kind":"situational","note":"Used in the seasonal Archive of Time merge for Aegis Guardian. Consider banking between events if not tracked.","url":"https://aqwwiki.wikidot.com/archive-of-time-merge"},
-  {"name":"Aegis Robe","kind":"situational","note":"Used in the seasonal Archive of Time merge for Aegis Guardian. Consider banking between events if not tracked.","url":"https://aqwwiki.wikidot.com/archive-of-time-merge"},
+  {"name":"Aegis Armor","kind":"situational","note":"Used to merge Aegis Guardian in the Archive of Time shop. Store only if not pursuing it.","url":"https://aqwwiki.wikidot.com/archive-of-time-merge"},
+  {"name":"Aegis Robe","kind":"situational","note":"Used to merge Aegis Guardian in the Archive of Time shop. Store only if not pursuing it.","url":"https://aqwwiki.wikidot.com/archive-of-time-merge"},
   {"name":"Arashtite Ore","kind":"situational","note":"Alchemy reagent and More Ore quest ingredient; keep if using Alchemy, otherwise consider banking.","url":"https://aqwwiki.wikidot.com/arashtite-ore"},
   {"name":"ArchMage Ink","kind":"situational","note":"SpellCrafting reagent for six scroll recipes. Consider banking only if not crafting scrolls.","url":"https://aqwwiki.wikidot.com/archmage-ink"},
-  {"name":"Azkorath's Wing","kind":"situational","note":"Used to merge 14 - Temperance's Frugality. Keep if pursuing that item.","url":"https://aqwwiki.wikidot.com/azkorath-s-wing"},
+  {"name":"Azkorath's Wing","kind":"situational","note":"Used in the Arcana Invoker Resource Shop to merge 14 - Temperance's Frugality. Keep if pursuing that item.","url":"https://aqwwiki.wikidot.com/azkorath-s-wing"},
   {"name":"Apocalyptic Nihil Coin","kind":"situational","note":"Currency for MonaghanGorge Shop merges. Consider banking if not pursuing that shop.","url":"https://aqwwiki.wikidot.com/apocalyptic-nihil-coin"},
   {"name":"Belrot the Fiend Essence","kind":"keep","note":"Ingredient of Retrieve Void Auras; keep for future Void Aura farming.","url":"https://aqwwiki.wikidot.com/belrot-the-fiend-essence"},
   {"name":"Astral Ephemerite Essence","kind":"keep","note":"Ingredient of Retrieve Void Auras; keep for future Void Aura farming.","url":"https://aqwwiki.wikidot.com/astral-ephemerite-essence"},
@@ -194,6 +206,21 @@
   {name:"Gray Matter",kind:"quest",note:"Listed for Body, Soul and, Domination (one-time quest). Confirm completion in game first.",url:"https://aqwwiki.wikidot.com/gray-matter",questUrl:"https://aqwwiki.wikidot.com/a-mysterious-stranger-s-quests"},
   {name:"Wheel of Bacon Token",kind:"situational",note:"Used for the Legend Wheel of Bacon quest. Consider banking if you are not using it.",url:"https://aqwwiki.wikidot.com/wheel-of-bacon-token"}
  ];
+
+ const cleanupActivities=Object.freeze({
+  spellcraft:['Mystic Parchment','Arcane Quill','ArchMage Ink','Entropic Ink','Zealous Ink','Runic Ink','Radiant Ink','Hallow Ink','Fading Ink','Ember Ink','Elemental Ink'],
+  alchemy:['Arashtite Ore','Roc Tongue','Searbush','Moglin Tears','Rhison Blood'],
+  fishing:['Fishing Bait'],
+  seasonal:['Aegis Armor','Aegis Robe'],
+  merge:["Azkorath's Wing","Apocalyptic Nihil Coin"],
+  quest:['Shriekward Potion','Wheel of Bacon Token']
+ });
+ function cleanupGroup(name,status){
+  if(status==='protected')return 'protected';
+  if(status==='unknown')return 'unknown';
+  if(status==='review')return 'surplus';
+  return Object.keys(cleanupActivities).find(k=>cleanupActivities[k].some(n=>normalize(n)===normalize(name)))||'other';
+ }
  function cleanup(items=[],{reviewed=[],wishlist=[],community=[],routines=[],knownCaps:protectCaps=true}={}){
   const known=new Set(),usesByName=new Map(),tracked=new Set(),owned=new Set(),notes=new Map(cleanupNotes.map(x=>[normalize(x.name),x]));
   const add=(set,value)=>{if(typeof value==="string"&&normalize(value))set.add(normalize(value))};
@@ -213,10 +240,12 @@
    else if(n?.kind==="goal"&&owned.has(normalize(n.goal))&&[...(usesByName.get(key)||[])].every(use=>use===normalize(n.goal))){status="review";reason=n.note;url=n.url}
    else if(n?.kind==='keep'){status='protected';reason=n.note;url=n.url}
    else if(/^\[class item\]/i.test(x.Name)||/\bTimelock Key(?: \(Misc\))?$/i.test(x.Name)){status='protected';reason='Class-use or unlock item; do not treat it as cleanup material.'}
-   else if(n?.kind==='situational'){status='situational';reason=n.note+(known.has(key)?' Additional catalog uses may exist.':'');url=n.url}
+   else if(n?.kind==='situational'){status='situational';reason=n.note;url=n.url}
    else if(known.has(key)||protectCaps&&caps.has(key)||n?.kind==="goal"){status="protected";const uses=[...(usesByName.get(key)||[])];reason=uses.length?'Known uses: '+uses.slice(0,4).join(', ')+(uses.length>4?' + '+(uses.length-4)+' more':'')+'. Keep until reviewed.':'Stack-tracked material or unfinished target. Keep until reviewed.';url=n?.url||null}
    else if(n){status=n.kind==="situational"?"situational":"review";reason=n.note;url=n.url;questUrl=n.questUrl||null}
-   rows.push({id,name:x.Name,quantity:Number(x.Count),status,reason,url,questUrl});
+   const knownUses=[...(usesByName.get(key)||[])].filter(u=>u!=='unknown route');
+   rows.push({id,name:x.Name,quantity:Number(x.Count),status,reason,url,questUrl,group:cleanupGroup(x.Name,status),knownUses,acTagged:Number(x.Coins)===1});
+
   }
   const order={review:0,situational:1,unknown:2,protected:3};
   rows.sort((a,b)=>order[a.status]-order[b.status]||a.name.localeCompare(b.name));

@@ -95,7 +95,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.10.2');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js','wiki-quest-shop.js','wiki-list-ownership.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
+ assert.equal(manifest.version,'0.10.3');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js','wiki-quest-shop.js','wiki-list-ownership.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -411,4 +411,16 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  let cancelled=false,sends=0,rendered=0;
  await api.checkAll(Array.from({length:200},(_,i)=>({name:'item '+i})),'misc-items',async m=>{sends++;return {ok:true,syncedAt:'now',matches:m.names.map(()=>({state:'not-found'}))}},chunk=>{rendered+=chunk.length},async()=>{cancelled=true},()=>cancelled);
  assert.equal(sends,1);assert.equal(rendered,80);
+})().catch(e=>{console.error(e);process.exitCode=1});
+
+(async()=>{
+ const stored={};const api=vm.runInNewContext(read('extension/worker.js')+'\n({handle})',{chrome:{runtime:{onMessage:{addListener(){}},getURL:x=>'chrome-extension://test/'+x},storage:{local:{async get(k){return {[k]:stored[k]}},async set(v){Object.assign(stored,v)}}}},URL,TextEncoder});
+ const wiki={url:'https://aqwwiki.wikidot.com/classes',frameId:0},msg={type:'wiki-list-preference'};
+ assert.equal((await api.handle(msg,wiki)).automatic,true);
+ assert.equal((await api.handle({...msg,automatic:false},wiki)).automatic,false);
+ assert.equal((await api.handle(msg,wiki)).automatic,false);
+ assert.equal((await api.handle({...msg,automatic:'false'},wiki)).ok,false);
+ assert.equal((await api.handle(msg,{...wiki,frameId:1})).ok,false);
+ assert.equal((await api.handle(msg,{...wiki,url:'https://aqwwiki.wikidot.com/void-aura'})).ok,false);
+ assert.ok(read('extension/wiki-list-ownership.js').includes('Navigation diagnostics'));
 })().catch(e=>{console.error(e);process.exitCode=1});

@@ -197,6 +197,15 @@ function searchLocalInventory(snapshot,query,location){
 async function handle(message,sender){
  if(['wishlist-queue-add','routine-queue-add','wishlist-queue-read','wishlist-queue-ack'].includes(message?.type))return queueWishlist(message,sender);
  const account=await accountStage(message,sender);if(account)return account;
+ if(message?.type==='wiki-list-preference'){
+  if(!wikiListCategory(sender))return {ok:false,error:'Invalid list settings request.'};
+  await restrictStorage();
+  if(Object.hasOwn(message,'automatic')){
+   if(typeof message.automatic!=='boolean')return {ok:false,error:'Invalid preference.'};
+   await chrome.storage.local.set({'aqwc-list-automatic':message.automatic});
+  }
+  return {ok:true,automatic:(await chrome.storage.local.get('aqwc-list-automatic'))['aqwc-list-automatic']!==false};
+ }
  if(message?.type==='wiki-list-lookup'){
   const category=wikiListCategory(sender),names=message.names;
   if(!category||message.category!==category||!Array.isArray(names)||!names.length||names.length>80||names.some(n=>typeof n!=='string'||!n.trim()||n.length>350||/[\u0000-\u001f\u007f]/.test(n))||new Set(names).size!==names.length)return {ok:false,error:'Invalid item list request.'};
