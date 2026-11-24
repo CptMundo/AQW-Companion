@@ -178,7 +178,7 @@ console.log('Wiki Wishlist: scoped links, category suffixes, variant guard and e
  assert.equal((await api.handle({type:'account-stage-commit',id:'wrong'},main)).ok,false);
  assert.equal((await api.handle({type:'account-stage-commit',id:pending.id},main)).ok,true);
  assert.equal(stored['aqwc-inventory-v1'].items.length,101);assert.equal(stored['aqwc-account-stage-v1'],undefined);
- const html=read('index.html');assert.ok(html.includes('await importFile(file);'));assert.ok(html.includes("type:'imported',nonce,id:stageId"));assert.ok(html.includes("if(!confirm('Import '"));assert.ok(read('extension/account-bridge.js').includes('if(e.isTrusted)gesture=Date.now()'));
+ const html=read('index.html');assert.ok(html.includes('const saved=await importFile(file);'));assert.ok(html.includes("type:'imported',nonce,id:stageId"));assert.ok(html.includes("if(!confirm('Import '"));assert.ok(read('extension/account-bridge.js').includes('if(e.isTrusted)gesture=Date.now()'));
  assert.equal(manifest.host_permissions,undefined);assert.deepEqual(manifest.content_scripts[1].js,['sync.js','account-bridge.js','wishlist-queue.js']);
  console.log('Account import: pagination, completeness, scope, allowlisted fields, staging and commit checked.');
 })().catch(e=>{console.error(e);process.exitCode=1});
@@ -239,3 +239,15 @@ console.log('Stable header strip and Account Manager injection diagnostics check
  const c=fixture('/AQW/Account',true);assert.equal(vm.runInNewContext(src,c.ctx),false);assert.equal(c.state().inserted,null);
  console.log('Account page DOM: grid placement, fallback, idempotence, trusted-click capture and route guard passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
+
+const header131=read('index.html').split('</header>')[0],advanced131=header131.slice(header131.indexOf('<details class="inventory-advanced">'),header131.indexOf('</details>'));
+assert.ok(header131.includes('Import &amp; Sync'));
+for(const id of ['aqwc-sync-inventory','file','clear'])assert.ok(advanced131.includes('id="'+id+'"'));
+assert.ok(advanced131.includes('extension-connect.html'));
+assert.ok(!advanced131.includes('id="backup"'));
+assert.ok(advanced131.includes('Sync Companion → extension'));
+const flow131=read('index.html').split('function initAccountInventoryImport(){')[1].split('async function init(){')[0];
+assert.ok(flow131.indexOf('const saved=await importFile(file);')<flow131.indexOf("type:'imported',nonce,id:stageId"));
+assert.ok(flow131.includes("if(m.ok)"));assert.ok(flow131.includes("synced.dataset.state='success'"));assert.ok(flow131.includes("synced.dataset.state='error'"));
+assert.ok(read('css/site.css').includes('.inventory-advanced:not([open]) .inventory-advanced-menu{display:none}'));
+console.log('Import & Sync primary action, advanced tools and confirmed sync feedback checked.');
