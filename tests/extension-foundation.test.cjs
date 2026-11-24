@@ -139,6 +139,9 @@ console.log('Wiki Wishlist: scoped links, category suffixes, variant guard and e
  assert.equal(worker.matchWikiMaterial(stored,'Void Aura').bank,8);
  assert.equal(worker.matchWikiMaterial(stored,'Necrotic Sword of Doom (Sword)').total,1);
  assert.equal(worker.matchWikiMaterial(stored,'Same').state,'ambiguous');
+ assert.equal(worker.matchWikiMaterial(stored,'Same (Sword)').total,1);
+ assert.equal(worker.matchWikiMaterial(stored,'Void Aura (Sword)').state,'ambiguous');
+ assert.equal(worker.matchWikiMaterial({items:[{ID:'9',Name:'Example Axe',Type:'Weapon',Count:1,Bank:0}]},'Example Axe (Axe)').total,1);
  assert.equal(worker.matchWikiMaterial(stored,'Absent').state,'not-found');
  assert.equal(worker.matchWikiMaterial(null,'Void Aura').state,'unsynced');
  const msg={type:'wiki-material-lookup',names:['Void Aura','Absent']},sender={url:origin+'/necrotic-sword-of-doom-sword',frameId:0};
