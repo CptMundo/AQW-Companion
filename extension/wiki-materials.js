@@ -178,7 +178,12 @@
  // previews only; nested allocation uses parsed recipes on explicit expansion.
  const shadowfallSource={name:'Shadowfall',slug:'shadowfall',join:'shadowfall'};
  const mergeHint=parts=>({merge:parts,locations:[shadowfallSource]});
+ // Sources: /revenant-s-spellscroll, /conquest-wreath, /exalted-crown, /legion-revenant-s-quests, /dage-challenge, /ultra-dage.
+ const legionHint=names=>({merge:[['Dage the Evil Insignia',1],['Legion Token',50]],quests:names.map(name=>({name,slug:'legion-revenant-s-quests'})),locations:[{name:'Dage Challenge',slug:'dage-challenge',join:'dage'},{name:'Ultra Dage',slug:'ultra-dage',join:'ultradage'}]});
  const compactHints={
+  'revenant-s-spellscroll':legionHint(['Legion Fealty 1']),
+  'conquest-wreath':legionHint(['Legion Fealty 2']),
+  'exalted-crown':legionHint(['Legion Fealty 3','Legion Fealty 4']),
   'necrotic-sword-s-blade':mergeHint([['Energized Blade',1],['Void Aura',200],['Barium of Doom',1]]),
   'necrotic-sword-s-hilt':mergeHint([['Energized Hilt',1],['Bones from the Void Realm',1],['Void Aura',200]]),
   'necrotic-sword-s-aura':mergeHint([['Energized Aura',1],["Time Lord's Necronomicon",1],['Void Aura',300]]),
