@@ -44,6 +44,9 @@
  const line=document.createElement('div'),note=document.createElement('small');line.className='aqwc-state';note.className='aqwc-meta';note.style.cssText='display:block;color:#b6cddd;font-weight:400;margin-top:6px';
  line.setAttribute?.('role','status');card.append(itemTitle,line,note);shadow.append(card);
  const show=(text,detail,color)=>{line.textContent=text;line.style.color=color;note.textContent=detail};
+ const facts=document.createElement('div');facts.className='aqwc-facts';
+ for(const [label,pattern] of [['Rarity',/\bRarity\s*:\s*([^\n;]+?)(?=\s*(?:Base Damage|Description|Notes?|Type|Sellback)\s*:|[\n;]|$)/i],['Sellback',/\bSellback\s*:\s*([\d,]+\s*(?:Gold|ACs?|AdventureCoins?))\b/i],['Base damage',/\bBase Damage\s*:\s*([\d,]+\s*[-–]\s*[\d,]+)/i]]){const match=body.match(pattern);if(!match||!match[1].trim()||match[1].trim().length>60)continue;const fact=document.createElement('div');fact.className='aqwc-fact';const key=document.createElement('small'),value=document.createElement('strong');key.textContent=label;value.textContent=match[1].trim();fact.append(key,value);facts.append(fact)}
+ if(facts.children.length)card.append(facts);
  const badge=document.getElementById('aqwc-foundation-badge');if(ui)ui.mount(host,content,title);else (badge||title).insertAdjacentElement('afterend',host);
  if(!category){show('Item type not recognized','AQW Companion could not identify this Wiki category.','#ffdb93');return}
  const item={name,category,slug:location.pathname.replace(/^\/|\/$/g,'')},target=globalThis.AQWCWikiWishlist?.target(item);
@@ -69,19 +72,22 @@
  try{globalThis.AQWCWikiMaterials?.render(card,content,location.origin)}catch{console.warn('AQW Companion: material progress unavailable on this page.')}
  const marker=Array.from(content.querySelectorAll?.('strong,b')||[]).find(el=>/^Location\s*:\s*$/i.test(String(el.textContent||'').trim()));
  if(marker){const section=document.createElement('section');section.className='aqwc-section';const heading=document.createElement('strong');heading.textContent='Source / Location';section.append(heading);let n=marker.nextSibling,count=0;while(n&&count++<10&&n.nodeName!=='BR'&&n.nodeName!=='STRONG'&&n.nodeName!=='B'){if(n.nodeType===3){const value=String(n.textContent||'').trim();if(value){const span=document.createElement('span');span.textContent=' '+value+' ';section.append(span)}}else if(n.nodeName==='A'){try{const u=new URL(n.getAttribute('href'),location.href);if(u.origin===location.origin){const a=document.createElement('a');a.href=u.href;a.textContent=n.textContent;section.append(a)}}catch{}}n=n.nextSibling}if(section.children.length>1)card.append(section)}
+ const sync=document.createElement('div');sync.className='aqwc-sync';const dot=document.createElement('span');dot.className='aqwc-sync-dot';const syncCopy=document.createElement('div'),syncTitle=document.createElement('strong'),syncTime=document.createElement('small');syncTitle.textContent='Inventory snapshot';syncTime.textContent='Checking…';syncCopy.append(syncTitle,syncTime);sync.append(dot,syncCopy);card.append(sync);
+ const foot=document.createElement('div');foot.className='aqwc-footer';const open=document.createElement('a');open.href='https://cptmundo.github.io/AQW-Companion/';open.target='_blank';open.rel='noopener noreferrer';open.textContent='Open Companion ↗';const local=document.createElement('span');local.textContent='Local data · Read only';foot.append(open,local);card.append(foot);
  show('Checking synced inventory…','','#b6dfff');
- const failed=()=>show('Inventory lookup unavailable','Reload AQW Companion extension and refresh this Wiki page. Check the extension popup.','#ffc2a8');
+ const failed=()=>{syncTime.textContent='Unavailable · check extension';show('Inventory lookup unavailable','Reload AQW Companion extension and refresh this Wiki page. Check the extension popup.','#ffc2a8')};
  try{chrome.runtime.sendMessage({type:'wiki-item-lookup',query:{name,category}},result=>{
   if(chrome.runtime.lastError||!result?.ok){failed();return}
   if(result.state==='unsupported'){show('Item type not recognized','This item category is not yet supported.','#ffdb93');return}
   const date=result.syncedAt?new Date(result.syncedAt).toLocaleString():'';
   const source=result.exportedAt?new Date(result.exportedAt).toLocaleDateString():'';
   const freshness=[source&&'Export: '+source,date&&'Synced: '+date].filter(Boolean).join(' · ');
+  sync.setAttribute?.('data-synced',String(!!result.syncedAt));syncTitle.textContent=result.syncedAt?'Inventory synced':'Inventory not synced';syncTime.textContent=freshness||'Import & Sync in Companion';
   if(result.state==='owned'){
    const counts=[];if(result.inventory)counts.push('Inventory ×'+result.inventory.toLocaleString());if(result.bank)counts.push('Bank ×'+result.bank.toLocaleString());
-   show('✓ Owned · '+result.total.toLocaleString()+' · '+counts.join(' / '),[result.basis,freshness].filter(Boolean).join(' · '),'#90edb5');
-  }else if(result.state==='not-found')show('Not found in synced inventory',freshness,'#ffc2a8');
-  else if(result.state==='ambiguous')show('Possible match · check variant in Companion',freshness,'#ffdb93');
+   show('✓ Owned · '+result.total.toLocaleString(),counts.join(' · ')+(result.basis?' · '+result.basis:''),'#90edb5');
+  }else if(result.state==='not-found')show('Not owned in snapshot','No matching item in synced Inventory + Bank.','#ffc2a8');
+  else if(result.state==='ambiguous')show('Possible match','Check the item variant in Companion.','#ffdb93');
   else if(result.state==='unsynced')show('Inventory not synced','Open AQW Companion and select Sync inventory to extension.','#b6dfff');
   else failed();
  });}catch{failed()}

@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "AQW Companion",
-  "version": "0.11.0",
+  "name": "AQW Wiki Companion",
+  "version": "0.11.1",
   "description": "Local AQW Companion inventory lookup on AQWorlds Wiki item pages.",
   "action": {
-    "default_title": "AQW Companion",
+    "default_title": "AQW Wiki Companion",
     "default_popup": "popup.html"
   },
   "content_scripts": [

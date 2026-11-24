@@ -2,7 +2,7 @@
  const status=document.getElementById('inventory-summary'),clear=document.getElementById('clear-inventory');
  function send(type){clear.disabled=true;chrome.runtime.sendMessage({type},result=>{
   clear.disabled=false;if(chrome.runtime.lastError||!result?.ok){status.textContent='Could not access local inventory.';return}
-  status.textContent=result.count===null?'No inventory synced yet.':result.count.toLocaleString()+' inventory records · '+new Date(result.syncedAt).toLocaleString();
+  status.setAttribute('data-synced',String(result.count!==null));status.textContent=result.count===null?'No inventory synced yet.':'Inventory synced · '+result.count.toLocaleString()+' records · '+new Date(result.syncedAt).toLocaleString();
  })}
  clear.addEventListener('click',()=>{if(confirm('Clear the extension copy? Your Companion inventory will not change.'))send('clear-inventory')});
  const form=document.getElementById('quick-search'),query=document.getElementById('quick-query'),loc=document.getElementById('quick-location'),results=document.getElementById('quick-results'),notice=document.getElementById('quick-status');
