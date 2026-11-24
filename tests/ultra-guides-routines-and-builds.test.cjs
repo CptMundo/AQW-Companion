@@ -486,3 +486,11 @@ assert.ok(!html.includes('resetultraweekly'));
 assert.ok(html.includes('href="css/site.css?v=118"'));
 assert.ok(html.includes('id="ultracards"')&&html.includes('id="bossguidedetail"'));
 console.log("Ultra/Boss subnav CSS no longer excludes Ultras; reset toolbar removed without touching saved quest state.");
+
+assert.ok(html.includes("btn.setAttribute('aria-pressed',String(b.id===selectedUltra))"));
+assert.ok(html.includes("button.setAttribute('aria-pressed',String(e.id===selectedBossGuide))"));
+assert.ok(html.includes("css/ultra-quote-actions.css?v=119"));
+assert.ok(ultraCSS.includes("#ultras #ultracards .ultracard.active,"));
+assert.ok(ultraCSS.includes("#boss-guides .boss-guide-list .boss-guide-item.active{background:linear-gradient"));
+assert.ok(ultraCSS.includes("inset 4px 0 0 #79d9ff"));
+console.log("Selected encounter contrast and accessible pressed states in both guide views checked.");
