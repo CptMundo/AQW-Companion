@@ -95,7 +95,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.12.1');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
+ assert.equal(manifest.version,'0.12.2');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -548,6 +548,8 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  const bridge=read('extension/bridge.js'),items=read('extension/wiki-items.js');
  assert.ok(bridge.includes('Math.min(560,Math.max(380,Math.floor(width*.38)),Math.floor(width-590))'));
  assert.ok(bridge.includes('max-width:560px'));
+ assert.ok(bridge.includes("host.id==='aqwc-item-status'&&width>=1180"));assert.ok(bridge.includes('data-aqwc-layout'));assert.ok(bridge.includes('.aqwc-quest-choice[aria-pressed'));
+ assert.ok(theme.includes('aqwc-showcase-image'));assert.ok(read('extension/wiki-items.js').includes('img.naturalWidth>=200'));
  assert.ok(items.includes('heading.append(itemTitle,line)'));
  assert.ok(bridge.includes('.aqwc-item-heading .aqwc-state'));
  assert.ok(bridge.includes('.aqwc-meta[hidden]{display:none!important}'));
@@ -649,3 +651,5 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.equal(api.compactData('exalted-crown').sources.quests.length,2);
  assert.equal(api.compactData('conquest-wreath').sources.locations[1].join,'ultradage');
 }
+
+// Visual refinements retain the original article and native menu.
