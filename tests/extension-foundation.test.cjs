@@ -95,7 +95,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.10.4');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
+ assert.equal(manifest.version,'0.10.5');assert.equal(manifest.content_scripts.length,2);assert.ok(manifest.content_scripts.every(s=>s.matches.every(m=>!m.includes('aqwwiki.wikidot.com'))));
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -434,3 +434,15 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  vm.runInNewContext(read('extension/wiki-list-ownership.js'),context);
  vm.runInNewContext(read('extension/wiki-items.js'),context);
 }
+
+(async()=>{
+ const source=read('extension/popup.js'),boundary=source.indexOf('\n(() => {');
+ assert.ok(boundary>0);
+ const activate=vm.runInNewContext(source.slice(0,boundary)+'\nactivateWiki',{URL});
+ const calls=[],api={tabs:{async query(){return [{id:42,url:'https://aqwwiki.wikidot.com/classes'}]}},scripting:{async executeScript(x){calls.push(x);return [{frameId:0,documentId:'doc-1',result:true}]}}};
+ await activate(api);assert.equal(calls.length,2);assert.equal(calls[1].target.documentIds[0],'doc-1');assert.equal(calls[1].files.length,6);
+ calls.length=0;await assert.rejects(activate({...api,tabs:{async query(){return [{id:42,url:'https://example.com/classes'}]}}}),/supported AQW Wiki/);assert.equal(calls.length,0);
+ await assert.rejects(activate({...api,scripting:{async executeScript(){return [{frameId:0,result:true}]}}}),/changed/);
+ assert.ok(read('extension/popup.html').includes('Activate Companion on this page'));
+ console.log('Wiki tools explicit activation: origin and document targeting validated.');
+})().catch(e=>{console.error(e);process.exitCode=1});
