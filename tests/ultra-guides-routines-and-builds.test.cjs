@@ -45,7 +45,7 @@ assert.ok(html.includes("planner-show-all"),"Extended catalog must remain usable
 assert.ok(html.includes("name:'Mine Crafting',group:'Metals',freq:'daily',join:'/join stalagbite'"));
 assert.ok(html.includes("name:'Hard Core Metals',group:'Metals',freq:'daily',join:'/join stalagbite'"));
 assert.ok(plannerCSS.includes("column-gap:14px"));
-assert.ok(html.includes('href="css/planner-routines.css?v=110"'));
+assert.ok(html.includes('href="css/planner-routines.css?v=111"'));
 assert.ok(html.includes('src="js/ultra-guide-rows.js"'));
 for(const [i,m] of [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].entries())
  if(!m[1].includes("src=")&&m[2].trim())new vm.Script(m[2],{filename:"index-inline-"+i});
@@ -190,9 +190,9 @@ assert.ok(ultraCSS.includes(".ultra-option-owned"));
 const runtimeBosses=vm.runInNewContext(html.slice(html.indexOf("const ultraGuides=["),html.indexOf("const ultraRolePlaybooks="))+"\nultraGuides");
 const full=vm.runInNewContext(dataCode+"\n({taskCatalog,routineIdAliases,routineIsRecurring,reconcileRoutineState})",{window:{AQWCRoutineLibrary:routines},ultraGuides:runtimeBosses});
 const active=full.taskCatalog.filter(full.routineIsRecurring);
-assert.equal(active.length,160);
-assert.equal(active.filter(t=>t.freq==="daily").length,143);
-assert.equal(active.filter(t=>t.freq==="weekly").length,17);
+assert.equal(active.length,182);
+assert.equal(active.filter(t=>t.freq==="daily").length,164);
+assert.equal(active.filter(t=>t.freq==="weekly").length,18);
 assert.equal(new Set(active.map(t=>t.id)).size,active.length);
 for(const [id,name] of [["guide-ultra-darkon","Darkon, the Conductor"],["guide-ultra-drago","Drago, Tyrant of Astravia"],["guide-ultra-gramiel","Resuscitated Hope"]]){
  const task=active.find(t=>t.id===id);assert.equal(task.sourceName,name);assert.ok(task.rewards.some(r=>r.includes("Insignia")));assert.equal(active.filter(t=>t.name===name||t.sourceName===name).length,1);
@@ -370,3 +370,17 @@ assert.ok(html.includes("const total=routineProgress(pinnedActive)"));
 assert.ok(plannerCSS.includes(".planner-quest-art img[hidden]"));
 assert.ok(plannerCSS.includes("calc((100% - 55px)/6)"));
 console.log("Tracker portrait cards: verified image map, main reward, full details, separate joins, category and summary wiring.");
+
+assert.equal(active.filter(t=>t.kind==="activity").length,19);
+assert.equal(active.filter(t=>t.group==="Friendships").length,17);
+assert.ok(active.find(t=>t.id==="reviewed-dulcify").rewards.includes("Cinders of a Champion ×1"));
+assert.equal(active.find(t=>t.id==="wheel-of-doom-weekly").freq,"weekly");
+assert.ok(active.find(t=>t.id==="friendship-gravelyn").rewards[0].includes("Void Aura"));
+assert.ok(plannerCSS.includes("align-items:stretch!important"));
+assert.ok(plannerCSS.includes("aspect-ratio:16/9"));
+assert.ok(plannerCSS.includes("object-fit:cover"));
+assert.ok(html.includes("const visible=matches;"));
+assert.ok(html.includes("openPlannerLibrary(freq,'unpinned')"));
+assert.match(portrait.plannerArt(active.find(t=>t.id==="reviewed-dulcify")).url,/cpDNEYC\.png$/);
+assert.match(portrait.plannerArt(active.find(t=>/^Daily Exercise 3:/.test(t.name))).url,/9kK857M\.png$/);
+console.log("Planner full-width art, expanded routines and direct library discovery passed.");
