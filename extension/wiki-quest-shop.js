@@ -118,8 +118,8 @@ function init(){
    content.querySelectorAll('[data-aqwc-quest-shop-status]').forEach(x=>x.remove());
    for(const g of groups)for(const {item,text,color} of labels(g,matches)){
     if(!matches.has(item.name))continue;
-    const badge=document.createElement('span');badge.setAttribute('data-aqwc-quest-shop-status','');badge.textContent=' ['+text+']';badge.title='AQW Companion local snapshot; not proof of quest or shop eligibility';
-    badge.style.cssText='display:inline-block;margin-left:4px;padding:0 4px;border-radius:4px;background:#142b3e;color:'+color+';font:600 11px/1.5 system-ui';item.anchor.insertAdjacentElement('afterend',badge);
+    const badge=document.createElement('span');badge.setAttribute('data-aqwc-quest-shop-status','');const label=document.createElement('span');label.textContent=' ['+text+']';label.title='AQW Companion local snapshot; not proof of quest or shop eligibility';badge.attachShadow({mode:'closed'}).append(label);
+    label.style.cssText='display:inline-block;margin-left:4px;padding:0 4px;border-radius:4px;background:#142b3e;color:'+color+';font:600 11px/1.5 system-ui';item.anchor.insertAdjacentElement('afterend',badge);
    }
    status.textContent='Snapshot: '+new Date(syncedAt).toLocaleString()+' · '+selected.length+' names checked'+(skipped?' · '+skipped+' unsupported rows/price cells skipped':'')+(names.length>400?' · limit reached':'');b.textContent='Refresh inventory status';
   }catch(err){status.textContent=String(err?.message||err)}
