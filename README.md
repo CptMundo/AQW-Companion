@@ -14,10 +14,10 @@ Players import their own Account Management JSON exports, then track inventory, 
 
 - `index.html` — page shell, navigation and legacy inline application JavaScript (still intact).
 - `css/site.css` — original main and UI-patch styles moved out of HTML in their original order.
-- `css/item-icons.css` — item type icon styles, loaded after analytics CSS.
-- `css/analytics-consent.css`, `css/account-statistics.css` — dedicated feature styling.
+- `css/item-icons.css` — item type icon styles, loaded after base CSS.
+- `css/account-statistics.css` — dedicated feature styling.
 - `assets/` — brand PNGs, item-type SVGs and Artix artwork.
-- `js/account-statistics.js`, `js/analytics-consent.js` — independent, browser-side modules.
+- `js/account-statistics.js`, `js/umami-analytics.js` — independent, browser-side modules.
 - `data/companion_database.json`, `data/aqw-calendar.json` — public item reference data and curated calendar.
 - `build_database.js`, `build_database_v1_1.js`, `scripts/` — offline/catalog maintenance.
 - `tests/`, `.github/workflows/` — regression checks and deployment.
@@ -27,7 +27,7 @@ Players import their own Account Management JSON exports, then track inventory, 
 
 ## Privacy and data integrity
 
-Imported inventory JSON, selected snapshots, Wishlist, Forge progress and user settings stay in the player's browser (IndexedDB with localStorage recovery). **Never upload personal inventory exports, backups, tokens, cookies, credentials or account data to this public repository.** Optional GA4 only loads after consent and does not send game inventory. Read [privacy.html](privacy.html).
+Imported inventory JSON, selected snapshots, Wishlist, Forge progress and user settings stay in the player's browser (IndexedDB with localStorage recovery). **Never upload personal inventory exports, backups, tokens, cookies, credentials or account data to this public repository.** Umami Cloud measures cookie-free page visits only, respects prior analytics declines and browser privacy signals, and does not send game inventory. Read [privacy.html](privacy.html).
 
 The public catalog is community-derived and can be incomplete or outdated; `data/build_report.json` and `data/source_manifest.json` describe a 15 November 2026 build, not a guarantee that all recipes are verified. No automatic authenticated Artix sync is enabled; see `docs/inventory-sync-reconciliation.md`.
 
