@@ -95,7 +95,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.12.5');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
+ assert.equal(manifest.version,'0.12.6');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -503,7 +503,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  vm.runInNewContext(read('extension/wiki-theme.js'),{document,location:{origin:'https://aqwwiki.wikidot.com'},chrome:{runtime}});
  respond({ok:true,appearance:{background:'original',banner:'original',panel:'integrated'}});assert.equal(styles.length,0);assert.equal(attrs['data-aqwc-panel-theme'],'integrated');
  listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'bad',url:popup.url});assert.equal(styles.length,0);
- listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'id',url:popup.url});assert.equal(styles.length,1);assert.ok(styles[0].textContent.includes('div#container-wrap'));assert.ok(styles[0].textContent.includes('image_2026-11-24_232002011.png'));assert.ok(styles[0].textContent.includes('auto clamp(150px,10vw,210px)'));assert.ok(!styles[0].textContent.includes('#header::before'));assert.ok(styles[0].textContent.includes('#1b1627'));
+ listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'id',url:popup.url});assert.equal(styles.length,1);assert.ok(styles[0].textContent.includes('div#container-wrap'));assert.ok(styles[0].textContent.includes('radial-gradient(ellipse at 50% 100%'));assert.ok(styles[0].textContent.includes('100% clamp(150px,10vw,210px)'));assert.ok(!styles[0].textContent.includes('#header::before'));assert.ok(styles[0].textContent.includes('#1b1627'));
  listener({type:'aqwc-appearance-preview',appearance:{}},{id:'id',url:popup.url});assert.equal(styles.length,0);
  console.log('Wiki appearance: defaults, scoped read/write, validated presets and restore original passed.');
 })().catch(e=>{console.error(e);process.exitCode=1});
@@ -671,3 +671,5 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
 }
 
 {const bridge=read('extension/bridge.js'),items=read('extension/wiki-items.js'),materials=read('extension/wiki-materials.js'),quests=read('extension/wiki-quest-shop.js');assert.ok(bridge.includes('workspace.append(host,statusHost)'));assert.ok(items.includes('if(!aligned)mountStatus()'));assert.ok(bridge.includes('function styleItem(content)'));assert.ok(materials.includes('Sub-recipe · Craft'));assert.ok(quests.includes('content.hidden=choices.some'));assert.ok(read('extension/wiki-theme.js').includes('aqwc-wordmark-accent'));}
+
+{const api=vm.runInNewContext(read('extension/wiki-materials.js')+'\nAQWCWikiMaterials',{URL});const origin='https://aqwwiki.wikidot.com';const link={textContent:'Monsters',getAttribute:()=>'/monsters'};const img=(src)=>({getAttribute:()=>src,closest:()=>null});const doc=(images,monster=true)=>({querySelector:s=>s==='#page-content'?{querySelectorAll:()=>images}:{querySelectorAll:()=>monster?[link]:[]}});assert.equal(api.monsterImage(doc([img('https://i.imgur.com/H21Es6B.png'),img('/acsmall.png')]),origin,'supply-caravan'),'https://i.imgur.com/H21Es6B.png');assert.equal(api.monsterImage(doc([img('https://evil.example/a.png')]),origin,'x'),null);assert.equal(api.monsterImage(doc([img('https://i.imgur.com/a.png'),img('https://i.imgur.com/b.png')]),origin,'x'),null);assert.equal(api.monsterImage(doc([img('https://i.imgur.com/a.png')],false),origin,'x'),null);assert.ok(read('extension/bridge.js').includes('workspace.prepend(info)'));assert.ok(read('extension/wiki-theme.js').includes('aqwc-helm-frame'));}
