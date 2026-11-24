@@ -14,7 +14,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="AQW Companion | AQWorlds Inventory & Farming Tracker">
 <meta name="twitter:description" content="A free unofficial AdventureQuest Worlds companion with inventory, Wishlist, farming and Forge tracking."><link rel="icon" type="image/png" href="assets/brand-favicon.png">
-<link rel="stylesheet" href="css/site.css?v=131">
+<link rel="stylesheet" href="css/site.css?v=132">
 
 
 <link rel="stylesheet" href="css/item-icons.css">
@@ -378,7 +378,13 @@ function findCount(name){return items.filter(x=>x.Name.toLowerCase()===name.trim
  controls.append(amount,record,undo);outer.append(controls,node('small','Only record confirmed consumption. Re-import a NEW inventory snapshot after turn-ins; the app cannot infer historical spending from current stock.','muted tiny'));box.append(outer)})}
 function renderHistory(){let box=$('historylist');box.replaceChildren();if(!snapshots.length){box.append(node('p','No imported snapshots.','muted'));return}snapshots.slice().reverse().forEach(s=>{let row=node('div',undefined,'historyitem'),left=node('div');left.append(node('strong',s.fileName),node('div',`${dateFmt(s.exportedAt)} · ${fmt(s.items.length)} records`,'muted'));let b=node('button',s.uid===current?.uid?'✓ Active':'Open','smallbutton');b.disabled=s.uid===current?.uid;b.addEventListener('click',()=>{current=s;items=s.items;saveActiveSnapshotId(s.uid);renderAll()});row.append(left,b);box.append(row)})}
 function renderSelects(){for(let id of ['oldselect','newselect']){$(id).replaceChildren(...snapshots.map(s=>new Option(`${safeDate(s.exportedAt)} · ${s.fileName}`,s.uid)))}if(snapshots.length>=2){$('oldselect').value=snapshots.at(-2).uid;$('newselect').value=snapshots.at(-1).uid}}
-function comparison(){const old=snapshots.find(s=>s.uid===$('oldselect').value),newer=snapshots.find(s=>s.uid===$('newselect').value),area=$('compareresult');area.replaceChildren();if(!old||!newer||old.uid===newer.uid){area.append(node('p','Select two different snapshots.'));return}const a=new Map(old.items.map(x=>[x.ID,x])),b=new Map(newer.items.map(x=>[x.ID,x]));const added=[...b.values()].filter(x=>!a.has(x.ID)),removed=[...a.values()].filter(x=>!b.has(x.ID));let changes=[],moves=[];for(const [id,x]of b){let prev=a.get(id);if(!prev)continue;if(x.Count!==prev.Count)changes.push({name:x.Name,was:prev.Count,now:x.Count,diff:x.Count-prev.Count});if(x.Bank!==prev.Bank)moves.push({name:x.Name,to:x.Bank?'Bank':'Outside bank'})}let summary=node('div',undefined,'stats');[['New records',added.length],['Missing records',removed.length],['Quantity changes',changes.length],['Moved between locations',moves.length]].forEach(([k,v])=>{let c=node('div',undefined,'card');c.append(node('div',k,'eyebrow'),node('div',fmt(v),'value'));summary.append(c)});area.append(summary);let categories=[['New items',added.map(x=>`${x.Name} (${fmt(x.Count)})`)],['Missing from latest export',removed.map(x=>x.Name)],['Stock changes',changes.sort((x,y)=>Math.abs(y.diff)-Math.abs(x.diff)).map(x=>`${x.name}: ${fmt(x.was)} → ${fmt(x.now)} (${x.diff>0?'+':''}${fmt(x.diff)})`)],['Location changes',moves.map(x=>`${x.name} → ${x.to}`)]];for(const [label,arr]of categories){let card=node('div',undefined,'card');card.style.marginBottom='12px';card.append(node('h3',`${label} (${arr.length})`,'sectiontitle'));let content=node('div');arr.slice(0,80).forEach(v=>content.append(node('div',v,'minirow')));if(arr.length>80)content.append(node('p',`Showing 80 of ${arr.length}. Use the backup JSON for a complete analysis.`,'muted'));if(!arr.length)content.append(node('p','No changes.','muted'));card.append(content);area.append(card)}}
+function inventoryQuantityChanges(previous,latest){
+ const totals=rows=>{const map=new Map();for(const item of rows){const id=String(item.ID),entry=map.get(id)||{name:item.Name,count:0};entry.count+=Number(item.Count)||0;map.set(id,entry)}return map};
+ const old=totals(previous),next=totals(latest),changes=[];
+ for(const [id,item] of next){const before=old.get(id);if(before&&before.count!==item.count)changes.push({name:item.name,was:before.count,now:item.count,diff:item.count-before.count})}
+ return changes.sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff)||a.name.localeCompare(b.name));
+}
+function comparison(){const old=snapshots.find(s=>s.uid===$('oldselect').value),newer=snapshots.find(s=>s.uid===$('newselect').value),area=$('compareresult');area.replaceChildren();if(!old||!newer||old.uid===newer.uid){area.append(node('p','Select two different snapshots.'));return}const a=new Map(old.items.map(x=>[x.ID,x])),b=new Map(newer.items.map(x=>[x.ID,x]));const added=[...b.values()].filter(x=>!a.has(x.ID)),removed=[...a.values()].filter(x=>!b.has(x.ID));let changes=inventoryQuantityChanges(old.items,newer.items),moves=[];for(const [id,x]of b){let prev=a.get(id);if(!prev)continue;if(x.Bank!==prev.Bank)moves.push({name:x.Name,to:x.Bank?'Bank':'Outside bank'})}let summary=node('div',undefined,'stats');[['New records',added.length],['Missing records',removed.length],['Quantity changes',changes.length],['Moved between locations',moves.length]].forEach(([k,v])=>{let c=node('div',undefined,'card');c.append(node('div',k,'eyebrow'),node('div',fmt(v),'value'));summary.append(c)});area.append(summary);let categories=[['New items',added.map(x=>`${x.Name} (${fmt(x.Count)})`)],['Missing from latest export',removed.map(x=>x.Name)],['Stock changes',changes.sort((x,y)=>Math.abs(y.diff)-Math.abs(x.diff)).map(x=>`${x.name}: ${fmt(x.was)} → ${fmt(x.now)} (${x.diff>0?'+':''}${fmt(x.diff)})`)],['Location changes',moves.map(x=>`${x.name} → ${x.to}`)]];for(const [label,arr]of categories){let card=node('div',undefined,'card');card.style.marginBottom='12px';card.append(node('h3',`${label} (${arr.length})`,'sectiontitle'));let content=node('div');arr.slice(0,80).forEach(v=>content.append(node('div',v,'minirow')));if(arr.length>80)content.append(node('p',`Showing 80 of ${arr.length}. Use the backup JSON for a complete analysis.`,'muted'));if(!arr.length)content.append(node('p','No changes.','muted'));card.append(content);area.append(card)}}
 function saveDownload(data,name){let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000)}
 
 const starterProjects=[
@@ -2498,7 +2504,7 @@ function renderHomeInventoryChanges(){
  const added=[...next.values()].filter(x=>!old.has(String(x.ID)));
  const missing=[...old.values()].filter(x=>!next.has(String(x.ID)));
  const moved=[...next.values()].filter(x=>old.has(String(x.ID))&&Boolean(x.Bank)!==Boolean(old.get(String(x.ID)).Bank));
- const changed=[...next.values()].filter(x=>old.has(String(x.ID))&&Number(x.Count)!==Number(old.get(String(x.ID)).Count));
+ const changed=inventoryQuantityChanges(previous.items,latest.items);
  root.append(node('div','Comparing '+safeDate(previous.exportedAt)+' → '+safeDate(latest.exportedAt),'home-delta-caption'));
  const metrics=node('div',undefined,'home-delta-metrics home-delta-metrics-v2');
  for(const [icon,title,count,type] of [['✦','New',added.length,'new'],['↕','Moved',moved.length,'moved'],['◷','Qty changed',changed.length,'changed'],['−','Not in export',missing.length,'missing']]){
@@ -2506,6 +2512,30 @@ function renderHomeInventoryChanges(){
   tile.append(node('span',icon,'home-delta-metric-icon'),node('strong',fmt(count)),node('small',title));metrics.append(tile)
  }
  root.append(metrics);
+ if(changed.length){
+  const section=node('div',undefined,'home-delta-highlights home-quantity-changes');
+  const heading=node('div',undefined,'home-delta-highlight-head');
+  heading.append(node('strong','◷ Quantity changes'),node('span',fmt(changed.length)+' changed','muted tiny'));
+  section.append(heading);
+  const list=node('div',undefined,'home-quantity-list');
+  const drawChanges=expanded=>{
+   list.replaceChildren();
+   for(const item of changed.slice(0,expanded?changed.length:6)){
+    const row=node('div',undefined,'home-quantity-row');
+    const name=node('strong',item.name,'home-quantity-name');
+    const counts=node('span',fmt(item.was)+' → '+fmt(item.now),'home-quantity-counts');
+    const delta=node('strong',(item.diff>0?'+':'−')+fmt(Math.abs(item.diff)),'home-quantity-diff '+(item.diff>0?'gain':'loss'));
+    row.append(name,counts,delta);list.append(row);
+   }
+  };
+  drawChanges(false);section.append(list);
+  if(changed.length>6){
+   const more=node('button','Show all '+fmt(changed.length)+' changes','smallbutton home-quantity-more');more.type='button';more.setAttribute('aria-expanded','false');
+   more.onclick=()=>{const expanded=more.getAttribute('aria-expanded')!=='true';drawChanges(expanded);more.setAttribute('aria-expanded',String(expanded));more.textContent=expanded?'Show less':'Show all '+fmt(changed.length)+' changes'};
+   section.append(more);
+  }
+  root.append(section);
+ }
  const wins=latest.uid?window.AQWWishlistFinds?.find(snapshots,unlocks,{onlyUid:latest.uid,limit:50}):null;
  if(wins?.count){
   const section=node('div',undefined,'home-wishlist-wins');
@@ -2533,7 +2563,7 @@ function renderHomeInventoryChanges(){
   list.append(card);
  }
  if(!added.length)list.append(node('p','No new item IDs in your latest export.','muted tiny'));
- highlights.append(list);root.append(highlights);
+ highlights.append(list);if(added.length||!changed.length)root.append(highlights);
  if(missing.length)root.append(node('p','Note: '+missing.length+' records are absent from this export; that does not prove those items were lost.','home-delta-footnote'));
  if(!added.length&&!missing.length&&!changed.length&&!moved.length)root.append(node('p','No differences between these two snapshots.','home-delta-footnote'));
 }
@@ -2915,7 +2945,7 @@ function activateTab(tab){const b=document.querySelector('[data-tab="'+tab+'"]')
 }
 document.querySelectorAll('[data-group]').forEach(b=>b.addEventListener('click',()=>activateTab(b.dataset.group==='planner'?'planner':lastTabByGroup[b.dataset.group]||groupDefaults[b.dataset.group])));
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>activateTab(b.dataset.tab)));
-activateTab('overview');$('opencommunityadvanced').onclick=()=>activateTab('database');renderUltras();renderPlanner();$('homeplanner').onclick=()=>selectTab('planner');$('homeprojects').onclick=()=>selectTab('unlocks');$('homeexplore').onclick=()=>selectTab('discover');$('homecompare').onclick=()=>selectTab('compare');for(let id of ['search','type','location','order','rarity','qtymin','qtymax','datefrom','dateto'])$(id).addEventListener(['search','qtymin','qtymax'].includes(id)?'input':'change',()=>{page=0;renderItems()});$('resetinventoryfilters').onclick=()=>{for(const id of ['search','qtymin','qtymax','datefrom','dateto'])$(id).value='';for(const id of ['type','location','rarity'])$(id).value='';$('order').value='name';page=0;renderItems()};$('prev').onclick=()=>{page--;renderItems()};$('next').onclick=()=>{page++;renderItems()};$('addgoal').onclick=()=>{let name=$('goalname').value.trim(),target=Number($('goaltarget').value);if(!name||!Number.isSafeInteger(target)||target<1){message('Enter an item name and a positive whole-number target.');return}goals.push({id:crypto.randomUUID(),name,target});saveGoals();$('goalname').value='';$('goaltarget').value='';renderGoals()};$('startergoals').onclick=()=>{for(let [name,target]of [['Void Aura',7500],['Bone Dust',6666]])if(!goals.some(g=>g.name===name))goals.push({id:crypto.randomUUID(),name,target});saveGoals();renderGoals()};$('comparebtn').onclick=comparison;$('backup').onclick=()=>{saveDownload({format:'AQW Companion backup v0.9.3',storyStatuses,planner:{pinned:pinnedTasks,checks:taskChecks},createdAt:new Date().toISOString(),snapshots,goals,unlocks},'AQW_Companion_Backup.json')};$('clear').onclick=async()=>{if(!confirm('Delete ALL snapshots, goals, unlock projects, planner tasks and story statuses stored in this browser? Create a backup first.'))return;try{if(db)await txn('readwrite',s=>s.clear());snapshots=[];current=null;goals=[];unlocks=[];localStorage.removeItem('aqw-companion-goals');localStorage.removeItem('aqw-companion-unlocks');storyStatuses={};saveStory();pinnedTasks=[];taskChecks={};localStorage.removeItem(plannerKey);renderPlanner();renderAll()}catch(e){message(e.message)}};
+activateTab('overview');$('opencommunityadvanced').onclick=()=>activateTab('database');renderUltras();renderPlanner();$('homeplanner').onclick=()=>selectTab('planner');$('homeprojects').onclick=()=>selectTab('unlocks');$('homeexplore').onclick=()=>selectTab('discover');$('homecompare').onclick=()=>{selectTab('compare');const ordered=[...snapshots].sort((a,b)=>new Date(a.importedAt||a.exportedAt||0)-new Date(b.importedAt||b.exportedAt||0));if(ordered.length>=2){$('oldselect').value=ordered.at(-2).uid;$('newselect').value=ordered.at(-1).uid;comparison()}};for(let id of ['search','type','location','order','rarity','qtymin','qtymax','datefrom','dateto'])$(id).addEventListener(['search','qtymin','qtymax'].includes(id)?'input':'change',()=>{page=0;renderItems()});$('resetinventoryfilters').onclick=()=>{for(const id of ['search','qtymin','qtymax','datefrom','dateto'])$(id).value='';for(const id of ['type','location','rarity'])$(id).value='';$('order').value='name';page=0;renderItems()};$('prev').onclick=()=>{page--;renderItems()};$('next').onclick=()=>{page++;renderItems()};$('addgoal').onclick=()=>{let name=$('goalname').value.trim(),target=Number($('goaltarget').value);if(!name||!Number.isSafeInteger(target)||target<1){message('Enter an item name and a positive whole-number target.');return}goals.push({id:crypto.randomUUID(),name,target});saveGoals();$('goalname').value='';$('goaltarget').value='';renderGoals()};$('startergoals').onclick=()=>{for(let [name,target]of [['Void Aura',7500],['Bone Dust',6666]])if(!goals.some(g=>g.name===name))goals.push({id:crypto.randomUUID(),name,target});saveGoals();renderGoals()};$('comparebtn').onclick=comparison;$('backup').onclick=()=>{saveDownload({format:'AQW Companion backup v0.9.3',storyStatuses,planner:{pinned:pinnedTasks,checks:taskChecks},createdAt:new Date().toISOString(),snapshots,goals,unlocks},'AQW_Companion_Backup.json')};$('clear').onclick=async()=>{if(!confirm('Delete ALL snapshots, goals, unlock projects, planner tasks and story statuses stored in this browser? Create a backup first.'))return;try{if(db)await txn('readwrite',s=>s.clear());snapshots=[];current=null;goals=[];unlocks=[];localStorage.removeItem('aqw-companion-goals');localStorage.removeItem('aqw-companion-unlocks');storyStatuses={};saveStory();pinnedTasks=[];taskChecks={};localStorage.removeItem(plannerKey);renderPlanner();renderAll()}catch(e){message(e.message)}};
 
 const enhancementHelp={
  Valiance:'Forge weapon: balanced stats and offensive buffs.',
