@@ -3358,6 +3358,38 @@ function showWikiWishlistReview(){
 }
 
 
+
+function initWikiWishlistQueue(){
+ const root=$('wiki-wishlist-review'),api=window.AQWCWikiWishlist,key='aqw-companion-unlocks',channel='aqwc-wishlist-queue-v1';
+ if(!root||!api)return;
+ window.addEventListener('message',e=>{
+  if(e.source!==window||e.origin!==location.origin||location.origin!=='https://cptmundo.github.io'||!['/AQW-Companion/','/AQW-Companion/index.html'].includes(location.pathname))return;
+  const m=e.data;if(m?.channel!==channel||m.type!=='entries'||typeof m.nonce!=='string'||!/^[a-f0-9]{32}$/.test(m.nonce)||!Array.isArray(m.entries)||m.entries.length>200)return;
+  // Use latest persisted projects, not a stale tab copy. Never clear on parse error.
+  try{
+   const latest=JSON.parse(localStorage.getItem(key)||'[]');if(!Array.isArray(latest))throw Error('Invalid local Wishlist.');
+   const ids=[];let added=0;
+   for(const entry of m.entries){
+    if(typeof entry?.id!=='string'||entry.id.length>64)continue;
+    const target=api.target(entry.item);if(!target||target.variant)continue;
+    const recipe=getRecipe(canonicalItemName(target.name)),name=canonicalItemName(recipe?.name||target.name);
+    if(!latest.some(x=>normalizedName(canonicalItemName(x.name))===normalizedName(name))){
+     const item=items.find(x=>normalizedName(x.Name)===normalizedName(name));
+     const type=recipe?.type||item?.Type||communityItems.get(communityKey(name))?.type||acquisitionFor(name)?.type||target.type;
+     latest.push(newProject(recipe||{name,type,steps:[{label:'Own '+name,kind:'owned',item:name},{label:'Acquisition route not yet in the catalog',kind:'manual'}]}));added++;
+    }
+    ids.push(entry.id);
+   }
+   if(added)localStorage.setItem(key,JSON.stringify(latest));
+   unlocks=latest;
+   window.postMessage({channel,type:'saved',nonce:m.nonce,ids},location.origin);
+   if(added){try{renderUnlocks();renderHomeInsights();renderHomeInventoryChanges();renderStackAlerts();message(added+' Wishlist goal(s) added from AQW Wiki.')}catch(err){console.warn('Wishlist saved; redraw failed',err)}}
+  }catch(err){console.warn('Pending Wiki Wishlist import failed; queue retained',err)}
+ });
+ window.addEventListener('storage',e=>{if(e.key===key){loadUnlocks();try{renderUnlocks();renderHomeInsights();renderHomeInventoryChanges();renderStackAlerts()}catch(err){console.warn(err)}}});
+ root.dataset.queueReady='1';
+}
+
 function initAccountInventoryImport(){
  const button=$('aqwc-account-import'),status=$('aqwc-account-status'),channel='aqwc-account-import-v1';
  if(!button||!status)return;
@@ -3421,7 +3453,7 @@ async function init(){
  try{renderAll()}catch(e){console.error('Dashboard redraw failed',e)}
  try{await loadCommunity();await loadPublicCatalog();renderRarityPanel();renderStackAlerts();if($('account-stats')?.classList.contains('active')||$('milestones')?.classList.contains('active'))renderAccountStatistics()}catch(e){console.warn('Community data setup failed',e)}
  updateInventoryStorageStatus();
- initAccountInventoryImport();showWikiWishlistReview();window.addEventListener('hashchange',showWikiWishlistReview);
+ initAccountInventoryImport();initWikiWishlistQueue();showWikiWishlistReview();window.addEventListener('hashchange',showWikiWishlistReview);
 }init();})();
 </script>
 <script defer src="js/umami-analytics.js"></script>
