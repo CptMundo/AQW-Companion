@@ -168,7 +168,7 @@ function questCards(panel,content,title){
   const detail=document.createElement('details');detail.className='aqwc-quest-card';const summary=document.createElement('summary');summary.textContent=name;detail.append(summary);const body=document.createElement('div');body.className='aqwc-quest-body';detail.append(body);cards.append(detail);
   let built=false;
   detail.addEventListener('toggle',async()=>{
-   if(!detail.open)return;if(active&&active!==detail)active.open=false;active=detail;
+   if(!detail.open){if(active===detail)active=null;detail.classList.remove('aqwc-quest-expanded');return}if(active&&active!==detail){active.open=false;active.classList.remove('aqwc-quest-expanded')}active=detail;detail.classList.add('aqwc-quest-expanded');
    if(built)return;
    const scope=tab?questScope(content,[tab],name):content;
    if(!scope){body.textContent='Quest section not recognized. Close and reopen after selecting the Wiki tab.';return}
@@ -210,7 +210,7 @@ function init(){
  const b=document.createElement('button');b.type='button';b.textContent=kind==='quest'?'Check quest materials':'Show inventory status';b.style.cssText='margin-top:6px;padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;cursor:pointer';
  const status=document.createElement('small');status.setAttribute('role','status');status.style.cssText='display:block;color:#b6cddd;font-weight:400;margin-top:4px';
  const ui=globalThis.AQWCWikiUI;ui?.decorate(shadow,panel,kind==='quest'?'Quest tools':'Shop tools');if(ui)panel.style.cssText='';b.className='aqwc-primary';
- if(kind==='quest'){questCards(panel,content,title);shadow.append(panel);if(ui)ui.mount(host,content,title);else (document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);return}
+ if(kind==='quest'){panel.classList.add('aqwc-quest-top');questCards(panel,content,title);shadow.append(panel);host.style.cssText='display:block;float:none;width:100%;max-width:100%;margin:8px 0 16px;';if(content.parentElement)content.parentElement.insertBefore(host,content);else (document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);return}
  const summary=document.createElement('section');summary.className='aqwc-section';summary.hidden=true;
  panel.append(label,note);
 

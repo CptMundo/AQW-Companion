@@ -67,7 +67,7 @@
   if(href){const view=document.createElement('a');view.href=href;view.target='_blank';view.rel='noopener noreferrer';view.textContent='View in Wishlist ↗';view.style.cssText='display:inline-block;margin-top:5px;color:#a9ddff;font:600 11px system-ui';actions.append(view)}
   card.append(actions);
  }
- try{const api=globalThis.AQWCWikiMaterials;api?.render(card,content,location.origin);if(stackable&&api){const slug=location.pathname.replace(/^\/|\/$/g,'');api.renderSources(card,api.mergeSources(api.parseSources(content,location.origin),api.reviewedSources(slug)),location.origin,slug,{partial:!!api.reviewedSources(slug)})}}catch{console.warn('AQW Companion: material progress unavailable on this page.')}
+ let farming;try{const api=globalThis.AQWCWikiMaterials;farming=api?.render(card,content,location.origin);if(stackable&&api){const slug=location.pathname.replace(/^\/|\/$/g,'');api.renderSources(card,api.mergeSources(api.parseSources(content,location.origin),api.reviewedSources(slug)),location.origin,slug,{partial:!!api.reviewedSources(slug)})}}catch{console.warn('AQW Companion: material progress unavailable on this page.')}
  const marker=Array.from(content.querySelectorAll?.('strong,b')||[]).find(el=>/^Location\s*:\s*$/i.test(String(el.textContent||'').trim()));
  if(marker){const section=document.createElement('section');section.className='aqwc-section';const heading=document.createElement('strong');heading.textContent='Source / Location';section.append(heading);let n=marker.nextSibling,count=0;while(n&&count++<10&&n.nodeName!=='BR'&&n.nodeName!=='STRONG'&&n.nodeName!=='B'){if(n.nodeType===3){const value=String(n.textContent||'').trim();if(value){const span=document.createElement('span');span.textContent=' '+value+' ';section.append(span)}}else if(n.nodeName==='A'){try{const u=new URL(n.getAttribute('href'),location.href);if(u.origin===location.origin){const a=document.createElement('a');a.href=u.href;a.textContent=n.textContent;section.append(a)}}catch{}}n=n.nextSibling}if(section.children.length>1)card.append(section)}
  const sync=document.createElement('div');sync.className='aqwc-sync';const dot=document.createElement('span');dot.className='aqwc-sync-dot';const syncCopy=document.createElement('div'),syncTitle=document.createElement('strong'),syncTime=document.createElement('small');syncTitle.textContent='Inventory snapshot';syncTime.textContent='Checking…';syncCopy.append(syncTitle,syncTime);sync.append(dot,syncCopy);card.append(sync);
@@ -81,6 +81,7 @@
   const freshness=date?'Synced: '+date:'';
   sync.setAttribute?.('data-synced',String(!!result.syncedAt));syncTitle.textContent=result.syncedAt?'Inventory synced':'Inventory not synced';syncTime.textContent=freshness||'Import & Sync in Companion';
   if(result.state==='owned'){
+   if(!stackable&&farming)farming.open=false;
    show(stackable?'✓ Owned · '+result.total.toLocaleString()+' total':'✓ Owned',stackable?'Combined synced stock':'','#90edb5');
   }else if(result.state==='not-found')show(stackable?'0 total':'Not owned','','#ffc2a8');
   else if(result.state==='ambiguous')show('Possible match','Check the item variant in Companion.','#ffdb93');

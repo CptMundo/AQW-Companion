@@ -173,15 +173,69 @@
    if(!content||!doc.querySelector('#page-title')||!/\bSellback\s*:/i.test(body)||!/\bDescription\s*:/i.test(body)||/\busually refers to\s*:/i.test(body)||links.length&&!links.some(a=>{try{return new URL(a.getAttribute('href'),url).pathname.replace(/^\/|\/$/g,'')==='items'}catch{return false}}))return {groups:[],incomplete:true};
    return {...parse(content,origin),sources:parseSources(content,origin)};
  }
+
+ // Reviewed acquisition hints for popular goals. These are informational
+ // previews only; nested allocation uses parsed recipes on explicit expansion.
+ const shadowfallSource={name:'Shadowfall',slug:'shadowfall',join:'shadowfall'};
+ const mergeHint=parts=>({merge:parts,locations:[shadowfallSource]});
+ const compactHints={
+  'necrotic-sword-s-blade':mergeHint([['Energized Blade',1],['Void Aura',200],['Barium of Doom',1]]),
+  'necrotic-sword-s-hilt':mergeHint([['Energized Hilt',1],['Bones from the Void Realm',1],['Void Aura',200]]),
+  'necrotic-sword-s-aura':mergeHint([['Energized Aura',1],["Time Lord's Necronomicon",1],['Void Aura',300]]),
+  'energized-blade':mergeHint([['Barium of Doom',1],['Unenhanced Doom Blade',1],['Void Aura',100]]),
+  'energized-hilt':mergeHint([['Bones from the Void Realm',1],['Unenhanced Hilt',1],['Void Aura',100]]),
+  'energized-aura':mergeHint([["Time Lord's Necronomicon",1],['Unenhanced Aura',1],['Void Aura',150]]),
+  'barium-of-doom':mergeHint([['Barium',1],['Void Aura',50]]),
+  'bones-from-the-void-realm':mergeHint([['Bone Dust',50],['Void Aura',50]]),
+  'time-lord-s-necronomicon':mergeHint([['Chaorrupted Hourglass',10],['(Necro) Scroll of Dark Arts',1],['Void Aura',100]]),
+  'void-aura':{quests:['Commanding Shadow Essences','Gathering Unstable Essences','Glimpse Into The Dark (Daily)','Retrieve Void Auras','The Encroaching Shadows (Daily)'].map(name=>({name,slug:'braeus-quests'})),locations:[{name:'Battleodium',slug:'battleodium',join:'battleodium'},shadowfallSource,{name:"Yulgar's Inn",slug:'yulgar-s-inn',join:'yulgar'}]},
+  'doom-heart':{drops:[{name:'ULTRA Sepulchure'}],locations:[{name:'Sepulchure Battle',slug:'sepulchure-battle',join:'sepulchurebattle'}]}
+ };
+ function compactData(slug,recipe){
+  const hint=Object.hasOwn(compactHints,slug)?compactHints[slug]:null;
+  const sources=recipe?.sources?mergeSources(recipe.sources,reviewedSources(slug)):hint||reviewedSources(slug);
+  const merge=recipe?.groups?.length===1?recipe.groups[0].map(x=>[x.name,x.target]):recipe?.groups?.length>1?null:hint?.merge;
+  return {sources,merge,alternatives:recipe?.groups?.length>1?recipe.groups.length:0};
+ }
+ function compactSummary(row,slug,recipe,origin,{all=false}={}){
+  const data=compactData(slug,recipe),s=data.sources;
+  if(!s&&!data.merge&&!data.alternatives)return false;
+  const block=document.createElement('div');block.className='aqwc-compact-sources';
+  function line(label,items,kind){
+   if(!items?.length)return;
+   const line=document.createElement('div');line.className='aqwc-compact-source';const tag=document.createElement('span');tag.className='aqwc-source-tag';tag.dataset.kind=kind;tag.textContent=label;const body=document.createElement('div');body.className='aqwc-source-values';line.append(tag,body);
+   const limit=all?items.length:3;
+   items.slice(0,limit).forEach((x,j)=>{
+    if(j)body.append(document.createTextNode(' · '));
+    const el=document.createElement(x.slug?'a':'span');el.textContent=x.name;if(x.slug)el.href=origin+'/'+x.slug+(x.hash||'');body.append(el);
+    if(kind==='location'&&x.slug&&!/\b(shop|merge shop)\b/i.test(x.name)){
+     const cmd=x.join||(Object.hasOwn(verifiedMaps,x.slug)?verifiedMaps[x.slug]:null)||mapCache.get(x.slug);
+     if(cmd)joinControl(body,{...x,join:cmd},origin);
+     else if(all)joinControl(body,x,origin);
+    }
+   });
+   if(items.length>limit)body.append(document.createTextNode(' · +'+(items.length-limit)+' more'));
+   block.append(line);
+  }
+  if(data.merge)line('MERGE',data.merge.map(([name,qty])=>({name:name+' ×'+qty})),'merge');
+  else if(data.alternatives)line('MERGE',[{name:data.alternatives+' alternative recipes'}],'merge');
+  line('QUEST',s?.quests,'quest');line('DROP',s?.drops,'drop');
+  line('SHOP',s?.shops,'shop');
+  line('MAP',s?.locations?.filter(x=>!/\b(shop|merge shop)\b/i.test(x.name)),'location');
+  if(all&&s?.locations?.some(x=>/\b(shop|merge shop)\b/i.test(x.name)))line('SHOP',s.locations.filter(x=>/\b(shop|merge shop)\b/i.test(x.name)),'shop');
+  if(!block.children.length)return false;
+  if(all){const link=document.createElement('a');link.href=origin+'/'+slug;link.textContent='Material Wiki ↗';link.className='aqwc-source-page';block.append(link);if(recipe?.incomplete||!recipe?.sources){const note=document.createElement('small');note.textContent='Source summary may be incomplete';block.append(note)}}
+  row.append(block);return true;
+ }
  function render(card,content,origin){
   const {groups,incomplete}=parse(content,origin);
   if(!groups.length&&!incomplete)return;
-  const panel=document.createElement('section');panel.className='aqwc-section';panel.style.cssText='min-width:0;max-width:100%;';
-  const heading=document.createElement('strong');heading.textContent='Farming Progress';panel.append(heading);card.append(panel);
+  const panel=document.createElement('details');panel.open=true;panel.className='aqwc-section aqwc-farming';panel.style.cssText='min-width:0;max-width:100%;';
+  const heading=document.createElement('summary');heading.textContent='Farming Progress';panel.append(heading);card.append(panel);
   const note=text=>{const n=document.createElement('div');n.textContent=text;n.style.cssText='font-size:11px;color:#b6cddd;margin:5px 0;font-weight:400';return n};
 
   if(incomplete)panel.append(note('Some recipe rows could not be read; check the original Wiki requirements.'));
-  if(!groups.length)return;
+  if(!groups.length)return panel;
   const tree=document.createElement('div'),statusLine=note('Checking synced inventory…');statusLine.setAttribute('role','status');panel.append(tree,statusLine);
   const states=new Map(),cache=new Map(),names=new Set(groups.flat().map(x=>x.name));let matches=new Map(),busy=true,requests=0,activeOption=0;
   const rootSlug=location.pathname.replace(/^\/|\/$/g,'');
@@ -204,7 +258,7 @@
    busy=true;statusLine.textContent='Reading Wiki recipe…';draw();
    try{
     let recipe=cache.get(n.slug);
-    if(!recipe){if(requests>=20)throw Error('Wiki recipe request limit reached');requests++;recipe=await loadRecipe(origin,n.slug);cache.set(n.slug,recipe)}
+    if(!recipe||recipe.previewFailed){if(requests>=20)throw Error('Wiki recipe request limit reached');requests++;recipe=await loadRecipe(origin,n.slug);cache.set(n.slug,recipe)}
     s.sources=mergeSources(recipe.sources,reviewedSources(n.slug));s.partial=!!reviewedSources(n.slug)||recipe.incomplete;
     const next=new Set([...names,...recipe.groups.flat().map(x=>x.name)]);
     if(next.size>80)throw Error('Recipe material limit reached');
@@ -214,11 +268,16 @@
    }catch(err){s.error=String(err?.message||err);statusLine.textContent='Some nested requirements could not be loaded.'}
    finally{busy=false;draw()}
   }
+  async function loadPreviews(group){
+   if(busy)return;busy=true;statusLine.textContent='Reading material sources…';draw();
+   try{for(const n of group.filter(n=>!cache.has(n.slug)&&!compactHints[n.slug]&&!reviewedSources(n.slug)).slice(0,6)){if(requests>=20)break;requests++;try{cache.set(n.slug,await loadRecipe(origin,n.slug))}catch{cache.set(n.slug,{groups:[],incomplete:true,previewFailed:true})}}}finally{busy=false;statusLine.textContent='';draw()}
+  }
   function draw(){
    tree.replaceChildren();
    if(groups.length>1){const bar=document.createElement('div');bar.className='aqwc-recipe-tabs';groups.forEach((g,j)=>{const tab=button(recipeLabel(g,j,rootSlug));tab.setAttribute('aria-pressed',String(j===activeOption));tab.addEventListener('click',e=>{if(e.isTrusted&&!busy){activeOption=j;draw()}});bar.append(tab)});tree.append(bar)}
    groups.forEach((group,i)=>{if(i!==activeOption)return;
     const p=plan(group,states,matches,rootSlug,i);
+    if(!busy&&group.some(n=>!cache.has(n.slug)&&!Object.hasOwn(compactHints,n.slug)&&!reviewedSources(n.slug))&&requests<20){const load=button('Load material sources');load.className='aqwc-preview-load';load.addEventListener('click',e=>{if(e.isTrusted)loadPreviews(group)});tree.append(load)}
     if(!busy){const ready=p.root.filter(n=>n.missing===0).length;tree.append(note(ready+' / '+p.root.length+' materials ready'));const track=document.createElement('div'),fill=document.createElement('div');track.style.cssText='height:6px;background:#0a1926;border-radius:6px;overflow:hidden';fill.style.cssText='height:100%;background:#53c7e6;width:'+(p.root.length?ready/p.root.length*100:0)+'%';track.setAttribute('aria-label',ready+' of '+p.root.length+' direct ingredients ready');track.append(fill);tree.append(track)}
     function drawNode(n,container){
      const row=document.createElement('div');row.className='aqwc-material-row';
@@ -232,11 +291,12 @@
      status.style.color=done?'#90edb5':!known||n.allocated?'#ffdb93':'#ffc2a8';
      if(known)status.title='Synced stock: '+n.stock.toLocaleString()+' · allocated to this requirement: '+n.allocated.toLocaleString();
      top.append(nameBox,status);row.append(top);if(known&&n.missing>0)status.title+=(status.title?' · ':'')+n.missing.toLocaleString()+' remaining';
-     const track=document.createElement('div'),fill=document.createElement('div');track.style.cssText='height:3px;border-radius:3px;background:#091622;overflow:hidden;margin-top:4px';fill.style.cssText='height:100%;width:'+(known?Math.min(100,n.allocated/n.target*100):0)+'%;background:'+(done?'#57ca91':n.allocated?'#e9b958':'#e58b7c');track.append(fill);row.append(track);container.append(row);
+     container.append(row);
+     if(!s?.open)compactSummary(row,n.slug,cache.get(n.slug),origin);
      if(n.reason)row.append(note(n.reason));
      if(!s?.open||!n.missing)return;
      const nested=document.createElement('div');nested.className='aqwc-material-nested';row.append(nested);
-     const found=renderSources(nested,s.sources,origin,n.slug,{partial:s.partial});
+     const recipe=cache.get(n.slug);const found=compactSummary(nested,n.slug,recipe||{sources:s.sources,groups:s.groups,incomplete:s.partial},origin,{all:true});
      if(s.error){nested.append(note('Wiki unavailable: '+s.error));const retry=button('Retry');retry.addEventListener('click',e=>{if(e.isTrusted&&!busy){states.delete(n.path);expand(n)}});nested.append(retry);return}
      if(busy&&!s.groups.length){nested.append(note('Loading…'));return}
      if(s.incomplete)nested.append(note('Some requirements could not be read. Verify the original Wiki page.'));
@@ -252,7 +312,7 @@
     p.root.forEach(n=>drawNode(n,tree));if(p.limited)tree.append(note('Recipe size limit reached; remaining requirements not evaluated.'));
    })
   }
-  draw();lookup().catch(()=>{statusLine.textContent='Inventory unavailable. Sync in Companion and refresh this page.'}).finally(()=>{busy=false;draw()});
+  draw();lookup().catch(()=>{statusLine.textContent='Inventory unavailable. Sync in Companion and refresh this page.'}).finally(()=>{busy=false;draw()});return panel;
  }
- globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources,mapCommand,joinControl,recipeLabel,sourceLink});
+ globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources,mapCommand,joinControl,recipeLabel,sourceLink,compactData});
 })();
