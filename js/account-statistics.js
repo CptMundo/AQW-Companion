@@ -319,22 +319,36 @@
     root.append(wins);
 
   }
-  function renderMilestones(root,stats){
-    const badges=section('🏆 Companion Milestones','Personal collection challenges calculated by AQW Companion, not official AQWorlds achievements or character badges.');
-    const badgeGrid=element('div','aqws-milestones');
-    for(const m of stats.milestones){
-      const badge=element('div','aqws-milestone'+(m.unlocked?' unlocked':''));
-      badge.append(element('div','aqws-milestone-icon',m.unlocked?'🏆':'🔒'),
-        element('strong','',m.name),
-        element('p','aqws-note',m.detail),
-        element('span','aqws-milestone-score',fmt(Math.min(m.value,m.goal))+' / '+fmt(m.goal)));
-      const track=element('div','aqws-bar-track');
-      const fill=element('div','aqws-bar-fill');fill.style.width=m.percent+'%';
-      track.append(fill);badge.append(track);badgeGrid.append(badge);
+  function renderMilestones(root,stats,handlers={}){
+    if(!root)return;
+    root.replaceChildren();
+    const milestones=stats.milestones||[];
+    const completed=milestones.filter(m=>m.unlocked).length;
+    const hero=element('section','aqwm-hero');
+    const intro=element('div','aqwm-intro');
+    intro.append(element('div','aqwm-eyebrow','YOUR AQW JOURNEY'),element('h2','aqwm-title','🏆 Companion Milestones'),element('p','aqws-note','Every collection has a story. Celebrate your progress and discover your next milestone.'));
+    hero.append(intro);
+    const score=element('div','aqwm-score');
+    score.append(element('strong','',fmt(completed)+' / '+fmt(milestones.length)),element('span','','Milestones unlocked'));
+    const meter=element('div','aqws-bar-track');const fill=element('div','aqws-bar-fill');fill.style.width=(milestones.length?Math.round(completed/milestones.length*100):0)+'%';meter.append(fill);score.append(meter);hero.append(score);root.append(hero);
+    if(!stats.available){const empty=section('Begin your journey','Import your inventory to discover your collection milestones.');empty.append(button('Import JSON export',()=>handlers.onImport?.()));root.append(empty);return}
+    const icons={import:'📖',class25:'🛡️',class50:'⚔️',items1000:'💎',items2000:'👑',wishlist5:'🎯',forge5:'🔨'};
+    for(const [title,list] of [['Unlocked milestones',milestones.filter(m=>m.unlocked)],['Next milestones',milestones.filter(m=>!m.unlocked)]]){
+      const panel=element('section','aqwm-section');
+      const heading=element('div','aqwm-section-head');heading.append(element('h3','',title),element('span','aqwm-count',fmt(list.length)));panel.append(heading);
+      if(!list.length){panel.append(element('p','aqws-note',title==='Unlocked milestones'?'Your journey is just beginning.':'You have unlocked every currently available milestone!'));root.append(panel);continue}
+      const grid=element('div','aqwm-grid');
+      for(const m of list){
+        const card=element('article','aqwm-card'+(m.unlocked?' is-unlocked':''));
+        const top=element('div','aqwm-card-top');
+        top.append(element('span','aqwm-icon',icons[m.id]||'🏆'),element('span','aqwm-status',m.unlocked?'✓ Unlocked':'In progress'));card.append(top);
+        card.append(element('h4','',m.name),element('p','aqws-note',m.detail));
+        const line=element('div','aqwm-progress');line.append(element('span','',fmt(Math.min(m.value,m.goal))+' / '+fmt(m.goal)),element('strong','',m.percent+'%'));card.append(line);
+        const track=element('div','aqws-bar-track');const bar=element('div','aqws-bar-fill');bar.style.width=m.percent+'%';track.append(bar);card.append(track);grid.append(card);
+      }
+      panel.append(grid);root.append(panel);
     }
-    badges.append(badgeGrid);
-    if(stats.forge.total)badges.append(element('p','aqws-note','Forge unlocks: '+fmt(stats.forge.unlocked)+' / '+fmt(stats.forge.total)+' manually confirmed.'));
-    root.append(badges);
+    root.append(element('p','aqwm-footnote','Personal Companion milestones based on your selected inventory and tracker data. These are not official AQWorlds badges.'));
   }
-  return {analyze,timeline,uniqueItems,category,render};
+  return {analyze,timeline,uniqueItems,category,render,renderMilestones};
 });
