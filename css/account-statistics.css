@@ -63,3 +63,34 @@
 :is(#account-stats,#milestones) .aqws-wishlist-find strong{font-size:13px;overflow-wrap:anywhere;color:#d5f7ed}
 :is(#account-stats,#milestones) .aqws-wishlist-find .aqws-note{font-size:11px}
 @media(max-width:520px){:is(#account-stats,#milestones) .aqws-wishlist-finds{grid-template-columns:1fr}}
+
+/* Dedicated milestone gallery, scoped so Wishlist and Account Statistics stay unchanged. */
+#milestones-root{display:grid;gap:16px;min-width:0}
+#milestones .aqwm-hero{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;padding:22px;border:1px solid #345a72;border-top:2px solid #60c8ef;border-radius:14px;background:linear-gradient(125deg,#172d40,#112231)}
+#milestones .aqwm-intro{flex:1;min-width:0}
+#milestones .aqwm-eyebrow{color:#7bd6f4;font-size:10px;font-weight:800;letter-spacing:1.5px;margin-bottom:7px}
+#milestones .aqwm-title{font-size:23px;color:#eefaff;margin:0;line-height:1.25}
+#milestones .aqwm-score{display:grid;gap:7px;min-width:190px;padding:14px 16px;border:1px solid #396c70;background:#142f36;border-radius:10px}
+#milestones .aqwm-score strong{font-size:28px;color:#82e8c4;line-height:1.2}
+#milestones .aqwm-score span{font-size:12px;color:#b6d5df}
+#milestones .aqwm-section{padding:16px;background:#152230;border:1px solid #30465b;border-radius:12px}
+#milestones .aqwm-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+#milestones .aqwm-section-head h3{margin:0;font-size:16px;color:#e4f4ff}
+#milestones .aqwm-count{font-size:12px;font-weight:700;color:#a5d2e8;background:#1d3548;border-radius:20px;padding:3px 10px}
+#milestones .aqwm-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#milestones .aqwm-card{display:flex;flex-direction:column;gap:9px;padding:16px;background:#102335;border:1px solid #37536b;border-radius:10px;min-width:0}
+#milestones .aqwm-card.is-unlocked{background:linear-gradient(145deg,#173b36,#122b2e);border-color:#397965}
+#milestones .aqwm-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#milestones .aqwm-icon{display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:#203b51;border:1px solid #416782;font-size:24px;line-height:1;flex:none}
+#milestones .is-unlocked .aqwm-icon{background:#245244;border-color:#4d927a}
+#milestones .aqwm-status{font-size:11px;font-weight:700;color:#a6d7f3;background:#20384b;border:1px solid #3a5970;border-radius:20px;padding:4px 8px;text-align:center}
+#milestones .is-unlocked .aqwm-status{color:#91ecc2;background:#204c3e;border-color:#3e8067}
+#milestones .aqwm-card h4{font-size:16px;margin:3px 0 0;color:#eefaff;overflow-wrap:anywhere}
+#milestones .aqwm-card p{margin:0 0 5px;flex:1}
+#milestones .aqwm-progress{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:12px;color:#b8d5e5;font-variant-numeric:tabular-nums}
+#milestones .aqwm-progress strong{color:#83d9f3}
+#milestones .is-unlocked .aqwm-progress strong{color:#82e8c4}
+#milestones .is-unlocked .aqws-bar-fill{background:#55c9a2}
+#milestones .aqwm-footnote{margin:0;color:#a6bdce;font-size:12px;line-height:1.5}
+@media(max-width:900px){#milestones .aqwm-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){#milestones .aqwm-grid{grid-template-columns:1fr}#milestones .aqwm-hero{padding:16px;gap:14px}#milestones .aqwm-score{width:100%}#milestones .aqwm-section{padding:12px}}
