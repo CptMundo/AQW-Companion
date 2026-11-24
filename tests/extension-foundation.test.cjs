@@ -95,7 +95,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.10.5');assert.equal(manifest.content_scripts.length,2);assert.ok(manifest.content_scripts.every(s=>s.matches.every(m=>!m.includes('aqwwiki.wikidot.com'))));
+ assert.equal(manifest.version,'0.10.6');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -361,7 +361,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
   assert.equal(annotated,80);
   await assert.rejects(api.checkAll(groups,'helmets-hoods',async m=>({ok:true,matches:m.names.map(()=>({state:'unsynced'}))}),()=>{},async()=>{}),/Inventory not synced/);
   assert.ok(!read('extension/wiki-list-ownership.js').includes('Check next 400'));
-  assert.ok(!read('extension/wiki-list-ownership.js').includes('scheduleScan()'));assert.ok(!read('extension/wiki-list-ownership.js').includes('wiki-list-preference'));assert.ok(read('extension/wiki-list-ownership.js').includes('let groups=null,parseMs=null'));assert.ok(read('extension/wiki-list-ownership.js').includes('IntersectionObserver'));
+  assert.ok(!read('extension/wiki-list-ownership.js').includes('scheduleScan()'));assert.ok(!read('extension/wiki-list-ownership.js').includes('IntersectionObserver'));assert.ok(read('extension/wiki-list-ownership.js').includes('let groups=null'));
   console.log('Automatic full ownership scan: 1301 names, bounded batches, yielding and snapshot consistency passed.');
  })().catch(e=>{console.error(e);process.exitCode=1});
 }
@@ -384,7 +384,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
 {
  
  // Existing worker integration tests cover typed lookups; static UI safeguards.
- assert.ok(read('extension/wiki-list-ownership.js').includes("search.addEventListener('input',renderSearch)"));
+ assert.ok(read('extension/wiki-list-ownership.js').includes("find.addEventListener('click'"));
  assert.ok(read('extension/wiki-quest-shop.js').includes("type:'routine-queue-add'"));
  assert.ok(read('index.html').includes("if(entry.quest)"));
 }
@@ -422,7 +422,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.equal((await api.handle({...msg,automatic:'false'},wiki)).ok,false);
  assert.equal((await api.handle(msg,{...wiki,frameId:1})).ok,false);
  assert.equal((await api.handle(msg,{...wiki,url:'https://aqwwiki.wikidot.com/void-aura'})).ok,false);
- assert.ok(read('extension/wiki-list-ownership.js').includes('Navigation diagnostics'));
+ assert.ok(read('extension/wiki-list-ownership.js').includes('Wishlist search'));
 })().catch(e=>{console.error(e);process.exitCode=1});
 
 {
@@ -435,14 +435,11 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  vm.runInNewContext(read('extension/wiki-items.js'),context);
 }
 
-(async()=>{
- const source=read('extension/popup.js'),boundary=source.indexOf('\n(() => {');
- assert.ok(boundary>0);
- const activate=vm.runInNewContext(source.slice(0,boundary)+'\nactivateWiki',{URL});
- const calls=[],api={tabs:{async query(){return [{id:42,url:'https://aqwwiki.wikidot.com/classes'}]}},scripting:{async executeScript(x){calls.push(x);return [{frameId:0,documentId:'doc-1',result:true}]}}};
- await activate(api);assert.equal(calls.length,2);assert.equal(calls[1].target.documentIds[0],'doc-1');assert.equal(calls[1].files.length,6);
- calls.length=0;await assert.rejects(activate({...api,tabs:{async query(){return [{id:42,url:'https://example.com/classes'}]}}}),/supported AQW Wiki/);assert.equal(calls.length,0);
- await assert.rejects(activate({...api,scripting:{async executeScript(){return [{frameId:0,result:true}]}}}),/changed/);
- assert.ok(read('extension/popup.html').includes('Activate Companion on this page'));
- console.log('Wiki tools explicit activation: origin and document targeting validated.');
-})().catch(e=>{console.error(e);process.exitCode=1});
+{
+ const runtime=read('extension/wiki-list-ownership.js').split('function init(){')[1];
+ assert.ok(!runtime.includes('wiki-list-lookup'));assert.ok(!runtime.includes('checkAll('));assert.ok(!runtime.includes('aqwc-list-ownership'));
+ assert.ok(runtime.includes("type:'wishlist-queue-add'"));
+ assert.ok(!read('extension/popup.html').includes('activate-wiki'));
+ assert.ok(read('extension/wiki-items.js').includes("type:'wiki-item-lookup'"));
+ console.log('Restored individual Wiki tools; category pages are Wishlist-only.');
+}
