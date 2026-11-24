@@ -21,7 +21,7 @@
  const bg=document.getElementById('appearance-background'),banner=document.getElementById('appearance-banner'),panel=document.getElementById('appearance-panel'),save=document.getElementById('appearance-save'),reset=document.getElementById('appearance-reset'),feedback=document.getElementById('appearance-status');
  if(bg&&banner&&panel&&save&&reset&&feedback){
   const fill=v=>{bg.value=v.background;banner.value=v.banner;panel.value=v.panel};
-  const enabled=v=>{save.disabled=reset.disabled=!v};
+  const quick=document.getElementById('appearance-prometheus');const enabled=v=>{save.disabled=reset.disabled=!v;if(quick)quick.disabled=!v};
   async function load(){try{const r=await chrome.runtime.sendMessage({type:'wiki-appearance-read'});if(!r?.ok)throw Error('Could not load preferences');fill(r.appearance);enabled(true);feedback.textContent='Choose a theme and apply.'}catch(err){feedback.textContent=String(err?.message||err)}}
   async function persist(value){
    enabled(false);
@@ -33,7 +33,7 @@
   }
   save.addEventListener('click',e=>{if(e.isTrusted&&!save.disabled)persist({background:bg.value,banner:banner.value,panel:panel.value})});
   reset.addEventListener('click',e=>{if(e.isTrusted&&!reset.disabled)persist({background:'original',banner:'original',panel:'integrated'})});
-  const quick=document.getElementById('appearance-prometheus');if(quick)quick.addEventListener('click',e=>{if(e.isTrusted&&!save.disabled)persist({background:bg.value,banner:'prometheus',panel:panel.value})});
+  if(quick)quick.addEventListener('click',e=>{if(e.isTrusted&&!save.disabled){feedback.closest('details')?.setAttribute('open','');persist({background:bg.value,banner:'prometheus',panel:panel.value})}});
   load();
  }
  send('inventory-summary');
