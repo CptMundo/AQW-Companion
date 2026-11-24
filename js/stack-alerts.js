@@ -137,6 +137,15 @@
  // Narrow, source-reviewed use notes. These are review prompts, never claims
  // of exhaustive uses or automatic recommendations to discard.
  const cleanupNotes=[
+  {"name":"Armor of Awe Pass","kind":"keep","note":"Unlocks Valencia's Armor of Awe quests; keep if you need access.","url":"https://aqwwiki.wikidot.com/armor-of-awe-pass"},
+  {"name":"Aegis Armor","kind":"situational","note":"Used in the seasonal Archive of Time merge for Aegis Guardian. Consider banking between events if not tracked.","url":"https://aqwwiki.wikidot.com/archive-of-time-merge"},
+  {"name":"Aegis Robe","kind":"situational","note":"Used in the seasonal Archive of Time merge for Aegis Guardian. Consider banking between events if not tracked.","url":"https://aqwwiki.wikidot.com/archive-of-time-merge"},
+  {"name":"Arashtite Ore","kind":"situational","note":"Alchemy reagent and More Ore quest ingredient; keep if using Alchemy, otherwise consider banking.","url":"https://aqwwiki.wikidot.com/arashtite-ore"},
+  {"name":"ArchMage Ink","kind":"situational","note":"SpellCrafting reagent for six scroll recipes. Consider banking only if not crafting scrolls.","url":"https://aqwwiki.wikidot.com/archmage-ink"},
+  {"name":"Azkorath's Wing","kind":"situational","note":"Used to merge 14 - Temperance's Frugality. Keep if pursuing that item.","url":"https://aqwwiki.wikidot.com/azkorath-s-wing"},
+  {"name":"Apocalyptic Nihil Coin","kind":"situational","note":"Currency for MonaghanGorge Shop merges. Consider banking if not pursuing that shop.","url":"https://aqwwiki.wikidot.com/apocalyptic-nihil-coin"},
+  {"name":"Belrot the Fiend Essence","kind":"keep","note":"Ingredient of Retrieve Void Auras; keep for future Void Aura farming.","url":"https://aqwwiki.wikidot.com/belrot-the-fiend-essence"},
+  {"name":"Astral Ephemerite Essence","kind":"keep","note":"Ingredient of Retrieve Void Auras; keep for future Void Aura farming.","url":"https://aqwwiki.wikidot.com/astral-ephemerite-essence"},
   {name:"Necrotic Sword's Blade",goal:"Necrotic Sword of Doom",kind:"goal",note:"Wiki lists the NSoD merge. Review surplus only if you already own the sword and no other tracked goal needs it.",url:"https://aqwwiki.wikidot.com/necrotic-sword-s-blade"},
   {name:"Necrotic Sword's Aura",goal:"Necrotic Sword of Doom",kind:"goal",note:"Wiki lists the NSoD merge. Review surplus only if you already own the sword and no other tracked goal needs it.",url:"https://aqwwiki.wikidot.com/necrotic-sword-s-aura"},
   {name:"Gray Matter",kind:"quest",note:"Listed for Body, Soul and, Domination (one-time quest). Confirm completion in game first.",url:"https://aqwwiki.wikidot.com/gray-matter",questUrl:"https://aqwwiki.wikidot.com/a-mysterious-stranger-s-quests"},
@@ -159,6 +168,9 @@
    let status="unknown",reason="No confirmed use in the current catalog. Review on the Wiki; absence of data does not mean unnecessary.",url=null,questUrl=null;
    if(trackedUse){status="protected";reason="Referenced by a tracked goal or routine."}
    else if(n?.kind==="goal"&&owned.has(normalize(n.goal))&&[...(usesByName.get(key)||[])].every(use=>use===normalize(n.goal))){status="review";reason=n.note;url=n.url}
+   else if(n?.kind==='keep'){status='protected';reason=n.note;url=n.url}
+   else if(/^\[class item\]/i.test(x.Name)||/\bTimelock Key(?: \(Misc\))?$/i.test(x.Name)){status='protected';reason='Class-use or unlock item; do not treat it as cleanup material.'}
+   else if(n?.kind==='situational'){status='situational';reason=n.note+(known.has(key)?' Additional catalog uses may exist.':'');url=n.url}
    else if(known.has(key)||protectCaps&&caps.has(key)||n?.kind==="goal"){status="protected";reason="Known recipe, stack-tracked material or unfinished target. Keep until reviewed."}
    else if(n){status=n.kind==="situational"?"situational":"review";reason=n.note;url=n.url;questUrl=n.questUrl||null}
    rows.push({id,name:x.Name,quantity:Number(x.Count),status,reason,url,questUrl});
