@@ -95,7 +95,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.11.2');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
+ assert.equal(manifest.version,'0.11.3');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -479,3 +479,26 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.ok(read('extension/wiki-quest-shop.js').includes('Page-wide stock (not an individual quest)'));
  assert.ok(read('extension/wiki-quest-shop.js').includes('revision!==scopeRevision'));
 }
+
+(async()=>{
+ const stored={},chromeMock={runtime:{getURL:x=>'chrome-extension://test/'+x,onMessage:{addListener(){}}},storage:{local:{async get(k){return {[k]:stored[k]}},async set(v){Object.assign(stored,v)}}}};
+ const api=vm.runInNewContext(read('extension/worker.js')+'\n({handle,normalizeAppearance})',{chrome:chromeMock,URL,TextEncoder});
+ const popup={url:'chrome-extension://test/popup.html'},wiki={url:'https://aqwwiki.wikidot.com/classes',frameId:0};
+ assert.equal((await api.handle({type:'wiki-appearance-read'},wiki)).appearance.background,'original');
+ assert.equal((await api.handle({type:'wiki-appearance-save',appearance:{background:'void'}},wiki)).ok,false);
+ assert.equal((await api.handle({type:'wiki-appearance-read'},{...wiki,frameId:1})).ok,false);
+ assert.equal((await api.handle({type:'wiki-appearance-read'},{url:'https://evil.example/',frameId:0})).ok,false);
+ const result=await api.handle({type:'wiki-appearance-save',appearance:{background:'midnight',banner:'prometheus',panel:'blue',private:'ignored'}},popup);
+ assert.equal(result.appearance.background,'midnight');assert.equal(result.appearance.private,undefined);
+ assert.equal((await api.handle({type:'wiki-appearance-read'},wiki)).appearance.banner,'prometheus');
+ assert.equal(api.normalizeAppearance({background:'url(evil)',banner:'<script>',panel:'unknown'}).background,'original');
+ const attrs={},styles=[];let listener,respond;
+ const root={setAttribute(k,v){attrs[k]=v}},head={append(x){styles.push(x)}},document={documentElement:root,head,getElementById:()=>({}),createElement:()=>({remove(){styles.splice(styles.indexOf(this),1)}})};
+ const runtime={id:'id',getURL:x=>'chrome-extension://test/'+x,onMessage:{addListener(f){listener=f}},sendMessage(m,cb){respond=cb}};
+ vm.runInNewContext(read('extension/wiki-theme.js'),{document,location:{origin:'https://aqwwiki.wikidot.com'},chrome:{runtime}});
+ respond({ok:true,appearance:{background:'original',banner:'original',panel:'integrated'}});assert.equal(styles.length,0);assert.equal(attrs['data-aqwc-panel-theme'],'integrated');
+ listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'bad',url:popup.url});assert.equal(styles.length,0);
+ listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'id',url:popup.url});assert.equal(styles.length,1);assert.ok(styles[0].textContent.includes('#header'));assert.ok(styles[0].textContent.includes('#1b1627'));
+ listener({type:'aqwc-appearance-preview',appearance:{}},{id:'id',url:popup.url});assert.equal(styles.length,0);
+ console.log('Wiki appearance: defaults, scoped read/write, validated presets and restore original passed.');
+})().catch(e=>{console.error(e);process.exitCode=1});
