@@ -35,11 +35,12 @@ assert.ok(ultra.forRole("dage","Lord of Order").every(x=>!x.response.includes("Y
 assert.ok(ultra.forRole("speaker","ArchPaladin").some(x=>/Seal/.test(x.response)));
 assert.ok(ultra.forRole("speaker","Lord of Order").some(x=>/Scroll of Enrage/.test(x.response)));
 assert.ok(ultra.forRole("drakath","Lord of Order").some(x=>/BEFORE/.test(x.response)));
-assert.ok(html.includes("AQWUltraQuoteActions?.forRole(b.id,cls)"));
+assert.ok(html.includes("AQWUltraQuoteActions?.forRole(b.id,playKey||cls)"),"Use the selected class or its existing playbook alias for quote reactions");
 assert.ok(html.includes("ultra-role-quote"));
 assert.ok(html.includes('src="js/ultra-quote-actions.js"'));
 assert.ok(html.includes('href="css/ultra-quote-actions.css"'));
 assert.ok(html.includes("b.alternate||[]"),"Alternate classes must be selectable");
-assert.ok(html.includes("ultraRolePlaybooks[b.id]?.[x]"),"Hide unsupported alternate classes");
+assert.ok(html.includes("fillUltraClassSelect(select,b.id,profile,[...b.team,...(b.alternate||[])])"),"Include existing alternatives and workbook classes");
+assert.ok(html.includes("No complete class-specific rotation in the guide."),"Unreviewed alternatives must not receive invented role assignments");
 assert.ok(stylesheet.includes(".ultra-role-quote"));
 console.log("Ultra quote actions: verified role-dependent prompts across all declared classes.");

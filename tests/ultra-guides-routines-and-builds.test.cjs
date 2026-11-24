@@ -119,6 +119,55 @@ assert.ok(workbookApi.simplifiedSpeakerPatterns[5].roles.includes("GW"));
 assert.equal(workbookApi.simplifiedRoleRatings("speaker",0).length,7);
 assert.equal(workbookApi.simplifiedRoleRatings("gramiel",3).find(x=>x.name==="Shaman").rating,5);
 for(const key of Object.keys(workbookApi.simplifiedRatings))for(let i=0;i<5;i++){const rows=workbookApi.simplifiedRoleRatings(key,i);assert.equal(rows.length,workbookApi.simplifiedRatingRoles[i][1].length,key+" role "+i);assert.ok(rows.every(x=>x.rating>=0&&x.rating<=5))}
-assert.ok(html.includes("appendSimplifiedProfile(root,simplifiedProfiles[b.id]"));
+assert.ok(!html.includes("appendSimplifiedProfile(root,simplifiedProfiles[b.id]"),"No second workbook panel in main guide");
 assert.ok(html.includes("renderSimplifiedExtras(root,term)"));
 assert.ok(html.includes("Source author’s subjective ratings"));
+
+const compact=vm.runInNewContext(reviewedCode+"\n({ultraClassOptions,ultraSelectedRating,ultraWorkbookBuild,ultraCompactTips,simplifiedProfiles,simplifiedRatings,simplifiedExtraEncounters,sameUltraClass,fillUltraClassSelect,renderUltraSelectedRating,appendUltraGearCells})",{
+ node(tag,text,cls){return {tag,text,cls,children:[],append(...x){this.children.push(...x)},replaceChildren(...x){this.children=x}}},
+ Option:function(label,value){this.label=label;this.value=value},
+ ultraOwned:cls=>['Lord of Order','Void Highlord'].includes(cls)
+});
+const profile=compact.simplifiedProfiles.drakath;
+const groups=compact.ultraClassOptions("drakath",profile,["Void Highlord","Lord of Order","StoneCrusher"]);
+const names=groups.flatMap(g=>g.names);
+assert.ok(names.includes("Paladin Chronomancer"),"Workbook team class appears in Your loadout");
+assert.ok(names.includes("Chrono ShadowHunter"),"Workbook DPS class appears in Your loadout");
+assert.ok(names.includes("Void Highlord"),"Existing DPS class remains");
+assert.equal(names.filter(x=>compact.sameUltraClass(x,"Void HighLord")).length,1,"Case/spacing aliases must not duplicate options");
+assert.equal(compact.ultraSelectedRating("drakath","Void Highlord").rating,3);
+assert.equal(compact.ultraSelectedRating("drakath","Lord of Order").role,"Healer");
+assert.equal(compact.ultraSelectedRating("drakath","Bard"),null,"Missing rating is not zero");
+assert.equal(compact.ultraSelectedRating("drago","Legion DoomKnight").rating,0,"Real zero stays zero");
+assert.equal(compact.ultraSelectedRating("drakath","LightCaster").role,"Early DPS","Spacing alias resolves");
+assert.equal(compact.ultraWorkbookBuild(profile,"Chrono ShadowHunter").weapon,"Arcana Concerto");
+assert.equal(compact.ultraWorkbookBuild(profile,"Paladin Chronomancer").base,"Fighter");
+assert.equal(compact.ultraWorkbookBuild(profile,"Void Highlord"),null,"No invented workbook loadout");
+const tips=compact.ultraCompactTips("drakath","Lord of Order",["Keep assigned taunt ready."]);
+assert.ok(tips.includes("Keep assigned taunt ready."));
+assert.ok(tips.some(x=>x.includes("3,500")));
+assert.ok(tips.some(x=>x.includes("both healers")));
+assert.ok(!compact.ultraCompactTips("drakath","Void Highlord").some(x=>x.includes("both healers")));
+assert.equal(compact.ultraCompactTips("ezrajal","Void Highlord",["Workbook survival target: at least 3,175 HP before pulling."]).length,1,"Identical tips are deduplicated");
+assert.ok(compact.ultraCompactTips("nulgath","Legion Revenant").some(x=>x.includes("Only in the workbook")));
+assert.ok(!compact.ultraCompactTips("nulgath","Guardian").some(x=>x.includes("alternate Nulgath taunts")));
+for(const [key,p] of Object.entries(compact.simplifiedProfiles)){const classes=compact.ultraClassOptions(key,p).flatMap(x=>x.names);assert.ok(p.team.every(r=>classes.some(n=>compact.sameUltraClass(n,r.cls))),key);}
+const select={children:[],append(x){this.children.push(x)}};
+compact.fillUltraClassSelect(select,"drakath",profile,["Void Highlord"]);
+assert.equal(select.value,"Lord of Order");
+assert.ok(select.children.flatMap(g=>g.children).some(o=>o.value==="Chrono ShadowHunter"&&o.label.includes("/5")));
+const rating={children:[],append(...x){this.children.push(...x)},replaceChildren(...x){this.children=x}};
+compact.renderUltraSelectedRating(rating,"drakath","Lord of Order");
+assert.ok(rating.children.some(x=>x.text.includes("Healer")));
+compact.renderUltraSelectedRating(rating,"drakath","Bard");
+assert.ok(rating.children.some(x=>x.text==="Not rated in the guide"));
+assert.ok(!rating.children.some(x=>x.text.includes("Healer")),"Class change clears previous rating");
+assert.ok(html.includes("fillUltraClassSelect(select,b.id,profile,"));
+assert.ok(html.includes("const build=workbook||encounter||generic"));
+assert.ok(html.includes("renderUltraSelectedRating(rating,b.id,cls)"));
+assert.ok(html.includes("const tips=ultraCompactTips(b.id,cls,baseTips)"));
+assert.ok(html.includes("if(b.id==='speaker')appendSpeakerRotations(inner)"));
+assert.ok(!html.includes("Community workbook — suggested strategy"));
+assert.ok(!html.includes("Class suitability by role (community ratings)"));
+assert.ok(ultraCSS.includes(".ultra-selected-rating"));
+console.log("Compact loadout selector: class options, per-boss ratings, source loadouts, targeted tips and rotation retention passed.");
