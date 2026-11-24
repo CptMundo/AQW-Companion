@@ -642,3 +642,10 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.equal(api.goalStatus({...state,complete:false},{kind:'item',name:'Missing'},'').state,'unknown');
  assert.equal(api.cleanGoalStatus({goals:[{name:'Sword',progress:999}],pins:[]}),null);
 }
+
+{
+ const api=vm.runInNewContext(read('extension/wiki-materials.js')+'\nAQWCWikiMaterials',{URL});
+ assert.equal(api.compactData('revenant-s-spellscroll').sources.quests[0].name,'Legion Fealty 1');
+ assert.equal(api.compactData('exalted-crown').sources.quests.length,2);
+ assert.equal(api.compactData('conquest-wreath').sources.locations[1].join,'ultradage');
+}
