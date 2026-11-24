@@ -23,6 +23,24 @@ function normalizeAppearance(value){
   void:{art:art('#a98aff','#e6c7ff'),gradient:'linear-gradient(110deg,#1c122a,#493161 65%,#1b152d)',accent:'#ba9af4'}
  };
  let style,revision=0,originalInline=null,artwork=null,backdrop=null,wordmarkLayer=null;
+
+ const SIDEBAR_KEY='aqwc-wiki-sidebar-expanded-v1';
+ let sidebarExpanded=false,sidebarTouched=false,sidebarButton=null;
+ function updateSidebar(active){
+  const root=document.documentElement,side=document.getElementById('side-bar'),title=document.getElementById('page-title');
+  if(!active||!side||!title?.parentElement||typeof title.insertAdjacentElement!=='function'){
+   root.removeAttribute?.('data-aqwc-sidebar');sidebarButton?.remove();sidebarButton=null;return;
+  }
+  root.setAttribute('data-aqwc-sidebar',sidebarExpanded?'expanded':'collapsed');
+  if(!sidebarButton){
+   sidebarButton=document.createElement('button');sidebarButton.id='aqwc-sidebar-toggle';sidebarButton.type='button';sidebarButton.setAttribute('aria-controls','side-bar');
+   sidebarButton.addEventListener('click',e=>{if(!e.isTrusted)return;sidebarTouched=true;sidebarExpanded=!sidebarExpanded;updateSidebar(true);try{chrome.storage?.local?.set({[SIDEBAR_KEY]:sidebarExpanded},()=>{void chrome.runtime.lastError})}catch{}});
+   title.insertAdjacentElement('beforebegin',sidebarButton);
+  }
+  sidebarButton.setAttribute('aria-expanded',String(sidebarExpanded));sidebarButton.textContent=sidebarExpanded?'◀ Hide Wiki sidebar':'☰ Show Wiki sidebar';
+ }
+ let sidebarActive=false;
+ try{chrome.storage?.local?.get(SIDEBAR_KEY,result=>{if(chrome.runtime.lastError||sidebarTouched)return;sidebarExpanded=result?.[SIDEBAR_KEY]===true;if(sidebarActive)updateSidebar(true)})}catch{}
  const bannerProps=['background-image','background-size','background-position','background-repeat'];
  function restoreInline(){if(!originalInline)return;const {target,values}=originalInline;for(const [k,v,priority] of values){if(v)target.style.setProperty(k,v,priority);else target.style.removeProperty(k)}originalInline=null;}
  function apply(value){
@@ -68,6 +86,7 @@ function normalizeAppearance(value){
     rules.push('html[data-aqwc-banner="prometheus"] #header{position:relative!important;z-index:3!important;background:transparent!important;height:var(--aqwc-banner-height)!important;} html[data-aqwc-banner="prometheus"] #top-bar{top:var(--aqwc-banner-height)!important;} html[data-aqwc-banner="prometheus"] #header > h1,html[data-aqwc-banner="prometheus"] #header > h2{background:transparent!important;} html[data-aqwc-banner="prometheus"] #top-bar,html[data-aqwc-banner="prometheus"] #login-status,html[data-aqwc-banner="prometheus"] #search-top-box{z-index:3!important;}');
    }
   }
+  sidebarActive=v.background!=='original'||v.banner!=='original';updateSidebar(sidebarActive);if(sidebarActive)rules.push("\nhtml[data-aqwc-sidebar=\"collapsed\"] #side-bar{display:none!important}\nhtml[data-aqwc-sidebar=\"collapsed\"] #main-content{margin-left:18px!important;min-width:0!important}\nhtml[data-aqwc-sidebar=\"expanded\"] #side-bar{box-sizing:border-box;border:1px solid #364b55!important;border-radius:12px!important;background:#17232b!important;padding:12px 10px!important;box-shadow:0 4px 14px #08121833;overflow-wrap:anywhere}\nhtml[data-aqwc-sidebar=\"expanded\"] #side-bar h4,html[data-aqwc-sidebar=\"expanded\"] #side-bar h5{margin:12px 0 6px!important;padding:5px 8px!important;border-radius:5px;background:#20323a;color:#dceef0!important;font-size:12px!important;letter-spacing:.025em}\nhtml[data-aqwc-sidebar=\"expanded\"] #side-bar a{color:#9bdce6!important;border-radius:4px;line-height:1.5;transition:background-color .15s,color .15s}\nhtml[data-aqwc-sidebar=\"expanded\"] #side-bar a:hover,html[data-aqwc-sidebar=\"expanded\"] #side-bar a:focus-visible{background:#29444e!important;color:#f1fdff!important}\nhtml[data-aqwc-sidebar=\"expanded\"] #side-bar hr{border:0;border-top:1px solid #394d56;margin:12px 4px}\nhtml[data-aqwc-sidebar=\"expanded\"] #side-bar ul{padding-left:16px}\nhtml[data-aqwc-sidebar=\"expanded\"] #side-bar input{box-sizing:border-box;max-width:100%;border:1px solid #445c66;border-radius:5px;background:#101a20;color:#e5eef0}\n#aqwc-sidebar-toggle{display:inline-flex;align-items:center;gap:7px;margin:0 0 10px;padding:7px 12px;border:1px solid #456975;border-radius:8px;background:#172a33;color:#bceaf0;font:600 12px/1.4 system-ui,sans-serif;cursor:pointer;transition:background-color .15s,border-color .15s}\n#aqwc-sidebar-toggle:hover,#aqwc-sidebar-toggle:focus-visible{background:#24414b;border-color:#68bdcc;color:#fff}\n#aqwc-sidebar-toggle:focus-visible{outline:2px solid #68bdcc;outline-offset:2px}\n");if(v.banner!=='original')rules.push("\nhtml[data-aqwc-banner]:not([data-aqwc-banner=\"original\"]) #top-bar{border-radius:0 0 11px 11px!important;border:1px solid #3c5963!important;border-top-color:#527a84!important;box-shadow:0 5px 12px #08131a44!important;overflow:visible!important}\nhtml[data-aqwc-banner]:not([data-aqwc-banner=\"original\"]) #top-bar > ul > li > a{border-radius:6px!important;transition:background-color .15s,color .15s}\nhtml[data-aqwc-banner]:not([data-aqwc-banner=\"original\"]) #top-bar li ul{border:1px solid #45606b!important;border-radius:8px!important;box-shadow:0 6px 18px #08121966!important;overflow:visible!important}\nhtml[data-aqwc-banner]:not([data-aqwc-banner=\"original\"]) #top-bar li ul a{border-radius:4px!important;transition:background-color .15s,color .15s}\n");
   if(!rules.length){style?.remove();style=null;return}
   if(!style){style=document.createElement('style');style.id='aqwc-wiki-appearance';(document.head||root).append(style)}
   style.textContent=rules.join('\n');
