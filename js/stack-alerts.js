@@ -133,6 +133,40 @@
   const priority={"Wishlist":0,"Reviewed merge":1,"Quest":2,"Community merge":3};
   return entries.sort((a,b)=>(priority[a.kind]??9)-(priority[b.kind]??9)||a.title.localeCompare(b.title));
  }
- return Object.freeze({analyze,uses,normalize,safeWiki,safeJoin,validCap,
+
+ // Narrow, source-reviewed use notes. These are review prompts, never claims
+ // of exhaustive uses or automatic recommendations to discard.
+ const cleanupNotes=[
+  {name:"Necrotic Sword's Blade",goal:"Necrotic Sword of Doom",kind:"goal",note:"Wiki lists the NSoD merge. Review surplus only if you already own the sword and no other tracked goal needs it.",url:"https://aqwwiki.wikidot.com/necrotic-sword-s-blade"},
+  {name:"Necrotic Sword's Aura",goal:"Necrotic Sword of Doom",kind:"goal",note:"Wiki lists the NSoD merge. Review surplus only if you already own the sword and no other tracked goal needs it.",url:"https://aqwwiki.wikidot.com/necrotic-sword-s-aura"},
+  {name:"Gray Matter",kind:"quest",note:"Listed for Body, Soul and, Domination (one-time quest). Confirm completion in game first.",url:"https://aqwwiki.wikidot.com/gray-matter",questUrl:"https://aqwwiki.wikidot.com/a-mysterious-stranger-s-quests"},
+  {name:"Wheel of Bacon Token",kind:"situational",note:"Used for the Legend Wheel of Bacon quest. Consider banking if you are not using it.",url:"https://aqwwiki.wikidot.com/wheel-of-bacon-token"}
+ ];
+ function cleanup(items=[],{reviewed=[],wishlist=[],community=[],routines=[],knownCaps:protectCaps=true}={}){
+  const known=new Set(),tracked=new Set(),owned=new Set(),notes=new Map(cleanupNotes.map(x=>[normalize(x.name),x]));
+  const add=(set,value)=>{if(typeof value==="string"&&normalize(value))set.add(normalize(value))};
+  const addIngredients=(set,ingredients)=>{for(const x of Array.isArray(ingredients)?ingredients:[])if(Array.isArray(x))add(set,x[0])};
+  for(const p of reviewed)addIngredients(known,p?.ingredients);
+  for(const p of community){addIngredients(known,p?.ingredients);for(const r of p?.questRoutes||[])addIngredients(known,r?.ingredients)}
+  for(const p of wishlist){add(tracked,p?.name);for(const step of p?.steps||[])if(["material","owned"].includes(step?.kind))add(tracked,step.item)}
+  const routineText=routines.flatMap(r=>[r?.name,r?.note,...(r?.rewards||[]),...(r?.targets||[])]).map(x=>normalize(Array.isArray(x)?x.join(" "):x)).join("\n");
+  for(const x of items)if(Number(x?.Count)>0&&x?.Name)add(owned,x.Name);
+  const rows=[],seen=new Set();
+  for(const x of items){
+   if(!x||Number(x.Bank)!==0||!Number.isFinite(Number(x.Count))||Number(x.Count)<=0||!x.Name||!/(?:^item$|^misc(?:ellaneous| item)?$|^resource$|^quest item$|^material$)/i.test(String(x.Type).trim()))continue;
+   const key=normalize(x.Name),id=String(x.ID??x.Name);if(!key||seen.has(id))continue;seen.add(id);
+   const n=notes.get(key),trackedUse=tracked.has(key)||routineText.includes(key);
+   let status="unknown",reason="No confirmed use in the current catalog. Review on the Wiki; absence of data does not mean unnecessary.",url=null,questUrl=null;
+   if(trackedUse){status="protected";reason="Referenced by a tracked goal or routine."}
+   else if(n?.kind==="goal"&&owned.has(normalize(n.goal))){status="review";reason=n.note;url=n.url}
+   else if(known.has(key)||protectCaps&&caps.has(key)||n?.kind==="goal"){status="protected";reason="Known recipe, stack-tracked material or unfinished target. Keep until reviewed."}
+   else if(n){status=n.kind==="situational"?"situational":"review";reason=n.note;url=n.url;questUrl=n.questUrl||null}
+   rows.push({id,name:x.Name,quantity:Number(x.Count),status,reason,url,questUrl});
+  }
+  const order={review:0,situational:1,unknown:2,protected:3};
+  rows.sort((a,b)=>order[a.status]-order[b.status]||a.name.localeCompare(b.name));
+  return {rows,review:rows.filter(x=>x.status==="review").length,situational:rows.filter(x=>x.status==="situational").length,unknown:rows.filter(x=>x.status==="unknown").length,protected:rows.filter(x=>x.status==="protected").length};
+ }
+ return Object.freeze({analyze,uses,cleanup,normalize,safeWiki,safeJoin,validCap,
   knownCaps:Object.freeze(wikiCaps.map(([name,cap,slug])=>Object.freeze({name,cap,url:"https://aqwwiki.wikidot.com/"+slug})))});
 });
