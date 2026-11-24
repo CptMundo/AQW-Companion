@@ -45,7 +45,7 @@ assert.ok(html.includes("planner-show-all"),"Extended catalog must remain usable
 assert.ok(html.includes("name:'Mine Crafting',group:'Metals',freq:'daily',join:'/join stalagbite'"));
 assert.ok(html.includes("name:'Hard Core Metals',group:'Metals',freq:'daily',join:'/join stalagbite'"));
 assert.ok(plannerCSS.includes("column-gap:14px"));
-assert.ok(html.includes('href="css/planner-routines.css?v=114"'));
+assert.ok(html.includes('href="css/planner-routines.css?v=116"'));
 assert.ok(html.includes('src="js/ultra-guide-rows.js"'));
 for(const [i,m] of [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].entries())
  if(!m[1].includes("src=")&&m[2].trim())new vm.Script(m[2],{filename:"index-inline-"+i});
@@ -336,7 +336,7 @@ const complete109=tree109.find(n=>n.tag==="button"&&n.text==="✓");assert.equal
 assert.equal(completed,true);
 tree109=flatten109(renderCard(task109,true));
 assert.ok(tree109[0].cls.includes("done"));
-status.value="completed";const undo109=tree109.find(n=>n.tag==="button"&&n.text==="✓");assert.equal(undo109.title,"Undo completion");assert.equal(undo109["aria-pressed"],"true");assert.ok(undo109.cls.includes("is-complete"));undo109.onclick();
+status.value="completed";const undo109=tree109.find(n=>n.tag==="button"&&n.text==="×");assert.equal(undo109.title,"Undo completion");assert.equal(undo109["aria-pressed"],"true");assert.ok(undo109.cls.includes("is-complete"));undo109.onclick();
 assert.equal(completed,false);assert.equal(status.value,"all");assert.equal(toggles,2);
 const removePin114=tree109.find(n=>n.tag==="button"&&String(n.cls||"").includes("planner-pin-action is-pinned"));assert.ok(removePin114);assert.match(removePin114.title,/^Unpin /);removePin114.onclick();assert.equal(unpins,1);
 conflict={name:"Other weekly"};tree109=flatten109(renderCard(task109,true));
@@ -380,7 +380,12 @@ assert.ok(plannerCSS.includes("align-items:stretch!important"));
 assert.ok(plannerCSS.includes("aspect-ratio:16/9"));
 assert.ok(plannerCSS.includes("object-fit:cover"));
 assert.ok(html.includes("const visible=matches;"));
-assert.ok(html.includes("openPlannerLibrary(freq,'unpinned')"));
+assert.ok(!html.includes("planner-browse-frequency"));
+assert.ok(html.includes("☀️ Daily quests"));
+assert.ok(html.includes("📅 Weekly quests"));
+assert.ok(html.includes("textContent='+ Search more quests ('+activeCatalog.length+')'"));
+assert.ok(html.includes("$('plannerbrowse').onclick=()=>openPlannerLibrary(plannerMyFrequency)"));
+assert.ok(html.includes("progress.done+' / '+progress.total+' complete'"));
 assert.match(portrait.plannerArt(active.find(t=>t.id==="reviewed-dulcify")).url,/cpDNEYC\.png$/);
 assert.match(portrait.plannerArt(active.find(t=>/^Daily Exercise 3:/.test(t.name))).url,/9kK857M\.png$/);
 console.log("Planner full-width art, expanded routines and direct library discovery passed.");
@@ -433,10 +438,14 @@ assert.match(toolbar114,/<select id="planner-my-categories" aria-label="Quest ca
 assert.match(toolbar114,/<select id="plannerstatus" aria-label="Completion status">/);
 assert.ok(!toolbar114.includes('planner-category-controls'));
 assert.ok(html.includes("categoryBar.value=plannerMyCategory;categoryBar.onchange=()=>{plannerMyCategory=categoryBar.value;renderPlanner()}"));
-assert.ok(html.includes("css/planner-routines.css?v=114"));
+assert.ok(html.includes("css/planner-routines.css?v=116"));
 for(const [id,file] of [['friendship-twilly','0KftqqS.png'],['friendship-warlic','sq7rbv5.png'],['friendship-sally','GI2CmjZ.png'],['friendship-twig','Ke7Ri6j.png']]){
  const task=active.find(t=>t.id===id);assert.ok(task,id);assert.ok(portrait.plannerArt(task).url.endsWith('/'+file),id);
 }
 console.log("Compact toolbar and additional artwork checks passed.");
 
 assert.ok(plannerCSS.includes(".planner-pin-action.is-unpinned"));assert.ok(plannerCSS.includes(".planner-pin-action.is-pinned"));assert.ok(plannerCSS.includes("mask:var(--planner-pin-icon)"));assert.ok(html.includes("button.setAttribute('aria-label',button.title)"));console.log("Pin and unpin pictograms retain accessible labels and actions.");
+
+assert.ok(plannerCSS.includes(".planner-quest-actions .planner-complete-action.is-complete,.planner-quest-actions .planner-pin-action.is-pinned{color:#ffb4b4"));
+assert.ok(plannerCSS.includes(".planner-quest-actions .planner-complete-action{color:#b6f4d1"));
+console.log("Green completion, red undo and red unpin actions checked.");

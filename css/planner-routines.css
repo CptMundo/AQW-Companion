@@ -155,3 +155,11 @@ nav.tabs.subnav[aria-label="Section navigation"]:has(button[data-parent="planner
 .planner-quest-actions .planner-pin-action.is-unpinned:hover{color:#e5f7ff;background:#214e70;border-color:#67bcdf}
 .planner-quest-actions .planner-pin-action.is-pinned:hover{color:#ffb4b4;background:#492a34;border-color:#be777d}
 .planner-quest-actions .planner-pin-action:focus-visible{outline:2px solid #8edcff;outline-offset:2px}
+
+/* PR 116: action colors indicate the next action, not just completion state. */
+.planner-quest-actions .planner-complete-action{color:#b6f4d1;background:#245a46;border-color:#488b70}
+.planner-quest-actions .planner-complete-action:hover:not(:disabled){color:#e3ffed;background:#2e7055;border-color:#75e3a4}
+.planner-quest-actions .planner-complete-action.is-complete,.planner-quest-actions .planner-pin-action.is-pinned{color:#ffb4b4;background:#492a34;border-color:#be777d}
+.planner-quest-actions .planner-complete-action.is-complete:hover:not(:disabled),.planner-quest-actions .planner-pin-action.is-pinned:hover{color:#ffe0e0;background:#66323b;border-color:#f29a9a}
+.planner-quest-actions .planner-complete-action:focus-visible{outline:2px solid #8edcff;outline-offset:2px}
+.planner-quest-actions .planner-complete-action:disabled{opacity:.45;cursor:not-allowed}
