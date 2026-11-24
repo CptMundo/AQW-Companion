@@ -182,7 +182,7 @@ function showInventoryDiagnostic(){
  if(navigator.clipboard?.writeText)navigator.clipboard.writeText(text).then(()=>message('Storage diagnostic copied. Share it with the developer; it contains no inventory items.','success'),()=>window.prompt('Copy storage diagnostic',text));
  else window.prompt('Copy storage diagnostic',text);
 }
-function loadGoals(){try{const g=JSON.parse(localStorage.getItem('aqw-companion-goals')||'[]');goals=Array.isArray(g)?g:[]}catch{goals=[]}}function saveGoals(){localStorage.setItem('aqw-companion-goals',JSON.stringify(goals))}function loadUnlocks(){try{const u=JSON.parse(localStorage.getItem('aqw-companion-unlocks')||'[]');unlocks=Array.isArray(u)?u:[]}catch{unlocks=[]}}function loadStory(){try{const d=JSON.parse(localStorage.getItem('aqw-companion-story')||'{}');storyStatuses=d&&typeof d==='object'&&!Array.isArray(d)?d:{}}catch{storyStatuses={}}}function saveStory(){localStorage.setItem('aqw-companion-story',JSON.stringify(storyStatuses))}function saveUnlocks(){localStorage.setItem('aqw-companion-unlocks',JSON.stringify(unlocks));if(document.getElementById('homeprojectslist'))renderHomeInsights();if($('account-stats')?.classList.contains('active'))renderAccountStatistics();renderStackAlerts()}
+function loadGoals(){try{const g=JSON.parse(localStorage.getItem('aqw-companion-goals')||'[]');goals=Array.isArray(g)?g:[]}catch{goals=[]}}function saveGoals(){localStorage.setItem('aqw-companion-goals',JSON.stringify(goals))}function loadUnlocks(){try{const u=JSON.parse(localStorage.getItem('aqw-companion-unlocks')||'[]');unlocks=Array.isArray(u)?u:[]}catch{unlocks=[]}}function loadStory(){try{const d=JSON.parse(localStorage.getItem('aqw-companion-story')||'{}');storyStatuses=d&&typeof d==='object'&&!Array.isArray(d)?d:{}}catch{storyStatuses={}}}function saveStory(){localStorage.setItem('aqw-companion-story',JSON.stringify(storyStatuses))}function saveUnlocks(){localStorage.setItem('aqw-companion-unlocks',JSON.stringify(unlocks));if(document.getElementById('homeprojectslist')){renderHomeInsights();renderHomeInventoryChanges()}if($('account-stats')?.classList.contains('active'))renderAccountStatistics();renderStackAlerts()}
 function validate(json){if(!json||!Array.isArray(json.items))throw Error('JSON must contain an items array.');if(json.items.length>100000)throw Error('Exceeded the limit of 100,000 records.');if(json.items.some(x=>!x||typeof x.Name!=='string'||!Number.isFinite(Number(x.Count))||x.ID==null||typeof x.Type!=='string'))throw Error('Some items contain invalid fields.');return json.items.map(x=>({ID:String(x.ID),Name:x.Name.slice(0,350),Type:x.Type.slice(0,100),Count:Math.max(0,Number(x.Count)),Bank:Number(x.Bank)===1?1:0,
  MaxStack:window.AQWCStackAlerts?.validCap(x.MaxStack??x.MaxStackSize??x.MaxQuantity)||undefined,
  Coins:Number(x.Coins)||0,Member:Number(x.Member)||0,Added:typeof x.Added==='string'?x.Added:''}))}
@@ -1746,6 +1746,20 @@ function renderHomeInventoryChanges(){
   tile.append(node('span',icon,'home-delta-metric-icon'),node('strong',fmt(count)),node('small',title));metrics.append(tile)
  }
  root.append(metrics);
+ const wins=latest.uid?window.AQWWishlistFinds?.find(snapshots,unlocks,{onlyUid:latest.uid,limit:50}):null;
+ if(wins?.count){
+  const section=node('div',undefined,'home-wishlist-wins');
+  const head=node('div',undefined,'home-delta-highlight-head');
+  head.append(node('strong','🏆 Wishlist Achievements'),node('span',fmt(wins.count)+' newly recorded','muted tiny'));
+  section.append(head);
+  for(const win of wins.recent){
+   const row=node('div',undefined,'home-wishlist-win');
+   row.append(node('strong','✓ '+win.name),node('small','Wishlist target first seen in this export'));
+   section.append(row);
+  }
+  if(wins.count>wins.recent.length)section.append(node('small',fmt(wins.count-wins.recent.length)+' more · See Account Statistics','muted tiny'));
+  root.append(section);
+ }
  const highlights=node('div',undefined,'home-delta-highlights');
  const heading=node('div',undefined,'home-delta-highlight-head');
  heading.append(node('strong','✨ Latest discoveries'),node('span',added.length?added.length+' newly recorded':'No new item IDs','muted tiny'));
