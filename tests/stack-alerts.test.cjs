@@ -122,3 +122,23 @@ assert.ok(html.includes("✓ Remove from Wishlist"));
 assert.ok(html.includes("home-wishlist-win-badge"));
 assert.ok(css.includes("#unlocks #unlocklist .unlockcard.wishlist-completed-card"));
 assert.ok(css.includes("#unlocks #unlocklist .wishlist-completion-remove"));
+
+{
+ const api=require('../js/stack-alerts.js'),items=[
+ {ID:'1',Name:"Necrotic Sword's Blade",Type:'Item',Bank:0,Count:1},
+ {ID:'2',Name:'Necrotic Sword of Doom',Type:'Sword',Bank:1,Count:1},
+ {ID:'3',Name:'Wheel of Bacon Token',Type:'Item',Bank:0,Count:10},
+ {ID:'4',Name:'Gray Matter',Type:'Quest Item',Bank:0,Count:3},
+ {ID:'5',Name:'Unknown Material',Type:'Resource',Bank:0,Count:1},
+ {ID:'6',Name:'Void Aura',Type:'Item',Bank:0,Count:800},
+ {ID:'7',Name:'Bank Only',Type:'Item',Bank:1,Count:1}];
+ const result=api.cleanup(items),byName=new Map(result.rows.map(r=>[r.name,r]));
+ assert.equal(byName.get("Necrotic Sword's Blade").status,'review');
+ assert.equal(byName.get('Wheel of Bacon Token').status,'situational');
+ assert.equal(byName.get('Gray Matter').status,'review');
+ assert.equal(byName.get('Unknown Material').status,'unknown');
+ assert.equal(byName.get('Void Aura').status,'protected');assert.equal(byName.has('Bank Only'),false);
+ assert.equal(api.cleanup(items,{wishlist:[{name:'goal',steps:[{kind:'material',item:"Necrotic Sword's Blade"}]}]}).rows.find(r=>r.name==="Necrotic Sword's Blade").status,'protected');
+ assert.equal(api.cleanup(items,{routines:[{name:'test',targets:['Wheel of Bacon Token ×1']}]}).rows.find(r=>r.name==='Wheel of Bacon Token').status,'protected');
+ assert.equal(api.cleanup(items.filter(r=>r.ID!=='2')).rows.find(r=>r.name==="Necrotic Sword's Blade").status,'protected');
+}
