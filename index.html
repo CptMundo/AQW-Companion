@@ -284,6 +284,10 @@ function renderCleanupAlerts(){
   const b=node('button',undefined,'cleanup-metric');b.type='button';b.append(node('strong',fmt(value)),node('small',label));b.onclick=()=>{$('cleanup-filter').value=filter;renderCleanupAlerts()};metrics.append(b);
  }
  metric('Conditional candidates',candidates.length,'action');metric('My shortlist',cleanupShortlist.size,'selected');metric('Protected',result.protected,'protected');metric('Unclassified',result.unknown,'unknown');
+ const exportButton=node('button','Export unclassified materials (JSON)','smallbutton');exportButton.type='button';exportButton.disabled=!result.unknown;exportButton.onclick=()=>{
+  const data={format:'aqwc-cleanup-unclassified-v1',generatedAt:new Date().toISOString(),items:result.rows.filter(r=>r.status==='unknown').map(r=>({name:r.name,quantity:r.quantity,acTagged:r.acTagged}))};
+  const href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=href;a.download='AQW_Unclassified_Materials.json';a.click();setTimeout(()=>URL.revokeObjectURL(href),1000);
+ };metrics.append(exportButton);
  const filter=$('cleanup-filter').value,q=api.normalize($('cleanup-search').value);
  const selected=result.rows.filter(r=>(filter==='all'||filter==='action'&&['review','situational'].includes(r.status)||filter==='selected'&&cleanupShortlist.has(r.id)||r.status===filter)&&(!q||api.normalize(r.name).includes(q)));
  summary.textContent=fmt(selected.length)+' matching material records · '+fmt(result.rows.length)+' in bag. Shortlist is session-only, not a guarantee of banking eligibility or available slots.';
