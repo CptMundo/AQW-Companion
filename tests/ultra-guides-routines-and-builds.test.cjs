@@ -120,7 +120,7 @@ assert.equal(workbookApi.simplifiedRoleRatings("speaker",0).length,7);
 assert.equal(workbookApi.simplifiedRoleRatings("gramiel",3).find(x=>x.name==="Shaman").rating,5);
 for(const key of Object.keys(workbookApi.simplifiedRatings))for(let i=0;i<5;i++){const rows=workbookApi.simplifiedRoleRatings(key,i);assert.equal(rows.length,workbookApi.simplifiedRatingRoles[i][1].length,key+" role "+i);assert.ok(rows.every(x=>x.rating>=0&&x.rating<=5))}
 assert.ok(!html.includes("appendSimplifiedProfile(root,simplifiedProfiles[b.id]"),"No second workbook panel in main guide");
-assert.ok(html.includes("renderSimplifiedExtras(root,term)"));
+assert.ok(html.includes("renderBossGuides(root,$(\'bossguidesearch\').value.trim().toLowerCase(),$(\'bossguidecategory\').value)"));
 assert.ok(html.includes("Score belongs only in the selector"));
 
 const compact=vm.runInNewContext(reviewedCode+"\n({ultraClassOptions,ultraSelectedRating,ultraWorkbookBuild,ultraCompactTips,ultraActionTips,ultraBeginnerActions,ultraBeginnerText,ultraGlossary,ultraTermPattern,ultraTermInfo,ultraSuggestedGear,ultraRecommendedTeam,ultraUnifiedTips,ultraSpeakerRole,ultraSpeakerPersonal,simplifiedSpeakerPatterns,simplifiedProfiles,simplifiedRatings,simplifiedExtraEncounters,sameUltraClass,fillUltraClassSelect,renderUltraSelectedRating,appendUltraGearCells})",{
@@ -449,3 +449,29 @@ assert.ok(plannerCSS.includes(".planner-pin-action.is-unpinned"));assert.ok(plan
 assert.ok(plannerCSS.includes(".planner-quest-actions .planner-complete-action.is-complete,.planner-quest-actions .planner-pin-action.is-pinned{color:#ffb4b4"));
 assert.ok(plannerCSS.includes(".planner-quest-actions .planner-complete-action{color:#b6f4d1"));
 console.log("Green completion, red undo and red unpin actions checked.");
+
+const bossTabs117=html.slice(html.indexOf('<nav class="tabs subnav"'),html.indexOf('</nav>',html.indexOf('<nav class="tabs subnav"')));
+assert.match(bossTabs117,/data-tab="ultras" data-parent="ultras">⚡ Ultras/);
+assert.match(bossTabs117,/data-tab="boss-guides" data-parent="ultras">⚔️ Boss Guides/);
+assert.ok(ultraCSS.includes('button[data-parent="ultras"].group-visible{display:inline-flex!important'));
+const bossCatalog117=vm.runInNewContext(html.slice(html.indexOf("const ultraBossCatalog=["),html.indexOf("function renderUltraCatalog()"))+"\n ultraBossCatalog");
+const bossGuideApi117=vm.runInNewContext(reviewedCode+"\n({bossGuideEntries,filterBossGuides,bossGuideSelection,bossGuideOrder})");
+const entries117=bossGuideApi117.bossGuideEntries(workbookApi.simplifiedExtraEncounters,bossCatalog117);
+assert.equal(entries117.filter(e=>e.profile).length,29);
+assert.equal(entries117.filter(e=>!e.profile).length,11);
+assert.equal(new Set(entries117.map(e=>e.id)).size,40);
+assert.ok(entries117.every(e=>bossGuideApi117.bossGuideOrder.includes(e.group)));
+assert.equal(bossGuideApi117.filterBossGuides(entries117,"","Grim Gaol",()=>[]).length,11);
+assert.equal(bossGuideApi117.filterBossGuides(entries117,"","Void Bosses",()=>[]).length,4);
+assert.equal(bossGuideApi117.filterBossGuides(entries117,"ultra iara","all",()=>[])[0].profile,null);
+assert.ok(bossGuideApi117.filterBossGuides(entries117,"lord of order","all",()=>[]).some(e=>e.name==="Fourth Lynaria"));
+assert.equal(bossGuideApi117.bossGuideSelection([],entries117[0].id),"");
+assert.equal(bossGuideApi117.bossGuideSelection(entries117,entries117[3].id),entries117[3].id);
+assert.equal(bossGuideApi117.bossGuideSelection(entries117,"unknown"),entries117[0].id);
+const bossTabs=[navMock({tab:'ultras',parent:'ultras'}),navMock({tab:'boss-guides',parent:'ultras'})];
+const bossGroups=[navMock({group:'ultras'})];const bossViews=['ultras','boss-guides'].map(id=>navMock({},id));
+for(const e of [...bossTabs,...bossGroups,...bossViews])e.classList.owner=e;
+const bossDoc={querySelector(q){return bossTabs.find(t=>q==='[data-tab="'+t.dataset.tab+'"]')||null},querySelectorAll(q){return q==='[data-tab]'?bossTabs:q==='[data-group]'?bossGroups:q==='.view'?bossViews:[]}};
+vm.runInNewContext(navCode,{document:bossDoc});
+bossGroups[0].click();assert.ok(bossViews[0].active.has('active'));bossTabs[1].click();assert.ok(bossViews[1].active.has('active'));assert.ok(bossTabs[0].active.has('group-visible'));bossTabs[0].click();assert.ok(bossViews[0].active.has('active'));
+console.log("Separate Ultras / Boss Guides views, 29 guides and 11 catalog encounters, category search and selection passed.");
