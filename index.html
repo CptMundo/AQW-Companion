@@ -1821,58 +1821,7 @@ const ultraGlossary={
  'Healer':{text:'Standard enhancement focused on health and healing.'}
 };
 const ultraTermIndex=new Map(Object.entries(ultraGlossary).map(([name,info])=>[name.toLowerCase(),{name,...info}]));
-const ultraTermPattern=new RegExp('('+[...Object.keys(ultraGlossary)].sort((a,b)=>b.length-a.length).map(x=>x.replace(/[.*+?^$(){}|[\]\\]/g,'\\
-const ultraBaseStyles={
- 'Wizard':['Legion Revenant','Shaman','LightCaster','Hollowborn Vindicator','Lich','ArchMage','Blaze Binder','Immortal DarkCaster','Timeless DarkCaster','Master of Moglins','Arachnomancer'],
- 'Healer':['Dragon of Time','Frostval Barbarian','Bard'],
- 'Fighter':['StoneCrusher','Paladin Chronomancer']
-};
-function ultraBaseFor(cls){
- for(const [base,names] of Object.entries(ultraBaseStyles))if(names.some(n=>sameUltraClass(n,cls)))return base;
- return 'Lucky';
-}
-function ultraSuggestedGear(key,cls,profile,generic=null,encounter=null){
- const exact=ultraWorkbookBuild(profile,cls);
- // Other source rows establish the class's usual base; never import a
- // reduced-HP helm or a risky cape from an unrelated encounter.
- const known=[...Object.values(simplifiedProfiles),...simplifiedExtraEncounters].map(p=>ultraWorkbookBuild(p,cls)).filter(Boolean);
- const base=exact?.base||encounter?.base||generic?.base||known[0]?.base||ultraBaseFor(cls);
- const role=ultraSelectedRating(key,cls)?.role;
- const support=role==='Support'||role==='Healer';
- const magical=base==='Wizard'||base==='Healer';
- const fallback={weapon:support?'Awe Blast':magical?'Valiance':'Valiance',helm:'Base Forge',cape:'Penitence',base};
- const usable=(v)=>typeof v==='string'&&v.trim()&&!/^choose/i.test(v);
- const preferred=exact||encounter||generic;
- const out={...fallback};
- for(const k of ['weapon','helm','cape','base'])if(usable(preferred?.[k]))out[k]=preferred[k];
- if(key==='dage'){
-  if(!/Health Vamp|Dauntless/i.test(out.weapon))out.weapon='Health Vamp';
-  if(!exact) {out.helm='Base Forge';out.cape='Penitence';}
-  if(sameUltraClass(cls,'Chaos Avenger'))out.consumable='Scroll of Enrage (if assigned)';
-  else out.consumable='Scroll of Decay (backup if needed)';
- }else if(key==='kathool')out.consumable='Vigil';
- else if(usable(preferred?.consumable))out.consumable=preferred.consumable;
- if(key==='darkon'||key==='Void Nightbane'||key==='Astral Empyrean')if(out.cape==='Vainglory')out.cape='Penitence';
- out.estimated=!exact&&!encounter;
- return out;
-}
-function ultraRecommendedTeam(b,profile){
- // Keep a complete established strategy intact; do not assemble a party
- // out of the highest individual ratings. The main guide uses b.team.
- return (b.team?.length?b.team:profile?.team?.map(r=>r.cls)||[]).slice();
-}
-function appendUltraRecommendedTeam(root,b,profile){
- const names=ultraRecommendedTeam(b,profile);if(!names.length)return;
- const wrap=node('section',undefined,'ultra-recommended-team');
- const header=node('div',undefined,'ultra-recommended-heading');
- header.append(node('h3','Recommended team'),node('small',names.length+' players','muted tiny'));wrap.append(header);
- const list=node('div',undefined,'ultra-recommended-classes');
- for(const name of names){const owned=ultraOwned(name),chip=node('span',undefined,'ultra-team-chip'+(owned?' is-owned':''));
- chip.append(node('span',owned?'✓':'○','ultra-team-mark'),node('span',name));chip.title=owned?'Class owned':'Class not owned';list.append(chip)}
- wrap.append(list);root.append(wrap);
-}
-
-function appendUltraGearCells(gear,build,boss){')).map(x=>'\\b'+x+'\\b').join('|')+'|“[^”]+”|"[^"]+")','gi');
+const ultraTermPattern=new RegExp('('+Object.keys(ultraGlossary).sort((a,b)=>b.length-a.length).map(x=>Array.from(x,c=>'\\^$.*+?()[]{}|'.includes(c)?'\\'+c:c).join('')).map(x=>'\\b'+x+'\\b').join('|')+'|“[^”]+”|"[^"]+")','gi');
 const ultraContextTerms={
  dage:{Zone:'Enter the glowing blue floor platform within 3 seconds of the protection-spells quote. Follow the lit platform, not a fixed side.',Decay:'Apply this to Dage during his regeneration only if you are assigned. This is different from Noxious Decay on you.',HoT:'Healing over time. Noxious Decay turns its healing ticks into damage.',HoTs:'Healing over time. Noxious Decay turns its healing ticks into damage.'},
  speaker:{Zone:'Enter only your assigned glowing Zone in your chosen rotation. Do not enter while affected by Magia Burn, Stasis or Sanctity.'},
@@ -1946,7 +1895,58 @@ function ultraBeginnerActions(key,cls,existing){
  return existing.map(x=>ultraBeginnerText(x,cls));
 }
 
-function appendUltraGearCells(gear,build){
+const ultraBaseStyles={
+ 'Wizard':['Legion Revenant','Shaman','LightCaster','Hollowborn Vindicator','Lich','ArchMage','Blaze Binder','Immortal DarkCaster','Timeless DarkCaster','Master of Moglins' ],
+ 'Healer':['Dragon of Time','Frostval Barbarian','Bard'],
+ 'Fighter':['StoneCrusher','Paladin Chronomancer']
+};
+function ultraBaseFor(cls){
+ for(const [base,names] of Object.entries(ultraBaseStyles))if(names.some(n=>sameUltraClass(n,cls)))return base;
+ return 'Lucky';
+}
+function ultraSuggestedGear(key,cls,profile,generic=null,encounter=null){
+ const exact=ultraWorkbookBuild(profile,cls);
+ // Other source rows establish the class's usual base; never import a
+ // reduced-HP helm or a risky cape from an unrelated encounter.
+ const known=[...Object.values(simplifiedProfiles),...simplifiedExtraEncounters].map(p=>ultraWorkbookBuild(p,cls)).filter(Boolean);
+ const base=exact?.base||encounter?.base||generic?.base||known[0]?.base||ultraBaseFor(cls);
+ const role=ultraSelectedRating(key,cls)?.role;
+ const support=role==='Support'||role==='Healer';
+ const fallbackWeapons={'Chaos Shaper':'Mana Vamp','Sentinel':'Awe Blast','Shaman':'Mana Vamp','Master Ranger':'Spiral Carve','Dragon of Time':'Awe Blast','ArchFiend':'Health Vamp','Legion DoomKnight':'Health Vamp','LightCaster':'Awe Blast','Hollowborn Vindicator':'Valiance','Lich':'Valiance'};
+ const fallbackName=Object.keys(fallbackWeapons).find(n=>sameUltraClass(n,cls));
+ const fallback={weapon:fallbackWeapons[fallbackName]||(support?'Awe Blast':'Valiance'),helm:'Base Forge',cape:'Penitence',base};
+ const usable=(v)=>typeof v==='string'&&v.trim()&&!/^choose/i.test(v);
+ const preferred=exact||encounter||generic;
+ const out={...fallback};
+ for(const k of ['weapon','helm','cape','base'])if(usable(preferred?.[k]))out[k]=preferred[k];
+ if(key==='dage'){
+  if(!/Health Vamp|Dauntless/i.test(out.weapon))out.weapon='Health Vamp';
+  if(!exact) {out.helm='Base Forge';out.cape='Penitence';}
+  if(sameUltraClass(cls,'Chaos Avenger'))out.consumable='Scroll of Enrage (if assigned)';
+  else out.consumable='Scroll of Decay (backup if needed)';
+ }else if(key==='kathool')out.consumable='Vigil';
+ else if(usable(preferred?.consumable))out.consumable=preferred.consumable;
+ if(key==='darkon'||key==='Void Nightbane'||key==='Astral Empyrean')if(out.cape==='Vainglory')out.cape='Penitence';
+ out.estimated=!exact&&!encounter;
+ return out;
+}
+function ultraRecommendedTeam(b,profile){
+ // Keep a complete established strategy intact; do not assemble a party
+ // out of the highest individual ratings. The main guide uses b.team.
+ return (b.team?.length?b.team:profile?.team?.map(r=>r.cls)||[]).slice();
+}
+function appendUltraRecommendedTeam(root,b,profile){
+ const names=ultraRecommendedTeam(b,profile);if(!names.length)return;
+ const wrap=node('section',undefined,'ultra-recommended-team');
+ const header=node('div',undefined,'ultra-recommended-heading');
+ header.append(node('h3','Recommended team'),node('small',names.length+' players','muted tiny'));wrap.append(header);
+ const list=node('div',undefined,'ultra-recommended-classes');
+ for(const name of names){const owned=ultraOwned(name),chip=node('span',undefined,'ultra-team-chip'+(owned?' is-owned':''));
+ chip.append(node('span',owned?'✓':'○','ultra-team-mark'),node('span',name));chip.title=owned?'Class owned':'Class not owned';list.append(chip)}
+ wrap.append(list);root.append(wrap);
+}
+
+function appendUltraGearCells(gear,build,boss){
  if(!build){gear.append(node('span','No reviewed class-specific gear preset; consult the encounter guide.','muted tiny'));return}
  for(const [label,value] of [['Weapon',build.weapon],['Helm',build.helm],['Cape',build.cape],['Base',build.base],['Consumable',build.consumable]].filter(([,v])=>v)){
   const cell=node('div',undefined,'ultra-focus-gear-cell'),name=node('strong');ultraExplainText(name,value,boss);cell.append(node('small',label),name);gear.append(cell);
