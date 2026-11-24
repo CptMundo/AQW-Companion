@@ -138,9 +138,37 @@ function queueWishlist(message,sender){
  const result=wishlistLock.then(run);wishlistLock=result.catch(()=>{});return result;
 }
 
+
+const listCategories=['helmets-hoods','capes-back-items','battle-pets','misc-items','use-items','floor-items','wall-items','enhancements','classes','armors','swords','axes','bows','daggers','gauntlets','guns','handguns','maces','polearms','rifles','staffs','wands','pets','grounds','necklaces','houses'];
+function wikiListCategory(sender){
+ if(!wikiSender(sender))return null;
+ const slug=new URL(sender.url).pathname.replace(/^\/|\/$/g,'');
+ if(listCategories.includes(slug))return slug;
+ return /^sort-by-[a-z0-9-]+$/.test(slug)?listCategories.find(c=>slug.endsWith('-'+c))||null:null;
+}
+function matchWikiListItem(snapshot,name,category){
+ const result=matchWikiItem(snapshot,{name,category});
+ if(!snapshot||!Array.isArray(snapshot.items)||!['owned','not-found'].includes(result.state))return result;
+ const key=nameKey(name),suffix=key.match(/^(.*) \((sword|axe|bow|dagger|gauntlet|gun|handgun|mace|polearm|rifle|staff|wand|armor|class|helm|cape|pet|item)\)$/);
+ // A qualifier such as (AC), (Merge), (Legend) or (1) may be absent
+ // from exports. Never mark it absent based on a failed exact-name match.
+ if(result.state==='not-found'&&/\s\([^)]+\)$/.test(key)&&!suffix)return {state:'ambiguous'};
+ if(suffix&&Object.hasOwn(wikiTypes,category)&&wikiTypes[category].includes(suffix[2])){
+  const ids=new Set(snapshot.items.filter(r=>r.Count>0&&wikiTypes[category].includes(nameKey(r.Type))&&[key,suffix[1]].includes(nameKey(r.Name))).map(r=>r.ID));
+  if(ids.size>1)return {state:'ambiguous'};
+ }
+ return result;
+}
+
 async function handle(message,sender){
  if(['wishlist-queue-add','wishlist-queue-read','wishlist-queue-ack'].includes(message?.type))return queueWishlist(message,sender);
  const account=await accountStage(message,sender);if(account)return account;
+ if(message?.type==='wiki-list-lookup'){
+  const category=wikiListCategory(sender),names=message.names;
+  if(!category||message.category!==category||!Array.isArray(names)||!names.length||names.length>80||names.some(n=>typeof n!=='string'||!n.trim()||n.length>350||/[\u0000-\u001f\u007f]/.test(n))||new Set(names).size!==names.length)return {ok:false,error:'Invalid item list request.'};
+  await restrictStorage();const snapshot=(await chrome.storage.local.get(KEY))[KEY];
+  return {ok:true,matches:names.map(name=>{const m=matchWikiListItem(snapshot,name,category);return {state:m.state,...(m.state==='owned'?{inventory:m.inventory,bank:m.bank,total:m.total}:{})}}),syncedAt:snapshot?.syncedAt||null,exportedAt:snapshot?.exportedAt||null};
+ }
  if(message?.type==='wiki-material-lookup'&&wikiSender(sender)){
   const names=message.names;
   if(!Array.isArray(names)||!names.length||names.length>80||names.some(n=>typeof n!=='string'||!n.trim()||n.length>350)||new Set(names).size!==names.length)return {ok:false,error:'Invalid material request.'};
