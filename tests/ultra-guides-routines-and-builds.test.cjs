@@ -21,7 +21,7 @@ const quote=guide.rows({
 assert.ok(quote.some(r=>r.quote==="You shall listen."&&r.text.includes("If assigned")));
 assert.ok(!html.includes("const caution=node('div','⚠ '+warning"),"Warning cards no longer rendered");
 assert.ok(!html.includes("vigil=node('div',undefined,'ultra-focus-timing')"),"No redundant Kathool quote callout card");
-assert.ok(html.includes("AQWCGuideRows?.rows({tips,quotes:callouts"),"New unified class-specific role rows");
+assert.ok(html.includes("const rows=ultraUnifiedTips(b.id,cls,baseTips)"),"New unified class-specific role rows");
 assert.ok(html.includes("ultra-role-mini-title"));
 assert.ok(html.includes("bardSupport={weapon:'Awe Blast',helm:'Forge',cape:'Absolution'"),"Bard has documented support equipment");
 assert.ok(html.includes("https://www.aq.com/lore/classes/bard"));
