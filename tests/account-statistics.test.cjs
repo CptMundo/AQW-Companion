@@ -79,8 +79,8 @@ assert.equal(activeView(),"overview");
 assert.equal(statsRenderCount,1,"Returning Home should not reopen statistics");
 
 assert.ok(html.includes('<section id="account-stats" class="view">'));
-assert.ok(html.includes('href="css/account-statistics.css"'));
-assert.ok(html.includes('src="js/account-statistics.js"'));
+assert.ok(html.includes('href="css/account-statistics.css?v=96"'));
+assert.ok(html.includes('src="js/account-statistics.js?v=96"'));
 assert.ok(html.includes("if(tab==='account-stats'||tab==='milestones')renderAccountStatistics()"),"Statistics should refresh when selected");
 assert.ok(html.includes("current,snapshots,projects"),"Runtime must use real browser state");
 assert.ok(html.includes("metadataLookup:name=>communityItems.get(communityKey(name))"),"Rarity data is community metadata");
@@ -212,3 +212,10 @@ api.render(root,data,{milestonesOnly:true});
 assert.ok(flatten(root).some(x=>String(x.textContent).includes("Companion Milestones")),"Milestones clearly branded");
 assert.ok(!flatten(root).some(x=>x.tagName==="TABLE"),"Milestones view excludes collection statistics");
 console.log("Account Statistics passed: local-only metrics, duplicate IDs, growth, unknown tags, Wishlist, Forge, milestones, history, accessible UI.");
+
+api.renderMilestones(root,data);
+assert.ok(flatten(root).some(x=>x.textContent==="Unlocked milestones"));
+assert.ok(flatten(root).some(x=>x.textContent==="Next milestones"));
+assert.ok(!flatten(root).some(x=>x.tagName==="TABLE"||x.tagName==="SVG"));
+assert.ok(html.includes("window.AQWAccountStatistics.renderMilestones(root,stats"));
+assert.ok(css.includes("#milestones .aqwm-card.is-unlocked"));
