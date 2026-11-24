@@ -94,7 +94,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.8.0');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js','wiki-quest-shop.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
+ assert.equal(manifest.version,'0.9.0');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js','wiki-quest-shop.js','wiki-list-ownership.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -291,4 +291,40 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.equal(api.labels({role:'reward',items:[{name:'Void Aura',target:1}]},matches)[0].text,'✓ Owned ×5');
  assert.equal(api.labels({role:'requirement',items:[{name:'Unknown',target:1}]},matches)[0].text,'? Unknown');
  console.log('Quest/shop scoped parsing and independent stock allocation passed.');
+}
+
+{
+ const ctx={URL};vm.runInNewContext(read('extension/wiki-list-ownership.js'),ctx);
+ const api=ctx.AQWCListOwnership;
+ assert.equal(api.categoryFor('/classes'),'classes');assert.equal(api.categoryFor('/sort-by-rare-classes'),'classes');
+ assert.equal(api.categoryFor('/sort-by-rare-battle-pets'),'battle-pets');
+ assert.equal(api.categoryFor('/nulgath-s-quests'),null);assert.equal(api.categoryFor('/archpaladin'),null);
+ const a=(name,href,filtered=false)=>({tagName:'A',textContent:name,getAttribute:()=>href,querySelector:()=>null,closest:s=>filtered&&s.includes('list-pages')?{}:null});
+ const classLink=a('ArchPaladin','/archpaladin'),nav=a('Rare','/sort-by-rare-classes'),outside=a('NPC','/nulgath');
+ const content={querySelectorAll:()=>[outside,nav,{tagName:'H2',textContent:'A'},classLink,a('Back to Top','#top'),a('Wiki','https://example.org/wiki'),{tagName:'H2',textContent:'Notes'},outside]};
+ const rows=api.collect(content,'classes',false);assert.equal(rows.length,1);assert.equal(rows[0].name,'ArchPaladin');
+ assert.equal(api.collect({querySelectorAll:()=>[a('ArchPaladin','/archpaladin',true),outside]},'classes',true).length,1);
+ assert.equal(api.candidate(a('Armors','/armors'),'classes'),null);
+ const duplicates=api.groupRows([rows[0],{...rows[0],slug:'archpaladin-alt'}]);assert.equal(duplicates.length,1);assert.equal(duplicates[0].slugs.size,2);
+ assert.equal(api.label({state:'owned',inventory:1,bank:1,total:2}).text,'✓ Inventory + Bank ×2');
+ assert.equal(api.label({state:'owned',inventory:0,bank:1,total:1}).text,'✓ Bank ×1');
+ assert.equal(api.label({state:'not-found'}).text,'Not in snapshot');
+ assert.equal(api.label({state:'owned',total:1},true).text,'? Unknown');
+ const snap={items:[{ID:'1',Name:'ArchPaladin',Type:'Class',Count:1,Bank:0},{ID:'2',Name:'ArchPaladin',Type:'Armor',Count:1,Bank:1},{ID:'3',Name:'Example',Type:'Class',Count:1,Bank:0},{ID:'4',Name:'Example (Class)',Type:'Class',Count:1,Bank:1}],syncedAt:'2026-11-24',exportedAt:'2026-11-24'};
+ const chromeMock={runtime:{onMessage:{addListener(){}},getURL:x=>'chrome-extension://test/'+x},storage:{local:{async get(k){return {[k]:snap}}}}};
+ const worker=vm.runInNewContext(read('extension/worker.js')+'\n({handle,matchWikiListItem,wikiListCategory})',{chrome:chromeMock,URL,TextEncoder});
+ assert.equal(worker.matchWikiListItem(snap,'ArchPaladin','classes').inventory,1);
+ assert.equal(worker.matchWikiListItem(snap,'Example (Class)','classes').state,'ambiguous');
+ assert.equal(worker.matchWikiListItem(snap,'ArchPaladin (Merge)','classes').state,'ambiguous');
+ assert.equal(worker.matchWikiListItem(snap,'Unknown (AC)','classes').state,'ambiguous');
+ assert.equal(worker.matchWikiListItem(snap,'Missing','classes').state,'not-found');
+ (async()=>{
+  const sender={url:'https://aqwwiki.wikidot.com/classes',frameId:0},msg={type:'wiki-list-lookup',category:'classes',names:['ArchPaladin','Missing']};
+  const r=await worker.handle(msg,sender);assert.equal(r.ok,true);assert.equal(r.matches[0].total,1);assert.equal(r.matches[1].state,'not-found');assert.equal(r.items,undefined);
+  assert.equal((await worker.handle(msg,{...sender,frameId:1})).ok,false);
+  assert.equal((await worker.handle(msg,{...sender,url:'https://aqwwiki.wikidot.com/archpaladin'})).ok,false);
+  assert.equal((await worker.handle({...msg,category:'armors'},sender)).ok,false);
+  assert.equal((await worker.handle({...msg,names:Array.from({length:81},(_,i)=>'item '+i)},sender)).ok,false);
+  console.log('Ownership Everywhere: typed lookup, scoped sender, bounded requests and safe candidates passed.');
+ })().catch(e=>{console.error(e);process.exitCode=1});
 }
