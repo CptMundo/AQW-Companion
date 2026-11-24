@@ -498,7 +498,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  vm.runInNewContext(read('extension/wiki-theme.js'),{document,location:{origin:'https://aqwwiki.wikidot.com'},chrome:{runtime}});
  respond({ok:true,appearance:{background:'original',banner:'original',panel:'integrated'}});assert.equal(styles.length,0);assert.equal(attrs['data-aqwc-panel-theme'],'integrated');
  listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'bad',url:popup.url});assert.equal(styles.length,0);
- listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'id',url:popup.url});assert.equal(styles.length,1);assert.ok(styles[0].textContent.includes('div#container-wrap'));assert.ok(styles[0].textContent.includes('wiki-banner-prometheus.webp'));assert.ok(styles[0].textContent.includes('min(100%, 869px) auto'));assert.ok(!styles[0].textContent.includes('#header::before'));assert.ok(styles[0].textContent.includes('#1b1627'));
+ listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'id',url:popup.url});assert.equal(styles.length,1);assert.ok(styles[0].textContent.includes('div#container-wrap'));assert.ok(styles[0].textContent.includes('image_2026-11-24_232002011.png'));assert.ok(styles[0].textContent.includes('auto 140px'));assert.ok(!styles[0].textContent.includes('#header::before'));assert.ok(styles[0].textContent.includes('#1b1627'));
  listener({type:'aqwc-appearance-preview',appearance:{}},{id:'id',url:popup.url});assert.equal(styles.length,0);
  console.log('Wiki appearance: defaults, scoped read/write, validated presets and restore original passed.');
 })().catch(e=>{console.error(e);process.exitCode=1});
@@ -559,8 +559,8 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
 
 // Block release until the owner-selected binary artwork is actually present.
 {
- const art=fs.readFileSync(path.join(__dirname,'..','extension/wiki-banner-prometheus.webp'));
- assert.equal(art.toString('ascii',0,4),'RIFF');assert.equal(art.toString('ascii',8,12),'WEBP');
- assert.ok(art.length>10000 && art.length<2000000);
- assert.deepEqual(manifest.web_accessible_resources,[{resources:['wiki-banner-prometheus.webp'],matches:['https://aqwwiki.wikidot.com/*']}]);
+ const art=fs.readFileSync(path.join(__dirname,'..','extension/image_2026-11-24_232002011.png'));
+ assert.equal(art.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.equal(art.toString('ascii',12,16),'IHDR');assert.ok(art.readUInt32BE(16)>0 && art.readUInt32BE(20)>0);
+ assert.ok(art.length>10000 && art.length<15000000);
+ assert.deepEqual(manifest.web_accessible_resources,[{resources:['image_2026-11-24_232002011.png'],matches:['https://aqwwiki.wikidot.com/*']}]);
 }
