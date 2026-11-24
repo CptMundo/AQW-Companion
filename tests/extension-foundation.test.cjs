@@ -95,7 +95,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.10.6');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
+ assert.equal(manifest.version,'0.11.0');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -442,4 +442,15 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.ok(!read('extension/popup.html').includes('activate-wiki'));
  assert.ok(read('extension/wiki-items.js').includes("type:'wiki-item-lookup'"));
  console.log('Restored individual Wiki tools; category pages are Wishlist-only.');
+}
+
+{
+ const bridge=read('extension/bridge.js');
+ assert.ok(bridge.includes('globalThis.AQWCWikiUI='));
+ assert.ok(bridge.includes('width>=980'));assert.ok(bridge.includes('parent.insertBefore(host,content)'));
+ assert.ok(!bridge.includes('append(content)'),'Do not move the Wiki article into a wrapper');
+ assert.ok(read('extension/wiki-items.js').includes('ui.mount(host,content,title)'));
+ assert.ok(read('extension/wiki-quest-shop.js').includes('ui.mount(host,content,title)'));
+ assert.ok(read('extension/popup.html').includes('class="quick-links"'));
+ assert.ok(read('extension/wiki-materials.js').includes('direct ingredients ready'));
 }
