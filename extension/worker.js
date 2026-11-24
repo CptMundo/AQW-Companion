@@ -51,7 +51,37 @@ function matchWikiItem(snapshot,query){
  return {state:'owned',bank,inventory,total:bank+inventory,basis,syncedAt,exportedAt};
 }
 
+
+function matchWikiMaterial(snapshot,name){
+ if(!snapshot||!Array.isArray(snapshot.items))return {state:'unsynced'};
+ const key=nameKey(name),suffix=key.match(/^(.*) \((sword|axe|bow|dagger|gauntlet|gun|handgun|mace|polearm|rifle|staff|wand|armor|class|helm|cape|pet|item)\)$/);
+ const rows=snapshot.items.filter(row=>row.Count>0);
+ let found=rows.filter(row=>nameKey(row.Name)===key);
+ if(suffix){
+  const categories={axe:'axes',staff:'staffs',class:'classes',armor:'armors',helm:'helmets',item:'misc-items'};
+  const category=categories[suffix[2]]||suffix[2]+'s';
+  const allowed=Object.hasOwn(wikiTypes,category)?wikiTypes[category]:[suffix[2]];
+  const exact=found.filter(row=>allowed.includes(nameKey(row.Type)));
+  const candidates=rows.filter(row=>nameKey(row.Name)===suffix[1]&&allowed.includes(nameKey(row.Type)));
+  if(!exact.length&&!candidates.length&&(found.length||rows.some(row=>nameKey(row.Name)===suffix[1])))return {state:'ambiguous'};
+  found=[...new Set([...exact,...candidates])];
+ }else if(!found.length&&/\s\([^)]+\)$/.test(key)){
+  if(rows.some(row=>nameKey(row.Name)===key.replace(/\s\([^)]+\)$/,'')))return {state:'ambiguous'};
+ }
+ if(!found.length)return {state:'not-found'};
+ if(new Set(found.map(row=>row.ID)).size!==1||new Set(found.map(row=>nameKey(row.Type))).size!==1)return {state:'ambiguous'};
+ const bank=found.filter(r=>r.Bank===1).reduce((n,r)=>n+r.Count,0),inventory=found.filter(r=>r.Bank===0).reduce((n,r)=>n+r.Count,0);
+ return {state:'owned',bank,inventory,total:bank+inventory};
+}
+
 async function handle(message,sender){
+ if(message?.type==='wiki-material-lookup'&&wikiSender(sender)){
+  const names=message.names;
+  if(!Array.isArray(names)||!names.length||names.length>80||names.some(n=>typeof n!=='string'||!n.trim()||n.length>350)||new Set(names).size!==names.length)return {ok:false,error:'Invalid material request.'};
+  await restrictStorage();const snapshot=(await chrome.storage.local.get(KEY))[KEY];
+  return {ok:true,matches:names.map(n=>matchWikiMaterial(snapshot,n)),syncedAt:snapshot?.syncedAt||null};
+ }
+
  if(message?.type==='wiki-item-lookup'&&wikiSender(sender)){
   await restrictStorage();const stored=(await chrome.storage.local.get(KEY))[KEY];return {ok:true,...matchWikiItem(stored,message.query)};
  }
