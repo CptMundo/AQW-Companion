@@ -66,7 +66,7 @@ assert.ok(html.includes('id="plannerstatus"'));
 assert.ok(html.includes('id="plannercategory"'));
 assert.ok(html.includes('id="plannerpinfilter"'));
 assert.ok(html.includes('Undo completion'));
-assert.ok(html.includes('toggleTask(t,false)'));
+assert.ok(html.includes('toggleTask(t,!done)'));
 assert.ok(html.includes("['Completed',true]"));
 assert.ok(html.includes("taskSearchText(x).includes(query)"));
 assert.ok(html.includes("const plannerKey='aqw-companion-planner-v09'"));
