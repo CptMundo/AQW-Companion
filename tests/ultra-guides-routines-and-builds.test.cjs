@@ -104,8 +104,8 @@ for(const rows of Object.values(reviewedApi.ultraReviewedSources))for(const [,ur
 
 const workbookApi=vm.runInNewContext(reviewedCode+"\n({simplifiedProfiles,simplifiedRatings,simplifiedRatingRoles,simplifiedRoleRatings,simplifiedSpeakerEvents,simplifiedSpeakerPatterns,simplifiedExtraEncounters})");
 assert.equal(Object.keys(workbookApi.simplifiedProfiles).length,12,"Every current detailed encounter has a workbook strategy");
-assert.equal(Object.keys(workbookApi.simplifiedRatings).length,22,"All group-boss rating blocks in visible guide sheets");
-assert.equal(workbookApi.simplifiedExtraEncounters.length,28,"Additional group and solo guide cards");
+assert.equal(Object.keys(workbookApi.simplifiedRatings).length,23,"All group-boss rating blocks in visible guide sheets");
+assert.equal(workbookApi.simplifiedExtraEncounters.length,29,"Additional group and solo guide cards");
 assert.equal(workbookApi.simplifiedExtraEncounters.filter(x=>x.group==="Grim Gaol").length,11);
 for(const e of workbookApi.simplifiedExtraEncounters){assert.ok(/^\/join [a-z0-9-]+$/.test(e.join));assert.ok(e.sheet&&e.tips.length&&e.wiki);}
 assert.equal(workbookApi.simplifiedProfiles.kathool.team.length,7);
@@ -163,7 +163,7 @@ compact.renderUltraSelectedRating(rating,"drakath","Bard");
 assert.ok(rating.children.some(x=>x.text==="Not owned"));
 assert.ok(!rating.children.some(x=>x.text.includes("Healer")),"Class change clears previous rating");
 assert.ok(html.includes("fillUltraClassSelect(select,b.id,profile,"));
-assert.ok(html.includes("const build=workbook||encounter||generic"));
+assert.ok(html.includes("const baseBuild=workbook||encounter||generic"));
 assert.ok(html.includes("renderUltraSelectedRating(rating,b.id,cls)"));
 assert.ok(html.includes("const tips=ultraActionTips(b.id,cls,baseTips)"));
 assert.ok(html.includes("if(b.id==='speaker')appendSpeakerRotations(inner)"));
@@ -186,3 +186,46 @@ assert.ok(compact.ultraActionTips("gramiel","Chrono ShadowHunter",[]).some(x=>x.
 assert.ok(compact.ultraActionTips("speaker","Guardian",[]).some(x=>x.includes("Stasis")));
 assert.ok(!html.includes("No complete class-specific rotation in the guide."));
 assert.ok(ultraCSS.includes(".ultra-option-owned"));
+
+const runtimeBosses=vm.runInNewContext(html.slice(html.indexOf("const ultraGuides=["),html.indexOf("const ultraRolePlaybooks="))+"\nultraGuides");
+const full=vm.runInNewContext(dataCode+"\n({taskCatalog,routineIdAliases,routineIsRecurring,reconcileRoutineState})",{window:{AQWCRoutineLibrary:routines},ultraGuides:runtimeBosses});
+const active=full.taskCatalog.filter(full.routineIsRecurring);
+assert.equal(active.length,160);
+assert.equal(active.filter(t=>t.freq==="daily").length,143);
+assert.equal(active.filter(t=>t.freq==="weekly").length,17);
+assert.equal(new Set(active.map(t=>t.id)).size,active.length);
+for(const [id,name] of [["guide-ultra-darkon","Darkon, the Conductor"],["guide-ultra-drago","Drago, Tyrant of Astravia"],["guide-ultra-gramiel","Resuscitated Hope"]]){
+ const task=active.find(t=>t.id===id);assert.equal(task.sourceName,name);assert.ok(task.rewards.some(r=>r.includes("Insignia")));assert.equal(active.filter(t=>t.name===name||t.sourceName===name).length,1);
+}
+assert.equal(active.filter(t=>t.join==="/join kathooldepths").length,2,"Two distinct actual daily quests for Kathool");
+assert.ok(!active.some(t=>t.id==="guide-ultra-kathool"||t.id==="legion-ex"));
+assert.ok(!active.some(t=>/one-time chain stage/i.test(t.note||"")));
+assert.equal(active.filter(t=>/^Daily Exercise [1-6]:/.test(t.name)).length,6);
+assert.equal(active.find(t=>t.id==="mining").acceptJoin,"/join yulgar");
+assert.equal(active.find(t=>t.id==="mining").farmJoin,"/join stalagbite");
+assert.equal(active.find(t=>t.id==="guide-ultra-ezrajal").acceptJoin,"/join timeinn");
+const saved=full.reconcileRoutineState([{id:"wiki-la-s-quests-darkon-the-conductor",name:"Darkon",sourceProjects:["a"]},{id:"guide-ultra-darkon",name:"Ultra Darkon",sourceProjects:["b"]},{id:"legion-ex",name:"Legion Daily Exercises"}],{"w:2026-11-20|wiki-la-s-quests-darkon-the-conductor":true,"w:2026-11-20|guide-ultra-darkon":false,"d:2026-11-23|legion-ex":true});
+assert.equal(saved.pins.length,2);assert.equal(saved.pins[0].id,"guide-ultra-darkon");assert.equal(saved.pins[0].sourceProjects.length,2);assert.equal(saved.checks["w:2026-11-20|guide-ultra-darkon"],true);assert.equal(saved.checks["d:2026-11-23|legion-ex"],true);assert.ok(saved.changed);
+assert.equal(full.reconcileRoutineState(saved.pins,saved.checks).changed,false,"Migration idempotent");
+const gramielPair=active.filter(t=>t.exclusiveGroup==="gramiel-hub-weekly");
+assert.equal(gramielPair.length,2);
+const progressCode=html.slice(html.indexOf("function taskKey(t)"),html.indexOf("function resetUltraChecks("));
+const exclusivity=vm.runInNewContext(periodCode+progressCode+"\n({taskKey,taskDone,routineConflict,routineProgress})",{taskCatalog:active,taskChecks:{}});
+const state={"w:2026-11-20|gramiel-weekly":true};
+const mock=vm.runInNewContext("function taskPeriod(){return 'w:2026-11-20'}\n"+progressCode+"\n({routineConflict,routineProgress})",{taskCatalog:active,taskChecks:state});
+assert.equal(mock.routineConflict(gramielPair.find(t=>t.id==="gramiel-echoes-weekly")).id,"gramiel-weekly");
+assert.equal(mock.routineProgress(gramielPair).total,1);
+assert.equal(mock.routineProgress(gramielPair).done,1);
+assert.ok(html.includes("Saved tasks needing review"));
+assert.ok(html.includes("Progression / retired / legacy references"));
+assert.ok(html.includes("selectedUltraClasses.get(b.id)"));
+assert.ok(html.includes("selectedUltraClasses.set(b.id,cls)"));
+assert.ok(html.includes("const chosen=all.find"));
+assert.ok(html.includes("consumable:'Vigil'"));
+assert.equal(workbookApi.simplifiedExtraEncounters.find(x=>x.name==="Fourth Lynaria").join,"/join murdermoon");
+assert.equal(workbookApi.simplifiedRoleRatings("Fourth Lynaria",0).find(x=>x.name==="Verus DoomKnight").rating,5);
+assert.equal(guide.caption("Avoid Decay during the crystal phase"),"Decay · Hold the debuff");
+assert.equal(guide.caption("Noxious Decay reverses healing"),"Inverted healing · Survival");
+const merged=guide.rows({tips:["On “You cannot resist.” use Vigil within 3 seconds.","On “You cannot resist.” use Vigil within 3 seconds."],quotes:[{quote:"You cannot resist.",response:"Equip Vigil before pulling."}]});
+assert.equal(merged.length,1);assert.ok(merged[0].text.includes("3 seconds"));assert.ok(merged[0].text.includes("Equip Vigil"));
+console.log("Planner and Ultra audit: actual runtime catalog, historical alias migration, exclusive weeklies, preserved class selection and Fourth Lynaria passed.");
