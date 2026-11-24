@@ -45,7 +45,7 @@ assert.ok(html.includes("planner-show-all"),"Extended catalog must remain usable
 assert.ok(html.includes("name:'Mine Crafting',group:'Metals',freq:'daily',join:'/join stalagbite'"));
 assert.ok(html.includes("name:'Hard Core Metals',group:'Metals',freq:'daily',join:'/join stalagbite'"));
 assert.ok(plannerCSS.includes("column-gap:14px"));
-assert.ok(html.includes('href="css/planner-routines.css?v=111"'));
+assert.ok(html.includes('href="css/planner-routines.css?v=112"'));
 assert.ok(html.includes('src="js/ultra-guide-rows.js"'));
 for(const [i,m] of [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].entries())
  if(!m[1].includes("src=")&&m[2].trim())new vm.Script(m[2],{filename:"index-inline-"+i});
@@ -384,3 +384,27 @@ assert.ok(html.includes("openPlannerLibrary(freq,'unpinned')"));
 assert.match(portrait.plannerArt(active.find(t=>t.id==="reviewed-dulcify")).url,/cpDNEYC\.png$/);
 assert.match(portrait.plannerArt(active.find(t=>/^Daily Exercise 3:/.test(t.name))).url,/9kK857M\.png$/);
 console.log("Planner full-width art, expanded routines and direct library discovery passed.");
+
+const plannerNav=html.slice(html.indexOf('<nav class="tabs subnav"'),html.indexOf('</nav>',html.indexOf('<nav class="tabs subnav"')));
+assert.match(plannerNav,/data-tab="planner" data-parent="planner">📅 My Tracker/);
+assert.match(plannerNav,/data-tab="planner-discover" data-parent="planner">📚 Quest Library/);
+assert.match(plannerNav,/data-tab="planner-history" data-parent="planner" hidden/);
+assert.ok(plannerCSS.includes('nav.tabs.subnav[aria-label="Section navigation"]:has(button[data-parent="planner"].group-visible:not([hidden])){display:flex!important}'));
+assert.ok(plannerCSS.includes('button[data-parent="planner"].group-visible:not([hidden]){display:inline-flex!important'));
+assert.ok(html.includes("$('planneropenhistory').onclick=()=>selectTab('planner-history')"));
+assert.ok(html.includes("$('plannerbackfromhistory').onclick=()=>selectTab('planner')"));
+const navMock=(dataset={},id='')=>({dataset,id,active:new Set(),classList:{toggle(k,v){if(v)this.owner.active.add(k);else this.owner.active.delete(k)}},addEventListener(k,fn){this[k]=fn}});
+const navTabs=[navMock({tab:'planner',parent:'planner'}),navMock({tab:'planner-discover',parent:'planner'}),navMock({tab:'planner-history',parent:'planner'}),navMock({tab:'unlocks',parent:'projects'})];
+const navGroups=[navMock({group:'planner'}),navMock({group:'projects'})];
+const navViews=['overview','planner','planner-discover','planner-history','unlocks'].map(id=>navMock({},id));
+for(const e of [...navTabs,...navGroups,...navViews])e.classList.owner=e;
+const docNav={querySelector(q){return navTabs.find(t=>q==='[data-tab="'+t.dataset.tab+'"]')||null},querySelectorAll(q){return q==='[data-tab]'?navTabs:q==='[data-group]'?navGroups:q==='.view'?navViews:[]}};
+const navCode=html.slice(html.indexOf("const groupDefaults="),html.indexOf("activateTab('overview');$('opencommunityadvanced')"));
+const navApi=vm.runInNewContext(navCode+"\n({activateTab,lastTabByGroup})",{document:docNav,renderPlanner:()=>{}});
+navGroups[0].click();assert.ok(navViews[1].active.has('active'));
+navTabs[1].click();assert.ok(navViews[2].active.has('active'));assert.ok(navTabs[0].active.has('group-visible'));
+navTabs[0].click();assert.ok(navViews[1].active.has('active'));assert.ok(!navViews[2].active.has('active'));
+navTabs[1].click();navGroups[0].click();assert.ok(navViews[1].active.has('active'),"Main Tracker tab always returns to dashboard");
+navApi.activateTab('planner-history');assert.ok(navViews[3].active.has('active'));assert.ok(navTabs[0].active.has('group-visible'));
+navGroups[1].click();assert.ok(navViews[4].active.has('active'));assert.ok(!navTabs[0].active.has('group-visible'));
+console.log("Planner navigation round trip, main tab fallback and history access passed.");
