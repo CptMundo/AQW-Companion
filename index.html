@@ -21,7 +21,7 @@
 
 <link rel="stylesheet" href="css/account-statistics.css?v=97">
 <link rel="stylesheet" href="css/meta-class-builds.css">
-<link rel="stylesheet" href="css/planner-routines.css">
+<link rel="stylesheet" href="css/planner-routines.css?v=99">
 <link rel="stylesheet" href="css/recipe-coverage.css">
 <link rel="stylesheet" href="css/stack-alerts.css?v=95">
 <link rel="stylesheet" href="css/ultra-quote-actions.css">
@@ -1965,7 +1965,7 @@ function renderPlanner(){const suggested=$('planner-suggestions'),my=$('planner-
 }
 function nextPlannerReset(freq,now=new Date()){const day=aqwServerDay(now);const d=new Date(day+'T05:00:00Z');if(freq==='daily')d.setUTCDate(d.getUTCDate()+1);else{d.setUTCMinutes(1);d.setUTCDate(d.getUTCDate()+(5-d.getUTCDay()+7)%7);if(d<=now)d.setUTCDate(d.getUTCDate()+7)}return d}
 function updatePlannerTimers(){const now=new Date();for(const freq of ['daily','weekly']){const next=nextPlannerReset(freq,now),seconds=Math.max(0,Math.ceil((next-now)/1000)),days=Math.floor(seconds/86400),hours=Math.floor(seconds/3600)%24,minutes=Math.floor(seconds/60)%60,sec=seconds%60;$(freq+'reset').textContent=(days?days+'d ':'')+[hours,minutes,sec].map(n=>String(n).padStart(2,'0')).join(':');$(freq+'resetlocal').textContent='Next reset: '+next.toLocaleString()}}
-let lastPlannerPeriod='';
+let lastPlannerPeriod=taskPeriod('daily')+'|'+taskPeriod('weekly');
 function refreshPlannerClock(){const key=taskPeriod('daily')+'|'+taskPeriod('weekly');if(lastPlannerPeriod&&key!==lastPlannerPeriod){renderPlanner();renderHomeInsights()}lastPlannerPeriod=key;updatePlannerTimers()}
 setInterval(refreshPlannerClock,1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshPlannerClock()});
 $('plannersearch').addEventListener('input',renderPlanner);$('plannerfilter').addEventListener('change',renderPlanner);
@@ -1978,7 +1978,7 @@ function activateTab(tab){const b=document.querySelector('[data-tab="'+tab+'"]')
  document.querySelectorAll('[data-tab]').forEach(e=>{e.classList.toggle('group-visible',e.dataset.parent===group);e.classList.toggle('active',e===b)});
  document.querySelectorAll('.view').forEach(e=>e.classList.toggle('active',e.id===tab));
  if(tab==='account-stats'||tab==='milestones')renderAccountStatistics();
- if(group==='planner')renderPlanner();
+ if(group==='planner'&&typeof renderPlanner==='function')renderPlanner();
 }
 document.querySelectorAll('[data-group]').forEach(b=>b.addEventListener('click',()=>activateTab(lastTabByGroup[b.dataset.group]||groupDefaults[b.dataset.group])));
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>activateTab(b.dataset.tab)));
