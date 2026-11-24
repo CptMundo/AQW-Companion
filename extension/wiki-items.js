@@ -40,6 +40,10 @@
  const show=(text,detail,color)=>{line.textContent=text;line.style.color=color;note.textContent=detail};
  const badge=document.getElementById('aqwc-foundation-badge');(badge||title).insertAdjacentElement('afterend',host);
  if(!category){show('Item type not recognized','AQW Companion could not identify this Wiki category.','#ffdb93');return}
+ const wishlistUrl=globalThis.AQWCWikiWishlist?.build({name,category,slug:location.pathname.replace(/^\/|\/$/g,'')});
+ if(wishlistUrl){
+  const link=document.createElement('a');link.href=wishlistUrl;link.target='_blank';link.rel='noopener noreferrer';link.textContent='+ Add to Wishlist';link.style.cssText='display:inline-block;margin-top:8px;padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;text-decoration:none;font-size:12px;';card.append(link);
+ }
  show('Checking synced inventory…','','#b6dfff');
  const failed=()=>show('Inventory lookup unavailable','Reload AQW Companion extension and refresh this Wiki page. Check the extension popup.','#ffc2a8');
  try{chrome.runtime.sendMessage({type:'wiki-item-lookup',query:{name,category}},result=>{
