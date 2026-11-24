@@ -20,3 +20,8 @@
 #planner-discover .new-task{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
 .planner-history-row{padding:12px;border-bottom:1px solid #30465b;color:#cce3ee;overflow-wrap:anywhere}
 @media(max-width:680px){#planner #planner-my-tasks,#planner .planner-controls,#planner-discover .new-task{grid-template-columns:1fr}}
+
+#planner.view.active>.card{position:static!important;width:100%;margin:0!important;min-width:0}
+#planner.view.active #planner-my-tasks{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#planner.view.active #planner-my-tasks .task-card{display:flex!important;justify-content:space-between}
+@media(max-width:680px){#planner.view.active #planner-my-tasks{grid-template-columns:1fr!important}}
