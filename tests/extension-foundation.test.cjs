@@ -94,7 +94,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.9.0');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js','wiki-quest-shop.js','wiki-list-ownership.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
+ assert.equal(manifest.version,'0.9.1');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js','wiki-quest-shop.js','wiki-list-ownership.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -305,6 +305,21 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  const rows=api.collect(content,'classes',false);assert.equal(rows.length,1);assert.equal(rows[0].name,'ArchPaladin');
  assert.equal(api.collect({querySelectorAll:()=>[a('ArchPaladin','/archpaladin',true),outside]},'classes',true).length,1);
  assert.equal(api.candidate(a('Armors','/armors'),'classes'),null);
+ // Wiki indexes can use bold/plain paragraphs and empty named jump targets,
+ // rather than semantic headings. These are representative fixtures, not a
+ // captured browser DOM.
+ const marker=(tag,text,linked=false)=>({tagName:tag,textContent:text,querySelector:s=>linked&&s==='a[href]'?{}:null,closest:()=>null});
+ const named=(name)=>({tagName:'A',textContent:'',getAttribute:key=>key==='name'?name:null});
+ const numeric=a('00-X Dungeoneer','/00-x-dungeoneer'),arm=a('ArchMage (Class)','/archmage-class');
+ const plain={querySelectorAll:()=>[marker('P','Go to #, A, B',true),a('A','#A'),outside,named('#'),marker('STRONG','#'),numeric,a('Back to Top','#top'),outside,marker('P','A'),marker('STRONG','A'),arm,a('Back to Top','#top'),outside]};
+ assert.deepEqual(Array.from(api.collect(plain,'classes',false),x=>x.name),['00-X Dungeoneer','ArchMage (Class)']);
+ assert.equal(api.sectionMarker(marker('SPAN','A',true)),null);
+ assert.equal(api.sectionMarker(named('B')),'start');
+ assert.equal(api.sectionMarker(a('A','#A')),null);
+ assert.equal(api.collect({querySelectorAll:()=>[marker('P','Auto updating list of all Rare Classes'),classLink]},'classes',true).length,1);
+ assert.equal(api.collect({querySelectorAll:()=>[marker('P','A',true),outside]},'classes',false).length,0);
+ assert.ok(read('extension/wiki-list-ownership.js').includes('No supported item links detected on this index'));
+
  const duplicates=api.groupRows([rows[0],{...rows[0],slug:'archpaladin-alt'}]);assert.equal(duplicates.length,1);assert.equal(duplicates[0].slugs.size,2);
  assert.equal(api.label({state:'owned',inventory:1,bank:1,total:2}).text,'✓ Inventory + Bank ×2');
  assert.equal(api.label({state:'owned',inventory:0,bank:1,total:1}).text,'✓ Bank ×1');
