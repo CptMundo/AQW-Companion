@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AQW Companion",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Local AQW Companion inventory lookup on AQWorlds Wiki item pages.",
   "action": {
     "default_title": "AQW Companion",
@@ -24,7 +24,8 @@
         "https://cptmundo.github.io/AQW-Companion/index.html"
       ],
       "js": [
-        "sync.js"
+        "sync.js",
+        "account-bridge.js"
       ],
       "run_at": "document_idle",
       "all_frames": false
@@ -44,7 +45,9 @@
     }
   ],
   "permissions": [
-    "storage"
+    "storage",
+    "activeTab",
+    "scripting"
   ],
   "background": {
     "service_worker": "worker.js"
