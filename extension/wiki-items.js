@@ -7,6 +7,8 @@
  const start=links.indexOf('items');if(start<0)return;
  const category=links.slice(start+1).at(-1);
  const name=title.textContent.trim();if(!name||name.length>350||!category)return;
+ // Category indexes may also have an Items breadcrumb. Require item-detail evidence.
+ if(!/\bSellback\s*:/i.test(content.textContent||''))return;
  if(document.getElementById('aqwc-item-status'))return;
  const host=document.createElement('div');host.id='aqwc-item-status';
  host.style.cssText='display:block;margin:8px 0;max-width:100%';
