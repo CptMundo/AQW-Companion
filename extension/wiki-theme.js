@@ -14,7 +14,7 @@ function normalizeAppearance(value){
 
  const palettes={midnight:['#101924','#bcd5e9','#7dd7f5'],slate:['#262c34','#e4e9f1','#8fd8f2'],obsidian:['#141518','#e4e7ee','#8ad4f0'],void:['#1b1627','#e6dcf3','#c5abff']};
  const banners={prometheus:'url("'+brandIcon+'"),linear-gradient(105deg,#091521,#103c4b 63%,#091924)',arcane:'repeating-linear-gradient(125deg,transparent 0 65px,#88ddff15 66px 68px,transparent 69px 110px),linear-gradient(110deg,#101a2b,#16465c 60%,#102135)',void:'repeating-linear-gradient(125deg,transparent 0 65px,#c7a5ff16 66px 68px,transparent 69px 110px),linear-gradient(105deg,#160e23,#42315f 60%,#19152a)'};
- let style,revision=0;
+ let style,revision=0,bannerLayer=null,headerPosition=null;
  function apply(value){
   const v=normalizeAppearance(value),root=document.documentElement;
   // Only the preference attributes and this owned style are touched. Original
@@ -26,11 +26,22 @@ function normalizeAppearance(value){
    rules.push('body,#container,#container-wrap,#content-wrap,#main-content,#page-content,#side-bar{background-color:'+bg+' !important;color:'+fg+' !important;}');
    rules.push('#page-content a:not([id^="aqwc-"]),#side-bar a,#breadcrumbs a{color:'+link+' !important;}');
   }
+  const header=document.getElementById('header');
+  if(bannerLayer){bannerLayer.remove();bannerLayer=null;}
+  if(headerPosition){headerPosition.el.style.removeProperty('position');if(headerPosition.value)headerPosition.el.style.setProperty('position',headerPosition.value,headerPosition.priority);headerPosition=null;}
+  if(v.banner!=='original'&&header&&typeof header.prepend==='function'){
+   const computed=getComputedStyle(header);
+   if(computed.position==='static'){headerPosition={el:header,value:header.style.getPropertyValue('position'),priority:header.style.getPropertyPriority('position')};header.style.setProperty('position','relative','important')}
+   bannerLayer=document.createElement('div');bannerLayer.id='aqwc-custom-banner';bannerLayer.setAttribute('aria-hidden','true');
+   bannerLayer.style.cssText='position:absolute!important;inset:0!important;pointer-events:none!important;z-index:1!important;background-color:#101a27!important;background-image:'+banners[v.banner]+'!important;background-size:auto 100%,cover!important;background-position:right 8% center,center!important;background-repeat:no-repeat!important';
+   header.prepend(bannerLayer);
+   rules.push('#header > h1,#header > h2,#header #top-bar,#header #login-status,#header #search-top-box{z-index:2!important;} #header > h1,#header > h2{position:relative;}');
+  }
   if(v.banner!=='original'){
    rules.push('#header{isolation:isolate;background-image:'+banners[v.banner]+' !important;background-repeat:no-repeat !important;background-position:right 8% center,center !important;background-size:auto 100%,cover !important;}');
    rules.push('#header::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background-image:'+banners[v.banner]+';background-position:right 8% center,center;background-size:auto 100%,cover;background-repeat:no-repeat;}');
    rules.push('#header > [id^="header-extra-div"]{background-image:none !important;} #header > [id^="header-extra-div"] > span{background-image:none !important;} #header > h1,#header > h2{background-color:transparent !important;}');
-   rules.push('#container{background-image:none !important;} #header #top-bar,#header #login-status{z-index:2;}');
+   rules.push('#container,#container-wrap{background-image:none !important;} #header #top-bar,#header #login-status,#header #search-top-box{z-index:2!important;}');
   }
   if(!rules.length){style?.remove();style=null;return}
   if(!style){style=document.createElement('style');style.id='aqwc-wiki-appearance';(document.head||root).append(style)}
@@ -38,7 +49,7 @@ function normalizeAppearance(value){
  }
  chrome.runtime.onMessage.addListener((message,sender)=>{
   if(sender.id!==chrome.runtime.id||sender.url!==chrome.runtime.getURL('popup.html')||message?.type!=='aqwc-appearance-preview')return;
-  revision++;apply(message.appearance);
+  revision++;apply(message.appearance);return false;
  });
  const start=revision;
  chrome.runtime.sendMessage({type:'wiki-appearance-read'},response=>{

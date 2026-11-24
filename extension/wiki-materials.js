@@ -115,13 +115,13 @@
  }
  function renderSources(container,sources,origin,slug,{partial=false}={}){
   if(!sources||!Object.values(sources).some(a=>a.length))return false;
-  const box=document.createElement('div');box.className='aqwc-source-guide';const title=document.createElement('strong');title.textContent='How to get';box.append(title);
+  const box=document.createElement('div');box.className='aqwc-source-guide';const title=document.createElement('strong');title.textContent='Acquisition';box.append(title);
   for(const [kind,label] of [['locations','Locations'],['drops','Drops from'],['quests','Quest rewards'],['shops','Available from']]){
    const rows=sources[kind]||[];if(!rows.length)continue;
-   const group=document.createElement('div'),heading=document.createElement('small');heading.className='aqwc-source-label';heading.textContent=label;group.append(heading);
+   const group=document.createElement('div'),heading=document.createElement('small');group.className='aqwc-source-group';heading.className='aqwc-source-label';heading.textContent=label;group.append(heading);const entries=document.createElement('div');entries.className='aqwc-source-entries';group.append(entries);
    for(const x of rows.slice(0,40)){
     const line=document.createElement('div');line.className='aqwc-source-line';const a=document.createElement('a');a.href=origin+'/'+x.slug+(x.hash||'');a.textContent=x.name;line.append(a);
-    if(kind==='locations'){
+    if(kind==='locations'&&!/\b(shop|merge shop)\b/i.test(x.name)){
      const join=x.join||(x.slug==='luna-cove'?'lunacove':null);
      let command=join||mapCache.get(x.slug);
      const copy=document.createElement('button');copy.type='button';copy.textContent=command?'/join '+command+' · Copy':'Find /join';copy.className='aqwc-copy-join';
@@ -131,12 +131,12 @@
       try{await navigator.clipboard.writeText('/join '+command);copy.textContent='Copied /join '+command}catch{copy.textContent='/join '+command+' · copy manually'}
      });line.append(copy);
     }
-    group.append(line);
+    entries.append(line);
    }
    box.append(group);
   }
-  if(partial){const note=document.createElement('small');note.textContent='Reviewed sources (partial list). Open the Wiki for all sources.';box.append(note)}
-  const link=document.createElement('a');link.href=origin+'/'+slug;link.textContent='View original material page ↗';link.className='aqwc-source-page';box.append(link);container.append(box);return true;
+  if(partial){const note=document.createElement('small');note.textContent='Partial source list';box.append(note)}
+  const link=document.createElement('a');link.href=origin+'/'+slug;link.textContent='Material Wiki ↗';link.className='aqwc-source-page';box.append(link);container.append(box);return true;
  }
  async function loadDocument(origin,slug){
   if(origin!=='https://aqwwiki.wikidot.com'||! /^[a-z0-9][a-z0-9-]{0,199}$/.test(slug))throw Error('Unsupported Wiki link');
@@ -165,11 +165,11 @@
   const panel=document.createElement('section');panel.className='aqwc-section';panel.style.cssText='min-width:0;max-width:100%;';
   const heading=document.createElement('strong');heading.textContent='Farming Progress';panel.append(heading);card.append(panel);
   const note=text=>{const n=document.createElement('div');n.textContent=text;n.style.cssText='font-size:11px;color:#b6cddd;margin:5px 0;font-weight:400';return n};
-  panel.append(note('Expand a material to see where to farm it or how to craft it.'));const help=document.createElement('details');const summary=document.createElement('summary');summary.textContent='How progress is calculated';summary.style.cssText='font-size:11px;color:#a9c4d8;cursor:pointer';help.append(summary,note('Stock is reserved once per option; alternative root recipes are independent. Unrecognized rows require manual verification.'));panel.append(help);
+
   if(incomplete)panel.append(note('Some recipe rows could not be read; check the original Wiki requirements.'));
   if(!groups.length)return;
   const tree=document.createElement('div'),statusLine=note('Checking synced inventory…');statusLine.setAttribute('role','status');panel.append(tree,statusLine);
-  const states=new Map(),cache=new Map(),names=new Set(groups.flat().map(x=>x.name));let matches=new Map(),busy=true,requests=0;
+  const states=new Map(),cache=new Map(),names=new Set(groups.flat().map(x=>x.name));let matches=new Map(),busy=true,requests=0,activeOption=0;
   const rootSlug=location.pathname.replace(/^\/|\/$/g,'');
   async function lookup(){
    const list=[...names];if(list.length>80)throw Error('Recipe material limit reached');
@@ -202,13 +202,13 @@
   }
   function draw(){
    tree.replaceChildren();
-   groups.forEach((group,i)=>{
+   if(groups.length>1){const bar=document.createElement('div');bar.className='aqwc-recipe-tabs';groups.forEach((g,j)=>{const tab=button('Recipe '+(j+1));tab.setAttribute('aria-pressed',String(j===activeOption));tab.addEventListener('click',e=>{if(e.isTrusted&&!busy){activeOption=j;draw()}});bar.append(tab)});tree.append(bar)}
+   groups.forEach((group,i)=>{if(i!==activeOption)return;
     const p=plan(group,states,matches,rootSlug,i);
-    if(groups.length>1){const label=note('Merge option '+(i+1)+' (separate recipe)');label.style.color='#a9ddff';tree.append(label)}
-    if(!busy){const ready=p.root.filter(n=>n.missing===0).length;tree.append(note(ready+' / '+p.root.length+' direct ingredients ready · nested progress below'));const track=document.createElement('div'),fill=document.createElement('div');track.style.cssText='height:6px;background:#0a1926;border-radius:6px;overflow:hidden';fill.style.cssText='height:100%;background:#53c7e6;width:'+(p.root.length?ready/p.root.length*100:0)+'%';track.setAttribute('aria-label',ready+' of '+p.root.length+' direct ingredients ready');track.append(fill);tree.append(track)}
+    if(!busy){const ready=p.root.filter(n=>n.missing===0).length;tree.append(note(ready+' / '+p.root.length+' materials ready'));const track=document.createElement('div'),fill=document.createElement('div');track.style.cssText='height:6px;background:#0a1926;border-radius:6px;overflow:hidden';fill.style.cssText='height:100%;background:#53c7e6;width:'+(p.root.length?ready/p.root.length*100:0)+'%';track.setAttribute('aria-label',ready+' of '+p.root.length+' direct ingredients ready');track.append(fill);tree.append(track)}
     function drawNode(n,container){
-     const row=document.createElement('div');row.style.cssText='margin-top:8px;min-width:0;padding:12px;border:1px solid #2c485d;border-radius:9px;background:#101e2d';
-     const top=document.createElement('div');top.style.cssText='display:flex;align-items:baseline;justify-content:space-between;gap:8px';
+     const row=document.createElement('div');row.className='aqwc-material-row';
+     const top=document.createElement('div');top.className='aqwc-material-top';
      const nameBox=document.createElement('div');nameBox.style.cssText='display:flex;align-items:center;gap:5px;min-width:0';
      const s=states.get(n.path);
      if(n.missing>0&&n.depth<4&&!n.reason){const b=button(s?.open?'▾':'▸');b.setAttribute('aria-label',(s?.open?'Collapse ':'How to get ')+n.name);b.setAttribute('aria-expanded',String(!!s?.open));b.addEventListener('click',e=>{if(e.isTrusted)expand(n)});nameBox.append(b)}
@@ -217,11 +217,11 @@
      status.textContent=(known?(done?'✓ ':n.allocated?'◐ ':'✕ ')+n.allocated.toLocaleString():'?')+' / '+n.target.toLocaleString();
      status.style.color=done?'#90edb5':!known||n.allocated?'#ffdb93':'#ffc2a8';
      if(known)status.title='Synced stock: '+n.stock.toLocaleString()+' · allocated to this requirement: '+n.allocated.toLocaleString();
-     top.append(nameBox,status);row.append(top);if(known&&n.missing>0)row.append(note(n.missing.toLocaleString()+' remaining'));
-     const track=document.createElement('div'),fill=document.createElement('div');track.style.cssText='height:6px;border-radius:6px;background:#091622;overflow:hidden;margin-top:7px';fill.style.cssText='height:100%;width:'+(known?Math.min(100,n.allocated/n.target*100):0)+'%;background:'+(done?'#57ca91':n.allocated?'#e9b958':'#e58b7c');track.append(fill);row.append(track);container.append(row);
+     top.append(nameBox,status);row.append(top);if(known&&n.missing>0)status.title+=(status.title?' · ':'')+n.missing.toLocaleString()+' remaining';
+     const track=document.createElement('div'),fill=document.createElement('div');track.style.cssText='height:3px;border-radius:3px;background:#091622;overflow:hidden;margin-top:4px';fill.style.cssText='height:100%;width:'+(known?Math.min(100,n.allocated/n.target*100):0)+'%;background:'+(done?'#57ca91':n.allocated?'#e9b958':'#e58b7c');track.append(fill);row.append(track);container.append(row);
      if(n.reason)row.append(note(n.reason));
      if(!s?.open||!n.missing)return;
-     const nested=document.createElement('div');nested.style.cssText='margin:5px 0 0 8px;padding-left:10px;border-left:1px solid #38566d';row.append(nested);
+     const nested=document.createElement('div');nested.className='aqwc-material-nested';row.append(nested);
      const found=renderSources(nested,s.sources,origin,n.slug,{partial:s.partial});
      if(s.error){nested.append(note('Wiki unavailable: '+s.error));const retry=button('Retry');retry.addEventListener('click',e=>{if(e.isTrusted&&!busy){states.delete(n.path);expand(n)}});nested.append(retry);return}
      if(busy&&!s.groups.length){nested.append(note('Loading…'));return}
@@ -233,7 +233,7 @@
       s.groups.forEach((g,j)=>{const opt=document.createElement('option');opt.value=String(j);opt.textContent='Option '+(j+1)+' · '+g.map(x=>x.name+' ×'+x.target).join(', ');select.append(opt)});
       select.value=String(s.choice);select.addEventListener('change',e=>{if(!e.isTrusted||busy)return;const choice=Number(select.value);if(choice!==s.choice){for(const key of states.keys())if(key.startsWith(n.path+'.'))states.delete(key);s.choice=choice}draw()});nested.append(select);
      }
-     if(s.choice>=0){nested.append(note('Ingredients for '+n.missing.toLocaleString()+' missing · '+n.children.filter(c=>c.missing===0).length+' / '+n.children.length+' ready'));n.children.forEach(c=>drawNode(c,nested))}
+     if(s.choice>=0){nested.append(note('Craft ×'+n.missing.toLocaleString()+' · '+n.children.filter(c=>c.missing===0).length+'/'+n.children.length+' ready'));n.children.forEach(c=>drawNode(c,nested))}
     }
     p.root.forEach(n=>drawNode(n,tree));if(p.limited)tree.append(note('Recipe size limit reached; remaining requirements not evaluated.'));
    })
