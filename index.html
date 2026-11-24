@@ -933,7 +933,7 @@ const ultraGuides=[
   team:['Dragon of Time','Legion Revenant','ArchPaladin','Lord of Order'],
   alternate:['Void Highlord','Legion Revenant','ArchPaladin','Lord of Order'],
   description:'Role-specific 3-man taunt strategy. Read the full timing guide and practice before attempting.',
-  roles:[['DPS (Dragon of Time or other)','Focus on damage and take the FIRST Zone; follow the assigned order and do not freestyle taunts.'],['Legion Revenant','Taunt opening Truth and assigned Listen casts; apply skill 2 when Zone appears to counter regeneration. Takes SECOND Zone.'],['ArchPaladin','Taunt alternate Truth casts; time Seal (skill 5) and heals. Takes THIRD Zone.'],['Lord of Order','Handle most Listen casts, maintain buffs, and move out as required. Takes FOURTH Zone.']],
+  roles:[['DPS (Dragon of Time or other)','Focus on damage and take the FIRST Zone; follow the assigned order and do not freestyle taunts.'],['Legion Revenant','Taunt opening Truth and assigned Listen casts; apply skill 2 when Zone appears to counter regeneration. Takes SECOND Zone.'],['ArchPaladin','Taunt alternate Truth casts; time Righteous Seal (4), Sacred Magic: Eden (5) and heals according to the chosen rotation. Takes THIRD Zone.'],['Lord of Order','Handle most Listen casts, maintain buffs, and move out as required. Takes FOURTH Zone.']],
   phases:[['Pull and intro','Opening pattern: 4 auto attacks → Truth ("I will make you see the truth") → Listen ("You shall listen"). Assign taunts in advance.'],['Zone rotation','The standard 3-taunter order is DPS → LR → AP → LoO. Only the assigned player enters the Zone.'],['Truth / Listen loop','Truth inflicts dangerous Magic vulnerability; Listen inflicts Stasis. Watch exact callouts and stick to the team rotation.'],['Repeat and finish','Rotate Zones and assigned taunts; do not enter a Zone with prohibited debuffs or after taking recent Zones. Review the detailed guide for the specific chosen taunt variant.']],
   mistakes:['Entering Zone while affected by Magia Burn, Stasis or Sanctity.','Trying the boss without a pre-agreed taunt plan.','Missing the assigned Zone rotation.'],
   source:'https://aqw.app/monsters/ultraspeaker'}
@@ -1022,7 +1022,7 @@ gramiel:{
  speaker:{
   'Dragon of Time':{steps:['Before pull: agree the exact DPS / LR / AP / LoO Zone rotation and taunt variant.','Take the FIRST designated Zone; remain out of the others.','Do not walk into a Zone while carrying Magia Burn, Stasis or Sanctity.','Keep DPS steady and follow team calls for Truth / Listen.'],warning:'This is an advanced rotation; review the full role guide before attempting.'},
   'Legion Revenant':{steps:['In the standard three-taunter variation, take the SECOND Zone.','Taunt the opening Truth if assigned by the party; handle the Listen after your Zone and the specified later Listen.','Use LR skill 2 when Zone appears to counter the boss regeneration effect.','Never enter Zone if you recently took one or hold a forbidden debuff.'],warning:'Truth/Listen duty can change with the team’s chosen variant; confirm it before pull.'},
-  'ArchPaladin':{steps:['Take the THIRD Zone in the usual rotation.','Taunt alternating Truth casts, starting after the FIRST Zone.','Use AP Seal (skill 5) during the Zone before your next assigned Truth so it is ready again.','Time your heals around Truth while staying out of forbidden Zones.'],warning:'Do not improvise Truth timing or take Zone while debuffed.'},
+  'ArchPaladin':{steps:['Take the THIRD Zone in the usual rotation.','Taunt alternating Truth casts, starting after the FIRST Zone.','Use Righteous Seal (4) for mitigation and Sacred Magic: Eden (5) to break it only at the timings in your chosen rotation.','Time your heals around Truth while staying out of forbidden Zones.'],warning:'Do not improvise Truth timing or take Zone while debuffed.'},
   'Lord of Order':{steps:['Take the FOURTH Zone; maintain skills 2, 3 and 4 buffs.','Taunt the opening Listen in the standard variant, then click outside Zone immediately so you are not stuck inside.','Handle assigned later Listen calls; use Quix (skill 5) before the later Truth taunt when your team’s rotation requires it.','Run out on the Listen call after an assigned taunt when needed.'],warning:'LoO has the busiest timing role. Choose the exact taunt variant with your team.'}
  }
 };
@@ -1110,7 +1110,7 @@ const ultraBattleCues={
  ],
  nulgath:[
   {quote:'Behold the power of the Abyss!',action:'ABYSSAL CHARGE: useful cue for the second taunter in the efficient 6-second offset rotation. Confirm who taunts before pull.'},
-  {quote:'I will shatter you to the core!',action:'OVERFIEND BLADE: lethal charged attack incoming; the team must follow the planned blade kill timing.'}
+  {quote:'I will shatter you to the core!',action:'OVERFIEND BLADE: kill the sword within 5 seconds, then return to Nulgath; do not kill it unnecessarily.'}
  ],
  dage:[
   {quote:'Cower behind your meager protection spells!',action:'ZONE: move onto the lit safe platform quickly to reduce the incoming true damage.'},
@@ -1785,6 +1785,7 @@ const ultraGlossary={
  'Righteous Seal':{text:'ArchPaladin skill 4; briefly reduces the enemy’s damage.'},
  'Sacred Magic: Eden':{text:'ArchPaladin skill 5; consumes Righteous Seal and applies Broken Seal.'},
  'Broken Seal':{text:'Damage-reduction debuff applied when Sacred Magic: Eden consumes Righteous Seal.'},
+ 'Commandment':{text:'ArchPaladin skill 2; stacks debuffs that weaken enemy damage and defenses.'},
  'Hymn of Light':{text:'ArchPaladin skill 3; party heal and defensive buff. Avoid during inverted healing.'},
  'FMJ Rounds':{text:'Chrono ShadowHunter skill 4; offensive stance and stacking enemy defense reduction.'},
  'Tracer Rounds':{text:'Chrono ShadowHunter skill 3; defensive stance that also applies a short heal over time. Avoid that HoT during Noxious Decay.'},
@@ -1833,7 +1834,7 @@ function ultraExplainText(target,value){
  }
 }
 function ultraBeginnerText(text,cls){
- let s=String(text||'').replace(/In the workbook lineup, /gi,'').replace(/Only in the workbook LoO\/LR rotation:/gi,'If using the LoO/LR taunt rotation:').replace(/Only in the workbook LoO\/LR variant,/gi,'If using the LoO/LR taunt rotation,').replace(/In the workbook variant, /gi,'If using this rotation, ').replace(/Workbook survival target:/gi,'Survival target:').replace(/Workbook HP targets:/gi,'Recommended HP:').replace(/The workbook recommends /gi,'').replace(/The workbook assigns /gi,'Use ').replace(/Workbook target priority:/gi,'Target priority:').replace(/the workbook setup/gi,'this setup').replace(/the workbook rotation/gi,'this rotation').replace(/the workbook SC lineup/gi,'the StoneCrusher lineup').replace(/the workbook uses/gi,'one team option uses').replace(/In the workbook damage-focused lineup, /gi,'').replace(/the workbook suggests a 2–4–5 burst/gi,'use Commandment (2), Righteous Seal (4), then Sacred Magic: Eden (5)').replace(/the workbook cautions against sacrificing survival/gi,'prioritize survival').replace(/LoO skill 5/gi,'Blessing of Order (5)').replace(/Legion Revenant skill 2|LR skill 2/gi,'Atramentous Shade (2)').replace(/Legion DoomKnight skill 5/gi,'Imminent Doom (5)');
+ let s=String(text||'').replace(/In the workbook lineup, /gi,'').replace(/Only in the workbook LoO\/LR rotation:/gi,'If using the LoO/LR taunt rotation:').replace(/Only in the workbook LoO\/LR variant,/gi,'If using the LoO/LR taunt rotation,').replace(/In the workbook variant, /gi,'If using this rotation, ').replace(/Workbook survival target:/gi,'Survival target:').replace(/Workbook HP targets:/gi,'Recommended HP:').replace(/The workbook recommends /gi,'').replace(/The workbook assigns /gi,'Use ').replace(/Workbook target priority:/gi,'Target priority:').replace(/the workbook setup/gi,'this setup').replace(/the workbook rotation/gi,'this rotation').replace(/the workbook SC lineup/gi,'the StoneCrusher lineup').replace(/the workbook uses/gi,'one team option uses').replace(/In the workbook damage-focused lineup, /gi,'').replace(/the workbook suggests a 2–4–5 burst/gi,'use Commandment (2), Righteous Seal (4), then Sacred Magic: Eden (5)').replace(/the workbook cautions against sacrificing survival/gi,'prioritize survival').replace(/\bWorkbook warns\b/gi,'Warning:').replace(/\bWorkbook suggests\b/gi,'Recommended:').replace(/\bthe workbook has no exact loadout rows\b/gi,'no specific gear is confirmed').replace(/\bin the workbook team\b/gi,'in this team').replace(/\bworkbook describes damage as not reducible\b/gi,'the damage cannot be reduced').replace(/LoO skill 5/gi,'Blessing of Order (5)').replace(/Legion Revenant skill 2|LR skill 2/gi,'Atramentous Shade (2)').replace(/Legion DoomKnight skill 5/gi,'Imminent Doom (5)');
  if(sameUltraClass(cls,'Lord of Order'))s=s.replace(/skill 5/gi,'Blessing of Order (5)');
  if(sameUltraClass(cls,'Legion DoomKnight'))s=s.replace(/skill 5/gi,'Imminent Doom (5)');
  if(sameUltraClass(cls,'Legion Revenant'))s=s.replace(/skill 2/gi,'Atramentous Shade (2)');
@@ -2095,7 +2096,7 @@ function renderUltraDetail(b){
   sequence.replaceChildren();
   const baseTips=[...new Set((play?.steps||[]).map(step=>String(step).trim()).filter(Boolean))];
   const tips=ultraBeginnerActions(b.id,cls,ultraActionTips(b.id,cls,baseTips));
-  const callouts=(window.AQWUltraQuoteActions?.forRole(b.id,playKey||cls)||[]).filter(c=>b.id!=='nulgath'||!c.quote.includes('shatter')).map(c=>({...c,response:ultraBeginnerText(c.response,cls)}));
+  const callouts=(window.AQWUltraQuoteActions?.forRole(b.id,playKey||cls)||[]).filter(c=>b.id!=='nulgath').map(c=>({...c,response:ultraBeginnerText(c.response,cls)}));
   const rows=window.AQWCGuideRows?.rows({tips,quotes:callouts,warning:b.id==='nulgath'?undefined:ultraBeginnerText(play?.warning||'',cls),
    fallback:role||quick.priority||b.phases[0]?.[1]||''})||[];
   for(const part of rows){
