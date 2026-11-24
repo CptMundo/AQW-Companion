@@ -53,6 +53,10 @@ assert.equal(result.alerts.find(x=>x.name==="Gem of Nulgath").capSource,"AQWWiki
 assert.equal(result.alerts.find(x=>x.name==="Gem of Nulgath").sourceUrl,caps.get("Gem of Nulgath").url);
 assert.equal(result.alerts.find(x=>x.name==="Totem of Nulgath").status,"near");
 assert.equal(api.analyze([item(9,"Unverified Item",999999)]).alerts.length,0,"Don't infer full stacks from large quantities");
+assert.equal(api.analyze([item(10,"Common Armor",1,0,{Type:"Armor",MaxStack:1})]).alerts.length,0,"Don't spam maxed alerts for equipped items");
+assert.equal(api.analyze([item(10,"Common Armor",1,0,{Type:"Armor",MaxStack:1})]).unknown,0,"Untracked equipment isn't counted as an unknown resource");
+assert.equal(api.analyze([item(11,"My Material",100,0,{Type:"Resource",MaxStack:100})]).maxed,1,"Real Resource stacks are checked");
+
 assert.equal(api.analyze([item(9,"Silver Stack",1000)],{}).maxed,1);
 assert.equal(api.analyze([item(9,"Silver Stack",1000)],{"silver stack":1500}).maxed,0,"Explicit player limit overrides Wiki");
 assert.equal(api.analyze([item(9,"Test Item",99,0,{MaxStack:100})],{}).near,1);
