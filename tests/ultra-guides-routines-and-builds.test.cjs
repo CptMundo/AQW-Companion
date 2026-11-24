@@ -489,18 +489,15 @@ console.log("Ultra/Boss subnav CSS no longer excludes Ultras; reset toolbar remo
 
 assert.ok(html.includes("btn.setAttribute('aria-pressed',String(b.id===selectedUltra))"));
 assert.ok(html.includes("button.setAttribute('aria-pressed',String(e.id===selectedBossGuide))"));
-assert.ok(html.includes("css/ultra-quote-actions.css?v=120"));
+assert.ok(html.includes("css/ultra-quote-actions.css?v=121"));
 assert.ok(ultraCSS.includes("#ultras #ultracards .ultracard.active,"));
 assert.ok(ultraCSS.includes("#boss-guides .boss-guide-list .boss-guide-item.active{background:linear-gradient"));
 assert.ok(ultraCSS.includes("inset 4px 0 0 #79d9ff"));
 console.log("Selected encounter contrast and accessible pressed states in both guide views checked.");
 
-const boss120=vm.runInNewContext(reviewedCode+"\n({bossGuideSorted,bossGuideClassGroups,bossGuideRoleTips})");
+const boss120=vm.runInNewContext(reviewedCode+"\n({bossGuideSorted,bossGuideRoleTips})");
 assert.equal(boss120.bossGuideSorted(entries117)[0].group,"Void Bosses");
 assert.equal(boss120.bossGuideSorted(entries117).at(-1).group,"Legacy / special");
-const filtered120=boss120.bossGuideClassGroups([{label:"OWNED",owned:true,names:["Lord of Order","Chrono ShadowHunter"]},{label:"NOT OWNED",owned:false,names:["StoneCrusher"]}],"shadow hunter");
-assert.equal(filtered120.length,1);assert.equal(filtered120[0].names[0],"Chrono ShadowHunter");
-assert.equal(boss120.bossGuideClassGroups([{names:["Lord of Order"]}],"no match").length,0);
 const profile120=name=>workbookApi.simplifiedExtraEncounters.find(p=>p.name===name);
 assert.ok(boss120.bossGuideRoleTips(profile120("Void Flibbi"),"Shaman","Early DPS").some(t=>t.text.includes("skill 5")));
 assert.ok(!boss120.bossGuideRoleTips(profile120("Void Flibbi"),"Lord of Order","Healer").some(t=>t.text.includes("skill 5")));
@@ -509,6 +506,16 @@ assert.ok(boss120.bossGuideRoleTips(profile120("Temple Shrine — Middle"),"Lord
 for(const p of workbookApi.simplifiedExtraEncounters)assert.ok(boss120.bossGuideRoleTips(p,p.team?.[0]?.cls||p.classes?.[0]||"Void Highlord","Support").length);
 assert.ok(ultraCSS.includes(".boss-guide-list>*{flex-shrink:0}"));
 assert.ok(ultraCSS.includes("flex:0 0 auto;display:block;min-height:48px!important"));
-assert.ok(html.includes("search.oninput=()=>{if(refill())draw()}"));
+assert.ok(!html.includes("boss-class-search"));assert.ok(!ultraCSS.includes("boss-class-search"));
 assert.ok(html.includes("drawBossGuideRoleTips(rolePanel,profile,select.value)"));
-console.log("Boss sidebar order, class search and source-scoped role tips passed.");
+console.log("Boss sidebar order and source-scoped role tips passed.");
+
+const bossDetail121=html.slice(html.indexOf("function renderBossGuideDetail(entry)"),html.indexOf("function renderBossGuides("));
+assert.ok(bossDetail121.includes("fillUltraClassSelect(select,key,profile)"));
+assert.ok(bossDetail121.includes("select.onchange=draw"));
+assert.ok(!bossDetail121.includes("Suggested general enhancements — not verified for this encounter."));
+assert.ok(bossDetail121.includes("Your Loadout · Suggested"));
+assert.ok(html.includes("if(tip.source!=='Community guide')body.append"));
+assert.ok(bossDetail121.includes("Simplified Bosses Guide — "));
+assert.ok(bossDetail121.includes("Wiki location"));
+console.log("Boss Guide cleanup preserves class selection, source links and concise suggested-loadout distinction.");
