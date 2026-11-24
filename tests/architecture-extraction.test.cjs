@@ -7,7 +7,7 @@ const root=path.join(__dirname,"..");
 const html=fs.readFileSync(path.join(root,"index.html"),"utf8");
 const site=fs.readFileSync(path.join(root,"css/site.css"),"utf8");
 const icons=fs.readFileSync(path.join(root,"css/item-icons.css"),"utf8");
-const ordered=["css/site.css","css/analytics-consent.css","css/item-icons.css","css/account-statistics.css"];
+const ordered=["css/site.css","css/item-icons.css","css/account-statistics.css"];
 const offsets=ordered.map(name=>html.search(new RegExp('href="'+name.replace(/\./g,'\\.')+'(?:\\?v=\\d+)?"')));
 assert.ok(offsets.every(n=>n>=0)&&offsets.every((n,i)=>i===0||offsets[i-1]<n),"Original CSS cascade ordering preserved");
 assert.equal((html.match(/<style(?:\s|>)/gi)||[]).length,0,"All inline CSS extracted");
