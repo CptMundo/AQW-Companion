@@ -28,7 +28,7 @@
    try{
     const r=await chrome.runtime.sendMessage({type:'wiki-appearance-save',appearance:value});if(!r?.ok)throw Error('Could not save preferences');fill(r.appearance);
     feedback.textContent='Saved. Applies on your next Wiki page load.';
-    try{const [tab]=await chrome.tabs.query({active:true,currentWindow:true});if(Number.isInteger(tab?.id)&&new URL(tab.url).origin==='https://aqwwiki.wikidot.com'){await chrome.tabs.sendMessage(tab.id,{type:'aqwc-appearance-preview',appearance:r.appearance},{frameId:0});feedback.textContent='Saved. Applied to the current Wiki page if supported.'}}catch{}
+    try{const [tab]=await chrome.tabs.query({active:true,currentWindow:true});if(Number.isInteger(tab?.id)&&new URL(tab.url).origin==='https://aqwwiki.wikidot.com'){await chrome.tabs.sendMessage(tab.id,{type:'aqwc-appearance-preview',appearance:r.appearance},{frameId:0});feedback.textContent='Saved. Refresh the Wiki page if the banner has not changed.'}}catch{}
    }catch(err){feedback.textContent=String(err?.message||err)}finally{enabled(true)}
   }
   save.addEventListener('click',e=>{if(e.isTrusted&&!save.disabled)persist({background:bg.value,banner:banner.value,panel:panel.value})});
