@@ -306,3 +306,15 @@ assert.ok(!html.includes("🧩 Team & advanced tactics"));
 assert.ok(ultraCSS.includes(".ultra-recommended-classes{justify-content:center}"));
 assert.ok(ultraCSS.includes("grid-template-columns:minmax(0,1fr) minmax(0,auto) minmax(0,1fr)"));
 console.log("Unified role guides, contextual action ownership, single quotes, personal Speaker rotations and centered header passed.");
+
+const detail108=html.slice(html.indexOf("function renderUltraDetail(b)"),html.indexOf("$('ultrasearch').addEventListener"));
+assert.ok(!detail108.includes("ultra-focus-footer"));
+assert.ok(!detail108.includes("Full community strategy"));
+assert.ok(!detail108.includes("Team ownership ≠ boss access"));
+assert.ok(ultraCSS.includes(">.goalhead.ultra-title-row{padding-right:0!important"));
+assert.ok(ultraCSS.includes(".ultra-setup-card .ultra-focus-gear{grid-template-columns:repeat(4,minmax(0,1fr))"));
+assert.ok(ultraCSS.includes(".ultra-focus-gear-cell:nth-child(5)"));
+assert.ok(ultraCSS.includes("margin:18px 0 19px!important"));
+assert.ok(ultraCSS.includes("@container (max-width:900px)"));
+assert.ok(ultraCSS.includes("@container (max-width:480px)"));
+console.log("Ultra layout: right gutter removed, four enhancement slots, responsive controls and no bottom footer.");
