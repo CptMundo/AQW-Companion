@@ -70,7 +70,7 @@ function matchWikiMaterial(snapshot,name){
  }
  if(!found.length)return {state:'not-found'};
  if(new Set(found.map(row=>row.ID)).size!==1||new Set(found.map(row=>nameKey(row.Type))).size!==1)return {state:'ambiguous'};
- const bank=found.filter(r=>r.Bank===1).reduce((n,r)=>n+r.Count,0),inventory=found.filter(r=>r.Bank===0).reduce((n,r)=>n+r.Count,0);
+ const bank=Math.max(0,...found.filter(r=>r.Bank===1).map(r=>r.Count)),inventory=Math.max(0,...found.filter(r=>r.Bank===0).map(r=>r.Count));
  return {state:'owned',bank,inventory,total:bank+inventory,itemId:String(found[0].ID)};
 }
 
