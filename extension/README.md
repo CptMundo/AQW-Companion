@@ -101,3 +101,6 @@ Aligned item workspace with the existing status and farming panels in one respon
 
 ### v0.12.6
 Item information and Companion status aligned on the first row; farming and standalone artwork on the second row. Complex artwork galleries remain in native details. Quest monster thumbnails only on verified monster pages with unambiguous HTTPS artwork, capped and cached. Rebuilt Prometheus banner with framed original helm, two-tone title and geometric backdrop; no old image overlay. No added permissions. Browser validation required.
+
+### v0.12.7
+Balanced item page grid (60% farming/40% artwork), narrower ingredient column, equal-height top cards, larger right-side monster previews, and a rebuilt contained CSS banner frame without inherited image sizing. No new permissions or changes to farming/sync calculations. Live Opera QA pending.
