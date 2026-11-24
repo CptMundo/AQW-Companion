@@ -498,7 +498,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  vm.runInNewContext(read('extension/wiki-theme.js'),{document,location:{origin:'https://aqwwiki.wikidot.com'},chrome:{runtime}});
  respond({ok:true,appearance:{background:'original',banner:'original',panel:'integrated'}});assert.equal(styles.length,0);assert.equal(attrs['data-aqwc-panel-theme'],'integrated');
  listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'bad',url:popup.url});assert.equal(styles.length,0);
- listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'id',url:popup.url});assert.equal(styles.length,1);assert.ok(styles[0].textContent.includes('div#container-wrap'));assert.ok(styles[0].textContent.includes('data:image/svg+xml'));assert.ok(!styles[0].textContent.includes('#header::before'));assert.ok(styles[0].textContent.includes('#1b1627'));
+ listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'id',url:popup.url});assert.equal(styles.length,1);assert.ok(styles[0].textContent.includes('div#container-wrap'));assert.ok(styles[0].textContent.includes('wiki-banner-prometheus.webp'));assert.ok(styles[0].textContent.includes('min(100%, 869px) auto'));assert.ok(!styles[0].textContent.includes('#header::before'));assert.ok(styles[0].textContent.includes('#1b1627'));
  listener({type:'aqwc-appearance-preview',appearance:{}},{id:'id',url:popup.url});assert.equal(styles.length,0);
  console.log('Wiki appearance: defaults, scoped read/write, validated presets and restore original passed.');
 })().catch(e=>{console.error(e);process.exitCode=1});
@@ -555,4 +555,12 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.ok(!theme.includes('background-image:none !important'));
  assert.ok(!theme.includes('header.style'));
  assert.ok(!theme.includes('header.prepend'));
+}
+
+// Block release until the owner-selected binary artwork is actually present.
+{
+ const art=fs.readFileSync(path.join(__dirname,'..','extension/wiki-banner-prometheus.webp'));
+ assert.equal(art.toString('ascii',0,4),'RIFF');assert.equal(art.toString('ascii',8,12),'WEBP');
+ assert.ok(art.length>10000 && art.length<2000000);
+ assert.deepEqual(manifest.web_accessible_resources,[{resources:['wiki-banner-prometheus.webp'],matches:['https://aqwwiki.wikidot.com/*']}]);
 }
