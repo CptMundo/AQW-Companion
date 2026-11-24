@@ -127,12 +127,17 @@ function questLists(scope){
   const list=block.nextElementSibling;if(!list||!['UL','OL'].includes(list.tagName)||result.some(x=>x.list===list))continue;
   const rows=[...list.children].filter(x=>x.tagName==='LI').map(li=>{
    const text=clean([...li.childNodes].filter(n=>n.nodeType===3||n.nodeType===1&&!['UL','OL'].includes(n.tagName)).map(n=>n.textContent).join(' '));
-   const drops=[];
-   for(const nested of li.querySelectorAll('ul,ol')){
-    if(!/^Dropped by\s*:/i.test(clean(nested.textContent)))continue;
-    for(const a of nested.querySelectorAll('a[href]')){const x=itemLink(a);if(x&&!drops.some(d=>d.slug===x.slug))drops.push(x)}
+   const drops=[],instructions=[];
+   for(const nested of [...li.children].filter(n=>['UL','OL'].includes(n.tagName))){
+    for(const child of [...nested.children].filter(n=>n.tagName==='LI')){
+     const desc=clean(child.textContent);
+     if(/^Dropped by\b/i.test(desc)){
+      for(const a of child.querySelectorAll('a[href]')){const x=itemLink(a);if(x&&!drops.some(d=>d.slug===x.slug))drops.push(x)}
+      if(!child.querySelectorAll('a[href]').length&&desc)instructions.push(desc);
+     }else if(desc)instructions.push(desc);
+    }
    }
-   return {text,drops,linked:linkedRow(li)};
+   return {text,drops,instructions,linked:linkedRow(li)};
   }).filter(x=>x.text);
   result.push({list,role:/^Items Required:/i.test(label)?'requirement':'reward',rows});
  }
@@ -169,6 +174,8 @@ function questCards(panel,content,title){
    if(!scope){body.textContent='Quest section not recognized. Close and reopen after selecting the Wiki tab.';return}
    built=true;body.replaceChildren();
    const lists=questLists(scope);
+   const requirement=[...scope.querySelectorAll('p')].map(n=>clean(n.textContent)).find(s=>/^Requirements?:/i.test(s)&&s.length<=600);
+   if(requirement){const req=document.createElement('small');req.textContent=requirement;body.append(req)}
    const local=questLocationLinks(scope);const maps=local.length?local:locations.length===1?locations:[];
    if(maps.length){const section=document.createElement('div');section.className='aqwc-quest-block';const h=document.createElement('strong');h.textContent='Quest location';section.append(h);for(const x of maps){const row=document.createElement('div');row.className='aqwc-source-line';const a=document.createElement('a');a.href=origin+'/'+x.slug;a.textContent=x.name;row.append(a);api?.joinControl(row,x,origin);section.append(row)}body.append(section)}
    const linked=[...new Set(lists.flatMap(g=>g.rows.map(x=>x.linked?.name).filter(Boolean)))].slice(0,80),stock=new Map();
@@ -178,6 +185,7 @@ function questCards(panel,content,title){
     for(const x of g.rows){
      const row=document.createElement('div');row.className='aqwc-quest-objective';const desc=document.createElement('span');desc.textContent=x.text;row.append(desc);
      const hit=stock.get(x.linked?.name);if(hit&&['owned','not-found'].includes(hit.state)){const badge=document.createElement('small');badge.textContent='Stock '+(hit.state==='owned'?hit.total:0);row.append(badge)}
+     for(const instruction of x.instructions){const help=document.createElement('div');help.className='aqwc-quest-drops';help.textContent=instruction;row.append(help)}
      if(x.drops.length){const list=document.createElement('div');list.className='aqwc-quest-drops';list.append(document.createTextNode('Dropped by: '));for(const d of x.drops){const a=document.createElement('a');a.href=origin+'/'+d.slug;a.textContent=d.name;list.append(a)}row.append(list)}
      section.append(row)
     }
