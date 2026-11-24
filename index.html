@@ -2768,7 +2768,7 @@ function taskCard(t,pinned){const done=taskDone(t),conflict=routineConflict(t);
  action.setAttribute('aria-label',(done?'Undo completion of ':'Complete ')+t.name);action.setAttribute('aria-pressed',String(done));
  action.onclick=()=>{if(done&&$('plannerstatus').value==='completed')$('plannerstatus').value='all';toggleTask(t,!done)};
  actions.append(action)}
- const button=node('button',pinned?'×':'+ Pin','smallbutton planner-pin-action');
+ const button=node('button',undefined,'smallbutton planner-pin-action '+(pinned?'is-pinned':'is-unpinned'));
  button.type='button';button.title=pinned?'Unpin '+t.name:'Pin '+t.name;button.setAttribute('aria-label',button.title);
  button.onclick=()=>pinned?unpinTask(t):pinTask(t);actions.append(button);card.append(actions);
  return card
