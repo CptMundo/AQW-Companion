@@ -38,7 +38,7 @@ assert.ok(ultra.forRole("drakath","Lord of Order").some(x=>/BEFORE/.test(x.respo
 assert.ok(html.includes("const rows=ultraUnifiedTips(b.id,cls,baseTips)"),"Render only the selected class’s unified actions");
 assert.ok(html.includes("ultra-role-quote"));
 assert.ok(html.includes('src="js/ultra-quote-actions.js"'));
-assert.ok(html.includes('href="css/ultra-quote-actions.css"'));
+assert.match(html,/href="css\/ultra-quote-actions\.css(?:\?v=\d+)?"/);
 assert.ok(html.includes("b.alternate||[]"),"Alternate classes must be selectable");
 assert.ok(html.includes("fillUltraClassSelect(select,b.id,profile,[...b.team,...(b.alternate||[])])"),"Include existing alternatives and workbook classes");
 assert.ok(html.includes("appendPersonalSpeakerRotation(sequence,cls)"),"Keep the chosen Speaker rotation inside the personal guide");
