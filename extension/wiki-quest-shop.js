@@ -107,6 +107,7 @@ function init(){
  const note=document.createElement('small');note.style.cssText='display:block;color:#b6cddd;font-weight:400';note.textContent='Synced Inventory + Bank only. No quest completion, temporary counters, access requirements, currency or purchase eligibility checked.';
  const b=document.createElement('button');b.type='button';b.textContent='Show inventory status';b.style.cssText='margin-top:6px;padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;cursor:pointer';
  const status=document.createElement('small');status.setAttribute('role','status');status.style.cssText='display:block;color:#b6cddd;font-weight:400;margin-top:4px';
+ const ui=globalThis.AQWCWikiUI;ui?.decorate(shadow,panel,kind==='quest'?'Quest tools':'Shop tools');if(ui)panel.style.cssText='';b.className='aqwc-primary';
  panel.append(label,note,b,status);
  if(kind==='quest'){
   const link=document.createElement('a');link.href='https://cptmundo.github.io/AQW-Companion/#aqwc-routines?source='+encodeURIComponent(location.pathname.replace(/^\/|\/$/g,''));
@@ -123,7 +124,7 @@ function init(){
   if(names.length)panel.append(select,add,feedback);else{feedback.textContent='No quest tabs detected. Use the library link above.';panel.append(feedback)}
   if(!groups.length){b.disabled=true;status.textContent='No supported linked inventory requirements detected.'}
  }
- shadow.append(panel);(document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);
+ shadow.append(panel);if(ui)ui.mount(host,content,title);else (document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);
  b.addEventListener('click',async e=>{
   if(!e.isTrusted||b.disabled)return;b.disabled=true;status.textContent='Checking…';
   try{
