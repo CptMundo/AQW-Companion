@@ -74,3 +74,27 @@
 #ultradetail .ultra-rotation-reference p{margin:0;font-size:12px}
 @media(max-width:1050px){#ultras #ultradetail .ultra-title-row{grid-template-columns:minmax(0,1fr)}#ultras #ultradetail .ultra-title-row h2,#ultras #ultradetail .ultra-title-actions{grid-column:1}#ultras #ultradetail .ultra-title-actions{justify-self:end}}
 @media(max-width:500px){#ultradetail .ultra-recommended-heading{flex-wrap:wrap}#ultradetail .ultra-recommended-heading small{position:static}}
+
+/* PR 108: remove the inherited 180px right gutter, keep the title truly centered. */
+#ultras #ultradetail>.goalhead.ultra-title-row{padding-right:0!important;padding-left:0!important;width:100%;box-sizing:border-box;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center!important}
+#ultras #ultradetail .ultra-title-actions{justify-self:end;justify-content:flex-end!important;flex-wrap:nowrap!important;white-space:nowrap;min-width:max-content;max-width:none!important}
+#ultras #ultradetail .ultra-title-actions>*{flex-shrink:0}
+#ultras #ultradetail .ultra-title-row h2{grid-column:2;justify-self:center;text-align:center}
+/* Four main enhancements across; optional consumable and source sit below. */
+#ultras #ultradetail .ultra-setup-card .ultra-focus-gear{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+#ultras #ultradetail .ultra-focus-gear-cell:nth-child(5),
+#ultras #ultradetail .ultra-focus-gear>.ultra-gear-source{grid-column:1/-1}
+#ultras #ultradetail .ultra-setup-card>h3,
+#ultras #ultradetail .ultra-quickstart>h3{margin:18px 0 19px!important}
+#ultras #ultradetail .ultra-focus-selector .ultra-role-select{width:100%!important;max-width:none!important;margin:0!important;min-width:0}
+#ultras #ultradetail .ultra-guide-layout{margin-bottom:19px}
+#ultras #ultradetail .ultra-setup-card .ultra-focus-gear-cell{padding:9px 6px}
+#ultras #ultradetail{container-type:inline-size}
+@container (max-width:900px){
+ #ultras #ultradetail>.goalhead.ultra-title-row{grid-template-columns:minmax(0,1fr);gap:10px!important}
+ #ultras #ultradetail .ultra-title-row h2,#ultras #ultradetail .ultra-title-actions{grid-column:1}
+ #ultras #ultradetail .ultra-title-actions{justify-self:end;flex-wrap:wrap!important;min-width:0;max-width:100%!important}
+}
+@container (max-width:480px){
+ #ultras #ultradetail .ultra-setup-card .ultra-focus-gear{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
