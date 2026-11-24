@@ -22,7 +22,7 @@ function normalizeAppearance(value){
   arcane:{art:art('#73b6f9','#bde9ff'),gradient:'linear-gradient(110deg,#111c33,#22527b 65%,#112237)',accent:'#72b9ef'},
   void:{art:art('#a98aff','#e6c7ff'),gradient:'linear-gradient(110deg,#1c122a,#493161 65%,#1b152d)',accent:'#ba9af4'}
  };
- let style,revision=0,originalInline=null;
+ let style,revision=0,originalInline=null,artwork=null;
  const bannerProps=['background-image','background-size','background-position','background-repeat'];
  function restoreInline(){if(!originalInline)return;const {target,values}=originalInline;for(const [k,v,priority] of values){if(v)target.style.setProperty(k,v,priority);else target.style.removeProperty(k)}originalInline=null;}
  function apply(value){
@@ -36,7 +36,7 @@ function normalizeAppearance(value){
    rules.push('body,#container,#container-wrap,#content-wrap,#main-content,#page-content,#side-bar{background-color:'+bg+' !important;color:'+fg+' !important;}');
    rules.push('#page-content a:not([id^="aqwc-"]),#side-bar a,#breadcrumbs a{color:'+link+' !important;}');
   }
-  root.setAttribute('data-aqwc-banner',v.banner);restoreInline();
+  root.setAttribute('data-aqwc-banner',v.banner);restoreInline();if(artwork){artwork.remove();artwork=null;}
   if(v.banner!=='original'){
    const preset=banners[v.banner];
    const chosen=v.banner==='prometheus';
@@ -51,6 +51,13 @@ function normalizeAppearance(value){
    const target=document.getElementById('container-wrap');if(target?.style?.getPropertyValue){originalInline={target,values:bannerProps.map(k=>[k,target.style.getPropertyValue(k),target.style.getPropertyPriority(k)])};[images.join(','),sizes.join(','),positions.join(','),'no-repeat'].forEach((v,i)=>target.style.setProperty(bannerProps[i],v,'important'))}
    rules.push(selector+'{background-image:'+images.join(',')+' !important;background-size:'+sizes.join(',')+' !important;background-position:'+positions.join(',')+' !important;background-repeat:no-repeat !important;}');
    rules.push('html[data-aqwc-banner="'+v.banner+'"] #top-bar{border-top:1px solid '+preset.accent+';}');
+   // A visible image element as a second path, independent of the Wiki's
+   // background layers. Native header controls remain clickable.
+   if(chosen&&target?.insertBefore&&document.createElement){
+    artwork=document.createElement('img');artwork.id='aqwc-prometheus-artwork';artwork.alt='AQW Wiki Companion';artwork.src=chrome.runtime.getURL('image_2026-11-24_232002011.png');artwork.setAttribute('aria-hidden','true');target.insertBefore(artwork,target.firstChild);
+    rules.push(selector+'{position:relative!important;} #aqwc-prometheus-artwork{position:absolute!important;top:0!important;left:0!important;width:100%!important;height:140px!important;object-fit:contain!important;object-position:center!important;background:#07131b!important;z-index:1!important;pointer-events:none!important;display:block!important;}');
+    rules.push('html[data-aqwc-banner="prometheus"] #header{position:relative!important;z-index:2!important;background:transparent!important;} html[data-aqwc-banner="prometheus"] #header > h1,html[data-aqwc-banner="prometheus"] #header > h2{background:transparent!important;} html[data-aqwc-banner="prometheus"] #top-bar,html[data-aqwc-banner="prometheus"] #login-status,html[data-aqwc-banner="prometheus"] #search-top-box{z-index:3!important;}');
+   }
   }
   if(!rules.length){style?.remove();style=null;return}
   if(!style){style=document.createElement('style');style.id='aqwc-wiki-appearance';(document.head||root).append(style)}
@@ -58,7 +65,9 @@ function normalizeAppearance(value){
  }
  chrome.runtime.onMessage.addListener((message,sender,respond)=>{
   if(sender.id!==chrome.runtime.id||sender.url!==chrome.runtime.getURL('popup.html')||message?.type!=='aqwc-appearance-preview')return;
-  revision++;apply(message.appearance);const target=document.getElementById('container-wrap');let applied=false;try{applied=normalizeAppearance(message.appearance).banner==='original'||!!target&&getComputedStyle(target).backgroundImage.includes(normalizeAppearance(message.appearance).banner==='prometheus'?chrome.runtime.getURL('image_2026-11-24_232002011.png'):'data:image/svg+xml')}catch{}if(typeof respond==='function')respond({ok:true,bannerTarget:!!target,applied});return false;
+  revision++;apply(message.appearance);const target=document.getElementById('container-wrap');let applied=false;try{applied=normalizeAppearance(message.appearance).banner==='original'||!!target&&getComputedStyle(target).backgroundImage.includes(normalizeAppearance(message.appearance).banner==='prometheus'?chrome.runtime.getURL('image_2026-11-24_232002011.png'):'data:image/svg+xml')}catch{}if(typeof respond!=='function')return false;
+  if(artwork){const img=artwork;let done=false;const finish=()=>{if(done)return;done=true;respond({ok:true,bannerTarget:!!target,applied,artworkLoaded:!!img.naturalWidth})};if(img.complete){finish();return false}img.addEventListener('load',finish,{once:true});img.addEventListener('error',finish,{once:true});setTimeout(finish,3000);return true}
+  respond({ok:true,bannerTarget:!!target,applied});return false;
  });
  const start=revision;
  chrome.runtime.sendMessage({type:'wiki-appearance-read'},response=>{

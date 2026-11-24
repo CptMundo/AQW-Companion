@@ -95,7 +95,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.11.8');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
+ assert.equal(manifest.version,'0.11.9');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -385,7 +385,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  
  // Existing worker integration tests cover typed lookups; static UI safeguards.
  assert.ok(read('extension/wiki-list-ownership.js').includes("find.addEventListener('click'"));
- assert.ok(read('extension/wiki-quest-shop.js').includes("type:'routine-queue-add'"));
+ assert.ok(read('extension/wiki-quest-shop.js').includes("type:'quest-pin-add'"));
  assert.ok(read('index.html').includes("if(entry.quest)"));
 }
 
@@ -404,6 +404,11 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  const msg={type:'routine-queue-add',quest:{source:'daily-quest-board-s-quests',name:'Moglin Companions'}};
  assert.equal((await api.handle(msg,quest)).ok,true);assert.equal((await api.handle(msg,quest)).already,true);
  assert.equal((await api.handle({type:'wishlist-queue-read'},main)).entries.length,2);
+ const story={url:'https://aqwwiki.wikidot.com/general-gravelyn-s-quests',frameId:0},pin={type:'quest-pin-add',quest:{source:'general-gravelyn-s-quests',name:'A Fighting Chance'}};
+ assert.equal((await api.handle(pin,story)).ok,true);assert.equal((await api.handle(pin,story)).already,true);
+ assert.equal((await api.handle(pin,{...story,frameId:1})).ok,false);
+ assert.equal((await api.handle(pin,quest)).ok,false);
+ const entries=(await api.handle({type:'wishlist-queue-read'},main)).entries;assert.equal(entries.length,3);assert.equal(entries[2].quest.pin,true);assert.equal(entries[2].quest.name,'A Fighting Chance');
 })().catch(e=>{console.error(e);process.exitCode=1});
 
 (async()=>{
@@ -476,7 +481,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.equal(api.questScope(content,[tab('First','#quest1')],'First'),panel);
  assert.equal(api.questScope(content,[tab('First','#other')],'First'),null);
  assert.equal(api.questScope(content,[tab('First','#quest1'),tab('First','#quest1')],'First'),null);
- assert.ok(read('extension/wiki-quest-shop.js').includes('Page-wide stock (not an individual quest)'));
+ assert.ok(!read('extension/wiki-quest-shop.js').includes('Page-wide stock (not an individual quest)'));
  assert.ok(read('extension/wiki-quest-shop.js').includes('revision!==scopeRevision'));
 }
 
@@ -573,4 +578,35 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.ok(read('extension/wiki-quest-shop.js').includes('questCards(panel,content,title)'));
  assert.ok(read('extension/wiki-theme.js').includes('target.style.setProperty(bannerProps[i]'));
  assert.ok(read('extension/wiki-theme.js').includes('restoreInline()'));
+}
+
+{
+ const api=vm.runInNewContext(read('extension/wiki-quest-shop.js')+'\nAQWCQuestShop',{URL});
+ const a={textContent:'Rotten to the Corps',getAttribute:()=> 'javascript:;'},b={textContent:'A Fighting Chance',getAttribute:()=> 'javascript:;'};
+ const classList=k=>({contains:v=>v===k}),p1={tagName:'DIV'},p2={tagName:'DIV'},nav={classList:classList('yui-nav'),children:[{tagName:'LI',querySelector:()=>a},{tagName:'LI',querySelector:()=>b}]},panes={classList:classList('yui-content'),children:[p1,p2]},group={children:[nav,panes]};
+ a.closest=b.closest=()=>nav;nav.closest=()=>group;
+ const content={contains:x=>[group,p1,p2].includes(x),ownerDocument:{getElementById:()=>null}};
+ assert.equal(api.questScope(content,[a,b],'Rotten to the Corps'),p1);
+ assert.equal(api.questScope(content,[a,b],'A Fighting Chance'),p2);
+ panes.children.pop();assert.equal(api.questScope(content,[a,b],'A Fighting Chance'),null);
+ assert.ok(!read('extension/wiki-quest-shop.js').includes('Open Daily / Weekly Tracker'));
+ assert.ok(read('index.html').includes('aqwc-pinned-wiki-quests-v1'));assert.ok(read('index.html').includes('entry.quest.pin===true'));
+ assert.ok(read('extension/wiki-theme.js').includes('aqwc-prometheus-artwork'));
+}
+
+{
+ const api=vm.runInNewContext(read('extension/wiki-quest-shop.js')+'\nAQWCQuestShop',{URL});
+ // Representative YUI pane based on the public General Gravelyn quest:
+ // unlinked temporary objectives, linked monster and non-drop action.
+ const link={textContent:'Corrosive Crawler',getAttribute:()=>'/corrosive-crawler',querySelector:()=>null,closest:()=>null};
+ const sub=(text,links=[])=>({tagName:'LI',textContent:text,querySelectorAll:()=>links});
+ const objective=(text,nested)=>({tagName:'LI',childNodes:[{nodeType:3,textContent:text}],children:[{tagName:'UL',children:nested}],querySelectorAll:()=>[]});
+ const rows=[objective('Sharp Stinger x8',[sub('Dropped by Corrosive Crawler',[link])]),objective('AntiTitans Armed x8',[sub('Click blue arrows on screens 2, 3, 4 and 10')])];
+ const list={tagName:'UL',children:rows};
+ const marker={tagName:'P',textContent:'Items Required:',children:[],nextElementSibling:list};
+ const rewards={tagName:'P',textContent:'Rewards:',children:[],nextElementSibling:{tagName:'UL',children:[objective('3,000 Gold',[])]}};
+ const result=api.questLists({querySelectorAll:()=>[marker,rewards]});
+ assert.equal(result.length,2);assert.equal(result[0].rows[0].text,'Sharp Stinger x8');assert.equal(result[0].rows[0].drops[0].name,'Corrosive Crawler');
+ assert.equal(result[0].rows[1].instructions[0],'Click blue arrows on screens 2, 3, 4 and 10');
+ assert.equal(result[1].rows[0].text,'3,000 Gold');assert.equal(result[0].rows[0].linked,null);
 }

@@ -21,19 +21,19 @@
  const bg=document.getElementById('appearance-background'),banner=document.getElementById('appearance-banner'),panel=document.getElementById('appearance-panel'),save=document.getElementById('appearance-save'),reset=document.getElementById('appearance-reset'),feedback=document.getElementById('appearance-status');
  if(bg&&banner&&panel&&save&&reset&&feedback){
   const fill=v=>{bg.value=v.background;banner.value=v.banner;panel.value=v.panel};
-  const enabled=v=>{save.disabled=reset.disabled=!v};
+  const quick=document.getElementById('appearance-prometheus');const enabled=v=>{save.disabled=reset.disabled=!v;if(quick)quick.disabled=!v};
   async function load(){try{const r=await chrome.runtime.sendMessage({type:'wiki-appearance-read'});if(!r?.ok)throw Error('Could not load preferences');fill(r.appearance);enabled(true);feedback.textContent='Choose a theme and apply.'}catch(err){feedback.textContent=String(err?.message||err)}}
   async function persist(value){
    enabled(false);
    try{
     const r=await chrome.runtime.sendMessage({type:'wiki-appearance-save',appearance:value});if(!r?.ok)throw Error('Could not save preferences');fill(r.appearance);
     feedback.textContent='Saved. Applies on your next Wiki page load.';
-    try{const [tab]=await chrome.tabs.query({active:true,currentWindow:true});if(Number.isInteger(tab?.id)&&new URL(tab.url).origin==='https://aqwwiki.wikidot.com'){const ack=await chrome.tabs.sendMessage(tab.id,{type:'aqwc-appearance-preview',appearance:r.appearance},{frameId:0});feedback.textContent=ack?.applied?'Saved · banner CSS confirmed. Check the artwork on the page.':ack?.bannerTarget?'Saved · banner CSS not confirmed. Try disabling competing Wiki themes.':'Saved · refresh the Wiki page to apply.'}}catch{}
+    try{const [tab]=await chrome.tabs.query({active:true,currentWindow:true});if(Number.isInteger(tab?.id)&&new URL(tab.url).origin==='https://aqwwiki.wikidot.com'){const ack=await chrome.tabs.sendMessage(tab.id,{type:'aqwc-appearance-preview',appearance:r.appearance},{frameId:0});feedback.textContent=ack?.artworkLoaded===true?'Saved · Prometheus image loaded. Check the header.':ack?.artworkLoaded===false?'Saved · image could not load. Check extension files.':ack?.applied?'Saved · banner CSS confirmed. Check the artwork on the page.':ack?.bannerTarget?'Saved · banner CSS not confirmed. Try disabling competing Wiki themes.':'Saved · refresh the Wiki page to apply.'}}catch{}
    }catch(err){feedback.textContent=String(err?.message||err)}finally{enabled(true)}
   }
   save.addEventListener('click',e=>{if(e.isTrusted&&!save.disabled)persist({background:bg.value,banner:banner.value,panel:panel.value})});
   reset.addEventListener('click',e=>{if(e.isTrusted&&!reset.disabled)persist({background:'original',banner:'original',panel:'integrated'})});
-  const quick=document.getElementById('appearance-prometheus');if(quick)quick.addEventListener('click',e=>{if(e.isTrusted&&!save.disabled)persist({background:bg.value,banner:'prometheus',panel:panel.value})});
+  if(quick)quick.addEventListener('click',e=>{if(e.isTrusted&&!save.disabled){feedback.closest('details')?.setAttribute('open','');persist({background:bg.value,banner:'prometheus',panel:panel.value})}});
   load();
  }
  send('inventory-summary');
