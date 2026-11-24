@@ -2651,6 +2651,49 @@ const plannerBossArt={
  apexazalith:['vYHDEiM','azalith-morningstar'],
  doom:['mxdeiSQ','wheel-of-doom']
 };
+// Curated quest-giver and quest-specific art. Exact quest IDs or source pages
+// only: do not infer a portrait from a generic map or a player-created name.
+// The original boss art always wins. Shared NPC portraits are representative.
+const plannerQuestArtById=Object.freeze({
+ mining:['nukE09D.png','axe-of-the-prospector'],
+ hardcore:['nukE09D.png','axe-of-the-prospector'],
+ encroach:['vG57ctr.png','braeus'],
+ glimpse:['vG57ctr.png','braeus'],
+ wrongturn:['x4cJMlq.png','memory-of-nulgath'],
+ ex107:['gunSEAo.png','reens'],
+ ex231:['gunSEAo.png','reens'],
+ 'seal-light':['lITTRkc.png','ultra-alteon-monster'],
+ 'seal-dark':['PaWdbKE.jpg','ultra-sepulchure'],
+ 'reviewed-fins-up':['aN3gnPQ.png','faith'],
+ 'reviewed-rubber-duck-rescue':['wtMtsmG.png','cysero-npc'],
+ 'friendship-dage-the-evil':['rW2Gsql.png','dage-the-evil-npc'],
+ 'friendship-gravelyn':['O72reGd.png','gravelyn-npc'],
+ 'friendship-nulgath':['Lnn04tC.png','nulgath-npc']
+});
+const plannerQuestArtBySource=Object.freeze({
+ 'braeus-quests':['vG57ctr.png','braeus'],
+ 'memory-of-nulgath-s-quests':['x4cJMlq.png','memory-of-nulgath'],
+ 'reens-quests':['gunSEAo.png','reens'],
+ 'mirror-drakath-s-quests':['W6g5jDB.png','mirror-drakath-npc'],
+ 'keelia-s-quests':['Ybua2kU.png','keelia'],
+ 'bastet-s-quests':['NbsIemC.png','bastet'],
+ 'khuddar-khamundi-s-quests':['zwdFYDB.png.png','khuddar-khamundi'],
+ 'faith-s-quests':['aN3gnPQ.png','faith'],
+ 'cysero-s-quests':['wtMtsmG.png','cysero-npc'],
+ 'galanoth-s-quests':['9tOnnba.png','galanoth-npc'],
+ 'gravelyn-s-quests':['O72reGd.png','gravelyn-npc'],
+ 'dage-the-evil-s-quests':['rW2Gsql.png','dage-the-evil-npc'],
+ 'jon-jett-s-quests':['OE4MabD.png','jon-jett'],
+ 'zot-s-quests':['4UwS9m8.png','zot']
+});
+function plannerRelatedArt(t){
+ if(t.group==='Custom')return null;
+ const id=String(t.id||'');
+ const source=String(t.wiki||'').match(/^https:\/\/aqwwiki\.wikidot\.com\/([a-z0-9-]+)\/?$/i)?.[1];
+ const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k)?o[k]:null;
+ const entry=own(plannerQuestArtById,id)||own(plannerQuestArtBySource,source);
+ return entry?{url:'https://i.imgur.com/'+entry[0],source:'https://aqwwiki.wikidot.com/'+entry[1]}:null;
+}
 function plannerArt(t){
  const map=String(t.join||'').trim().toLowerCase().replace(/^\/join\s+/,'');
  // Generic map quests can target unrelated monsters. Match the named boss or
@@ -2658,7 +2701,7 @@ function plannerArt(t){
  const name=String(t.name||'')+' '+String(t.sourceName||'');
  const known=plannerBossArt[map];
  const match=known&&(t.group==='Ultra Boss'||/Daily Exercise [1-6]:|Dulcify|Ultra Iara|Batara Kala|Asterism's Toll|Unshackled Azalith|Wheel of Doom|Frenzy Feast|Ultra (?:Dage|Nulgath|Speaker|Ezrajal|Warden|Engineer|Avatar Tyndarius|Darkon|Drago|Gramiel)|Champion Drakath|God of the Depths/i.test(name));
- return match?{url:'https://i.imgur.com/'+known[0]+'.png',source:'https://aqwwiki.wikidot.com/'+known[1]}:null;
+ return match?{url:'https://i.imgur.com/'+known[0]+'.png',source:'https://aqwwiki.wikidot.com/'+known[1]}:plannerRelatedArt(t);
 }
 function plannerCategory(t){
  if(t.kind==='activity')return t.group;
