@@ -427,3 +427,14 @@ assert.equal(portrait.plannerArt({id:'custom-1',name:'Mine Crafting',group:'Cust
 assert.equal(portrait.plannerArt({id:'unknown',name:'Unknown quest',group:'General',join:'/join yulgar',wiki:'https://aqwwiki.wikidot.com/daily-quest-board-s-quests'}),null);
 assert.equal(portrait.plannerArt({id:'toString',group:'General'}),null);
 console.log("Quest artwork expansion: "+newlyIllustrated.length+" additional active routines; "+active.filter(t=>portrait.plannerArt(t)).length+"/"+active.length+" with artwork references.");
+
+const toolbar114=html.slice(html.indexOf('<div class="card planner-board">'),html.indexOf('<div id="planner-my-tasks"'));
+assert.match(toolbar114,/<select id="planner-my-categories" aria-label="Quest category">/);
+assert.match(toolbar114,/<select id="plannerstatus" aria-label="Completion status">/);
+assert.ok(!toolbar114.includes('planner-category-controls'));
+assert.ok(html.includes("categoryBar.value=plannerMyCategory;categoryBar.onchange=()=>{plannerMyCategory=categoryBar.value;renderPlanner()}"));
+assert.ok(html.includes("css/planner-routines.css?v=114"));
+for(const [id,file] of [['friendship-twilly','0KftqqS.png'],['friendship-warlic','sq7rbv5.png'],['friendship-sally','GI2CmjZ.png'],['friendship-twig','Ke7Ri6j.png']]){
+ const task=active.find(t=>t.id===id);assert.ok(task,id);assert.ok(portrait.plannerArt(task).url.endsWith('/'+file),id);
+}
+console.log("Compact toolbar and additional artwork checks passed.");
