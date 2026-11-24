@@ -1,0 +1,33 @@
+name: Stack Alerts safety and regression
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'js/stack-alerts.js'
+      - 'css/stack-alerts.css'
+      - 'tests/stack-alerts.test.cjs'
+      - 'tests/remove-damage-simulator.test.cjs'
+      - '.github/workflows/stack-alerts.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'js/stack-alerts.js'
+      - 'css/stack-alerts.css'
+      - 'tests/stack-alerts.test.cjs'
+      - '.github/workflows/stack-alerts.yml'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test Stack Alerts and all existing functionality
+        run: |
+          for file in tests/*.test.cjs; do
+            echo "Running $file"
+            node "$file" || exit 1
+          done
