@@ -98,3 +98,6 @@ Correct Price label matching and fallback placement; original recipe DOM retaine
 
 ### v0.12.5
 Aligned item workspace with the existing status and farming panels in one responsive grid; grouped native item content while preserving original nodes, links, images and credits; consistent nested recipe rows; original quest content collapsed on recognized pages with accessible toggle; restored artwork on both sides of localized wordmark. No permissions or inventory logic changes. Browser validation required.
+
+### v0.12.6
+Item information and Companion status aligned on the first row; farming and standalone artwork on the second row. Complex artwork galleries remain in native details. Quest monster thumbnails only on verified monster pages with unambiguous HTTPS artwork, capped and cached. Rebuilt Prometheus banner with framed original helm, two-tone title and geometric backdrop; no old image overlay. No added permissions. Browser validation required.
