@@ -219,3 +219,23 @@ assert.ok(read('extension/account-permission.js').includes('Button not detected 
 assert.ok(read('extension/popup.html').includes('id="repair-account-button"'));
 assert.ok(read('extension/worker.js').includes('chrome.tabs?.onUpdated?.addListener'));
 console.log('Stable header strip and Account Manager injection diagnostics checked.');
+
+(async()=>{
+ const src=read('extension/account-page.js');
+ function fixture(pathname,withGrid){
+  let inserted=null,placement=null,reads=0,writes=0;
+  const el=()=>({style:{},children:[],append(...nodes){this.children.push(...nodes)},attachShadow(){return this.shadow=el()},setAttribute(){},addEventListener(type,fn){this[type]=fn}});
+  const grid={parentElement:{insertBefore(host,before){assert.equal(before,grid);inserted=host;placement='grid'}}};
+  const doc={getElementById:()=>inserted,createElement:el,querySelector:()=>withGrid?grid:null,body:{append(host){inserted=host;placement='fallback'}}};
+  const ctx={document:doc,location:{origin:'https://account.aq.com',pathname},captureAccountInventory:async()=>{reads++;return {items:[]}},chrome:{runtime:{sendMessage:async m=>{writes++;assert.equal(m.type,'account-stage');return {ok:true,count:2390}}}}};
+  return {ctx,state:()=>({inserted,placement,reads,writes})};
+ }
+ const a=fixture('/AQW/Inventory',true);assert.equal(vm.runInNewContext(src,a.ctx),true);assert.equal(a.state().placement,'grid');assert.equal(a.state().reads,0);
+ const host=a.state().inserted,button=host.shadow.children[0].children[0];
+ assert.equal(vm.runInNewContext(src,a.ctx),true);assert.equal(a.state().inserted,host);
+ await button.click({isTrusted:false});assert.equal(a.state().reads,0);
+ await button.click({isTrusted:true});assert.equal(a.state().reads,1);assert.equal(a.state().writes,1);assert.equal(button.textContent,'✓ Export ready');
+ const b=fixture('/AQW/Inventory',false);assert.equal(vm.runInNewContext(src,b.ctx),true);assert.equal(b.state().placement,'fallback');
+ const c=fixture('/AQW/Account',true);assert.equal(vm.runInNewContext(src,c.ctx),false);assert.equal(c.state().inserted,null);
+ console.log('Account page DOM: grid placement, fallback, idempotence, trusted-click capture and route guard passed.');
+})().catch(error=>{console.error(error);process.exitCode=1});
