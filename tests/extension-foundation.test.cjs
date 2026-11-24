@@ -71,7 +71,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal((await api.handle(msg,{url:'https://aqwwiki.wikidot.com/void-aura',frameId:1})).ok,false);
  const result=await api.handle(msg,{url:'https://aqwwiki.wikidot.com/void-aura',frameId:0});
  assert.equal(result.total,775);assert.equal(result.items,undefined);
- const runWiki=(crumbs,body='Description: item',response=result)=>{
+ const runWiki=(crumbs,body='Sellback: 0 AC; Description: item',response=result)=>{
   let request,inserted,closed;
   function el(){return {style:{},children:[],append(...x){this.children.push(...x)},attachShadow({mode}){closed=mode;return el()}}}
   const title={textContent:'Void Aura',insertAdjacentElement(_,host){inserted=host}},content={textContent:body},crumb={querySelectorAll(){return crumbs.map(x=>({href:'https://aqwwiki.wikidot.com/'+x}))}};
@@ -82,8 +82,9 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.ok(runWiki(['items','misc-items']).inserted);
  assert.equal(runWiki(['items','misc-items']).closed,'closed');
  assert.equal(runWiki(['world','shops']).request,undefined);
+ assert.equal(runWiki(['items','weapons'],'List of swords').request,undefined);
  assert.equal(runWiki(['items','swords'],'Void Aura usually refers to:').request,undefined);
- assert.equal(runWiki(['items','misc-items'],'Description: item',{ok:true,state:'unsupported'}).inserted,undefined);
+ assert.equal(runWiki(['items','misc-items'],'Sellback: 0 AC; Description: item',{ok:true,state:'unsupported'}).inserted,undefined);
  assert.equal(manifest.version,'0.3.0');assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
