@@ -111,6 +111,16 @@ function init(){
  if(kind==='quest'){
   const link=document.createElement('a');link.href='https://cptmundo.github.io/AQW-Companion/#aqwc-routines?source='+encodeURIComponent(location.pathname.replace(/^\/|\/$/g,''));
   link.target='_blank';link.rel='noopener noreferrer';link.textContent='View daily / weekly quests in Companion ↗';link.style.cssText='display:block;margin-top:6px;color:#a9ddff;font:600 12px system-ui';panel.append(link);
+  const select=document.createElement('select');select.setAttribute('aria-label','Select quest');select.style.cssText='display:block;max-width:100%;margin-top:6px;background:#19334a;color:#e5f5ff';
+  const tabs=[...content.querySelectorAll('.yui-nav li a,[role="tab"],.yui-navset .yui-nav a')].filter(a=>a.getClientRects().length);
+  const names=[...new Set(tabs.map(a=>clean(a.textContent)).filter(n=>n&&n.length<=350))];
+  for(const name of names){const opt=document.createElement('option');opt.value=name;opt.textContent=name;select.append(opt)}
+  const add=document.createElement('button');add.type='button';add.textContent='+ Add quest to Tracker';add.style.cssText=b.style.cssText;add.disabled=!names.length;
+  const feedback=document.createElement('small');feedback.style.cssText='display:block;color:#b6cddd';
+  function current(){const active=tabs.find(a=>a.getAttribute('aria-selected')==='true'||a.closest('li.selected,li.active'));if(active&&names.includes(clean(active.textContent)))select.value=clean(active.textContent)}
+  current();content.addEventListener('click',e=>{if(e.target.closest('.yui-nav a,[role="tab"]'))setTimeout(current,0)});
+  add.addEventListener('click',async e=>{if(!e.isTrusted||!select.value||add.disabled)return;add.disabled=true;try{const r=await chrome.runtime.sendMessage({type:'routine-queue-add',quest:{source:location.pathname.replace(/^\/|\/$/g,''),name:select.value}});if(!r?.ok)throw Error(r?.error||'Could not save');feedback.textContent='✓ Saved locally: '+select.value+'. Companion will pin it if the recurring quest matches its library.'}catch(err){feedback.textContent=String(err?.message||err)}finally{add.disabled=false}});
+  if(names.length)panel.append(select,add,feedback);else{feedback.textContent='No quest tabs detected. Use the library link above.';panel.append(feedback)}
   if(!groups.length){b.disabled=true;status.textContent='No supported linked inventory requirements detected.'}
  }
  shadow.append(panel);(document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);
