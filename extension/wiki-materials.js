@@ -1,4 +1,4 @@
-/* Direct merge requirements only. No recursive recipes or network requests. */
+/* Direct and user-expanded nested merge requirements. Same-origin public Wiki reads only. */
 (() => {
  'use strict';
  const marker=/^Merge the following\s*:\s*$/i;
@@ -32,42 +32,135 @@
   if(groups.reduce((n,g)=>n+g.length,0)>80)return {groups:[],incomplete:true};
   return {groups,incomplete};
  }
+ function plan(group,states,matches,rootSlug,option=0){
+  // Allocate the same actual inventory ID only once per alternative. Breadth-first
+  // reserves all direct requirements before descending into missing sub-recipes.
+  const remaining=new Map(),root=[],queue=[];let count=0,limited=false;
+  function enqueue(items,parent,multiplier,ancestors,depth,prefix){
+   if(items.length+count>80){limited=true;return false}
+   items.forEach((m,i)=>{
+    const target=m.target*multiplier,path=prefix+'.'+i;
+    const node={...m,target,path,depth,ancestors,children:[],allocated:null,missing:null,stock:null,reason:''};
+    parent.push(node);queue.push(node);count++;
+   });return true
+  }
+  enqueue(group,root,1,[rootSlug],0,String(option));
+  for(let i=0;i<queue.length;i++){
+   const n=queue[i],m=matches.get(n.name);
+   if(!Number.isSafeInteger(n.target)||n.target<1||n.target>100000000){n.reason='Quantity limit reached';continue}
+   if(n.ancestors.includes(n.slug)){n.reason='Circular dependency';continue}
+   if(!m||!['owned','not-found'].includes(m.state)){n.reason=m?.state==='ambiguous'?'Ambiguous item variant':'Inventory unavailable';continue}
+   if(m.state==='owned'){
+    if(typeof m.itemId!=='string'||!m.itemId||!Number.isSafeInteger(m.total)||m.total<0){n.reason='Inventory identity unavailable';continue}
+    if(!remaining.has(m.itemId))remaining.set(m.itemId,m.total);
+    n.stock=m.total;n.allocated=Math.min(n.target,remaining.get(m.itemId));
+    remaining.set(m.itemId,remaining.get(m.itemId)-n.allocated);
+   }else{n.stock=0;n.allocated=0}
+   n.missing=n.target-n.allocated;
+   const selected=states.get(n.path);
+   if(n.missing&&selected?.groups?.[selected.choice]){
+    if(n.depth>=4){n.reason='Maximum recipe depth reached';continue}
+    if(!enqueue(selected.groups[selected.choice],n.children,n.missing,[...n.ancestors,n.slug],n.depth+1,n.path))n.reason='Recipe size limit reached';
+   }
+  }
+  return {root,limited};
+ }
+ async function loadRecipe(origin,slug){
+  if(origin!=='https://aqwwiki.wikidot.com'||! /^[a-z0-9][a-z0-9-]{0,199}$/.test(slug))throw Error('Unsupported Wiki link');
+  const url=origin+'/'+slug,controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
+  try{
+   const r=await fetch(url,{credentials:'omit',redirect:'error',referrerPolicy:'no-referrer',signal:controller.signal});
+   if(!r.ok||r.url!==url||!String(r.headers.get('content-type')).includes('text/html'))throw Error('Wiki page unavailable');
+   if(!r.body||Number(r.headers.get('content-length'))>1500000)throw Error('Wiki page too large');
+   const reader=r.body.getReader(),decoder=new TextDecoder();let html='',size=0;
+   try{while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>1500000){await reader.cancel();throw Error('Wiki page too large')}html+=decoder.decode(value,{stream:true})}html+=decoder.decode()}finally{reader.releaseLock()}
+   const template=document.createElement('template');template.innerHTML=html;
+   const doc=template.content,content=doc.querySelector('#page-content');
+   const body=String(content?.textContent||'');
+   const crumb=doc.querySelector('#breadcrumbs')||doc.querySelector('.breadcrumbs, #breadcrumb, .breadcrumb');
+   const links=[...(crumb?.querySelectorAll('a[href]')||[])];
+   if(!content||!doc.querySelector('#page-title')||!/\bSellback\s*:/i.test(body)||!/\bDescription\s*:/i.test(body)||/\busually refers to\s*:/i.test(body)||links.length&&!links.some(a=>{try{return new URL(a.getAttribute('href'),url).pathname.replace(/^\/|\/$/g,'')==='items'}catch{return false}}))return {groups:[],incomplete:true};
+   return parse(content,origin);
+  }finally{clearTimeout(timer)}
+ }
  function render(card,content,origin){
   const {groups,incomplete}=parse(content,origin);
   if(!groups.length&&!incomplete)return;
-  const panel=document.createElement('section');panel.style.cssText='margin-top:12px;padding-top:10px;border-top:1px solid #38566d;min-width: min(300px, 100%);';
+  const panel=document.createElement('section');panel.style.cssText='margin-top:12px;padding-top:10px;border-top:1px solid #38566d;min-width:min(300px,100%);max-width:100%;';
   const heading=document.createElement('strong');heading.textContent='Required Materials';panel.append(heading);card.append(panel);
-  const addNote=text=>{const n=document.createElement('div');n.textContent=text;n.style.cssText='font-size:11px;color:#b6cddd;margin:5px 0;font-weight:400';panel.append(n)};
-  addNote('Direct merge ingredients · synced Inventory + Bank. Does not check shop access or prerequisites.');
-  if(incomplete)addNote('Some recipe rows could not be read; check the original Wiki requirements.');
+  const note=text=>{const n=document.createElement('div');n.textContent=text;n.style.cssText='font-size:11px;color:#b6cddd;margin:5px 0;font-weight:400';return n};
+  panel.append(note('Direct merge ingredients · synced Inventory + Bank. Expand missing materials to view their own merge recipes. Stock is reserved once per option; alternative root recipes are independent.'));
+  if(incomplete)panel.append(note('Some recipe rows could not be read; check the original Wiki requirements.'));
   if(!groups.length)return;
-  const names=[...new Set(groups.flat().map(x=>x.name))];
-  const rows=[];
-  groups.forEach((group,i)=>{
-   if(groups.length>1){const label=document.createElement('div');label.textContent='Merge option '+(i+1)+' (separate recipe)';label.style.cssText='margin-top:10px;color:#a9ddff';panel.append(label)}
-   for(const material of group){
-    const row=document.createElement('div');row.style.cssText='margin-top:8px';
-    const top=document.createElement('div');top.style.cssText='display:flex;align-items:baseline;justify-content:space-between;gap:12px';
-    const link=document.createElement('a');link.href=origin+'/'+material.slug;link.textContent=material.name;link.style.cssText='color:#a9ddff;text-decoration:underline;overflow-wrap:anywhere';
-    const status=document.createElement('span');status.textContent='… / '+material.target.toLocaleString();status.style.whiteSpace='nowrap';top.append(link,status);
-    const track=document.createElement('div'),fill=document.createElement('div');track.style.cssText='height:5px;border-radius:4px;background:#091622;overflow:hidden;margin-top:4px';fill.style.cssText='height:100%;width:0%;background:#58bce8';track.append(fill);row.append(top,track);panel.append(row);rows.push({material,status,fill});
-   }
-  });
-  const unavailable=()=>{for(const {status,material} of rows){status.textContent='? / '+material.target.toLocaleString();status.style.color='#ffdb93'}addNote('Inventory unavailable. Sync in Companion and refresh this page.')};
-  try{chrome.runtime.sendMessage({type:'wiki-material-lookup',names},result=>{
-   if(chrome.runtime.lastError||!result?.ok||!Array.isArray(result.matches)||result.matches.length!==names.length){unavailable();return}
-   const matches=new Map(names.map((name,i)=>[name,result.matches[i]]));
-   for(const {material,status,fill} of rows){
-    const m=matches.get(material.name),target=material.target;
-    if(!m||!['owned','not-found'].includes(m.state)){status.textContent='? / '+target.toLocaleString();status.style.color='#ffdb93';status.title=m?.state==='ambiguous'?'Ambiguous item variant; check Companion':'Inventory not synced';continue}
-    const count=m.state==='owned'?m.total:0,done=count>=target;
-    status.textContent=(done?'✓ ':count?'◐ ':'✕ ')+count.toLocaleString()+' / '+target.toLocaleString();
-    status.style.color=done?'#90edb5':count?'#ffdb93':'#ffc2a8';fill.style.width=Math.min(100,count/target*100)+'%';fill.style.background=done?'#57ca91':count?'#e9b958':'#e58b7c';
-    status.title='Inventory: '+(m.inventory||0)+' · Bank: '+(m.bank||0);
-   }
-   if(result.syncedAt)addNote('Inventory synced: '+new Date(result.syncedAt).toLocaleString());
-   else addNote('No inventory synced yet.');
-  })}catch{unavailable()}
+  const tree=document.createElement('div'),statusLine=note('Checking synced inventory…');statusLine.setAttribute('role','status');panel.append(tree,statusLine);
+  const states=new Map(),cache=new Map(),names=new Set(groups.flat().map(x=>x.name));let matches=new Map(),busy=true,requests=0;
+  const rootSlug=location.pathname.replace(/^\/|\/$/g,'');
+  async function lookup(){
+   const list=[...names];if(list.length>80)throw Error('Recipe material limit reached');
+   const r=await chrome.runtime.sendMessage({type:'wiki-material-lookup',names:list});
+   if(!r?.ok||!Array.isArray(r.matches)||r.matches.length!==list.length)throw Error('Inventory unavailable; refresh after syncing');
+   matches=new Map(list.map((name,i)=>[name,r.matches[i]]));
+   statusLine.textContent=r.syncedAt?'Inventory synced: '+new Date(r.syncedAt).toLocaleString():'No inventory synced yet.';
+  }
+  function button(text){
+   const b=document.createElement('button');b.type='button';b.textContent=text;b.disabled=busy;
+   b.style.cssText='font:600 11px system-ui;color:#a9ddff;background:#19334a;border:1px solid #466781;border-radius:4px;padding:2px 5px;cursor:pointer;white-space:nowrap';return b
+  }
+  async function expand(n){
+   if(busy)return;
+   let s=states.get(n.path);
+   if(s){s.open=!s.open;draw();return}
+   s={open:true,choice:-1,groups:[],incomplete:false,error:''};states.set(n.path,s);
+   busy=true;statusLine.textContent='Reading Wiki recipe…';draw();
+   try{
+    let recipe=cache.get(n.slug);
+    if(!recipe){if(requests>=20)throw Error('Wiki recipe request limit reached');requests++;recipe=await loadRecipe(origin,n.slug);cache.set(n.slug,recipe)}
+    const next=new Set([...names,...recipe.groups.flat().map(x=>x.name)]);
+    if(next.size>80)throw Error('Recipe material limit reached');
+    for(const name of next)names.add(name);
+    await lookup();
+    s.groups=recipe.groups;s.incomplete=recipe.incomplete;s.choice=recipe.groups.length===1&&!recipe.incomplete?0:-1;
+   }catch(err){s.error=String(err?.message||err);statusLine.textContent='Some nested requirements could not be loaded.'}
+   finally{busy=false;draw()}
+  }
+  function draw(){
+   tree.replaceChildren();
+   groups.forEach((group,i)=>{
+    const p=plan(group,states,matches,rootSlug,i);
+    if(groups.length>1){const label=note('Merge option '+(i+1)+' (separate recipe)');label.style.color='#a9ddff';tree.append(label)}
+    if(!busy){const ready=p.root.filter(n=>n.missing===0).length;tree.append(note(ready+' / '+p.root.length+' direct ingredients ready · nested progress below'))}
+    function drawNode(n,container){
+     const row=document.createElement('div');row.style.cssText='margin-top:8px;min-width:0';
+     const top=document.createElement('div');top.style.cssText='display:flex;align-items:baseline;justify-content:space-between;gap:8px';
+     const nameBox=document.createElement('div');nameBox.style.cssText='display:flex;align-items:center;gap:5px;min-width:0';
+     const s=states.get(n.path);
+     if(n.missing>0&&n.depth<4&&!n.reason){const b=button(s?.open?'▾':'▸');b.setAttribute('aria-label',(s?.open?'Collapse ':'Expand recipe for ')+n.name);b.setAttribute('aria-expanded',String(!!s?.open));b.addEventListener('click',e=>{if(e.isTrusted)expand(n)});nameBox.append(b)}
+     const a=document.createElement('a');a.href=origin+'/'+n.slug;a.textContent=n.name;a.style.cssText='color:#a9ddff;text-decoration:underline;overflow-wrap:anywhere';nameBox.append(a);
+     const status=document.createElement('span');status.style.whiteSpace='nowrap';const done=n.missing===0,known=n.allocated!==null;
+     status.textContent=(known?(done?'✓ ':n.allocated?'◐ ':'✕ ')+n.allocated.toLocaleString():'?')+' / '+n.target.toLocaleString();
+     status.style.color=done?'#90edb5':!known||n.allocated?'#ffdb93':'#ffc2a8';
+     if(known)status.title='Synced stock: '+n.stock.toLocaleString()+' · allocated to this requirement: '+n.allocated.toLocaleString();
+     top.append(nameBox,status);row.append(top);
+     const track=document.createElement('div'),fill=document.createElement('div');track.style.cssText='height:5px;border-radius:4px;background:#091622;overflow:hidden;margin-top:4px';fill.style.cssText='height:100%;width:'+(known?Math.min(100,n.allocated/n.target*100):0)+'%;background:'+(done?'#57ca91':n.allocated?'#e9b958':'#e58b7c');track.append(fill);row.append(track);container.append(row);
+     if(n.reason)row.append(note(n.reason));
+     if(!s?.open||!n.missing)return;
+     const nested=document.createElement('div');nested.style.cssText='margin:5px 0 0 8px;padding-left:10px;border-left:1px solid #38566d';row.append(nested);
+     if(s.error){nested.append(note(s.error));const retry=button('Retry');retry.addEventListener('click',e=>{if(e.isTrusted&&!busy){states.delete(n.path);expand(n)}});nested.append(retry);return}
+     if(busy&&!s.groups.length){nested.append(note('Loading…'));return}
+     if(s.incomplete)nested.append(note('Some requirements could not be read. Verify the original Wiki page.'));
+     if(!s.groups.length){nested.append(note('No supported direct merge recipe found. Check quests or shops on the Wiki.'));return}
+     if(s.groups.length>1||s.incomplete){
+      const select=document.createElement('select');select.setAttribute('aria-label','Recipe option for '+n.name);select.disabled=busy;select.style.cssText='max-width:100%;background:#19334a;color:#e5f5ff;border:1px solid #466781;border-radius:4px;font:12px system-ui';
+      const first=document.createElement('option');first.value='-1';first.textContent='Choose merge option';select.append(first);
+      s.groups.forEach((g,j)=>{const opt=document.createElement('option');opt.value=String(j);opt.textContent='Option '+(j+1)+' · '+g.map(x=>x.name+' ×'+x.target).join(', ');select.append(opt)});
+      select.value=String(s.choice);select.addEventListener('change',e=>{if(!e.isTrusted||busy)return;const choice=Number(select.value);if(choice!==s.choice){for(const key of states.keys())if(key.startsWith(n.path+'.'))states.delete(key);s.choice=choice}draw()});nested.append(select);
+     }
+     if(s.choice>=0){nested.append(note('Ingredients for '+n.missing.toLocaleString()+' missing · '+n.children.filter(c=>c.missing===0).length+' / '+n.children.length+' ready'));n.children.forEach(c=>drawNode(c,nested))}
+    }
+    p.root.forEach(n=>drawNode(n,tree));if(p.limited)tree.append(note('Recipe size limit reached; remaining requirements not evaluated.'));
+   })
+  }
+  draw();lookup().catch(()=>{statusLine.textContent='Inventory unavailable. Sync in Companion and refresh this page.'}).finally(()=>{busy=false;draw()});
  }
- globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,render});
+ globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render});
 })();

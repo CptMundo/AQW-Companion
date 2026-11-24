@@ -94,7 +94,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.6.3');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
+ assert.equal(manifest.version,'0.7.0');assert.deepEqual(manifest.content_scripts[2].js,['bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -132,6 +132,18 @@ console.log('Wiki Wishlist: scoped links, category suffixes, variant guard and e
  assert.equal(api.parse({querySelectorAll:()=>[marker([row('Bad','bad','1 or 2')])]},origin).incomplete,true);
  assert.equal(api.parse({querySelectorAll:()=>[marker([row('A','a',1),row('A','a',2)])]},origin).groups.length,0);
  assert.equal(api.parse({querySelectorAll:()=>[]},origin).groups.length,0);
+ const req=(name,slug,target)=>({name,slug,target});
+ const ms=new Map([['Parent',{state:'owned',itemId:'p',total:1}],['Aura',{state:'owned',itemId:'a',total:5}],['Aura (Item)',{state:'owned',itemId:'a',total:5}],['Other',{state:'not-found'}],['Unknown',{state:'ambiguous'}]]);
+ const selections=new Map([['0.0',{choice:0,groups:[[req('Aura (Item)','aura-item',3),req('Other','other',1)]]}],['0.0.1',{choice:0,groups:[[req('Parent','parent',1)]]}]]);
+ const planned=api.plan([req('Parent','parent',3),req('Aura','aura',4)],selections,ms,'root');
+ assert.equal(planned.root[0].missing,2);assert.equal(planned.root[1].allocated,4);
+ assert.equal(planned.root[0].children[0].target,6);assert.equal(planned.root[0].children[0].allocated,1);
+ assert.equal(planned.root[0].children[1].children[0].reason,'Circular dependency');
+ assert.equal(api.plan([req('Aura','aura',5)],new Map(),ms,'root',1).root[0].allocated,5);
+ assert.equal(api.plan([req('Unknown','unknown',1)],new Map(),ms,'root').root[0].allocated,null);
+ assert.equal(api.plan([req('Parent','parent',1)],selections,ms,'root').root[0].children.length,0);
+ assert.equal(api.plan([req('Parent','parent',3)],new Map([['0.0',{choice:-1,groups:[[req('Aura','aura',3)],[req('Other','other',1)]]}]]),ms,'root').root[0].children.length,0);
+
  const stored={items:[{ID:'1',Name:'Void Aura',Type:'Item',Count:12,Bank:0},{ID:'1',Name:'Void Aura',Type:'Item',Count:8,Bank:1},{ID:'2',Name:'Necrotic Sword of Doom',Type:'Sword',Count:1,Bank:0},{ID:'3',Name:'Same',Type:'Item',Count:1,Bank:0},{ID:'4',Name:'Same',Type:'Sword',Count:1,Bank:1}],syncedAt:'2026-11-24'};
  const chromeMock={runtime:{onMessage:{addListener(){}},getURL:x=>'chrome-extension://test/'+x},storage:{local:{async get(k){return {[k]:stored}}}}};
  const worker=vm.runInNewContext(read('extension/worker.js')+'\n({matchWikiMaterial,handle})',{chrome:chromeMock,URL,TextEncoder});
@@ -145,7 +157,7 @@ console.log('Wiki Wishlist: scoped links, category suffixes, variant guard and e
  assert.equal(worker.matchWikiMaterial(stored,'Absent').state,'not-found');
  assert.equal(worker.matchWikiMaterial(null,'Void Aura').state,'unsynced');
  const msg={type:'wiki-material-lookup',names:['Void Aura','Absent']},sender={url:origin+'/necrotic-sword-of-doom-sword',frameId:0};
- const response=await worker.handle(msg,sender);assert.equal(response.matches[0].total,20);assert.equal(response.matches[1].state,'not-found');assert.equal(response.items,undefined);
+ const response=await worker.handle(msg,sender);assert.equal(response.matches[0].total,20);assert.equal(response.matches[0].itemId,'1');assert.equal(response.matches[1].state,'not-found');assert.equal(response.items,undefined);
  assert.equal((await worker.handle(msg,{...sender,frameId:1})).ok,false);
  assert.equal((await worker.handle(msg,{url:'https://example.org/item',frameId:0})).ok,false);
  assert.equal((await worker.handle({...msg,names:Array(81).fill('x')},sender)).ok,false);
