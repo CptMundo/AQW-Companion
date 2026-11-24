@@ -1099,3 +1099,16 @@ body{background:#0a1420!important}
 .top .inventory-header-status{display:grid;grid-template-columns:minmax(0,1fr);width:100%;min-width:0;text-align:right;gap:2px;line-height:1.25;contain:inline-size}
 .inventory-header-status span{overflow-wrap:anywhere}
 @media(max-width:700px){.top .inventory-header-actions{width:100%;justify-items:end}.top .inventory-tools{max-width:100%;justify-content:flex-end}}
+
+/* Import & Sync is the normal workflow; recovery tools stay accessible on demand. */
+.top .inventory-header-actions{width:min(100%,440px)}
+.top .inventory-advanced{position:relative;flex:none}
+.top .inventory-advanced summary{display:flex;align-items:center;gap:4px;list-style:none;cursor:pointer;border:1px solid transparent;border-radius:6px;min-height:32px;padding:7px 9px;font-size:12px;font-weight:600;white-space:nowrap}
+.top .inventory-advanced summary::-webkit-details-marker{display:none}
+.top .inventory-advanced summary:hover,.top .inventory-advanced[open] summary{background:var(--panel2);border-color:var(--line)}
+.top .inventory-advanced-menu{position:absolute;right:0;top:calc(100% + 7px);z-index:200;width:min(270px,calc(100vw - 40px));display:grid;gap:5px;padding:9px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);box-shadow:0 8px 22px #0006;text-align:left}
+.top .inventory-advanced:not([open]) .inventory-advanced-menu{display:none}
+.top .inventory-advanced-menu button,.top .inventory-advanced-menu .upload,.top .inventory-advanced-menu a{justify-content:flex-start;white-space:normal;width:100%;text-align:left}
+.top .inventory-advanced-menu #clear{border-top:1px solid var(--line);margin-top:4px;color:#ffc2a8}
+.top .inventory-header-status [data-state="success"]{color:var(--green)}
+.top .inventory-header-status [data-state="error"]{color:var(--red)}
