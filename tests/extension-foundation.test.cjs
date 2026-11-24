@@ -95,7 +95,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.12.4');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
+ assert.equal(manifest.version,'0.12.5');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -548,7 +548,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  const bridge=read('extension/bridge.js'),items=read('extension/wiki-items.js');
  assert.ok(bridge.includes('Math.min(560,Math.max(380,Math.floor(width*.38)),Math.floor(width-590))'));
  assert.ok(bridge.includes('max-width:560px'));
- assert.ok(bridge.includes('function mountFarm(panel,content,sourceShadow)'));assert.ok(bridge.includes('node.insertAdjacentElement(where,host)'));assert.ok(read('extension/wiki-items.js').includes('mountFarm?.(farming,content,shadow)'));assert.ok(!read('extension/wiki-theme.js').includes('width:max-content!important'));assert.ok(read('extension/wiki-quest-shop.js').includes("g.role==='requirement'?main:aside"));assert.ok(bridge.includes('data-aqwc-layout'));assert.ok(bridge.includes('.aqwc-quest-choice[aria-pressed'));
+ assert.ok(bridge.includes('function mountFarm(panel,content,sourceShadow)'));assert.ok(bridge.includes('node.insertAdjacentElement(where,workspace)'));assert.ok(read('extension/wiki-items.js').includes('mountFarm?.(farming,content,shadow)'));assert.ok(!read('extension/wiki-theme.js').includes('width:max-content!important'));assert.ok(read('extension/wiki-quest-shop.js').includes("g.role==='requirement'?main:aside"));assert.ok(bridge.includes('data-aqwc-layout'));assert.ok(bridge.includes('.aqwc-quest-choice[aria-pressed'));
  assert.ok(read('extension/wiki-theme.js').includes('aqwc-showcase-image'));assert.ok(read('extension/wiki-items.js').includes('img.naturalWidth>=200'));
  assert.ok(items.includes('heading.append(itemTitle,line)'));
  assert.ok(bridge.includes('.aqwc-item-heading .aqwc-state'));
@@ -669,3 +669,5 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.ok(read('extension/wiki-theme.js').includes('aqwc-faithful-wordmark'));
  const svg=read('extension/prometheus-helm.svg'),data=svg.match(/data:image\/webp;base64,([A-Za-z0-9+/=]+)/);assert.ok(data);const bytes=Buffer.from(data[1],'base64');assert.equal(bytes.length,3516);assert.equal(bytes.toString('ascii',0,4),'RIFF');assert.equal(bytes.toString('ascii',8,12),'WEBP');assert.equal(bytes.readUInt32LE(4)+8,bytes.length);
 }
+
+{const bridge=read('extension/bridge.js'),items=read('extension/wiki-items.js'),materials=read('extension/wiki-materials.js'),quests=read('extension/wiki-quest-shop.js');assert.ok(bridge.includes('workspace.append(host,statusHost)'));assert.ok(items.includes('if(!aligned)mountStatus()'));assert.ok(bridge.includes('function styleItem(content)'));assert.ok(materials.includes('Sub-recipe · Craft'));assert.ok(quests.includes('content.hidden=choices.some'));assert.ok(read('extension/wiki-theme.js').includes('aqwc-wordmark-accent'));}

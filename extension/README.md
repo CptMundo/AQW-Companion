@@ -95,3 +95,6 @@ Restore native top menu geometry; move the existing farming panel after the reco
 
 ### v0.12.4
 Correct Price label matching and fallback placement; original recipe DOM retained. One compact quest detail surface with aligned metadata strip and objectives; direct verified item-location join controls, including Mermaid Sushi. Prometheus banner uses owner-provided game helm reference with local image and new wordmark, retains right-hand background art. No added permissions. Browser QA required.
+
+### v0.12.5
+Aligned item workspace with the existing status and farming panels in one responsive grid; grouped native item content while preserving original nodes, links, images and credits; consistent nested recipe rows; original quest content collapsed on recognized pages with accessible toggle; restored artwork on both sides of localized wordmark. No permissions or inventory logic changes. Browser validation required.

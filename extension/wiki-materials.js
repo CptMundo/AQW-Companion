@@ -286,11 +286,12 @@
     const p=plan(group,states,matches,rootSlug,i);
     if(!busy&&group.some(n=>!cache.has(n.slug)&&!Object.hasOwn(compactHints,n.slug)&&!reviewedSources(n.slug))&&requests<20){const load=button('Load material sources');load.className='aqwc-preview-load';load.addEventListener('click',e=>{if(e.isTrusted)loadPreviews(group)});tree.append(load)}
     if(!busy){const ready=p.root.filter(n=>n.missing===0).length;tree.append(note(ready+' / '+p.root.length+' materials ready'));const track=document.createElement('div'),fill=document.createElement('div');track.style.cssText='height:6px;background:#0a1926;border-radius:6px;overflow:hidden';fill.style.cssText='height:100%;background:#53c7e6;width:'+(p.root.length?ready/p.root.length*100:0)+'%';track.setAttribute('aria-label',ready+' of '+p.root.length+' direct ingredients ready');track.append(fill);tree.append(track)}
+    const columns=document.createElement('div');columns.className='aqwc-column-labels';for(const label of ['Material','Acquisition / map','Progress']){const cell=document.createElement('span');cell.textContent=label;columns.append(cell)}tree.append(columns);
     function drawNode(n,container){
      const row=document.createElement('div');row.className='aqwc-material-row';
      const top=document.createElement('div');top.className='aqwc-material-top';
      const nameBox=document.createElement('div');nameBox.style.cssText='display:flex;align-items:center;gap:5px;min-width:0';
-     const s=states.get(n.path);
+     const s=states.get(n.path);row.setAttribute('data-open',String(!!s?.open));
      if(n.missing>0&&n.depth<4&&!n.reason){const b=button(s?.open?'▾':'▸');b.setAttribute('aria-label',(s?.open?'Collapse ':'How to get ')+n.name);b.setAttribute('aria-expanded',String(!!s?.open));b.addEventListener('click',e=>{if(e.isTrusted)expand(n)});nameBox.append(b)}
      const a=document.createElement('a');a.href=origin+'/'+n.slug;a.textContent=n.name;a.style.cssText='color:#a9ddff;text-decoration:underline;overflow-wrap:anywhere';nameBox.append(a);
      const status=document.createElement('span');status.style.whiteSpace='nowrap';const done=n.missing===0,known=n.allocated!==null;
@@ -299,7 +300,7 @@
      if(known)status.title='Synced stock: '+n.stock.toLocaleString()+' · allocated to this requirement: '+n.allocated.toLocaleString();
      top.append(nameBox,status);row.append(top);if(known&&n.missing>0)status.title+=(status.title?' · ':'')+n.missing.toLocaleString()+' remaining';
      container.append(row);
-     if(!s?.open)compactSummary(row,n.slug,cache.get(n.slug),origin);
+     compactSummary(row,n.slug,cache.get(n.slug),origin);
      if(n.reason)row.append(note(n.reason));
      if(!s?.open||!n.missing)return;
      const nested=document.createElement('div');nested.className='aqwc-material-nested';row.append(nested);
@@ -314,7 +315,7 @@
       s.groups.forEach((g,j)=>{const opt=document.createElement('option');opt.value=String(j);opt.textContent='Option '+(j+1)+' · '+g.map(x=>x.name+' ×'+x.target).join(', ');select.append(opt)});
       select.value=String(s.choice);select.addEventListener('change',e=>{if(!e.isTrusted||busy)return;const choice=Number(select.value);if(choice!==s.choice){for(const key of states.keys())if(key.startsWith(n.path+'.'))states.delete(key);s.choice=choice}draw()});nested.append(select);
      }
-     if(s.choice>=0){nested.append(note('Craft ×'+n.missing.toLocaleString()+' · '+n.children.filter(c=>c.missing===0).length+'/'+n.children.length+' ready'));n.children.forEach(c=>drawNode(c,nested))}
+     if(s.choice>=0){const subLabel=note('Sub-recipe · Craft ×'+n.missing.toLocaleString()+' · '+n.children.filter(c=>c.missing===0).length+'/'+n.children.length+' ready');subLabel.className='aqwc-subrecipe-label';nested.append(subLabel);n.children.forEach(c=>drawNode(c,nested))}
     }
     p.root.forEach(n=>drawNode(n,tree));if(p.limited)tree.append(note('Recipe size limit reached; remaining requirements not evaluated.'));
    })
