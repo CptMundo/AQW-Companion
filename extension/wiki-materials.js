@@ -171,14 +171,14 @@
   if(!content||![...(crumb?.querySelectorAll('a[href]')||[])].some(a=>sourceLink(a,origin)?.slug==='monsters'))return null;
   const urls=new Set();
   for(const img of content.querySelectorAll('img[src]')){
-   if(img.closest('table,.page-rate-widget-box')||/small\.|large\.|icon|badge|logo|star|button|blank/i.test(img.getAttribute('src')||''))continue;
+   if(img.closest('table,.page-rate-widget-box')||/(?:^|\/)(?:(?:ac|legend|rare|seasonal|special|pseudo|member|free)(?:small|large)|(?:star|stars|icon|badge|logo|button|blank)[-_0-9]*)\.(?:png|gif|jpe?g|webp)(?:\?|$)/i.test(img.getAttribute('src')||''))continue;
    try{const u=new URL(img.getAttribute('src'),origin+'/'+slug);if(u.username||u.password||!/\.(png|jpe?g|webp|gif)$/i.test(u.pathname)||!(u.hostname==='aqwwiki.wikidot.com'||u.hostname.endsWith('.wdfiles.com')||u.hostname==='i.imgur.com'))continue;if(u.protocol==='http:')u.protocol='https:';if(u.protocol!=='https:')continue;urls.add(u.href)}catch{}
   }
   return urls.size===1?[...urls][0]:null;
  }
  function monsterPreview(origin,slug){
   if(monsterCache.has(slug))return monsterCache.get(slug);
-  if(monsterRequests>=12)return Promise.resolve(null);monsterRequests++;
+  if(monsterRequests>=32)return Promise.resolve(null);monsterRequests++;
   const p=monsterQueue.then(()=>loadDocument(origin,slug)).then(doc=>monsterImage(doc,origin,slug)).catch(()=>null);monsterQueue=p.then(()=>{});monsterCache.set(slug,p);return p;
  }
  async function loadRecipe(origin,slug){
