@@ -1,6 +1,7 @@
 (() => {
  'use strict';
  if(location.origin!=='https://aqwwiki.wikidot.com'||!/^\/[a-z0-9][a-z0-9-]*\/?$/.test(location.pathname))return;
+ if(globalThis.AQWCListOwnership?.categoryFor(location.pathname))return;
  const title=document.getElementById('page-title'),content=document.getElementById('page-content');
  if(!title||!content||document.getElementById('aqwc-item-status'))return;
  const raw=String(content.textContent||'');
