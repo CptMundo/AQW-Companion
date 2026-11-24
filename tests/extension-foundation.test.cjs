@@ -95,7 +95,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(['world','shops'],'Sellback: 0 AC\nType: Item\nDescription: Shop').request,undefined);
  assert.ok(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
- assert.equal(manifest.version,'0.12.3');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
+ assert.equal(manifest.version,'0.12.4');assert.equal(manifest.content_scripts.length,3);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -548,7 +548,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  const bridge=read('extension/bridge.js'),items=read('extension/wiki-items.js');
  assert.ok(bridge.includes('Math.min(560,Math.max(380,Math.floor(width*.38)),Math.floor(width-590))'));
  assert.ok(bridge.includes('max-width:560px'));
- assert.ok(bridge.includes('function mountFarm(panel,content,sourceShadow)'));assert.ok(bridge.includes("anchor.insertAdjacentElement('afterend',host)"));assert.ok(read('extension/wiki-items.js').includes('mountFarm?.(farming,content,shadow)'));assert.ok(!read('extension/wiki-theme.js').includes('width:max-content!important'));assert.ok(read('extension/wiki-quest-shop.js').includes("g.role==='requirement'?main:aside"));assert.ok(bridge.includes('data-aqwc-layout'));assert.ok(bridge.includes('.aqwc-quest-choice[aria-pressed'));
+ assert.ok(bridge.includes('function mountFarm(panel,content,sourceShadow)'));assert.ok(bridge.includes('node.insertAdjacentElement(where,host)'));assert.ok(read('extension/wiki-items.js').includes('mountFarm?.(farming,content,shadow)'));assert.ok(!read('extension/wiki-theme.js').includes('width:max-content!important'));assert.ok(read('extension/wiki-quest-shop.js').includes("g.role==='requirement'?main:aside"));assert.ok(bridge.includes('data-aqwc-layout'));assert.ok(bridge.includes('.aqwc-quest-choice[aria-pressed'));
  assert.ok(read('extension/wiki-theme.js').includes('aqwc-showcase-image'));assert.ok(read('extension/wiki-items.js').includes('img.naturalWidth>=200'));
  assert.ok(items.includes('heading.append(itemTitle,line)'));
  assert.ok(bridge.includes('.aqwc-item-heading .aqwc-state'));
@@ -653,3 +653,19 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
 }
 
 // Visual refinements retain the original article and native menu.
+
+{
+ const bridge=read('extension/bridge.js');
+ const fn=bridge.slice(bridge.indexOf('  function priceAnchor('),bridge.indexOf('  function mountFarm('));
+ const priceAnchor=vm.runInNewContext(fn+'\npriceAnchor',{});
+ const br={nodeName:'BR'},p={nodeName:'P'},marker={textContent:'Price:',nextSibling:{nodeName:'#text',nextSibling:br},closest:()=>p};
+ const content={querySelectorAll:s=>s==='strong,b'?[marker]:[],contains:x=>x===p};
+ assert.equal(priceAnchor(content).node,br);assert.equal(priceAnchor(content).where,'afterend');
+ marker.textContent='Price';marker.nextSibling={nodeName:'#text',nextSibling:null};assert.equal(priceAnchor(content).node,p);
+ marker.textContent='Rarity:';const ul={textContent:'Merge the following: Blade x1'};content.querySelectorAll=s=>s==='strong,b'?[marker]:[ul];assert.equal(priceAnchor(content).node,ul);assert.equal(priceAnchor(content).where,'beforebegin');
+ content.querySelectorAll=()=>[];assert.equal(priceAnchor(content).node,content);
+ assert.ok(read('extension/wiki-materials.js').includes("'mermaid-sushi':'mermaidsushi'"));
+ assert.ok(read('extension/wiki-items.js').includes('joinControl(row,source,location.origin)'));
+ assert.ok(read('extension/wiki-theme.js').includes('aqwc-faithful-wordmark'));
+ assert.ok(read('extension/prometheus-helm.svg').includes('data:image/webp;base64,'));
+}
