@@ -77,7 +77,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
   function el(){return {style:{},children:[],addEventListener(){},append(...x){this.children.push(...x)},attachShadow({mode}){closed=mode;return el()}}}
   const title={textContent:name,insertAdjacentElement(_,host){inserted=host}},content={textContent:body},crumb=crumbs===null?null:{querySelectorAll(){return crumbs.map(x=>typeof x==='string'?{href:'https://aqwwiki.wikidot.com/'+x}:{href:'https://aqwwiki.wikidot.com/'+x.slug,textContent:x.label})}};
   const doc={getElementById:id=>({'page-title':title,'page-content':content,'breadcrumbs':crumb}[id]||null),createElement:el,querySelectorAll:()=>tags.map(textContent=>({textContent}))};
-  const context={URL,URLSearchParams,location:{origin:'https://aqwwiki.wikidot.com',pathname:'/void-aura',href:'https://aqwwiki.wikidot.com/void-aura'},document:doc,chrome:{runtime:{sendMessage(m,cb){request=m;cb(response)}}}};
+  const context={URL,URLSearchParams,location:{origin:'https://aqwwiki.wikidot.com',pathname:'/void-aura',href:'https://aqwwiki.wikidot.com/void-aura'},document:doc,window:{addEventListener(){}},setInterval:()=>1,clearInterval(){},chrome:{runtime:{sendMessage(m,cb){if(m.type==='goal-status-read')return Promise.resolve({ok:true,state:'unknown'});request=m;cb(response)}}}};
   vm.runInNewContext(read('extension/wishlist-link.js'),context);vm.runInNewContext(read('extension/wiki-items.js'),context);
   return {request,inserted,closed};
  };
