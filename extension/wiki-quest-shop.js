@@ -159,6 +159,12 @@ function questLocationLinks(scope){
  }
  return links;
 }
+function initialQuestIndex(choices,hash=''){
+ if(!choices.length)return -1;
+ let target=String(hash||'').replace(/^#/,'');try{target=decodeURIComponent(target)}catch{}
+ if(target){const match=choices.findIndex(c=>c.tab&&[c.tab.getAttribute('href'),c.tab.getAttribute('aria-controls')].some(v=>v&&v.replace(/^#/,'')===target));if(match>=0)return match}
+ return 0;
+}
 function questCards(panel,content,title){
  const source=location.pathname.replace(/^\/|\/$/g,'');
  const link=document.createElement('a');link.href='https://cptmundo.github.io/AQW-Companion/#aqwc-pinned-quests';link.target='_blank';link.rel='noopener noreferrer';link.textContent='View pinned quests ↗';link.className='aqwc-quest-link';panel.append(link);
@@ -168,14 +174,16 @@ function questCards(panel,content,title){
 
  const cards=document.createElement('div');cards.className='aqwc-quest-cards';const selected=document.createElement('div');selected.className='aqwc-selected-quest';panel.append(cards,selected);
  const choices=tabs.length?tabs.filter(a=>clean(a.textContent)&&clean(a.textContent).length<=350).map(a=>({name:clean(a.textContent),tab:a})): [{name:clean(title.textContent),tab:null}];
+ const displayed=choices.slice(0,100),openers=[];
+ if(displayed.length===1){cards.hidden=true;cards.style.display='none'}
+ else cards.setAttribute('aria-label','Available quests');
  let active=null,activeButton=null;
- for(const {name,tab} of choices.slice(0,100)){
+ for(const {name,tab} of displayed){
   const tabButton=document.createElement('button');tabButton.type='button';tabButton.className='aqwc-quest-choice';tabButton.textContent=name;tabButton.setAttribute('aria-pressed','false');cards.append(tabButton);
   const detail=document.createElement('section');detail.className='aqwc-quest-card';detail.hidden=true;const summary=document.createElement('strong');summary.className='aqwc-selected-heading';summary.textContent=name;detail.append(summary);const body=document.createElement('div');body.className='aqwc-quest-body';detail.append(body);selected.append(detail);
   let built=false;
-  tabButton.addEventListener('click',async e=>{
-   if(!e.isTrusted)return;
-   if(active===detail){detail.hidden=true;tabButton.setAttribute('aria-pressed','false');active=null;activeButton=null;return}
+  async function openQuest(){
+   if(active===detail&&built)return;
    if(active){active.hidden=true;activeButton.setAttribute('aria-pressed','false')}
    active=detail;activeButton=tabButton;detail.hidden=false;tabButton.setAttribute('aria-pressed','true');
    if(built)return;
@@ -222,10 +230,14 @@ function questCards(panel,content,title){
    }
    if(!lists.length){const n=document.createElement('small');n.textContent='No structured objectives found. Check the Wiki quest text.';main.append(n)}
    if(name){const add=document.createElement('button');add.type='button';add.className='aqwc-primary';add.textContent='📌 Pin quest to Companion';const feedback=document.createElement('small');feedback.setAttribute('role','status');let queued=false;const complete=document.createElement('button');complete.type='button';complete.className='aqwc-primary';complete.textContent='Mark quest complete';complete.hidden=true;const actions=document.createElement('div');actions.className='aqwc-quest-actions';actions.append(add,complete,feedback);main.append(actions);aside.hidden=!aside.children.length;async function readPin(){if(detail.hidden||document.hidden)return;try{const r=await chrome.runtime.sendMessage({type:'goal-status-read',query:{kind:'quest',name}});if(!r?.ok)return;if(r.state==='saved'){queued=false;add.textContent=r.completed?'✓ Completed (manual)':'✓ Pinned';add.disabled=true;complete.hidden=!!r.completed;if(r.completed){complete.disabled=false;complete.textContent='Mark quest complete'}feedback.textContent='Companion synced '+new Date(r.at).toLocaleTimeString()}else if(r.state==='absent'&&!queued){add.textContent='📌 Pin quest to Companion';add.disabled=false;complete.hidden=true}else if(r.state==='unknown'){feedback.textContent='Open Companion to sync pin status'}}catch{}}complete.addEventListener('click',async e=>{if(!e.isTrusted||complete.disabled)return;complete.disabled=true;try{const r=await chrome.runtime.sendMessage({type:'quest-pin-complete',quest:{source,name}});if(!r?.ok)throw Error(r?.error||'Could not queue completion');complete.textContent='✓ Completion queued';feedback.textContent='Manual completion queued · open Companion to sync.'}catch(err){feedback.textContent=String(err?.message||err);complete.disabled=false}});readPin();const timer=setInterval(readPin,10000);window.addEventListener('pagehide',()=>clearInterval(timer),{once:true});add.addEventListener('click',async e=>{if(!e.isTrusted||add.disabled)return;add.disabled=true;try{const result=await chrome.runtime.sendMessage({type:'quest-pin-add',quest:{source,name}});if(!result?.ok)throw Error(result?.error||'Could not save');feedback.textContent='Pin queued · open Companion to sync.';add.textContent='✓ Pin queued';queued=true}catch(err){feedback.textContent=String(err?.message||err)}finally{add.disabled=false}})}
-  });
+  }
+  openers.push(openQuest);
+  tabButton.addEventListener('click',e=>{if(e.isTrusted)void openQuest().catch(()=>{body.textContent='Quest details could not be loaded. Show original Wiki content to continue.';built=false})});
  }
  const hideStyle=document.createElement('style');hideStyle.textContent='#page-content[hidden]{display:none!important}';(document.head||document.documentElement).append(hideStyle);
  const original=document.createElement('button');original.type='button';original.className='aqwc-original-toggle';content.hidden=choices.some(({name,tab})=>tab?!!questScope(content,[tab],name):questLists(content).length>0);original.textContent=content.hidden?'▾ Show original Wiki content':'▴ Hide original Wiki content';original.setAttribute('aria-expanded',String(!content.hidden));panel.append(original);original.addEventListener('click',e=>{if(!e.isTrusted)return;content.hidden=!content.hidden;original.textContent=content.hidden?'▾ Show original Wiki content':'▴ Hide original Wiki content';original.setAttribute('aria-expanded',String(!content.hidden))});
+ const initial=initialQuestIndex(displayed,location.hash);
+ if(initial>=0)void openers[initial]().catch(()=>{content.hidden=false;original.textContent='▴ Hide original Wiki content';original.setAttribute('aria-expanded','true')});
  if(choices.length>100){const n=document.createElement('small');n.textContent='Showing first 100 quests; see Wiki for the rest.';panel.append(n)}
 }
 function init(){
@@ -240,7 +252,7 @@ function init(){
  const note=document.createElement('small');note.style.cssText='display:block;color:#b6cddd;font-weight:400';note.textContent=kind==='quest'?'Select a quest to check its linked requirements and rewards. Stock is not proof of quest completion.':'Check linked shop costs against your synced stock. Purchase eligibility is not checked.';
  const b=document.createElement('button');b.type='button';b.textContent=kind==='quest'?'Check quest materials':'Show inventory status';b.style.cssText='margin-top:6px;padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;cursor:pointer';
  const status=document.createElement('small');status.setAttribute('role','status');status.style.cssText='display:block;color:#b6cddd;font-weight:400;margin-top:4px';
- const ui=globalThis.AQWCWikiUI;ui?.decorate(shadow,panel,kind==='quest'?'Quest tools':'Shop tools');if(ui)panel.style.cssText='';b.className='aqwc-primary';
+ const ui=globalThis.AQWCWikiUI;ui?.decorate(shadow,panel,kind==='quest'?'Quest details':'Shop tools');if(ui)panel.style.cssText='';b.className='aqwc-primary';
  if(kind==='quest'){panel.classList.add('aqwc-quest-top');questCards(panel,content,title);shadow.append(panel);host.style.cssText='display:block;float:none;width:100%;max-width:100%;margin:8px 0 16px;';if(content.parentElement)content.parentElement.insertBefore(host,content);else (document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);return}
  const summary=document.createElement('section');summary.className='aqwc-section';summary.hidden=true;
  // Shops show local stock badges automatically, without mounting any inventory card.
@@ -270,6 +282,6 @@ function init(){
  }
  void checkShop();
 }
-globalThis.AQWCQuestShop=Object.freeze({pageKind,quantity,questQuantity,linkedRow,shopCosts,collect,labels,questScope,questLists,questLocationLinks});
+globalThis.AQWCQuestShop=Object.freeze({pageKind,quantity,questQuantity,linkedRow,shopCosts,collect,labels,questScope,questLists,questLocationLinks,initialQuestIndex});
 if(typeof document!=='undefined')init();
 })();
