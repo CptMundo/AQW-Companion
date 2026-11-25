@@ -325,7 +325,7 @@
    groups.forEach((group,i)=>{if(i!==activeOption)return;
     const p=plan(group,states,matches,rootSlug,i);
     if(!busy&&group.some(n=>!cache.has(n.slug)&&!Object.hasOwn(compactHints,n.slug)&&!reviewedSources(n.slug))&&requests<20){const load=button('Load material sources');load.className='aqwc-preview-load';load.addEventListener('click',e=>{if(e.isTrusted)loadPreviews(group)});tree.append(load)}
-    if(!busy){const ready=p.root.filter(n=>n.missing===0).length;tree.append(note(ready+' / '+p.root.length+' materials ready'));const track=document.createElement('div'),fill=document.createElement('div');track.style.cssText='height:6px;background:#0a1926;border-radius:6px;overflow:hidden';fill.style.cssText='height:100%;background:#53c7e6;width:'+(p.root.length?ready/p.root.length*100:0)+'%';track.setAttribute('aria-label',ready+' of '+p.root.length+' direct ingredients ready');track.append(fill);tree.append(track)}
+    if(!busy){const ready=p.root.filter(n=>n.missing===0).length,total=p.root.length,pct=total?Math.round(ready/total*100):0;const overview=document.createElement('div'),count=document.createElement('span'),percent=document.createElement('span');overview.className='aqwc-farm-overview';count.textContent=ready+' / '+total+' materials ready';percent.textContent=pct+'% ready';overview.append(count,percent);tree.append(overview);const track=document.createElement('div'),fill=document.createElement('div');track.className='aqwc-farm-track';fill.style.width=pct+'%';track.setAttribute('aria-label',ready+' of '+total+' direct ingredients ready');track.append(fill);tree.append(track)}
     const columns=document.createElement('div');columns.className='aqwc-column-labels';for(const label of ['Material','Acquisition / map','Progress']){const cell=document.createElement('span');cell.textContent=label;columns.append(cell)}tree.append(columns);
     function drawNode(n,container){
      const row=document.createElement('div');row.className='aqwc-material-row';
@@ -334,17 +334,20 @@
      const s=states.get(n.path);row.setAttribute('data-open',String(!!s?.open));
      if(n.missing>0&&n.depth<4&&!n.reason){const b=button(s?.open?'▾':'▸');b.setAttribute('aria-label',(s?.open?'Collapse ':'How to get ')+n.name);b.setAttribute('aria-expanded',String(!!s?.open));b.addEventListener('click',e=>{if(e.isTrusted)expand(n)});nameBox.append(b)}
      const a=document.createElement('a');a.href=origin+'/'+n.slug;a.textContent=n.name;a.style.cssText='color:#a9ddff;text-decoration:underline;overflow-wrap:anywhere';nameBox.append(a);
-     const status=document.createElement('span');status.style.whiteSpace='nowrap';const done=n.missing===0,known=n.allocated!==null;
-     status.textContent=(known?(done?'✓ ':n.allocated?'◐ ':'✕ ')+n.allocated.toLocaleString():'?')+' / '+n.target.toLocaleString();
+     const status=document.createElement('span');status.className='aqwc-material-progress';const done=n.missing===0,known=n.allocated!==null;
+     const count=document.createElement('span');count.className='aqwc-progress-count';count.textContent=(known?(done?'✓ ':n.allocated?'◐ ':'✕ ')+n.allocated.toLocaleString():'?')+' / '+n.target.toLocaleString();
      status.style.color=done?'#90edb5':!known||n.allocated?'#ffdb93':'#ffc2a8';
-     if(known)status.title='Synced stock: '+n.stock.toLocaleString()+' · allocated to this requirement: '+n.allocated.toLocaleString();
-     top.append(nameBox,status);row.append(top);if(known&&n.missing>0)status.title+=(status.title?' · ':'')+n.missing.toLocaleString()+' remaining';
+     status.append(count);
+     const detail=document.createElement('span');detail.className='aqwc-progress-detail';detail.textContent=!known?'Not synced':done?'Ready':n.missing.toLocaleString()+' missing';status.append(detail);
+     if(known){const meter=document.createElement('span'),fill=document.createElement('span');meter.className='aqwc-progress-meter';fill.style.width=Math.max(0,Math.min(100,n.allocated/n.target*100))+'%';meter.setAttribute('aria-hidden','true');meter.append(fill);status.append(meter);status.title='Synced stock: '+n.stock.toLocaleString()+' · allocated to this requirement: '+n.allocated.toLocaleString()+(n.missing>0?' · '+n.missing.toLocaleString()+' remaining':'')}
+     top.append(nameBox,status);row.append(top);
      container.append(row);
-     compactSummary(row,n.slug,cache.get(n.slug),origin);
-     if(n.reason)row.append(note(n.reason));
+     const summaryShown=compactSummary(row,n.slug,cache.get(n.slug),origin);
+     if(n.reason){const msg=note(n.reason);msg.className='aqwc-material-note';row.append(msg)}
      if(!s?.open||!n.missing)return;
      const nested=document.createElement('div');nested.className='aqwc-material-nested';row.append(nested);
      const recipe=cache.get(n.slug);const found=compactSummary(nested,n.slug,recipe||{sources:s.sources,groups:s.groups,incomplete:s.partial},origin,{all:true});
+     if(found&&summaryShown&&!s.error){const summary=row.querySelector(':scope > .aqwc-compact-sources');if(summary){summary.textContent='Acquisition details below';summary.style.color='#b5c8d1';summary.style.fontSize='12px'}}
      if(s.error){nested.append(note('Wiki unavailable: '+s.error));const retry=button('Retry');retry.addEventListener('click',e=>{if(e.isTrusted&&!busy){states.delete(n.path);expand(n)}});nested.append(retry);return}
      if(busy&&!s.groups.length){nested.append(note('Loading…'));return}
      if(s.incomplete)nested.append(note('Some requirements could not be read. Verify the original Wiki page.'));
