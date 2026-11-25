@@ -438,7 +438,7 @@ assert.match(toolbar114,/<select id="planner-my-categories" aria-label="Quest ca
 assert.match(toolbar114,/<select id="plannerstatus" aria-label="Completion status">/);
 assert.ok(!toolbar114.includes('planner-category-controls'));
 assert.ok(html.includes("categoryBar.value=plannerMyCategory;categoryBar.onchange=()=>{plannerMyCategory=categoryBar.value;renderPlanner()}"));
-assert.ok(html.includes("css/planner-routines.css?v=116"));
+assert.match(html,/href="css\/planner-routines\.css\?v=\d+"/,"Planner stylesheet uses a versioned URL");
 for(const [id,file] of [['friendship-twilly','0KftqqS.png'],['friendship-warlic','sq7rbv5.png'],['friendship-sally','GI2CmjZ.png'],['friendship-twig','Ke7Ri6j.png']]){
  const task=active.find(t=>t.id===id);assert.ok(task,id);assert.ok(portrait.plannerArt(task).url.endsWith('/'+file),id);
 }
