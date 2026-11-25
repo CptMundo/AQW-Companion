@@ -166,20 +166,31 @@
   }finally{clearTimeout(timer)}
  }
  const monsterCache=new Map();let monsterRequests=0,monsterQueue=Promise.resolve();
- function monsterImage(doc,origin,slug){
+ function monsterImages(doc,origin,slug){
   const crumb=doc.querySelector('#breadcrumbs')||doc.querySelector('.breadcrumbs, #breadcrumb, .breadcrumb'),content=doc.querySelector('#page-content');
-  if(!content||![...(crumb?.querySelectorAll('a[href]')||[])].some(a=>sourceLink(a,origin)?.slug==='monsters'))return null;
-  const urls=new Set();
+  if(!content||![...(crumb?.querySelectorAll('a[href]')||[])].some(a=>sourceLink(a,origin)?.slug==='monsters'))return [];
+  const all=[],after=[];
+  // The Wiki generally puts event/type emblems before Location and the actual art after the drop lists.
+  const headings=[...content.querySelectorAll('strong,b')].filter(el=>/^(?:Temporary Items Dropped|Items Dropped|Attacks|Abilities)\s*:/i.test(String(el.textContent||'').trim()));
+  const last=headings[headings.length-1];
   for(const img of content.querySelectorAll('img[src]')){
-   if(img.closest('table,.page-rate-widget-box')||/(?:^|\/)(?:(?:ac|legend|rare|seasonal|special|pseudo|member|free)(?:small|large)|(?:star|stars|icon|badge|logo|button|blank)[-_0-9]*)\.(?:png|gif|jpe?g|webp)(?:\?|$)/i.test(img.getAttribute('src')||''))continue;
-   try{const u=new URL(img.getAttribute('src'),origin+'/'+slug);if(u.username||u.password||!/\.(png|jpe?g|webp|gif)$/i.test(u.pathname)||!(u.hostname==='aqwwiki.wikidot.com'||u.hostname.endsWith('.wdfiles.com')||u.hostname==='i.imgur.com'))continue;if(u.protocol==='http:')u.protocol='https:';if(u.protocol!=='https:')continue;urls.add(u.href)}catch{}
+   const src=img.getAttribute('src')||'';
+   if(img.closest('li,.page-rate-widget-box,#breadcrumbs,.breadcrumbs')||/(?:^|\/)(?:(?:ac|legend|rare|seasonal|special|pseudo|member|free)(?:small|large)|(?:star|stars|icon|badge|logo|button|blank)[-_0-9]*)\.(?:png|gif|jpe?g|webp)(?:\?|$)/i.test(src))continue;
+   try{const u=new URL(src,origin+'/'+slug);if(u.username||u.password||!/\.(png|jpe?g|webp|gif)$/i.test(u.pathname)||!(u.hostname==='aqwwiki.wikidot.com'||u.hostname.endsWith('.wdfiles.com')||u.hostname==='i.imgur.com'))continue;if(u.protocol==='http:')u.protocol='https:';if(u.protocol!=='https:')continue;
+    const w=Number(img.getAttribute('width')),h=Number(img.getAttribute('height'));if((w>0&&w<90)||(h>0&&h<75))continue;
+    all.push(u.href);if(last&&typeof last.compareDocumentPosition==='function'&&(last.compareDocumentPosition(img)&4))after.push(u.href);
+   }catch{}
   }
-  return urls.size===1?[...urls][0]:null;
+  // On a confirmed monster page, prefer art below the last stats/drop heading.
+  // If no positional evidence exists, accept only a unique image (never a random badge).
+  const distinct=[...new Set(after)];if(distinct.length)return distinct.slice(0,4);
+  const unique=[...new Set(all)];return unique.length===1?unique:[];
  }
+ function monsterImage(doc,origin,slug){return monsterImages(doc,origin,slug)[0]||null}
  function monsterPreview(origin,slug){
   if(monsterCache.has(slug))return monsterCache.get(slug);
-  if(monsterRequests>=32)return Promise.resolve(null);monsterRequests++;
-  const p=monsterQueue.then(()=>loadDocument(origin,slug)).then(doc=>monsterImage(doc,origin,slug)).catch(()=>null);monsterQueue=p.then(()=>{});monsterCache.set(slug,p);return p;
+  if(monsterRequests>=64)return Promise.resolve([]);monsterRequests++;
+  const p=monsterQueue.then(()=>loadDocument(origin,slug)).then(doc=>monsterImages(doc,origin,slug)).catch(()=>[]);monsterQueue=p.then(()=>{});monsterCache.set(slug,p);return p;
  }
  async function loadRecipe(origin,slug){
    const doc=await loadDocument(origin,slug),content=doc.querySelector('#page-content'),url=origin+'/'+slug;
@@ -338,5 +349,5 @@
   }
   draw();lookup().catch(()=>{statusLine.textContent='Inventory unavailable. Sync in Companion and refresh this page.'}).finally(()=>{busy=false;draw()});return panel;
  }
- globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources,mapCommand,joinControl,recipeLabel,sourceLink,compactData,monsterPreview,monsterImage});
+ globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources,mapCommand,joinControl,recipeLabel,sourceLink,compactData,monsterPreview,monsterImage,monsterImages});
 })();

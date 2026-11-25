@@ -116,3 +116,6 @@ Hide native page-tag clutter in custom appearance modes only; restyle footer and
 
 ### v0.12.11
 Progressively enhance supported Wiki directories with compact responsive grids, local name filter, original alphabetical jumps and badges, and category cards. Unrecognized markup remains unchanged. Missing monster images now support user-selected PNG/JPG/WebP screenshots resized and stored locally by monster slug, with removal. No external upload, new host permissions, or invented art. Supply Caravan official asset and alternate catalog asset could not be retrieved; local screenshot is the fallback. Live Opera validation required.
+
+### v0.12.12
+Responsive searchable directory with A–Z selection, paged results and original list access; category hub with balanced cards and wide weapon section. Monster profile styling preserves native details and relocates only standalone verified artwork. Monster art detection prioritizes images after the stats/drop headings (ignores preceding event badges), supports bounded candidate retries and normal browser referrer. User screenshot remains optional fallback. No new permissions or changes to banner/farming. Live browser QA required; actual external image availability not guaranteed.
