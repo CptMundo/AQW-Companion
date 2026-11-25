@@ -49,11 +49,32 @@ function badgeNodes(a){
  return out;
 }
 function letter(name){const c=name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').charAt(0).toUpperCase();return /^[A-Z]$/.test(c)?c:'#'}
+function mapSectionName(value){const name=clean(value).replace(/:\s*$/,'').toLowerCase();return ({monsters:'Monsters',npcs:'NPCs',quests:'Quests',shops:'Shops','access points':'Access Points'})[name]||null}
+function mapSections(content){
+ const result=[];for(const list of content.children){
+  if(!['UL','OL'].includes(list.tagName))continue;
+  const heading=list.previousElementSibling;if(!heading||!['P','H2','H3','H4','H5','DIV'].includes(heading.tagName))continue;
+  const name=mapSectionName(heading.textContent)||(/^Map Name:/i.test(clean(heading.textContent))&&/Access Points:\s*$/i.test(clean(heading.textContent))?'Access Points':null);if(!name||heading.querySelector('ul,ol,table,form'))continue;
+  result.push({name,heading,list});
+ }return result;
+}
+function styleMap(content){
+ const crumb=document.querySelector('#breadcrumbs,.breadcrumbs,#breadcrumb,.breadcrumb');
+ if(!crumb||![...crumb.querySelectorAll('a[href]')].some(a=>{try{return new URL(a.getAttribute('href'),location.origin).pathname.replace(/\/$/,'')==='/locations'}catch{return false}}))return false;
+ const sections=mapSections(content);if(!sections.length)return false;
+ const main=sections.filter(x=>x.name!=='Access Points');
+ // Move only consecutive native heading/list pairs, never remove original links or gallery markup.
+ if(main.length){const groups=[];let run=[];for(const x of main){if(run.length&&run[run.length-1].list.nextElementSibling!==x.heading){groups.push(run);run=[]}run.push(x)}if(run.length)groups.push(run);for(const group of groups){const grid=document.createElement('div');grid.className='aqwc-map-grid';content.insertBefore(grid,group[0].heading);for(const x of group){const card=document.createElement('section');card.className='aqwc-map-card';card.append(x.heading,x.list);grid.append(card)}}}
+ for(const x of sections.filter(x=>x.name==='Access Points')){const card=document.createElement('section');card.className='aqwc-map-card aqwc-map-access';content.insertBefore(card,x.heading);card.append(x.heading,x.list)}
+ const match=clean(content.textContent).match(/\bMap Name:\s*([a-z0-9-]+)\b/i);
+ if(match){const command='/join '+match[1];const row=document.createElement('div');row.className='aqwc-map-command';const label=document.createElement('span');label.textContent='Map · '+match[1];const btn=document.createElement('button');btn.type='button';btn.textContent=command+' · Copy';btn.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(command);btn.textContent='Copied '+command;setTimeout(()=>{btn.textContent=command+' · Copy'},1200)}catch{btn.textContent=command}});row.append(label,btn);content.prepend(row)}
+ content.classList.add('aqwc-map-profile');document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');return true;
+}
 function init(){
  if(location.origin!=='https://aqwwiki.wikidot.com')return;const kind=indexKind(location.pathname),content=document.getElementById('page-content');if(!content||document.getElementById('aqwc-directory-v2'))return;
- if(!kind){styleMonster(content);return}
+ if(!kind){if(!styleMap(content))styleMonster(content);return}
  if(kind==='categories'){
-  const list=[...content.children].find(el=>el.tagName==='UL'&&el.children.length>=3);if(!list)return;content.classList.add('aqwc-directory','aqwc-category-index');list.classList.add('aqwc-category-grid');for(const li of list.children){const sub=li.querySelector('ul'),a=li.querySelector('a');if(sub&&sub.children.length>=6)li.classList.add('aqwc-category-wide');if(a){a.classList.add('aqwc-category-title');const glyph=document.createElement('span');glyph.className='aqwc-category-glyph';glyph.setAttribute('aria-hidden','true');glyph.textContent=({'armors':'♜','classes':'✦','weapons':'⚔','helmets-hoods':'◈','pets':'✧','housing':'⌂','enhancements':'◇'})[(a.getAttribute('href')||'').replace(/^\//,'')]||'◆';a.prepend(glyph)}}return;
+  const list=[...content.children].find(el=>el.tagName==='UL'&&el.children.length>=3);if(!list)return;content.classList.add('aqwc-directory','aqwc-category-index');list.classList.add('aqwc-category-grid');document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');for(const li of list.children){const sub=li.querySelector('ul'),a=li.querySelector('a');if(!sub)li.classList.add('aqwc-category-leaf');if(sub&&sub.children.length>=6)li.classList.add('aqwc-category-wide');if(a){a.classList.add('aqwc-category-title');const glyph=document.createElement('span');glyph.className='aqwc-category-glyph';glyph.setAttribute('aria-hidden','true');glyph.textContent=({'armors':'♜','classes':'✦','weapons':'⚔','helmets-hoods':'◈','pets':'✧','housing':'⌂','enhancements':'◇'})[(a.getAttribute('href')||'').replace(/^\//,'')]||'◆';a.prepend(glyph)}}return;
  }
  const rows=directoryEntries(content,location.origin);if(rows.length<2)return;
  const host=document.createElement('section');host.id='aqwc-directory-v2';host.style.display='none';host.setAttribute('aria-label','Wiki directory');
@@ -76,7 +97,7 @@ function init(){
   prev.disabled=page===1;next.disabled=page===pages;pageLabel.textContent='Page '+page+' / '+pages;nav.hidden=pages===1;
  }
  search.addEventListener('input',()=>{page=1;render()});prev.addEventListener('click',()=>{page--;render();toolbar.scrollIntoView({block:'nearest'})});next.addEventListener('click',()=>{page++;render();toolbar.scrollIntoView({block:'nearest'})});
- host.append(toolbar,filters,alphabet,body,nav);content.before(host);content.classList.add('aqwc-index-source');render();
+ host.append(toolbar,filters,alphabet,body,nav);content.before(host);content.classList.add('aqwc-index-source');render();document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');document.getElementById('aqwc-list-wishlist')?.remove();
 }
 function styleMonster(content){
  const api=globalThis.AQWCWikiMaterials,slug=location.pathname.replace(/^\/|\/$/g,'');if(!api?.monsterImages||!slug)return;
@@ -87,6 +108,6 @@ function styleMonster(content){
  content.classList.add('aqwc-monster-profile');if(node.parentElement!==content)return;
  const wrap=document.createElement('section');wrap.className='aqwc-monster-art';const heading=document.createElement('h3');heading.textContent='Monster artwork';const next=node.nextElementSibling;wrap.append(heading,node);if(next&&/^Thanks to\b/i.test(clean(next.textContent)))wrap.append(next);content.prepend(wrap);
 }
-globalThis.AQWCDirectory=Object.freeze({indexKind,rowName,runs,entry,directoryEntries,letter});
-if(typeof document!=='undefined')init();
+globalThis.AQWCDirectory=Object.freeze({indexKind,rowName,runs,entry,directoryEntries,letter,mapSectionName,mapSections});
+if(typeof document!=='undefined'){try{init()}finally{globalThis.AQWCWikiBoot?.layoutReady()}}
 })();

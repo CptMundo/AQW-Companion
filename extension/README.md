@@ -119,3 +119,8 @@ Progressively enhance supported Wiki directories with compact responsive grids, 
 
 ### v0.12.12
 Responsive searchable directory with A–Z selection, paged results and original list access; category hub with balanced cards and wide weapon section. Monster profile styling preserves native details and relocates only standalone verified artwork. Monster art detection prioritizes images after the stats/drop headings (ignores preceding event badges), supports bounded candidate retries and normal browser referrer. User screenshot remains optional fallback. No new permissions or changes to banner/farming. Live browser QA required; actual external image availability not guaranteed.
+
+### v0.12.13
+Reduce native Wiki flash: document_start requests only saved appearance and temporarily masks the body with the chosen palette; Wiki layout scripts run at document_end instead of document_idle. Reveal when theme and synchronous layout initialization finish, immediately on preference error or original appearance, and fail open after 1.5 seconds. No waiting for inventory, monster artwork, or external requests. No added permissions. Slow loads can still reveal native content after the deadline; real Opera validation required.
+
+Additional v0.12.13 polish: shared directory header width, cyan entry links, redundant list wishlist search removed only when the replacement directory renders, centered leaf categories, responsive weapons subcategories, location section cards and explicit map-name copy, styled native login at upper right. Original location links, galleries and notes preserved. Visual QA pending.
