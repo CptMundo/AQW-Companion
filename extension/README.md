@@ -145,3 +145,6 @@ Farming Progress readability: larger item/source text, explicit missing quantiti
 
 ### v0.12.20
 Category search: bounded batches of three, automatic retry per failed page, 20-minute per-tab cache of successfully parsed pages, progressive results and explicit incomplete coverage. Farming: parse physical HTML lines so Location/Price/Notes are distinct; show structured quest, drop, merge, shop and location acquisition cards with source links and verified map commands. Never treat Used in notes as acquisition. Opera and live Wiki performance need visual verification.
+
+### v0.12.21
+Quest details open automatically on arrival (linked quest hash when recognized, otherwise first quest). Single-quest pages omit the redundant selector, keeping the official name and pin identity. Multi-quest pages keep the selector and active quest open. Pin actions remain gesture-gated.
