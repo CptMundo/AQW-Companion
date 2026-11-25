@@ -110,7 +110,7 @@ function styleShop(content){
  if(!pageHasCategory('shops')&&!pageHasCategory('merge-shops'))return false;
  const tables=[...content.querySelectorAll('table')].filter(t=>!t.querySelector('table')&&[...t.querySelectorAll('tr')].slice(0,3).some(r=>/\b(?:name|item)\b/i.test(r.textContent)&&/\b(?:price|cost)\b/i.test(r.textContent)));
  if(!tables.length)return false;
- content.classList.add('aqwc-shop-profile');
+ content.classList.add('aqwc-shop-profile');const inventory=document.getElementById('aqwc-quest-shop');if(inventory)content.prepend(inventory);
  const api=globalThis.AQWCWikiMaterials;
  for(const table of tables){const box=document.createElement('div');box.className='aqwc-shop-workspace';table.before(box);box.append(table);
  const preview=document.createElement('aside');preview.className='aqwc-shop-preview';const title=document.createElement('h3');title.textContent='Item preview';const name=document.createElement('a');const status=document.createElement('div');status.className='aqwc-shop-preview-status';status.textContent='Hover over an item or focus its link to preview it.';const art=document.createElement('div');art.className='aqwc-shop-preview-art';preview.append(title,name,status,art);box.append(preview);
@@ -121,9 +121,73 @@ function styleShop(content){
  }
  return true;
 }
+function sectionNav(content,sections,defaultName){
+ if(sections.length<2)return;
+ const nav=document.createElement('nav');nav.className='aqwc-profile-nav';nav.setAttribute('aria-label','Page sections');
+ const first=sections[0].nodes[0];content.insertBefore(nav,first);
+ const buttons=[];
+ function select(name){for(const section of sections){const active=section.name===name;for(const node of section.nodes)node.classList.toggle('aqwc-section-inactive',!active)}for(const [button,key] of buttons)button.setAttribute('aria-pressed',String(key===name))}
+ for(const section of sections){const b=document.createElement('button');b.type='button';b.textContent=section.name+(section.count!=null?' · '+section.count:'');b.addEventListener('click',()=>select(section.name));buttons.push([b,section.name]);nav.append(b)}
+ select(sections.some(s=>s.name===defaultName)?defaultName:sections[0].name);
+}
+function wrapNative(content,nodes,cls,title){
+ if(!nodes.length)return null;const card=document.createElement('section');card.className=cls;content.insertBefore(card,nodes[0]);if(title){const h=document.createElement('h3');h.textContent=title;card.append(h)}card.append(...nodes);return card;
+}
+function mapNavigation(content){
+ const cards=[...content.querySelectorAll('.aqwc-map-grid > .aqwc-map-card')];const gallery=content.querySelector(':scope > .aqwc-room-gallery');
+ const sections=[];if(gallery)sections.push({name:'Rooms',nodes:[gallery]});
+ for(const card of cards){const name=mapSectionName(card.firstElementChild?.textContent);if(!name)continue;const grid=card.parentElement;grid.before(card);card.classList.add('aqwc-map-tab-card');sections.push({name,nodes:[card],count:card.querySelector(':scope > ul,:scope > ol')?.children.length})}
+ for(const grid of content.querySelectorAll('.aqwc-map-grid'))if(!grid.children.length)grid.remove();
+ const access=content.querySelector(':scope > .aqwc-map-access');if(access)sections.push({name:'Access Points',nodes:[access]});
+ const other=[...content.children].filter(el=>!sections.some(s=>s.nodes.includes(el))&&!el.matches('.aqwc-map-command,hr')&&((el.matches('p,h2,h3,h4,div')&&/^Notes\s*:/i.test(clean(el.textContent)))||(['UL','OL'].includes(el.tagName)&&/^Notes\s*:/i.test(clean(el.previousElementSibling?.textContent)))));
+ const historical=[...content.children].filter(el=>el.matches('.yui-navset')&&el.querySelector('img'));
+ for(const gallery of historical){const prev=gallery.previousElementSibling;if(prev&&/^Old\b/i.test(clean(prev.textContent)))other.push(prev);other.push(gallery)}
+ const details=[...new Set(other)].filter(el=>el.parentElement===content).sort((a,b)=>a.compareDocumentPosition(b)&4?-1:1);
+ if(details.length){const card=wrapNative(content,details,'aqwc-map-card aqwc-map-tab-card','Additional information');sections.push({name:'Notes & History',nodes:[card]})}
+ sectionNav(content,sections,'Rooms');
+}
+function factionHeading(value){const s=clean(value);const m=s.match(/\b(Faction Quests|Faction Shops|Faction Items|Locations|Notes)\s*:/i);return m?({'faction quests':'Faction Quests','faction shops':'Faction Shops','faction items':'Faction Items','locations':'Locations','notes':'Notes'})[m[1].toLowerCase()]:null}
+function styleFactionV2(content){
+ if(!pageHasCategory('factions'))return false;
+ const children=[...content.children],sections=[];let current=null;
+ for(const node of children){if(node.matches('ul,ol')){if(current)current.nodes.push(node);continue}
+  if(!node.matches('p,div,h2,h3,h4,h5')||node.querySelector('ul,ol,table,form,.yui-navset')){current=null;continue}
+  const name=factionHeading(node.textContent);if(name){current={name,nodes:[node]};sections.push(current)}else if(current&&node.matches('p')&&clean(node.textContent).length<250){current.nodes.push(node)}else current=null;
+ }
+ const valid=sections.filter(s=>s.nodes.some(n=>n.matches('ul,ol')));if(!valid.length)return false;
+ content.classList.add('aqwc-faction-profile');document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');
+ const panels=[];for(const s of valid){const card=wrapNative(content,s.nodes,'aqwc-faction-card');card.dataset.section=s.name.toLowerCase().replace(/\s+/g,'-');panels.push({name:s.name,nodes:[card]})}
+ sectionNav(content,panels,'Faction Quests');return true;
+}
+function styleWars(content){
+ if(location.pathname.replace(/\/$/,'')!=='/wars')return false;
+ const children=[...content.children],entries=[];
+ for(let i=0;i<children.length-1;i++){const heading=children[i],list=children[i+1];if(!heading.matches('p,h2,h3,h4,h5,div')||!list.matches('ul,ol')||heading.querySelector('ul,ol,table'))continue;
+ const a=heading.querySelector('a[href]');if(!a||!clean(a.textContent)||!/\b(?:19|20)\d{2}\b/.test(list.textContent))continue;entries.push({heading,list,name:clean(a.textContent),date:clean(list.textContent)});i++}
+ if(!entries.length)return false;content.classList.add('aqwc-war-profile');document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');
+ const grid=document.createElement('div');grid.className='aqwc-war-grid';const toolbar=document.createElement('div');toolbar.className='aqwc-profile-nav';const input=document.createElement('input');input.type='search';input.placeholder='Search wars or year…';input.setAttribute('aria-label','Search wars');const count=document.createElement('span');toolbar.append(input,count);
+ content.insertBefore(toolbar,entries[0].heading);toolbar.after(grid);
+ for(const e of entries){const card=document.createElement('article');card.className='aqwc-war-card';card.append(e.heading,e.list);grid.append(card);e.card=card}
+ for(const n of children)if(n.parentElement===content&&n.matches('p,h2,h3,h4,h5')&&/^[A-Z#]$/.test(clean(n.textContent)))n.classList.add('aqwc-war-letter');
+ function filter(){const q=clean(input.value).toLowerCase();let visible=0;for(const e of entries){e.card.hidden=!(e.name+' '+e.date).toLowerCase().includes(q);if(!e.card.hidden)visible++}count.textContent=visible+' / '+entries.length+' wars'}input.addEventListener('input',filter);filter();return true;
+}
+function styleSearch(content){
+ const path=location.pathname.replace(/\/$/,'');if(!/^\/(?:search(?:[-:][a-z0-9-]+)?|system:search)$/.test(path))return false;
+ content.classList.add('aqwc-search-profile');document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');return true;
+}
+function paletteHome(content){
+ const warm=(value)=>{const m=String(value||'').match(/^rgba?\(\s*(\d+),\s*(\d+),\s*(\d+)/);if(!m)return false;const [r,g,b]=m.slice(1).map(Number);return r>g+7&&r>b+8};
+ const recolor=()=>{for(const el of content.querySelectorAll('div,section,td,th,a,button,span,p,blockquote')){
+  if(el.classList.contains('aqwc-home-link')||el.classList.contains('aqwc-home-surface'))continue;
+  const css=getComputedStyle(el),bg=css.backgroundColor;
+  if(warm(bg))el.classList.add(el.matches('a,button')||el.querySelector(':scope > a:only-child')&&el.children.length===1?'aqwc-home-link':'aqwc-home-surface');
+  if(warm(css.color)||/^rgb\((?:1[5-9]\d|2\d\d),\s*[0-9]{1,2},\s*(?:1[5-9]\d|2\d\d)\)/.test(css.color))el.classList.add('aqwc-home-text');
+ }};
+ recolor();requestAnimationFrame(recolor);window.addEventListener('load',recolor,{once:true});
+}
 function init(){
  if(location.origin!=='https://aqwwiki.wikidot.com')return;const kind=indexKind(location.pathname),content=document.getElementById('page-content');if(!content||document.getElementById('aqwc-directory-v2'))return;
- if(!kind){if(styleHome(content)||styleFaction(content)||styleShop(content))return;if(styleMap(content)){moveRoomGallery(content);return}styleMonster(content);return}
+ if(!kind){if(styleHome(content)){paletteHome(content);return}if(styleSearch(content)||styleWars(content)||styleFactionV2(content)||styleShop(content))return;if(styleMap(content)){moveRoomGallery(content);mapNavigation(content);return}styleMonster(content);return}
  if(kind==='categories'){
   const list=[...content.children].find(el=>el.tagName==='UL'&&el.children.length>=3);if(!list)return;content.classList.add('aqwc-directory','aqwc-category-index');list.classList.add('aqwc-category-grid');document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');for(const li of list.children){const sub=li.querySelector('ul'),a=li.querySelector('a');if(!sub)li.classList.add('aqwc-category-leaf');if(sub&&sub.children.length>=6)li.classList.add('aqwc-category-wide');if(a){a.classList.add('aqwc-category-title');const glyph=document.createElement('span');glyph.className='aqwc-category-glyph';glyph.setAttribute('aria-hidden','true');glyph.textContent=({'armors':'♜','classes':'✦','weapons':'⚔','helmets-hoods':'◈','pets':'✧','housing':'⌂','enhancements':'◇'})[(a.getAttribute('href')||'').replace(/^\//,'')]||'◆';a.prepend(glyph)}}return;
  }
@@ -159,6 +223,6 @@ function styleMonster(content){
  content.classList.add('aqwc-monster-profile');if(node.parentElement!==content)return;
  const wrap=document.createElement('section');wrap.className='aqwc-monster-art';const heading=document.createElement('h3');heading.textContent='Monster artwork';const next=node.nextElementSibling;wrap.append(heading,node);if(next&&/^Thanks to\b/i.test(clean(next.textContent)))wrap.append(next);content.prepend(wrap);
 }
-globalThis.AQWCDirectory=Object.freeze({indexKind,rowName,runs,entry,directoryEntries,letter,mapSectionName,mapSections,tagLabels,nameTags,factionName});
+globalThis.AQWCDirectory=Object.freeze({indexKind,rowName,runs,entry,directoryEntries,letter,mapSectionName,mapSections,tagLabels,nameTags,factionName,factionHeading});
 if(typeof document!=='undefined'){try{init()}finally{globalThis.AQWCWikiBoot?.layoutReady()}}
 })();
