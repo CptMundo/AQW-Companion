@@ -45,7 +45,7 @@
  line.setAttribute?.('role','status');const heading=document.createElement('div');heading.className='aqwc-item-heading';heading.append(itemTitle,line);card.append(heading,note);shadow.append(card);
  const show=(text,detail,color)=>{line.textContent=text;line.style.color=color;note.textContent=detail;note.hidden=!detail};
  const badge=document.getElementById('aqwc-foundation-badge');const mountStatus=()=>{if(ui)ui.mount(host,content,title);else (badge||title).insertAdjacentElement('afterend',host)};
- if(!category){mountStatus();show('Item type not recognized','AQW Companion could not identify this Wiki category.','#ffdb93');return}
+ if(!category){ui?.styleItem?.(content);return}
  // Decorate actual large item illustrations only; preserve the Wiki image/link,
  // original dimensions and credit. No additional image requests.
  for(const img of content.querySelectorAll?.('img')||[]){
@@ -54,7 +54,8 @@
  }
  const stackable=['misc-items','use-items'].includes(category);
  const item={name,category,slug:location.pathname.replace(/^\/|\/$/g,'')},target=globalThis.AQWCWikiWishlist?.target(item);
- if(target){
+ const actionable=!!target&&!target.variant;
+ if(actionable){
   const actions=document.createElement('div');actions.className='aqwc-actions';
   const link=document.createElement('button');link.type='button';link.className='aqwc-primary';link.textContent='+ Add to Wishlist';link.style.cssText='display:inline-block;margin-top:8px;padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;font:600 12px system-ui;cursor:pointer';
   const wishlistNote=document.createElement('small');wishlistNote.style.cssText='display:block;color:#b6cddd;font-weight:400;margin-top:3px';
@@ -76,6 +77,12 @@
   card.append(actions);
  }
  let farming,aligned=false;try{const api=globalThis.AQWCWikiMaterials;farming=api?.render(card,content,location.origin);if(farming)aligned=!!ui?.mountFarm?.(farming,content,shadow);if(stackable&&api){const slug=location.pathname.replace(/^\/|\/$/g,'');api.renderSources(card,api.mergeSources(api.parseSources(content,location.origin),api.reviewedSources(slug)),location.origin,slug,{partial:!!api.reviewedSources(slug)})}}catch{console.warn('AQW Companion: material progress unavailable on this page.')}
+ if(!actionable){
+  // Keep the farming tool, but never reserve a branded status card without a usable Wishlist action.
+  if(aligned){host.parentElement?.classList.add('aqwc-no-wishlist');host.remove()}
+  else if(farming){card.replaceChildren(farming);host.id='aqwc-farm-only';content.prepend(host)}
+  ui?.styleItem?.(content);return;
+ }
  if(!aligned)mountStatus();ui?.styleItem?.(content);
  const marker=Array.from(content.querySelectorAll?.('strong,b')||[]).find(el=>/^Location\s*:\s*$/i.test(String(el.textContent||'').trim()));
  if(marker){const section=document.createElement('section');section.className='aqwc-section';const heading=document.createElement('strong');heading.textContent='Source / Location';section.append(heading);let n=marker.nextSibling,count=0;while(n&&count++<10&&n.nodeName!=='BR'&&n.nodeName!=='STRONG'&&n.nodeName!=='B'){if(n.nodeType===3){const value=String(n.textContent||'').trim();if(value){const span=document.createElement('span');span.textContent=' '+value+' ';section.append(span)}}else if(n.nodeName==='A'){try{const u=new URL(n.getAttribute('href'),location.href);if(u.origin===location.origin){const a=document.createElement('a');a.href=u.href;a.textContent=n.textContent;const row=document.createElement('div');row.className='aqwc-source-line';row.append(a);const source=globalThis.AQWCWikiMaterials?.sourceLink(n,location.origin);if(source&&!/\b(shop|merge shop)\b/i.test(source.name))globalThis.AQWCWikiMaterials?.joinControl(row,source,location.origin);section.append(row)}}catch{}}n=n.nextSibling}if(section.children.length>1)card.append(section)}
