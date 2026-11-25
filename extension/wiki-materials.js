@@ -209,6 +209,13 @@
    return template.content;
   }finally{clearTimeout(timer)}
  }
+ // Keep successful artwork lookups; transient failures may be retried after a cooldown.
+ function previewCacheRequest(cache,key,request,now=Date.now){
+  const previous=cache.get(key);if(previous&&previous.retryAt>now())return previous.promise;
+  const entry={retryAt:Infinity,promise:null};
+  entry.promise=Promise.resolve().then(request).then(urls=>{if(!urls.length)entry.retryAt=now()+15000;return urls},()=>{entry.retryAt=now()+15000;return []});
+  cache.set(key,entry);return entry.promise;
+ }
  const monsterCache=new Map();let monsterRequests=0,monsterQueue=Promise.resolve();
  function monsterImages(doc,origin,slug){
   const crumb=doc.querySelector('#breadcrumbs')||doc.querySelector('.breadcrumbs, #breadcrumb, .breadcrumb'),content=doc.querySelector('#page-content');
@@ -232,9 +239,8 @@
  }
  function monsterImage(doc,origin,slug){return monsterImages(doc,origin,slug)[0]||null}
  function monsterPreview(origin,slug){
-  if(monsterCache.has(slug))return monsterCache.get(slug);
-  if(monsterRequests>=64)return Promise.resolve([]);monsterRequests++;
-  const p=monsterQueue.then(()=>loadDocument(origin,slug)).then(doc=>monsterImages(doc,origin,slug)).catch(()=>[]);monsterQueue=p.then(()=>{});monsterCache.set(slug,p);return p;
+  if(origin!=='https://aqwwiki.wikidot.com'||! /^[a-z0-9][a-z0-9-]{0,199}$/.test(slug))return Promise.resolve([]);
+  return previewCacheRequest(monsterCache,slug,()=>{if(monsterRequests>=64)return [];monsterRequests++;const p=monsterQueue.then(()=>loadDocument(origin,slug)).then(doc=>monsterImages(doc,origin,slug));monsterQueue=p.then(()=>{},()=>{});return p});
  }
  const itemArtCache=new Map();let itemArtRequests=0,itemArtQueue=Promise.resolve();
  function itemImages(doc,origin,slug){
@@ -248,7 +254,7 @@
    try{const u=new URL(src,origin+'/'+slug);if(u.protocol==='http:')u.protocol='https:';if(u.protocol!=='https:'||u.username||u.password||!/\.(png|gif|jpe?g|webp)$/i.test(u.pathname)||!(u.hostname==='aqwwiki.wikidot.com'||u.hostname.endsWith('.wdfiles.com')||u.hostname==='i.imgur.com'))continue;const w=Number(img.getAttribute('width')),h=Number(img.getAttribute('height'));if((w>0&&w<90)||(h>0&&h<75))continue;urls.push(u.href)}catch{}
   }return [...new Set(urls)].slice(0,4);
  }
- function itemPreview(origin,slug){if(itemArtCache.has(slug))return itemArtCache.get(slug);if(itemArtRequests>=48)return Promise.resolve([]);itemArtRequests++;const p=itemArtQueue.then(()=>loadDocument(origin,slug)).then(doc=>itemImages(doc,origin,slug)).catch(()=>[]);itemArtQueue=p.then(()=>{});itemArtCache.set(slug,p);return p}
+ function itemPreview(origin,slug){if(origin!=='https://aqwwiki.wikidot.com'||! /^[a-z0-9][a-z0-9-]{0,199}$/.test(slug))return Promise.resolve([]);return previewCacheRequest(itemArtCache,slug,()=>{if(itemArtRequests>=48)return [];itemArtRequests++;const p=itemArtQueue.then(()=>loadDocument(origin,slug)).then(doc=>itemImages(doc,origin,slug));itemArtQueue=p.then(()=>{},()=>{});return p})}
  async function loadRecipe(origin,slug){
    const doc=await loadDocument(origin,slug),content=doc.querySelector('#page-content'),url=origin+'/'+slug;
    const body=String(content?.textContent||'');
@@ -438,5 +444,5 @@
   }
   draw();lookup().catch(()=>{statusLine.textContent='Inventory unavailable. Sync in Companion and refresh this page.'}).finally(()=>{busy=false;draw()});return panel;
  }
- globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources,mapCommand,joinControl,recipeLabel,sourceLink,compactData,acquisitionKind,parseAcquisitionLines,acquisitionGroups,monsterPreview,monsterImage,monsterImages,itemImages,itemPreview});
+ globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources,mapCommand,joinControl,recipeLabel,sourceLink,compactData,acquisitionKind,parseAcquisitionLines,acquisitionGroups,monsterPreview,monsterImage,monsterImages,itemImages,itemPreview,previewCacheRequest});
 })();
