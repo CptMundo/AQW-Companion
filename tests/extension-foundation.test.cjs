@@ -626,7 +626,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.ok(!read('extension/wiki-items.js').includes('farming.open=false'));assert.ok(read('extension/wiki-materials.js').includes('panel.open=true'));
  assert.ok(read('extension/wiki-quest-shop.js').includes('content.parentElement.insertBefore(host,content)'));
  assert.ok(read('extension/wiki-theme.js').includes('top:var(--aqwc-banner-height)'));
- assert.ok(read('extension/wiki-theme.js').includes('#192630'));
+ assert.ok(read('extension/wiki-theme.js').includes('#0b1420'));
 }
 
 {
