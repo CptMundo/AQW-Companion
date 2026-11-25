@@ -24,7 +24,8 @@
   "bgMid": "#0d1926",
   "bgEnd": "#101e2b"
 });
- const rootCss='html[data-aqwc-background="companion"]{'+Object.entries(tokens).map(([k,v])=>'--aqwc-theme-'+k+':'+v).join(';')+';color-scheme:dark}';
+ const lightTokens=Object.freeze({"bg":"#eef3f8","panel":"#ffffff","panel2":"#e7eef6","line":"#b8c8d8","txt":"#172b40","muted":"#465f75","cyan":"#126387","blue":"#245e9c","gold":"#82530d","green":"#176b48","red":"#a32c45","input":"#f7fafc","nav":"#e4edf6","selected":"#c8e0f4","selectedBorder":"#5586ad","hover":"#dce9f5","table":"#dce7f0","focus":"#276b9e","bgStart":"#f4f7fb","bgMid":"#edf3f8","bgEnd":"#e7eff6"});
+ const rootCss='html[data-aqwc-background="companion"]{'+Object.entries(tokens).map(([k,v])=>'--aqwc-theme-'+k+':'+v).join(';')+';color-scheme:dark}'+'html[data-aqwc-background="light"]{'+Object.entries(lightTokens).map(([k,v])=>'--aqwc-theme-'+k+':'+v).join(';')+';color-scheme:light}';
 
  const semantic={'#90edb5':'green','#62dca1':'green','#52d3a2':'green','#ffdb93':'gold','#ffc2a8':'red','#fd8290':'red'};
  function role(hex,prop){
@@ -60,5 +61,5 @@
   return css.replace(/(?<![\w-])(background(?:-color|-image)?|color|border(?:-(?:top|right|bottom|left))?(?:-color)?|outline(?:-color)?|text-decoration-color)\s*:\s*([^;{}]+)/gi,
    (all,prop,body)=>prop+':'+body.replace(/url\([^)]*\)|#[0-9a-f]{6}(?![0-9a-f])/gi,x=>x.startsWith('#')?value(x,prop.toLowerCase()):x));
  }
- globalThis.AQWCTheme=Object.freeze({tokens,rootCss,recolor,value});
+ globalThis.AQWCTheme=Object.freeze({tokens,lightTokens,rootCss,recolor,value});
 })();
