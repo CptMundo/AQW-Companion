@@ -113,3 +113,6 @@ Custom Wiki themes now have a collapsible native sidebar (hidden by default, rem
 
 ### v0.12.10
 Hide native page-tag clutter in custom appearance modes only; restyle footer and license area to match the selected theme while preserving attribution and legal links. Fix monster gallery sizing when one or more image sources fail: remaining artwork fills the available row, missing links remain compact. Supply Caravan's Wiki image H21Es6B.png redirects to Imgur and could not be independently retrieved; no substitute art added. Banner, menus, permissions, and inventory/farming logic unchanged. Live Opera validation required.
+
+### v0.12.11
+Progressively enhance supported Wiki directories with compact responsive grids, local name filter, original alphabetical jumps and badges, and category cards. Unrecognized markup remains unchanged. Missing monster images now support user-selected PNG/JPG/WebP screenshots resized and stored locally by monster slug, with removal. No external upload, new host permissions, or invented art. Supply Caravan official asset and alternate catalog asset could not be retrieved; local screenshot is the fallback. Live Opera validation required.
