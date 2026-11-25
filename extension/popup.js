@@ -1,4 +1,9 @@
 (() => {
+ const nav=[...document.querySelectorAll('.popup-nav [data-view]')],panels=[...document.querySelectorAll('[data-panel]')];
+ function showView(view){if(!panels.some(p=>p.dataset.panel===view))return;for(const p of panels)p.hidden=p.dataset.panel!==view;for(const b of nav)b.setAttribute('aria-pressed',String(b.dataset.view===view));}
+ for(const b of nav)b.addEventListener('click',e=>{if(e.isTrusted)showView(b.dataset.view)});
+ for(const b of document.querySelectorAll('[data-go]'))b.addEventListener('click',e=>{if(e.isTrusted){showView(b.dataset.go);nav.find(n=>n.dataset.view===b.dataset.go)?.focus()}});
+ showView('home');
  const status=document.getElementById('inventory-summary'),clear=document.getElementById('clear-inventory');
  function send(type){clear.disabled=true;chrome.runtime.sendMessage({type},result=>{
   clear.disabled=false;if(chrome.runtime.lastError||!result?.ok){status.textContent='Could not access local inventory.';return}
@@ -33,7 +38,7 @@
   }
   save.addEventListener('click',e=>{if(e.isTrusted&&!save.disabled)persist({background:bg.value,banner:banner.value,panel:panel.value})});
   reset.addEventListener('click',e=>{if(e.isTrusted&&!reset.disabled)persist({background:'original',banner:'original',panel:'integrated'})});
-  if(quick)quick.addEventListener('click',e=>{if(e.isTrusted&&!save.disabled){feedback.closest('details')?.setAttribute('open','');persist({background:bg.value,banner:'prometheus',panel:panel.value})}});
+  if(quick)quick.addEventListener('click',e=>{if(e.isTrusted&&!save.disabled){showView('settings');persist({background:bg.value,banner:'prometheus',panel:panel.value})}});
   load();
  }
  send('inventory-summary');
