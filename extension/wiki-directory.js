@@ -11,7 +11,7 @@ function rowName(el,origin){
  if(!name||/^(?:back to top|sort by|[a-z]|#|next|previous)$/i.test(name))return null;
  try{const u=new URL(a.getAttribute('href'),origin);if(u.origin!==origin||u.hash||u.search||!/^\/[a-z0-9][a-z0-9-]{0,199}\/?$/.test(u.pathname)||indexKind(u.pathname))return null}catch{return null}
  // Do not reshape prose, notes or filter rows.
- if(clean(el.textContent)!==name)return null;
+ const whole=clean(el.textContent);if(whole!==name&&(!whole.startsWith(name)||!/^(?:(?:AC|Legend|Rare|Seasonal|Pseudo-Rare|Special Offer|Free Player)\s*)+$/i.test(whole.slice(name.length).trim())))return null;
  return name;
 }
 function runs(parent,origin){const out=[];let run=[];for(const node of parent.children){const name=rowName(node,origin);if(name)run.push({node,name});else{if(run.length>=2)out.push(run);run=[]}}if(run.length>=2)out.push(run);return out}
@@ -22,7 +22,7 @@ function entry(a,origin){
 function directoryEntries(content,origin){
  const links=[...content.querySelectorAll('a[href]')];
  // Recognize the Wiki's alphabetical jump strip, even if it is a paragraph with BR-separated rows.
- const jump=links.filter(a=>/^#[^#]+$/.test(a.getAttribute('href')||'')&&/^[A-Z#0-9]$/i.test(clean(a.textContent)));
+ const jump=links.filter(a=>{if(!/^[A-Z#0-9]$/i.test(clean(a.textContent)))return false;try{const href=a.getAttribute('href')||'',u=new URL(href,origin);return !!u.hash&&u.origin===origin&&(href.startsWith('#')||!!indexKind(u.pathname))}catch{return false}});
  const last=jump.length>=5?links.lastIndexOf(jump[jump.length-1]):-1;
  const seen=new Set(),out=[];
  for(const a of links.slice(last+1)){
@@ -60,7 +60,7 @@ function init(){
  const toolbar=document.createElement('div');toolbar.className='aqwc-index-toolbar';const search=document.createElement('input');search.type='search';search.placeholder='Search '+(document.getElementById('page-title')?.textContent.trim()||'directory')+'…';search.setAttribute('aria-label','Search directory');const status=document.createElement('span');status.setAttribute('role','status');
  const original=document.createElement('button');original.type='button';original.textContent='Show original Wiki list';original.setAttribute('aria-expanded','false');original.addEventListener('click',()=>{const open=content.classList.toggle('aqwc-index-original-open');original.textContent=open?'Hide original Wiki list':'Show original Wiki list';original.setAttribute('aria-expanded',String(open))});
  toolbar.append(search,status,original);
- const filters=document.createElement('div');filters.className='aqwc-index-filters';
+ const filters=document.createElement('div');filters.className='aqwc-index-filters';const nativeCrumb=content.querySelector('#breadcrumbs,.breadcrumbs,#breadcrumb,.breadcrumb');if(nativeCrumb){const trail=document.createElement('div');trail.className='aqwc-index-trail';for(const a of nativeCrumb.querySelectorAll('a[href]')){const link=document.createElement('a');link.href=a.href;link.textContent=clean(a.textContent);trail.append(link,document.createTextNode(' › '))}trail.append(document.createTextNode(document.getElementById('page-title')?.textContent.trim()||''));host.append(trail)}
  for(const a of content.querySelectorAll('a[href]')){const href=a.getAttribute('href')||'';if(!/^(?:\/|https:\/\/aqwwiki\.wikidot\.com\/)sort-by-[a-z0-9-]+\/?$/.test(href)||!clean(a.textContent))continue;const link=document.createElement('a');link.href=a.href;link.textContent=clean(a.textContent);filters.append(link)}
  const alphabet=document.createElement('div');alphabet.className='aqwc-index-alphabet';const body=document.createElement('div');const groups=new Map();for(const row of rows){const l=letter(row.name);if(!groups.has(l))groups.set(l,[]);groups.get(l).push(row)}
  let active='All',page=1;const perPage=96;
