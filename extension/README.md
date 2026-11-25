@@ -139,3 +139,6 @@ Location overview keeps the native room gallery, NPCs, quests and shops visible 
 
 ### v0.12.18
 Remove redundant category Wishlist panel (item/quest detail actions remain). Weapons flat-link landing grid. Category search covers native pagination, with on-demand sequential same-origin requests, progress, retry and explicit partial-coverage messaging; matches normalized names and slugs, preserves original filters and links. Regional location overview maps use the same gallery and directory layout as Yulgar. Locations with unusual unsupported markup remain native. Browser QA and exhaustive live category coverage not yet verified.
+
+### v0.12.19
+Farming Progress readability: larger item/source text, explicit missing quantities, per-material progress meters, clearer source labels and copy controls, direct-ingredient completion percentage, responsive rows and visually separated expanded recipes. No changes to inventory allocation or acquisition data.
