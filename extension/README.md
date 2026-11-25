@@ -127,3 +127,6 @@ Additional v0.12.13 polish: shared directory header width, cyan entry links, red
 
 ### v0.12.14
 Move recognized native item artwork galleries intact beside farming; palette homepage inline surfaces; colored directory tags from explicit names and badges; compact locations with current room gallery before access/notes; faction cards; bounded on-demand shop item art previews on hover/focus, using existing verified Wiki links and no new permissions. Unknown layouts remain native. Browser QA pending.
+
+### v0.12.15
+Wars cards with date/name search; apply theme to titleless search pages and style native search controls; recolor computed warm homepage surfaces; section navigation for locations (rooms, monsters, NPCs, quests, shops, access, notes/history) and factions (including combined heading/intro blocks); inline shop inventory control retaining existing lookup. Native nodes and links preserved; no new permissions. Live Opera QA pending, including external Google search styles and varied Wiki markup.

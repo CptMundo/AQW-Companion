@@ -243,10 +243,8 @@ function init(){
  const ui=globalThis.AQWCWikiUI;ui?.decorate(shadow,panel,kind==='quest'?'Quest tools':'Shop tools');if(ui)panel.style.cssText='';b.className='aqwc-primary';
  if(kind==='quest'){panel.classList.add('aqwc-quest-top');questCards(panel,content,title);shadow.append(panel);host.style.cssText='display:block;float:none;width:100%;max-width:100%;margin:8px 0 16px;';if(content.parentElement)content.parentElement.insertBefore(host,content);else (document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);return}
  const summary=document.createElement('section');summary.className='aqwc-section';summary.hidden=true;
- panel.append(label,note);
-
- panel.append(b,status,summary);
- shadow.append(panel);if(ui)ui.mount(host,content,title);else (document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);
+ panel.replaceChildren();panel.classList.add('aqwc-shop-inline');label.textContent='Inventory · local snapshot';note.textContent='Check owned items and linked material costs. Not purchase eligibility.';const line=document.createElement('div');line.style.cssText='display:flex;gap:12px;align-items:center;flex-wrap:wrap';line.append(label,b,status);panel.append(line,note,summary);
+ shadow.append(panel);host.style.cssText='display:block;width:100%;max-width:none;margin:12px 0;';host.setAttribute('data-aqwc-layout','compact');content.prepend(host);
  b.addEventListener('click',async e=>{
   if(!e.isTrusted||b.disabled)return;b.disabled=true;status.textContent='Checking…';summary.hidden=true;summary.replaceChildren();const revision=scopeRevision;
   try{
