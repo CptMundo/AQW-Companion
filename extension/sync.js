@@ -2,6 +2,15 @@
  'use strict';
  const SITE='https://cptmundo.github.io', paths=['/AQW-Companion/','/AQW-Companion/index.html'];
  if(location.origin!==SITE||!paths.includes(location.pathname))return;
+ // Fixed extension shortcuts: navigate only, never change stored data.
+ function openShortcut(){
+  const hash=location.hash;
+  const tab=hash==='#aqwc-open-wishlist'?'unlocks':hash==='#aqwc-open-tracker'?'planner':null;
+  if(!tab)return;
+  const target=document.querySelector('[data-tab="'+tab+'"]');
+  if(target)target.click();
+ }
+ openShortcut();window.addEventListener('hashchange',openShortcut);
  const button=document.getElementById('aqwc-sync-inventory'),status=document.getElementById('aqwc-sync-status');
  if(!button||!status)return;
  let pending='',timer;

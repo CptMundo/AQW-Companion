@@ -1,219 +1,72 @@
-# AQW Companion Extension — experimental v0.10.0
+# AQW Companion — Alpha 0.9.9.24
 
-Load only the `extension` directory using Developer mode > Load unpacked in Opera or Chrome. Manual local inventory sync from the main Companion page. No account access. The popup links to the Companion connection diagnostic and Wiki. The connection page must be deployed before the handshake can be tested. The Wiki badge confirms injection independently. All permissions are limited to the two declared HTTPS content-script match patterns; the exact main Companion pages and Wiki; the storage permission saves a local snapshot through a restricted service worker. Not published to browser stores.
+Created by **CptMundo**. Unofficial AdventureQuest Worlds fan project, not affiliated with Artix Entertainment.
 
-Click Sync inventory to extension on Companion, then open the extension popup to see the count and clear the copy if desired. The site inventory is never modified. On Wiki pages with an Items breadcrumb and supported category, the extension checks the local snapshot by normalized name and item type. Multiple IDs and unresolved acquisition variants are marked ambiguous. An absent match is not proof of non-ownership. Only the queried item's summary is returned by the service worker; the UI is rendered in a closed shadow root (not a security boundary against the host page). No inventory is uploaded. Refresh Wiki pages after syncing or clearing.
+[Live Companion](https://cptmundo.github.io/AQW-Companion/) · [Technical architecture](docs/ARCHITECTURE.md)
 
-After updates, reload the extension in the browser's extensions manager and refresh both pages.
+## Features
 
-The Wiki badge displays the installed version. If a recognized item cannot be checked, a visible diagnostic appears. Detection uses breadcrumb URL/label, explicit Type and specific tags as conservative fallbacks. Shop and disambiguation pages are excluded. Actual browser validation remains necessary.
+AQW Companion is a browser-based collection and planning tool with Home, Wishlist, Daily / Weekly Tracker, Ultras, Class Builds (with Forge Tracker), Story, Explore and Inventory. Inventory contains Inventory & Bank, Account Statistics, Compare Exports and History. Home deliberately has **no** secondary tabs.
 
-Wishlist: click + Add to Wishlist on a recognized item page. The Companion opens a local review using a URL fragment containing only the public item name, category and Wiki slug. Confirm on the site to save using its existing recipe system. No automatic writes, new permissions or full inventory transfer. Ambiguous non-category suffixes require manual review. Repeated confirmations open an existing goal rather than adding duplicates.
+Players import their own Account Management JSON exports, then track inventory, Wishlist goals, farming materials, manually completed quests, Ultra strategies, Forge and class builds. Account Statistics uses saved snapshots and does not fabricate game achievements or acquisition dates.
 
-Direct recipe progress: explicit 'Merge the following:' lists on supported item pages are read locally. Each list is separate; unsupported rows are not guessed. Counts use the synced Inventory + Bank and ambiguous IDs/variants are shown as unknown. This is not a complete acquisition/unlock checker: quest-only requirements, currency costs, nested recipes, shop access and prerequisites are not evaluated. No additional permissions or network requests.
+## Current files
 
-Experimental Account Manager import: open the logged-in Inventory tab, wait for it to load, click the extension icon and Capture Account Manager inventory. The popup uses temporary activeTab and scripting access, no persistent account host permission. A read-only, same-origin InventoryData endpoint already observed in resource timing is paginated; only allowlisted item fields are staged locally. Complete consistent reported total is required; duplicates, errors, empty or oversized captures fail without replacing existing inventory. Open Companion, click Import Account Manager inventory, review Bank/Inventory counts and confirm. Existing importFile saves a new snapshot; only after save is the extension's Wiki copy updated. Manual JSON remains fallback. Authenticated schema, endpoint behavior and Opera compatibility not yet live tested. No passwords, session token or cookies are read or stored by the extension; browser sends its existing same-origin session automatically.
+- `index.html` — page shell, navigation and legacy inline application JavaScript (still intact).
+- `css/site.css` — original main and UI-patch styles moved out of HTML in their original order.
+- `css/item-icons.css` — item type icon styles, loaded after base CSS.
+- `css/account-statistics.css` — dedicated feature styling.
+- `assets/` — brand PNGs, item-type SVGs and Artix artwork.
+- `js/account-statistics.js`, `js/umami-analytics.js` — independent, browser-side modules.
+- `data/companion_database.json`, `data/aqw-calendar.json` — public item reference data and curated calendar.
+- `build_database.js`, `build_database_v1_1.js`, `scripts/` — offline/catalog maintenance.
+- `tests/`, `.github/workflows/` — regression checks and deployment.
+- `docs/ARCHITECTURE.md` — architecture, data boundaries and safe refactoring rules.
 
-One-click Wishlist: the Wiki button saves a validated public item reference to the extension's local queue without opening a tab or asking for confirmation. An open, visible Companion imports automatically; otherwise it imports next time the Companion is opened. Acknowledgement only follows successful persistence, duplicates are skipped. Ambiguous variants remain unsupported for direct addition; legacy links retain manual review. No additional permissions or server transfer.
+`js/combat-engine.js`, `js/combat-engine-ui.js` and `data/damage-research-reviewed.json` are **research artifacts only**. The unvalidated Damage Simulator was removed from production and its scripts are not loaded.
 
-Inventory UX: primary Import inventory and Inventory tools menu in Companion header; JSON, backup, manual sync and clear remain available. Enable on-page export button from the popup to grant optional https://account.aq.com/* host permission (browser permission is origin-wide, registration and runtime check limited to Inventory). Clicking Export to AQW Companion stages the complete inventory locally; no capture on page load. Import still requires explicit confirmation. Popup capture works without optional host permission. Revocation stops future injection; refresh to remove an existing button. Browser QA pending.
+## Privacy and data integrity
 
-Header actions now form an always-visible compact group aligned right; sync status is on its own sizing-independent row. Account export button is placed above the inventory grid when detectable, otherwise in a bottom-left fallback. Popup verifies DOM insertion, provides Show / repair export button, and worker retries injection after Inventory navigation when optional permission is granted. No new permission. Opera validation pending; screenshot confirmed v0.6.2 permission but not actual button visibility.
+Imported inventory JSON, selected snapshots, Wishlist, Forge progress and user settings stay in the player's browser (IndexedDB with localStorage recovery). **Never upload personal inventory exports, backups, tokens, cookies, credentials or account data to this public repository.** Umami Cloud measures cookie-free page visits only, respects prior analytics declines and browser privacy signals, and does not send game inventory. Read [privacy.html](privacy.html).
 
-Website UX after PR #131: Import & Sync is the single primary import action, reusing the existing save-then-extension-commit flow. Account and Backup remain visible; manual one-way sync, JSON, connection/setup and clear are under Options. After successful import, the header shows the confirmed extension update. If extension sync fails, retry in Options. Extension v0.6.3 remains compatible; no new permissions or extension update required for this website-only change. Owner confirmed the Bone Dust change from 44 to 129 after clicking Import; Wiki quantity still needs an independent live check.
+The public catalog is community-derived and can be incomplete or outdated; `data/build_report.json` and `data/source_manifest.json` describe a 15 November 2026 build, not a guarantee that all recipes are verified. No automatic authenticated Artix sync is enabled; see `docs/inventory-sync-reconciliation.md`.
 
-Nested recipe progress (v0.7.0): expand a missing direct merge ingredient on a supported Wiki item page. Only the clicked public Wiki page is fetched, same origin, no credentials or inventory sent, no redirects, bounded by 20 requests, 80 distinct names and four nested levels. Select alternatives explicitly; incomplete or unsupported recipes remain unknown, not zero. Stock is allocated by matched item ID once per root option, breadth-first, and quantities multiply by the missing parent count. Collapsing a selected branch preserves its allocation. Root alternatives are independent scenarios. This is not an optimal acquisition planner or full quest/shop checker; direct ingredients ready is not a percentage of overall farming time. No new permission. Opera/Chrome QA required.
+## Develop and verify
 
-Quest and shop integration (v0.8.0): on recognized Quests or Shops breadcrumbs, click Show inventory status. Explicit linked item requirements/rewards and supported Name/Price table rows are annotated using local Inventory + Bank. Exact integer linked merge costs reserve stock by matched ID independently per shop row; gold/AC, bundle output and unsupported cells are not evaluated. Unlinked temporary counters and ambiguous names are not guessed. Quest stock is not proof of completion or eligibility. Up to 400 unique names per click in batches of 80; no new permission or remote requests. Refresh manually after syncing. Inline labels use closed shadow roots, not a security boundary against the host. Live DOM validation required. Example pages: https://aqwwiki.wikidot.com/void-highlord-merge-shop and https://aqwwiki.wikidot.com/nulgath-s-quests .
+From the repository root, start a local static HTTP server (required for reliable fetches and asset URLs):
 
-Ownership Everywhere (v0.9.0): on recognized item category indexes and supported sort-by category pages, ownership is checked automatically on page load. Only same-origin textual links within alphabetical sections or filtered ListPages modules are candidates. Inventory/Bank counts are matched by name and category, not a universal Wiki ID. Ambiguous variants and duplicate labels with different slugs remain unknown. Not in snapshot is not proof of non-ownership. Filter item names for an optional manual refresh, or clear labels. All detected names are checked automatically in internal batches of up to 80; no manual pagination. Each local request is bounded to 80 names and restricted to the matching category index sender; no whole inventory returned, no new permission or network request. No annotations on arbitrary NPC, boss, map, quest or shop pages; existing quest/shop integration is independent. Live DOM coverage requires browser testing. Example pages: https://aqwwiki.wikidot.com/classes , https://aqwwiki.wikidot.com/armors , https://aqwwiki.wikidot.com/sort-by-rare-classes .
+```bash
+python3 -m http.server 8000
+```
 
-Ownership Everywhere fix (v0.9.1): category indexes also recognize standalone letter paragraphs/bold text and named jump targets; ignore linked navigation, stop at Back to Top, and recognize explicit auto-updating list introductions on filtered pages. A recognized category with zero candidates shows a diagnostic rather than disappearing. Actual Opera DOM still needs validation.
+Open `http://localhost:8000/`. Storage is browser-origin-specific; `file://`, localhost and GitHub Pages do not automatically share saved data.
 
-Ownership Everywhere v0.9.2: scan all detected candidate names automatically after the recognized index loads. Requests remain sequential local batches of up to 80, yielding between chunks. Live progress is displayed; a failed or changed snapshot clears partial labels and allows retry. Refresh can target an optional name filter; clearing removes labels until a manual refresh or page reload. No new permissions or network requests; no change to item/quest/shop behavior. Large DOM performance requires live testing.
+Run all Node.js 22+ regression tests:
 
-Combined PR #137 / v0.10.0: automatic ownership checks all detected index links; popup Quick inventory search is local-only, limited to 50 matching records, with location filter. A star next to supported index items and View in Wishlist on supported item pages open the existing Companion review; ambiguous item variants do not auto-add. Quest pages offer a link to the Companion recurring-quest review using the public source slug; only exact source matches in the existing recurring library are offered for explicit pinning. No completion inference. Known AC/Legend/numbered family variants absent entirely from the typed snapshot may be marked not in snapshot; family matches without exact variant remain unknown. Quest parser accepts explicit trailing stack notes and scans all recognized names in batches; unsupported temporary/unlinked rows remain unknown. Website Inventory Cleanup uses reviewed notes and known catalog/goal/routine references, with unknowns distinct; no automatic deletion, no exhaustive use claims. Browser and source coverage validation pending. No new permissions.
+```bash
+for test in tests/*.test.cjs; do node "$test" || exit 1; done
+```
 
-v0.10.1 feedback: local indexed matching per batch, live search results, direct plus-to-Wishlist queue from supported lists, selected quest-tab queue for unique recurring catalog matches when Companion opens. Unmatched quests are reported rather than invented. Source-reviewed cleanup notes expanded; protected class items and unlock passes. No new permissions. Actual DOM and performance testing required.
+A CI pass is not a substitute for testing a real import/reload, Home, Wishlist, Artix connector lines, tabs and the mobile layout in a browser. Make changes in separate branches/PRs; **never merge without the owner's explicit approval**.
 
-v0.10.2: navigation load mitigation, not confirmed root cause of reported HTTP 504. Category lookups remain automatic after full page load with 350ms delay, sequential local chunks paced 20ms apart, and viewport-only annotations via IntersectionObserver. Stop on pagehide, restart on back/forward cache restore. No badge on Wikidot error pages lacking the normal title/content DOM. Existing nested recipe fetch remains explicit user-triggered. Browser A/B testing required.
+## Deployment
 
-v0.10.3: local diagnostic timings on category pages, persisted optional automatic scan preference (default on), pause hidden-tab scans, and avoid expensive layout reads on non-item pages. Does not claim to fix server HTTP 504. No new permissions, telemetry or network requests.
+The repository root is deployed to GitHub Pages on pushes to `main` by `.github/workflows/static.yml`. The site is at https://cptmundo.github.io/AQW-Companion/. Verify the GitHub Actions deployment after every approved merge.
 
-v0.10.4: ownership on category lists is manual-only (even for users who previously enabled automatic checks). No category list enumeration or worker message on entry. Enter an optional name and press Enter or Check ownership; blank checks all recognized names. Cancel, clear, page exit or hidden tab stop the scan; back/forward does not restart. Individual item, quest/shop, popup and queue features remain unchanged. Navigation root cause still unconfirmed; A/B testing required.
+**Continuity rule:** after every PR, provide a downloadable Markdown handoff containing PR URL, branch, exact head/base, changes, tests, known risks, merge status and next task so another conversation can continue without guessing.
 
-## v0.10.5 — Wiki explicit activation diagnostic mode
-No statically registered content scripts on the Wiki. Open the extension popup on a supported Wiki document and click Activate Companion on this page. Existing activeTab + scripting permissions allow a top-frame, document-ID-pinned injection after validating the exact URL and normal Wiki DOM. No script is automatically injected on navigation. On history restoration a previously activated document may retain its existing controls. Inventory sync, Account Manager export and popup search remain intact. This is a deliberate diagnostic isolation and usability trade-off, not a proven fix for HTTP 504. Opera browser validation required.
+## Recipe verification and Ultra boss cue modules (PR #85–86)
 
-## v0.10.6 — Restore Wiki integrations, remove list ownership
-Restore normal automatic Wiki injection and individual item ownership. Quest/shop stock controls, nested material progress, direct Wishlist and Tracker queues, popup search and import/sync remain. Category lists have only a Wishlist name search: no enumeration on entry, no ownership request, no inline labels. Explicit search parses item links, returns up to 40 results, and enables direct + for unambiguous targets. Legacy pure list matcher helpers are not used by the page UI. Remove manual activation popup. No new permission names; restore the previously used Wiki content-script scope. Browser validation pending; server/network latency remains a separate issue.
+- `js/recipe-integrity.js` and `css/recipe-coverage.css`: 37 individually reviewed merges (Sin of the Abyss, 14 Forge Metal recipes and 22 Light Merge entries), non-destructive legacy Checklist upgrades, and a compact update action only when known ingredients are stale.
+- `js/ultra-quote-actions.js` and `css/ultra-quote-actions.css`: reaction instructions to boss quotes, conditional on selected class and assigned role in Ultras.
+- `scripts/audit_recipe_catalog.cjs`: read-only structural scan across every public catalog item and acquisition entry. Its CI report is a **review queue**, not proof that thousands of game recipes are wrong or that they have been checked against live AQWWiki.
+- `docs/RECIPE_COVERAGE.md` and `docs/ULTRA_QUOTES_RECIPE_AUDIT.md`: limitations, sources, migration details and review workflow.
 
-## v0.11.0 — Companion visual redesign
-Shared navy/cyan theme for Wiki tools, right-side item and quest/shop cards where the parent has at least 980px available, otherwise inline. Original Wiki content is not reparented: float plus reserved article width prevents overlap, ResizeObserver updates the layout. Category Wishlist stays inline and ownership scans remain disabled. Material cards keep nested progress and separate recipe options; source links use the existing Wiki DOM only. Popup redesign retains controls, IDs, export and sync. No new permission, network request, or external assets. Visual concept is not a live screenshot; verify coexistence with other Wiki extensions in Opera, including narrow layout and zoom. No invented farming data or thumbnails.
+These modules load after the extracted legacy CSS; recipe/ultra JS is linked before the main inline application. This extraction does not alter any player data.
 
-## v0.11.1 — AQW Wiki Companion branding and polish
-Reuse the existing site Prometheus-inspired favicon and approved brand artwork from the pre-asset-extraction HTML (embedded PNGs, local, no fetch). Rename extension/panel/popup to AQW Wiki Companion; website name unchanged. Wider sidebar (up to 780 CSS pixels, 45% of available width with 590px article reserve; inline under 1080px); richer header, clearer item facts parsed from current Wiki text, separate real snapshot timestamp, shorter recipe explanation and compact popup with collapsible export tools. No new permissions, no mass ownership, no new network requests or invented source/farm data. Actual artwork rendering/layout still requires Opera feedback.
+## Wishlist findings & source review (PR #87)
 
-## v0.11.2 — Contextual panels
-Equipment and other non-misc/use categories display only Owned / Not owned (uncertain states remain explicit). Misc/use categories show combined snapshot quantity, not separate bag/bank counts; this is a category approximation, not verified stack-cap metadata for every item. Remove repeated Wiki stats and duplicate material sync timestamp. Quest tools prioritize selected quest and existing Tracker queue; scope stock summary to a uniquely DOM-linked tab panel where possible, otherwise clearly label page-wide stock. Selection changes invalidate in-flight checks. No inference of completion or eligibility. Shop behavior preserved. No new permissions or external requests. Actual Wiki DOM/browser QA pending.
-
-## v0.11.3 — Optional Wiki appearance
-Popup appearance settings: original/midnight/slate/obsidian/void backgrounds, original/Prometheus/arcane/void banners, integrated charcoal or classic blue panel. Original background and banner remain untouched by default; reset removes only Companion's override style. Prometheus uses the existing embedded favicon art, not a new full-width game illustration. Presets are allowlisted, saved locally via the worker; only popup can write, top-frame Wiki can read. Best-effort update to active Wiki tab; other tabs use new preferences on next page load. No extra permissions or external assets; no inventory reads by theme code, no content changes. Multiple extensions may compete for theme CSS when custom presets are on; use Original to defer to the other theme. Actual header rendering/coexistence needs Opera QA.
-
-## v0.11.4 — Acquisition guidance and header polish
-On existing explicit material expansion, read source headings from the same bounded item-page response: location, drops, quest rewards, explicitly available-from shop links. Do not treat usage notes as rewards; unsupported formats stay unknown. Current material pages can show sources without additional requests. Reviewed partial Moon Rock Fragments fallback: Luna Cove (/join lunacove), Coral Merdraconian, Horde Lycan, Lunar Villager, Moonrock; sources https://aqwwiki.wikidot.com/luna-cove and respective monster pages. No quest reward confirmed for that material. Copy reviewed Luna Cove command immediately; other locations offer explicit Find /join, validating location breadcrumbs and matching Map Name + /join on the bounded location page before enabling Copy. Maximum 10 map lookups per page, cached successes; no automatic map requests. No auto crawling; existing request caps retained. Replace blurred duplicate logo with geometric navy/cyan header while retaining helm. Banner overrides also cover Wikidot header extra layers; Original removes owned CSS. These are CSS-designed banners, not new illustrated artwork. Browser and other-extension compatibility remain pending.
-
-## v0.11.5 — Compact recipes and banner layer
-Compact material rows, thinner bars, no repeated remaining line or technical help text; separate root recipes are selectable via tabs rather than stacked. All nested allocation logic remains unchanged. Compact acquisition rows grouped by type; shop-name links no longer receive map-copy actions. Explicit non-interactive header overlay for non-original presets, keeps logo/nav/search above it where selectors match; removes overlay on reset and restores any position override. No new permissions or network requests. Long expanded recipes may still need scrolling. Actual header stacking and coexistence must be checked in Opera; not a verified live fix.
-
-## v0.11.6 — Slimmer sidebar
-Reduce sidebar max width from 780 to 560 CSS px, using 38% of available parent width (380px preferred minimum, preserving the existing 590px article reserve). Inline fallback also capped at 560px. Item title and ownership/combined quantity share one row with right-aligned status; long names and diagnostic states may wrap. Hide empty ownership detail explicitly. No changes to inventory matching, recipes, sources, theme settings or permissions. Actual Opera layout pending.
-
-## v0.11.7 — Native Wiki banner target
-The public AQW Wiki Enhanced project (https://github.com/60GHz/aqw-wiki-enhanced) confirms that the native banner is a background image on #container-wrap, not #header. Implement our own CSS/inline SVG artwork targeting that full-width element, retaining existing header links/menu and native content. Prometheus uses the existing local helm, all presets have a local wordmark and decorative art; no Enhanced code/art copied. Original removes our banner rules. Popup acknowledges whether computed wrapper background contains our SVG. Existing color presets and sidebar remain unchanged. Other theme extensions may compete for CSS; test with Enhanced disabled first. No new permissions or network calls. No live browser validation.
-
-### Owner-selected Prometheus artwork
-Owner uploaded `extension/image_2026-11-24_232002011.png` on the PR branch. Use this actual PNG, preserving aspect ratio at 140px height, centered on a full-width matching gradient. No cropping or stretching. Arcane/Void presets retained. Only this public artwork is web-accessible to AQW Wiki; no new host permissions. Tests require PNG signature, IHDR and valid nonzero dimensions. Popup confirms CSS only, not visual image loading. Actual Opera QA pending.
-
-## v0.11.8 — Direct joins, quest cards and banner priority
-Verified map commands for Luna Cove, Shadowfall, Battleodium, Yulgar's Inn and Titan Attack; other maps resolve sequentially when expanded, cached and bounded to ten lookups per page, no speculative slug-to-command conversion. Unverified maps stay linked without copy button. NSoD recipes named Craft weapon / Exchange weapon when recognized. Quest cards use exact DOM tab scope, parse linked/unlinked objectives and nested drop links, show quest start locations (not assumed monster locations), stock for linked items only, no completion inference. Recurring tracker action withheld on explicitly once-only pages. Existing shop path preserved. Inline important wrapper background override with original property restoration, explicit Prometheus apply button; actual artwork rendering and mixed-version screenshots still require Opera QA. No new permissions.
-
-## v0.11.9 — Wikidot quest mapping, independent pins and artwork
-Support explicit tab IDs and strict positional pairing of direct YUI nav items/content panes when href is rewritten. One quest scope only; retry on reopen instead of permanently caching failure. Quest cards no longer link recurring tracker; Pin quest to Companion queues any quest, including once-only, into independent Wishlist Pinned Quests list (local storage, dedup, unpin, source link). Existing routine queue unchanged. Explicit artwork image on native wrapper supplements CSS banner, reset removes our element and inline overrides. New installs default Prometheus; existing saved preferences preserved, direct apply button visible in popup. Actual Wiki DOM and Opera image visibility still require testing. No new permissions.
-
-## v0.12.0 — Compact smart tracking
-Prometheus banner uses a larger responsive height (164–240px), up to 1180px wide with centered cover crop and faded edges; top navigation moves with header. Neutral blue #192630 preset, default for new installs; existing saved themes preserved. Quest panel above Wiki article, responsive grid and full-width expanded quest. Item recipe rows have compact inline MERGE/QUEST/DROP/MAP previews instead of nested cards and per-row progress bars. Reviewed NSoD hints from https://aqwwiki.wikidot.com/necrotic-sword-of-doom-shop, /void-aura, /doom-heart and /cysero-s-forge-s-quests; informational only, live parsed data preferred; unknown items offer explicit Load material sources (max six per click, sequential, shared 20-request cap). No automatic page-wide requests, no guessed joins. Owned equipment collapses Farming Progress by default. Allocation logic unchanged; nested recipe expansion remains available. Browser QA and Enhanced coexistence remain pending.
-
-## v0.12.1 — Wiki polish and goal sync
-Keep Farming Progress open even for owned gear; compact source typography, direct copy labels and expandable +more. Responsive stable quest selector grid with separate detail area and original content toggle, improved quest-location extraction. Larger-width centered artwork with soft full-width backdrop, slightly shorter header and clearer menu, redundant badge hidden. Website publishes bounded local Wishlist/pin summaries via existing trusted bridge; Wiki reads only requested goal status, timestamp shown, no raw inventory export. Manual quest completion queues only for a known pinned quest, can reopen on website; no game completion inference. Exact name matching may miss aliases; open website to refresh, no live external sync. No new permissions. Source coverage still incremental; existing explicit bounded source loading retained. Browser QA and deployment pending.
-
-### v0.12.2
-Responsive wide item panel with horizontal material rows (compact on narrower pages), restrained charcoal quest styling and improved native menu. Large item illustrations receive a CSS frame in custom appearance modes; originals and credits remain intact. No new permissions or fetches. Live Opera and Enhanced coexistence testing remains required.
-
-### v0.12.3
-Restore native top menu geometry; move the existing farming panel after the recognized Price line (fallback to sidebar if the Wiki layout cannot be matched); compact right item status, objectives first with narrow location/rewards column. No new permissions, requests or changes to recipe allocation. Original banner retained pending a verified game helm reference. Live Opera QA required.
-
-### v0.12.4
-Correct Price label matching and fallback placement; original recipe DOM retained. One compact quest detail surface with aligned metadata strip and objectives; direct verified item-location join controls, including Mermaid Sushi. Prometheus banner uses owner-provided game helm reference with local image and new wordmark, retains right-hand background art. No added permissions. Browser QA required.
-
-### v0.12.5
-Aligned item workspace with the existing status and farming panels in one responsive grid; grouped native item content while preserving original nodes, links, images and credits; consistent nested recipe rows; original quest content collapsed on recognized pages with accessible toggle; restored artwork on both sides of localized wordmark. No permissions or inventory logic changes. Browser validation required.
-
-### v0.12.6
-Item information and Companion status aligned on the first row; farming and standalone artwork on the second row. Complex artwork galleries remain in native details. Quest monster thumbnails only on verified monster pages with unambiguous HTTPS artwork, capped and cached. Rebuilt Prometheus banner with framed original helm, two-tone title and geometric backdrop; no old image overlay. No added permissions. Browser validation required.
-
-### v0.12.7
-Balanced item page grid (60% farming/40% artwork), narrower ingredient column, equal-height top cards, larger right-side monster previews, and a rebuilt contained CSS banner frame without inherited image sizing. No new permissions or changes to farming/sync calculations. Live Opera QA pending.
-
-### v0.12.8
-Equal-height farming and artwork cards; explicit rarity/base damage in the item summary; original details collapsed on recognized split item layouts. Monster links remain visible when artwork cannot be loaded; allowlisted legacy HTTP image URLs upgraded to HTTPS. Banner unchanged. No new permissions or farming logic changes. Browser validation required.
-
-### v0.12.9
-Custom Wiki themes now have a collapsible native sidebar (hidden by default, remembers choice locally), rounded navigation and dropdowns without changing their geometry, and compact failed-image links below available monster artwork. Expanded per-page monster lookup budget; avoid excluding actual monster names containing 'star' or 'large'. Supply Caravan source still redirects to an unavailable Imgur page; no fabricated replacement. Banner unchanged. No new permissions. Opera QA required.
-
-### v0.12.10
-Hide native page-tag clutter in custom appearance modes only; restyle footer and license area to match the selected theme while preserving attribution and legal links. Fix monster gallery sizing when one or more image sources fail: remaining artwork fills the available row, missing links remain compact. Supply Caravan's Wiki image H21Es6B.png redirects to Imgur and could not be independently retrieved; no substitute art added. Banner, menus, permissions, and inventory/farming logic unchanged. Live Opera validation required.
-
-### v0.12.11
-Progressively enhance supported Wiki directories with compact responsive grids, local name filter, original alphabetical jumps and badges, and category cards. Unrecognized markup remains unchanged. Missing monster images now support user-selected PNG/JPG/WebP screenshots resized and stored locally by monster slug, with removal. No external upload, new host permissions, or invented art. Supply Caravan official asset and alternate catalog asset could not be retrieved; local screenshot is the fallback. Live Opera validation required.
-
-### v0.12.12
-Responsive searchable directory with A–Z selection, paged results and original list access; category hub with balanced cards and wide weapon section. Monster profile styling preserves native details and relocates only standalone verified artwork. Monster art detection prioritizes images after the stats/drop headings (ignores preceding event badges), supports bounded candidate retries and normal browser referrer. User screenshot remains optional fallback. No new permissions or changes to banner/farming. Live browser QA required; actual external image availability not guaranteed.
-
-### v0.12.13
-Reduce native Wiki flash: document_start requests only saved appearance and temporarily masks the body with the chosen palette; Wiki layout scripts run at document_end instead of document_idle. Reveal when theme and synchronous layout initialization finish, immediately on preference error or original appearance, and fail open after 1.5 seconds. No waiting for inventory, monster artwork, or external requests. No added permissions. Slow loads can still reveal native content after the deadline; real Opera validation required.
-
-Additional v0.12.13 polish: shared directory header width, cyan entry links, redundant list wishlist search removed only when the replacement directory renders, centered leaf categories, responsive weapons subcategories, location section cards and explicit map-name copy, styled native login at upper right. Original location links, galleries and notes preserved. Visual QA pending.
-
-### v0.12.14
-Move recognized native item artwork galleries intact beside farming; palette homepage inline surfaces; colored directory tags from explicit names and badges; compact locations with current room gallery before access/notes; faction cards; bounded on-demand shop item art previews on hover/focus, using existing verified Wiki links and no new permissions. Unknown layouts remain native. Browser QA pending.
-
-### v0.12.15
-Wars cards with date/name search; apply theme to titleless search pages and style native search controls; recolor computed warm homepage surfaces; section navigation for locations (rooms, monsters, NPCs, quests, shops, access, notes/history) and factions (including combined heading/intro blocks); inline shop inventory control retaining existing lookup. Native nodes and links preserved; no new permissions. Live Opera QA pending, including external Google search styles and varied Wiki markup.
-
-### v0.12.16
-Search landing card: explicit Google site search and exact phrase (new tab), original embedded search and /join/Jump controls retained in disclosure, tag search link. No added permissions. Shop inventory panel not mounted; existing local stock badges checked automatically, no purchase-eligibility inference. Location NPC/quest/shop/monster directory cards with icons, counts and filters; native room variant collapsibles styled horizontally with open panels full-width. Browser QA pending.
-
-### v0.12.17
-Location overview keeps the native room gallery, NPCs, quests and shops visible on arrival, side-by-side on wide screens and stacked on narrow screens. Monsters, Access Points and Notes & History are independent collapsed sections. Existing location card filters, tags, room variant buttons and native widgets retained. Opera visual QA pending.
-
-### v0.12.18
-Remove redundant category Wishlist panel (item/quest detail actions remain). Weapons flat-link landing grid. Category search covers native pagination, with on-demand sequential same-origin requests, progress, retry and explicit partial-coverage messaging; matches normalized names and slugs, preserves original filters and links. Regional location overview maps use the same gallery and directory layout as Yulgar. Locations with unusual unsupported markup remain native. Browser QA and exhaustive live category coverage not yet verified.
-
-### v0.12.19
-Farming Progress readability: larger item/source text, explicit missing quantities, per-material progress meters, clearer source labels and copy controls, direct-ingredient completion percentage, responsive rows and visually separated expanded recipes. No changes to inventory allocation or acquisition data.
-
-### v0.12.20
-Category search: bounded batches of three, automatic retry per failed page, 20-minute per-tab cache of successfully parsed pages, progressive results and explicit incomplete coverage. Farming: parse physical HTML lines so Location/Price/Notes are distinct; show structured quest, drop, merge, shop and location acquisition cards with source links and verified map commands. Never treat Used in notes as acquisition. Opera and live Wiki performance need visual verification.
-
-### v0.12.21
-Quest details open automatically on arrival (linked quest hash when recognized, otherwise first quest). Single-quest pages omit the redundant selector, keeping the official name and pin identity. Multi-quest pages keep the selector and active quest open. Pin actions remain gesture-gated.
-
-### v0.12.22
-Compact extension popup with Home (inventory search and links), Sync (guided export/import), Settings (appearance and advanced tools). Existing data handling and permissions unchanged. Theme synchronization is deferred.
-
-### v0.12.23
-Set a 420px intrinsic popup width on both html and body; remove the viewport-relative body cap that can shrink browser action popups. No functional or permission changes. Verify actual width in Opera.
-
-### v0.12.24
-Settings → Use AQW Companion theme applies the website's effective aqw-safe-redesign palette to the Wiki and popup. Shared semantic CSS variables flow into closed shadow roots; original styles remain fallbacks for other presets. Existing saved settings remain unchanged until selection. This is a bundled palette, not live remote theme synchronization. No permission or inventory changes.
-
-### Theme presets (0.12.25)
-Dark Mode (site palette), Light Mode and Cas B Neophyte (community joke: black/green/magenta/purple/cyan). Old saved presets migrate to Dark. Shared banner and integrated panels. The original Wiki content toggle remains available.
-
-### v0.12.26 — Release readiness
-Four distinct presets: Companion (default, site palette), Dark (neutral graphite), Light, Cas B Neophyte. Existing supported choices remain; no additional permissions. Popup offers first-sync guidance only without a snapshot; compact daily Home retains search and links. Directory exact candidates are bounded and stale queries cancelled; current pages enter the session cache. See [Quick start and browser QA matrix](quick-start.md). Real browser QA remains required.
-
-### v0.12.27 — Actual Light Mode
-Light-only surface overrides for native Wiki and Companion panels, navigation, header decorations, item/quest/farm shadows, list cards, shop tables, location/faction surfaces and popup. Explicit light text on dark-literal fallbacks is replaced with dark text; artwork stays unchanged. Corrected malformed card class assignment in shared renderer. No new permissions. Browser verification pending; cross-origin search iframe contents remain outside extension CSS control.
-
-### v0.12.28 — Homepage category icons
-Items and Housing category cards reuse homepage artwork by destination link; relevant child links get smaller icons. Single bounded homepage request, tab-local cache, allowlisted image hosts and existing glyph fallback if art fails. Weapon-specific subcategories keep distinct glyphs where the homepage has no matching icon. Browser verification pending.
-
-### v0.12.29 — Unified light surfaces
-Shared neutral light canvas, white cards, neutral secondary surfaces, readable navigation, search and consistent active/hover states across Wiki and popup. Stronger scoped overrides for native Wiki styles; preserve artwork and other themes. Manual browser visual QA remains pending.
-
-### v0.12.30 — Category icon fix
-Use a bundled transparent 13-tile sprite based on the Wiki homepage artwork supplied in the project screenshots (26 px source tiles). Avoid remote image lookups during category rendering, duplicate root/subcategory icons, and theme-colored icon backgrounds. The Wiki artwork remains attributable to its original authors. Manual visual browser QA pending.
-
-
-### Compact Home trackers (v0.12.33)
-Wishlist shows the Companion’s saved tracked progress; Daily / Weekly Tracker shows manually checked pinned tasks, not live game completion. Open or refresh Companion and keep it visible until the snapshot updates (normally within the next polling cycle). The popup shows the last sync time and flags old reset periods; use Open to edit in the full tracker. All data stays in local browser storage, with no new permissions.
-
-### v0.12.34 — Expandable mini trackers
-Wishlist, Daily and Weekly each show up to four entries by default. Select Show N more to expand that group and Show less to collapse it. The groups expand independently, with a single popup content scrollbar; the fixed outer popup size is unchanged.
-
-
-### v0.12.35 — Extension branding
-The browser extension, toolbar title, popup and usage guide are named AQW Companion. The AQW Wiki Companion banner and branding on Wiki pages remain unchanged.
-
-### v0.12.36 — Copy map commands from mini trackers
-
-Click the compact `/join` button on a Daily or Weekly task to copy the same main map command as the Companion quest card (accept location first, otherwise primary map). No guessed maps; if the saved task has no valid command, no button appears. Refresh the Companion to publish updated task data.
-
-
-### v0.12.37 — Check quests from the popup
-
-Click the green check button beside a Daily or Weekly quest to mark it done or undo it. A pending check is stored locally until the updated Companion site is open and visible. Only after the site saves and acknowledges it does the popup show the new state. Pending checks from an expired reset period are rejected; mutually exclusive weekly quests cannot both be checked. This changes only your local tracker, not the game. No new permissions. The updated website is required.
-
-
-### v0.12.39 — Instant theme switching
-Choose a theme and click Apply theme. The popup and already-connected Wiki tabs update automatically, without reloading. After installing or reloading the extension itself, refresh existing Wiki tabs once to connect the new scripts.
-
-### v0.12.40 — Compact controls
-Green check buttons use the website planner palette. Outlined means unchecked, filled means confirmed; pending and unavailable states remain distinct. To restore the default theme, select Companion and click Apply theme.
-
-### v0.12.41 — Completed quests last
-
-Daily and Weekly are independently stable-sorted: to-do tasks first, alternatives next, completed tasks last. A queued check moves the row to the bottom immediately; a queued undo returns it to the to-do section. Pending controls and confirmed counts remain distinct until site acknowledgement; stale-period data is not reordered by old checks. Four-row preview and independent expansion are preserved.
-
-### v0.12.42 — release candidate
-Reconciled local 0.12.32–0.12.41 extension work; visual guide, store icon and metadata preparation. No claim of Chrome Web Store approval or end-to-end browser QA.
-
-### v0.12.43 — inventory export recovery
-- Read the reported total and prefer a single complete response; if capped or rejected with an applicable request-size error, use explicitly ordered ID/Bank pagination.
-- Preserve strict row count, duplicate and field validation. Report the row position (not the item ID) on a duplicate or invalid ID. Do not overwrite existing inventory on failure.
-- Account Manager live confirmation is still required; the endpoint may not support bulk or sorting, or may return genuine duplicate item/location pairs.
-
-### v0.12.44 — export feedback
-Account Manager export shows an indeterminate bar while waiting for a bulk response or saving, actual validated row progress during paginated capture, and a green full bar only after local staging succeeds. Popup fallback is indeterminate until acknowledged. No new permissions or capture changes.
+- `js/wishlist-finds.js`: local-only comparison of saved full inventory exports with current Wishlist names; `Account Statistics` displays **Recent Wishlist Finds** first observed between imports, never an exact in-game acquisition timestamp.
+- Cleaner cards: icon-only × remove buttons and no repetitive starter/check-against-Wiki/not-detected banners. Saved custom steps are protected.
+- Source-backed subset: https://aqwwiki.wikidot.com/sin-of-the-abyss, https://aqwwiki.wikidot.com/forge-metal, https://aqwwiki.wikidot.com/light-merge. Details and limitations: `docs/WISHLIST_RECIPE_AND_FINDS.md`.
+- Most community recipes are **not independently verified**; the structural audit doesn't establish current truth. Never label the whole item database source-reviewed.

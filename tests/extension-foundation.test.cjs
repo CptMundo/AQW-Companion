@@ -96,7 +96,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted,undefined);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
  assert.equal(runWiki(['items','houses'],'Sellback: 0 AC; Description: House',result,'Astral Beach Tent (AC)').inserted,undefined);
- assert.equal(manifest.version,'0.12.31');assert.equal(manifest.content_scripts.length,4);assert.equal(manifest.content_scripts[2].run_at,'document_end');assert.equal(manifest.content_scripts[3].run_at,'document_start');assert.deepEqual(manifest.content_scripts[3].js,['wiki-first-paint.js']);assert.deepEqual(manifest.content_scripts[3].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['companion-theme.js','wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js','wiki-directory.js']);
+ assert.equal(manifest.version,'0.12.44');assert.equal(manifest.name,'AQW Companion');assert.equal(manifest.action.default_title,'AQW Companion');assert.ok(read('extension/popup.html').includes('<h1>AQW Companion</h1>'));assert.ok(!read('extension/popup.html').includes('AQW Wiki Companion'));assert.ok(!read('extension/quick-start.html').includes('AQW Wiki Companion'));assert.equal(manifest.content_scripts.length,4);assert.equal(manifest.content_scripts[2].run_at,'document_end');assert.equal(manifest.content_scripts[3].run_at,'document_start');assert.deepEqual(manifest.content_scripts[3].js,['wiki-first-paint.js']);assert.deepEqual(manifest.content_scripts[3].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['companion-theme.js','wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js','wiki-directory.js']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -170,7 +170,7 @@ console.log('Wiki Wishlist: scoped links, category suffixes, variant guard and e
 (async()=>{
  const accountOrigin='https://account.aq.com',rows=Array.from({length:101},(_,i)=>({ID:i+1,Name:'Item '+i,Type:'Item',Count:1,Bank:i%2,Added:'2026-11-24',secret:'not copied'}));
  let calls=[];
- const ctx={URL,AbortSignal,location:{origin:accountOrigin,pathname:'/AQW/Inventory'},performance:{getEntriesByType:()=>[{name:accountOrigin+'/AQW/InventoryData?filter=ignored'}]},setTimeout:f=>f(),fetch:async (url,opts)=>{const u=new URL(url);calls.push(u);assert.equal(opts.method,'GET');assert.equal(opts.credentials,'same-origin');assert.equal(u.searchParams.has('filter'),false);return {ok:true,json:async()=>({data:rows.slice(Number(u.searchParams.get('skip')),Number(u.searchParams.get('skip'))+100),totalCount:101})}}};
+ const ctx={URL,AbortSignal,location:{origin:accountOrigin,pathname:'/AQW/Inventory'},performance:{getEntriesByType:()=>[{name:accountOrigin+'/AQW/InventoryData?filter=ignored'}]},setTimeout:f=>f(),fetch:async (url,opts)=>{const u=new URL(url);calls.push(u);assert.equal(opts.method,'GET');assert.equal(opts.credentials,'same-origin');assert.equal(u.searchParams.has('filter'),false);return {ok:true,json:async()=>({data:rows.slice(Number(u.searchParams.get('skip')),Number(u.searchParams.get('skip'))+Number(u.searchParams.get('take'))),totalCount:101})}}};
  const capture=vm.runInNewContext(read('extension/account-capture.js')+'\ncaptureAccountInventory',ctx);
  const snap=await capture();assert.equal(snap.items.length,101);assert.equal(calls.length,2);assert.equal(snap.items[0].secret,undefined);assert.equal(snap.items[0].Added,'2026-11-24');
  ctx.location.pathname='/AQW/Account';await assert.rejects(capture(),/Inventory tab/);ctx.location.pathname='/AQW/Inventory';
@@ -193,7 +193,7 @@ console.log('Wiki Wishlist: scoped links, category suffixes, variant guard and e
  assert.equal((await api.handle({type:'account-stage-commit',id:pending.id},main)).ok,true);
  assert.equal(stored['aqwc-inventory-v1'].items.length,101);assert.equal(stored['aqwc-account-stage-v1'],undefined);
  const html=read('index.html');assert.ok(html.includes('const saved=await importFile(file);'));assert.ok(html.includes("type:'imported',nonce,id:stageId"));assert.ok(html.includes("if(!confirm('Import '"));assert.ok(read('extension/account-bridge.js').includes('if(e.isTrusted)gesture=Date.now()'));
- assert.equal(manifest.host_permissions,undefined);assert.deepEqual(manifest.content_scripts[1].js,['sync.js','account-bridge.js','wishlist-queue.js']);
+ assert.equal(manifest.host_permissions,undefined);assert.deepEqual(manifest.content_scripts[1].js,['sync.js','account-bridge.js','mini-tracker.js','wishlist-queue.js']);
  console.log('Account import: pagination, completeness, scope, allowlisted fields, staging and commit checked.');
 })().catch(e=>{console.error(e);process.exitCode=1});
 
@@ -238,17 +238,17 @@ console.log('Stable header strip and Account Manager injection diagnostics check
  const src=read('extension/account-page.js');
  function fixture(pathname,withGrid){
   let inserted=null,placement=null,reads=0,writes=0;
-  const el=()=>({style:{},children:[],append(...nodes){this.children.push(...nodes)},attachShadow(){return this.shadow=el()},setAttribute(){},addEventListener(type,fn){this[type]=fn}});
+  const el=()=>({style:{},children:[],append(...nodes){this.children.push(...nodes)},attachShadow(){return this.shadow=el()},setAttribute(){},removeAttribute(name){delete this[name]},addEventListener(type,fn){this[type]=fn}});
   const grid={parentElement:{insertBefore(host,before){assert.equal(before,grid);inserted=host;placement='grid'}}};
   const doc={getElementById:()=>inserted,createElement:el,querySelector:()=>withGrid?grid:null,body:{append(host){inserted=host;placement='fallback'}}};
-  const ctx={document:doc,location:{origin:'https://account.aq.com',pathname},captureAccountInventory:async()=>{reads++;return {items:[]}},chrome:{runtime:{sendMessage:async m=>{writes++;assert.equal(m.type,'account-stage');return {ok:true,count:2390}}}}};
+  const ctx={document:doc,location:{origin:'https://account.aq.com',pathname},captureAccountInventory:async report=>{reads++;report({phase:'connecting'});report({phase:'bulk',read:0,total:2390});report({phase:'reading',read:100,total:2390});const bar=inserted.shadow.children[0].children[3];assert.equal(bar.value,100);assert.equal(bar.max,2390);report({phase:'reading',read:2390,total:2390});assert.equal(bar.value,undefined);return {items:[]}},chrome:{runtime:{sendMessage:async m=>{writes++;assert.equal(m.type,'account-stage');return {ok:true,count:2390}}}}};
   return {ctx,state:()=>({inserted,placement,reads,writes})};
  }
  const a=fixture('/AQW/Inventory',true);assert.equal(vm.runInNewContext(src,a.ctx),true);assert.equal(a.state().placement,'grid');assert.equal(a.state().reads,0);
  const host=a.state().inserted,button=host.shadow.children[0].children[0];
  assert.equal(vm.runInNewContext(src,a.ctx),true);assert.equal(a.state().inserted,host);
  await button.click({isTrusted:false});assert.equal(a.state().reads,0);
- await button.click({isTrusted:true});assert.equal(a.state().reads,1);assert.equal(a.state().writes,1);assert.equal(button.textContent,'✓ Export ready');
+ await button.click({isTrusted:true});assert.equal(a.state().reads,1);assert.equal(a.state().writes,1);assert.equal(button.textContent,'✓ Export ready');const bar=host.shadow.children[0].children[3];assert.equal(bar.value,100);assert.equal(bar.max,100);assert.equal(bar.style.accentColor,'#75e3a4');assert.ok(host.shadow.children[0].children[1].textContent.includes('Import & Sync'));a.ctx.chrome.runtime.sendMessage=async()=>({ok:false,error:'test failure'});await button.click({isTrusted:true});assert.equal(bar.hidden,true);assert.ok(host.shadow.children[0].children[1].textContent.includes('Existing inventory unchanged.'));
  const b=fixture('/AQW/Inventory',false);assert.equal(vm.runInNewContext(src,b.ctx),true);assert.equal(b.state().placement,'fallback');
  const c=fixture('/AQW/Account',true);assert.equal(vm.runInNewContext(src,c.ctx),false);assert.equal(c.state().inserted,null);
  console.log('Account page DOM: grid placement, fallback, idempotence, trusted-click capture and route guard passed.');
@@ -506,7 +506,20 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'bad',url:popup.url});assert.equal(styles.length,1);
  listener({type:'aqwc-appearance-preview',appearance:{background:'void',banner:'prometheus',panel:'blue'}},{id:'id',url:popup.url});assert.equal(styles.length,1);assert.ok(styles[0].textContent.includes('div#container-wrap'));assert.ok(styles[0].textContent.includes('radial-gradient(ellipse at 50% 100%'));assert.ok(styles[0].textContent.includes('100% clamp(150px,10vw,210px)'));assert.ok(!styles[0].textContent.includes('#header::before'));assert.ok(styles[0].textContent.includes('#0b1420'));assert.ok(styles[0].textContent.includes('#main-content .page-tags'));assert.ok(styles[0].textContent.includes('#footer,#license-area{background-color:#0b1420'));
  listener({type:'aqwc-appearance-preview',appearance:{}},{id:'id',url:popup.url});assert.equal(styles.length,1);
- console.log('Wiki appearance: defaults, scoped read/write, validated presets and restore original passed.');
+ const worker={id:'id',url:'chrome-extension://test/worker.js'};
+ for(const background of ['dark','light','cas','companion']){
+  let answer;assert.equal(listener({type:'aqwc-theme-changed'},worker,r=>answer=r),true);
+  respond({ok:true,appearance:{background}});
+  assert.equal(answer.ok,true);assert.equal(attrs['data-aqwc-background'],background);assert.equal(styles.length,1);
+  assert.equal(attrs['data-aqwc-banner'],'prometheus');
+ }
+ listener({type:'aqwc-theme-changed'},{id:'bad'},()=>{throw Error('untrusted message')});
+ assert.equal(attrs['data-aqwc-background'],'companion');
+ listener({type:'aqwc-theme-changed'},worker,()=>{});const oldReply=respond;
+ listener({type:'aqwc-theme-changed'},worker,()=>{});respond({ok:true,appearance:{background:'light'}});
+ oldReply({ok:true,appearance:{background:'dark'}});assert.equal(attrs['data-aqwc-background'],'light');
+ assert.ok(!read('extension/popup.js').includes('chrome.tabs.query'));
+ console.log('Wiki appearance: worker notifications without storage access, reset, untrusted sender and stale reply passed.');
 })().catch(e=>{console.error(e);process.exitCode=1});
 
 {
@@ -719,15 +732,15 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
 
 {const api=vm.runInNewContext(read('extension/wiki-quest-shop.js')+'\nAQWCQuestShop',{URL});const tab=(href,controls)=>({getAttribute:k=>k==='href'?href:controls});const choices=[{name:'First',tab:tab('#one')},{name:'Second',tab:tab('#two','two')}];assert.equal(api.initialQuestIndex([]),-1);assert.equal(api.initialQuestIndex(choices),0);assert.equal(api.initialQuestIndex(choices,'#two'),1);assert.equal(api.initialQuestIndex(choices,'#unknown'),0);assert.equal(api.initialQuestIndex([{name:'Get some Help',tab:null}]),0);const src=read('extension/wiki-quest-shop.js');assert.ok(src.includes('void openers[initial]()'));assert.ok(src.includes("cards.style.display='none'"));assert.ok(src.includes("if(e.isTrusted)void openQuest()"));assert.ok(src.includes("type:'quest-pin-add',quest:{source,name}"));}
 
-{const html=read('extension/popup.html'),js=read('extension/popup.js');for(const id of ['view-home','view-sync','view-settings','quick-search','appearance-background','capture-account','clear-inventory','discard-account'])assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1);for(const tab of ['home','sync','settings']){assert.ok(html.includes('data-view="'+tab+'"'));assert.ok(html.includes('data-panel="'+tab+'"'))}assert.ok(js.includes("showView('home')"));assert.ok(html.includes('data-panel="sync" hidden'));assert.ok(html.includes('data-panel="settings" hidden'));}
+{const html=read('extension/popup.html'),js=read('extension/popup.js');for(const id of ['view-home','view-sync','view-settings','appearance-background','capture-account','clear-inventory','discard-account'])assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1);for(const tab of ['home','sync','settings']){assert.ok(html.includes('data-view="'+tab+'"'));assert.ok(html.includes('data-panel="'+tab+'"'))}assert.ok(js.includes("showView('home')"));assert.ok(html.includes('data-panel="sync" hidden'));assert.ok(html.includes('data-panel="settings" hidden'));}
 
 {const popup=read('extension/popup.html');assert.ok(popup.includes('html{color-scheme:dark;width:420px;min-width:420px}'));assert.ok(popup.includes('body{width:420px;min-width:420px;'));assert.ok(!popup.includes('max-width:100vw'));}
 
-{const theme=vm.runInNewContext(read('extension/companion-theme.js')+'\nAQWCTheme');const root=[...read('css/site.css').matchAll(/:root\s*\{([^}]+)\}/g)].at(-1)[1];for(const m of root.matchAll(/--([\w-]+):\s*(#[0-9a-f]{6})/gi))assert.equal(theme.tokens[m[1]],m[2]);assert.ok(theme.rootCss.includes('html[data-aqwc-background="companion"]'));const css=theme.recolor('#page-content{background:#171e24;color:#e5f3ff;border:1px solid #40535c}');assert.ok(css.includes('var(--aqwc-theme-panel,#171e24)'));assert.ok(css.startsWith('#page-content{'));assert.equal(theme.recolor('a{color:#ff0000}'),'a{color:#ff0000}');assert.ok(read('extension/popup.html').includes('Cas B Neophyte'));assert.equal(theme.casTokens.selected,'#ff00ff');assert.equal(theme.lightTokens.bg,'#f5f6f8');assert.equal(theme.darkTokens.bg,'#101010');assert.equal(theme.darkTokens.panel,'#181818');assert.ok(theme.rootCss.includes('html[data-aqwc-background="dark"]'));assert.ok(read('extension/popup.html').includes('Companion (default)'));assert.ok(read('extension/popup.js').includes("background:'companion',banner:'prometheus',panel:'integrated'"));assert.ok(read('extension/wiki-first-paint.js').includes("companion:'#0b1420'"));assert.ok(read('extension/worker.js').includes("'companion','dark','light','cas'"));}
+{const theme=vm.runInNewContext(read('extension/companion-theme.js')+'\nAQWCTheme');const root=[...read('css/site.css').matchAll(/:root\s*\{([^}]+)\}/g)].at(-1)[1];for(const m of root.matchAll(/--([\w-]+):\s*(#[0-9a-f]{6})/gi))assert.equal(theme.tokens[m[1]],m[2]);assert.ok(theme.rootCss.includes('html[data-aqwc-background="companion"]'));const css=theme.recolor('#page-content{background:#171e24;color:#e5f3ff;border:1px solid #40535c}');assert.ok(css.includes('var(--aqwc-theme-panel,#171e24)'));assert.ok(css.startsWith('#page-content{'));assert.equal(theme.recolor('a{color:#ff0000}'),'a{color:#ff0000}');assert.ok(read('extension/popup.html').includes('Cas B Neophyte'));assert.equal(theme.casTokens.selected,'#ff00ff');assert.equal(theme.lightTokens.bg,'#f5f6f8');assert.equal(theme.darkTokens.bg,'#101010');assert.equal(theme.darkTokens.panel,'#181818');assert.ok(theme.rootCss.includes('html[data-aqwc-background="dark"]'));assert.ok(read('extension/popup.html').includes('Companion (default)'));assert.ok(read('extension/popup.js').includes("background:bg.value,banner:'prometheus',panel:'integrated'"));assert.ok(read('extension/wiki-first-paint.js').includes("companion:'#0b1420'"));assert.ok(read('extension/worker.js').includes("'companion','dark','light','cas'"));}
 
 {const d=vm.runInNewContext(read('extension/wiki-directory.js')+'\nAQWCDirectory',{URL});assert.equal(JSON.stringify(d.exactCandidates('Necrotic Sword of Doom','/swords')),'["necrotic-sword-of-doom","necrotic-sword-of-doom-sword"]');assert.equal(JSON.stringify(d.exactCandidates('Infernal Flame Pyromancer','/armors')),'["infernal-flame-pyromancer","infernal-flame-pyromancer-armor"]');assert.equal(d.exactCandidates('Example','/sort-by-rare-swords').length,0);}
 
-{const html=read('extension/popup.html'),js=read('extension/popup.js'),directory=read('extension/wiki-directory.js');assert.ok(html.includes('id="first-sync" hidden'));assert.ok(html.includes('quick-start.html'));assert.ok(js.includes('searchPanel.hidden=empty'));assert.ok(directory.includes('exactController?.abort()'));assert.ok(directory.includes('readWikiHtml(r)'));assert.ok(directory.includes('hydrateCached();load.addEventListener'));assert.ok(read('extension/quick-start.md').includes('Browser QA before public release'));}
+{const html=read('extension/popup.html'),js=read('extension/popup.js'),directory=read('extension/wiki-directory.js');assert.ok(html.includes('id="first-sync" hidden'));assert.ok(html.includes('quick-start.html'));assert.ok(!html.includes('id="quick-search"'));assert.ok(html.includes('#aqwc-open-wishlist'));assert.ok(html.includes('#aqwc-open-tracker'));assert.ok(read('extension/sync.js').includes("'unlocks'"));assert.ok(read('extension/sync.js').includes("'planner'"));assert.ok(html.indexOf('id="appearance-background"')<html.indexOf('class="action guide-link"'));assert.ok(html.includes('id="revoke-account-button"'));assert.ok(read('extension/account-permission.js').includes('chrome.permissions.remove'));for(const [size,path] of Object.entries(manifest.icons)){assert.ok(read(path.startsWith('extension/')?path:'extension/'+path));assert.equal(manifest.action.default_icon[size]||path,path);}assert.ok(directory.includes('exactController?.abort()'));assert.ok(directory.includes('readWikiHtml(r)'));assert.ok(directory.includes('hydrateCached();load.addEventListener'));assert.ok(read('extension/quick-start.md').includes('Browser QA before public release'));}
 
 (async()=>{
  const origin='https://aqwwiki.wikidot.com',enc=new TextEncoder(),dec=new TextDecoder();
@@ -754,3 +767,162 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
 
 {const d=vm.runInNewContext(read('extension/wiki-directory.js')+'\nAQWCDirectory',{URL});const pending=[];let count=0;const schedule=d.coalescedUpdate(()=>count++,fn=>pending.push(fn));schedule();schedule();schedule();assert.equal(pending.length,1);pending.shift()();assert.equal(count,1);schedule();pending.shift()();assert.equal(count,2);}
 (async()=>{const api=vm.runInNewContext(read('extension/wiki-materials.js')+'\nAQWCWikiMaterials',{URL});const cache=new Map();let time=1000,calls=0;const now=()=>time;const request=()=>{calls++;if(calls===1)throw Error('temporary');return ['art.png']};const first=api.previewCacheRequest(cache,'a',request,now);assert.equal(first,api.previewCacheRequest(cache,'a',request,now));assert.equal((await first).length,0);assert.equal((await api.previewCacheRequest(cache,'a',request,now)).length,0);assert.equal(calls,1);time+=15001;assert.equal((await api.previewCacheRequest(cache,'a',request,now))[0],'art.png');time+=60000;assert.equal((await api.previewCacheRequest(cache,'a',request,now))[0],'art.png');assert.equal(calls,2);console.log('Preview cache: in-flight deduplication, transient failure cooldown and successful reuse passed.');})().catch(e=>{console.error(e);process.exitCode=1});
+
+// Compact trackers: real saved checks, rollover, bounded read-only projection and sender scope.
+(async()=>{
+ const mini=vm.runInNewContext(read('extension/mini-tracker.js')+'\nAQWCMiniTracker');
+ const now=new Date('2026-11-27T05:00:00Z');
+ assert.equal(mini.period('daily',now),'d:2026-11-27');assert.equal(mini.period('weekly',now),'w:2026-11-20');
+ assert.equal(mini.period('weekly',new Date('2026-11-27T05:01:00Z')),'w:2026-11-27');
+ const sample={pinned:[{id:'a',name:'Daily quest',freq:'daily',acceptJoin:'/join timeinn',join:'/join ultraezrajal',secret:'private'},{id:'gramiel-weekly',name:'Gramiel',freq:'weekly'},{id:'b',name:'Weekly quest',freq:'weekly',join:'/join ultradage',acceptJoin:'/join bad;command'},{id:'a',name:'Duplicate',freq:'daily'},{id:'legion-ex',name:'Legacy',freq:'daily'}],checks:{'d:2026-11-27|a':true,'w:2026-11-20|gramiel-echoes-weekly':true,'w:2026-11-13|b':true}};
+ const routines=mini.readRoutines({getItem(k){assert.equal(k,'aqw-companion-planner-v09');return JSON.stringify(sample)}},now);
+ assert.equal(JSON.stringify(routines.entries),JSON.stringify([{id:'a',name:'Daily quest',freq:'daily',state:'done',join:'/join timeinn'},{id:'gramiel-weekly',name:'Gramiel',freq:'weekly',state:'alternative'},{id:'b',name:'Weekly quest',freq:'weekly',state:'todo',join:'/join ultradage'}]));
+ assert.equal(mini.readRoutines({getItem(){return '{broken'}},now),null);
+ assert.equal(mini.readRoutines({getItem(){return JSON.stringify({pinned:Array(251).fill(sample.pinned[0])})}},now),null);
+ const store={},chromeMock={runtime:{getURL:x=>'chrome-extension://test/'+x,onMessage:{addListener(){}}},storage:{local:{async setAccessLevel(){},async set(obj){Object.assign(store,obj)},async get(k){return {[k]:store[k]}}}}};
+ const api=vm.runInNewContext(read('extension/worker.js')+'\n({handle,cleanGoalStatus})',{chrome:chromeMock,URL,TextEncoder});
+ const main={url:'https://cptmundo.github.io/AQW-Companion/',frameId:0},popup={url:'chrome-extension://test/popup.html'},wiki={url:'https://aqwwiki.wikidot.com/void-aura',frameId:0};
+ const query={type:'mini-tracker-read'},status={goals:[{name:'Goal',progress:43}],pins:[],complete:true,routines};
+ assert.equal((await api.handle(query,popup)).snapshot,null);
+ assert.equal((await api.handle({type:'goal-status-publish',status},wiki)).ok,false);
+ assert.equal((await api.handle({type:'goal-status-publish',status},main)).ok,true);
+ assert.equal((await api.handle(query,wiki)).ok,false);assert.equal((await api.handle(query,main)).ok,false);
+ const snapshot=(await api.handle(query,popup)).snapshot;assert.equal(snapshot.goals[0].progress,43);assert.equal(snapshot.routines.entries[0].state,'done');assert.equal(snapshot.pins,undefined);assert.equal(snapshot.routines.entries[0].join,'/join timeinn');assert.equal(snapshot.routines.entries[2].join,'/join ultradage');assert.equal(api.cleanGoalStatus({...status,routines:{...routines,entries:[{name:'Bad',freq:'daily',state:'todo',join:'/join bad\ncommand'}]}}).routines.entries[0].join,undefined);
+ assert.equal(api.cleanGoalStatus({...status,routines:{...routines,entries:[{name:'a',freq:'monthly',state:'done'}]}}).routines,null);
+ assert.equal(api.cleanGoalStatus({...status,routines:undefined}).routines,null);
+ const html=read('extension/popup.html');assert.ok(html.includes('height:560px;max-height:560px'));assert.ok(html.includes('class="panel-shell"'));assert.ok(html.includes('id="mini-goals"'));assert.ok(html.includes('id="mini-routines"'));
+ assert.ok(read('extension/wishlist-queue.js').includes('AQWCMiniTracker?.readRoutines(localStorage)'));
+ console.log('Mini trackers: saved manual checks, reset boundaries, exclusive alternative, validation and popup-only access passed.');
+})().catch(e=>{console.error(e);process.exitCode=1});
+
+// Popup list previews: independent expansion, live refresh, accurate remainder counts.
+(async()=>{
+ class El{constructor(tag){this.tag=tag;this.children=[];this.style={};this.dataset={};this.attrs={};this.hidden=false;this.events={}}append(...children){this.children.push(...children)}replaceChildren(){this.children=[]}setAttribute(k,v){this.attrs[k]=v}addEventListener(k,f){this.events[k]=f}}
+ const goals=new El('div'),routines=new El('div'),updated=new El('p');const nodes={'mini-goals':goals,'mini-routines':routines,'mini-updated':updated};
+ const doc={getElementById:id=>nodes[id],createElement:t=>new El(t),addEventListener(){},hidden:false};
+ let snapshot={goals:Array.from({length:6},(_,i)=>({name:'Goal '+i,progress:i*10})),complete:true,at:1,routines:{dailyPeriod:'d',weeklyPeriod:'w',entries:[...Array.from({length:7},(_,i)=>({name:'D'+i,freq:'daily',state:'todo',...(i===1?{join:'/join invalid;command'}:i===2?{}:{join:'/join daily'+i})})),...Array.from({length:5},(_,i)=>({name:'W'+i,freq:'weekly',state:'done',join:'/join weekly'+i}))]}};
+ let poll,copied=[],reset,failCopy=false;vm.runInNewContext(read('extension/mini-popup.js'),{document:doc,AQWCMiniTracker:{period:f=>f==='daily'?'d':'w'},chrome:{runtime:{sendMessage:async()=>({ok:true,snapshot})}},setInterval:f=>{poll=f},navigator:{clipboard:{async writeText(value){if(failCopy)throw Error('blocked');copied.push(value)}}},setTimeout:f=>{reset=f;return 1},clearTimeout(){}});await new Promise(r=>setImmediate(r));
+ const list=(root,key)=>root.children.find(x=>x.id==='mini-rows-'+key), visible=(root,key)=>list(root,key).children.filter(x=>!x.hidden).length, toggle=(root,key)=>root.children.find(x=>x.attrs['aria-controls']==='mini-rows-'+key);
+ assert.equal(visible(goals,'wishlist'),4);assert.equal(visible(routines,'daily'),4);assert.equal(visible(routines,'weekly'),4);
+ const copy=(freq,i)=>list(routines,freq).children[i].children.find(x=>x.className==='mini-join');
+ assert.equal(copy('daily',1),undefined);assert.equal(copy('daily',2),undefined);assert.equal(copy('daily',0).title,'Copy /join daily0');
+ await copy('daily',0).events.click();assert.equal(copied[0],'/join daily0');assert.equal(copy('daily',0).textContent,'Copied ✓');reset();assert.equal(copy('daily',0).textContent,'/join daily0 ⧉');
+ await copy('weekly',0).events.click();assert.equal(copied[1],'/join weekly0');failCopy=true;await copy('weekly',1).events.click();assert.equal(copy('weekly',1).textContent,'Copy failed · retry');failCopy=false;
+ assert.equal(toggle(goals,'wishlist').textContent,'Show 2 more +');assert.equal(toggle(routines,'daily').textContent,'Show 3 more +');assert.equal(toggle(routines,'weekly').textContent,'Show 1 more +');
+ toggle(routines,'daily').events.click();assert.equal(visible(routines,'daily'),7);assert.equal(visible(routines,'weekly'),4);await copy('daily',6).events.click();assert.equal(copied[2],'/join daily6');assert.equal(toggle(routines,'daily').attrs['aria-expanded'],'true');
+ snapshot={...snapshot,at:2};await poll();assert.equal(visible(routines,'daily'),7);toggle(routines,'daily').events.click();assert.equal(visible(routines,'daily'),4);
+ snapshot={...snapshot,goals:snapshot.goals.slice(0,4)};await poll();assert.equal(visible(goals,'wishlist'),4);assert.equal(toggle(goals,'wishlist'),undefined);
+ console.log('Mini tracker previews: four rows, independent expansion/collapse, refresh persistence and no unnecessary button passed.');
+})().catch(e=>{console.error(e);process.exitCode=1});
+
+// Bidirectional recurring checks: queue, exact pinned task, reset, conflicts, acknowledgement and undo.
+(async()=>{
+ const stored={},chromeMock={runtime:{getURL:x=>'chrome-extension://test/'+x,onMessage:{addListener(){}}},storage:{local:{async setAccessLevel(){},async set(obj){Object.assign(stored,obj)},async get(k){return {[k]:stored[k]}}}}};
+ let serial=0;const fixed=new Date('2026-11-27T05:01:00Z');class FixedDate extends Date{constructor(...args){super(...(args.length?args:[fixed.getTime()]))}static now(){return fixed.getTime()}}
+ const api=vm.runInNewContext(read('extension/worker.js')+'\n({handle,currentRoutinePeriod})',{chrome:chromeMock,URL,TextEncoder,Date:FixedDate,crypto:{randomUUID:()=>String(++serial)}});
+ const mini=vm.runInNewContext(read('extension/mini-tracker.js')+'\nAQWCMiniTracker',{Date:FixedDate});
+ const main={url:'https://cptmundo.github.io/AQW-Companion/',frameId:0},popup={url:'chrome-extension://test/popup.html'},wiki={url:'https://aqwwiki.wikidot.com/void-aura',frameId:0};
+ const daily=mini.period('daily',fixed),weekly=mini.period('weekly',fixed);
+ const catalog=[{id:'a',freq:'daily',name:'A'},{id:'b',freq:'weekly',name:'B'},{id:'gramiel-weekly',freq:'weekly',name:'Gramiel',exclusiveGroup:'g'},{id:'gramiel-echoes-weekly',freq:'weekly',name:'Echoes',exclusiveGroup:'g'}];
+ let planner={pinned:catalog.slice(0,3),checks:{[weekly+'|gramiel-echoes-weekly']:true}};
+ const source=read('index.html'),start=source.indexOf('function applyExtensionRoutineChecks('),end=source.indexOf('function initWikiWishlistQueue()',start);
+ const apply=vm.runInNewContext(source.slice(start,end)+'\napplyExtensionRoutineChecks',{taskPeriod:(f,n)=>mini.period(f,n),taskCatalog:catalog,routineIsRecurring:()=>true,Date:FixedDate});
+ const projection=()=>({...mini.readRoutines({getItem:()=>JSON.stringify(planner)},fixed),canEdit:true});
+ const status=()=>({goals:[{name:'Goal',progress:20}],pins:[],complete:true,routines:projection()});
+ const pub=()=>api.handle({type:'goal-status-publish',status:status()},main),snapshot=()=>api.handle({type:'mini-tracker-read'},popup),queue=()=>api.handle({type:'routine-check-read'},main);
+ await api.handle({type:'goal-status-publish',status:{...status(),routines:{...projection(),canEdit:false}}},main);
+ const set=(taskId,freq,done,period=freq==='daily'?daily:weekly,sender=popup)=>api.handle({type:'routine-check-set',taskId,freq,period,done},sender);
+ assert.equal((await set('a','daily',true)).ok,false);await pub();
+ assert.equal((await set('a','daily',true,daily,wiki)).ok,false);assert.equal((await set('a','daily',true,daily,main)).ok,false);assert.equal((await queue()).entries.length,0);
+ assert.equal((await set('a','daily',true,'d:2026-11-26')).ok,false);assert.equal((await set('missing','daily',true)).ok,false);assert.equal((await set('gramiel-weekly','weekly',true)).ok,false);
+ assert.equal((await set('a','daily',true)).pending,true);assert.equal((await set('a','daily',true)).pending,true);assert.equal((await set('b','weekly',true)).pending,true);
+ assert.equal((await queue()).entries.length,2);assert.equal((await snapshot()).pending.length,2);assert.equal((await snapshot()).snapshot.routines.entries[0].state,'todo');
+ assert.equal((await api.handle({type:'routine-check-read'},wiki)).ok,false);
+ async function sync(){const entries=(await queue()).entries;const r=apply(planner,entries,fixed);planner={...planner,checks:r.checks};assert.equal((await api.handle({type:'routine-check-ack',results:r.results,routines:projection()},popup)).ok,false);assert.equal((await api.handle({type:'routine-check-ack',results:r.results,routines:projection()},main)).ok,true);return r;}
+ let r=await sync();assert.equal(r.changed,true);assert.equal(planner.checks[daily+'|a'],true);assert.equal(planner.checks[weekly+'|b'],true);assert.equal((await snapshot()).pending.length,0);assert.equal((await snapshot()).snapshot.routines.entries[0].state,'done');assert.equal((await snapshot()).snapshot.goals[0].progress,20);
+ await set('a','daily',false);await sync();assert.equal(planner.checks[daily+'|a'],false);assert.equal((await snapshot()).snapshot.routines.entries[0].state,'todo');
+ await set('a','daily',true);planner.pinned=planner.pinned.filter(t=>t.id!=='a');r=await sync();assert.equal(r.results[0].status,'missing');assert.equal((await snapshot()).notice,'A quest is no longer pinned.');
+ r=apply(planner,[{id:'z',taskId:'b',freq:'weekly',period:'w:2026-11-20',done:false},{id:'y',taskId:'gramiel-weekly',freq:'weekly',period:weekly,done:true}],fixed);assert.equal(r.results[0].status,'reset');assert.equal(r.results[1].status,'conflict');assert.equal(r.changed,false);assert.equal(r.checks[weekly+'|b'],true);
+ console.log('Popup check roundtrip: trusted scope, readiness, queued/confirmed separation, duplicates, undo, reset, unpin, conflicts and snapshot integrity passed.');
+})().catch(e=>{console.error(e);process.exitCode=1});
+(async()=>{
+ class El{constructor(){this.children=[];this.style={};this.dataset={};this.attrs={};this.events={};this.hidden=false}append(...items){this.children.push(...items)}replaceChildren(){this.children=[]}setAttribute(k,v){this.attrs[k]=v}addEventListener(k,f){this.events[k]=f}}
+ const goals=new El(),routines=new El(),updated=new El(),nodes={'mini-goals':goals,'mini-routines':routines,'mini-updated':updated};
+ const snap={goals:[],complete:true,at:1,routines:{canEdit:true,dailyPeriod:'d',weeklyPeriod:'w',entries:[{id:'a',name:'Quest A',freq:'daily',state:'todo',join:'/join timeinn'},{id:'b',name:'Quest B',freq:'weekly',state:'done'}]}};
+ let pending=[],poll,requests=[];const document={getElementById:id=>nodes[id],createElement:()=>new El(),addEventListener(){},hidden:false};
+ const sendMessage=async msg=>{if(msg.type==='mini-tracker-read')return {ok:true,snapshot:snap,pending};requests.push(msg);pending=[{taskId:msg.taskId,freq:msg.freq,period:msg.period,done:msg.done}];return {ok:true,pending:true}};
+ vm.runInNewContext(read('extension/mini-popup.js'),{document,AQWCMiniTracker:{period:f=>f==='daily'?'d':'w'},chrome:{runtime:{sendMessage}},setInterval:f=>poll=f});await new Promise(r=>setImmediate(r));
+ const button=f=>routines.children.find(x=>x.id==='mini-rows-'+f).children[0].children[0];
+ assert.equal(button('daily').attrs['aria-pressed'],'false');assert.equal(button('daily').textContent,'✓');assert.equal(button('daily').dataset.state,'todo');await button('daily').events.click();assert.equal(requests[0].done,true);assert.equal(button('daily').textContent,'…');assert.equal(button('daily').disabled,true);
+ snap.routines.entries[0].state='done';pending=[];await poll();assert.equal(button('daily').attrs['aria-pressed'],'true');assert.equal(button('daily').textContent,'✓');assert.equal(button('daily').dataset.state,'done');await button('daily').events.click();assert.equal(requests[1].done,false);
+ pending=[];snap.routines.canEdit=false;await poll();assert.equal(button('daily').disabled,true);assert.equal(button('weekly').disabled,true);
+ console.log('Popup controls: mark, pending, confirmed, undo and old-site disabled state passed.');
+})().catch(e=>{console.error(e);process.exitCode=1});
+
+(async()=>{
+ const stored={},sent=[];let restricted=false;
+ const chrome={runtime:{id:'id',getURL:x=>'chrome-extension://test/'+x,onMessage:{addListener(){}}},storage:{local:{async setAccessLevel(v){restricted=v.accessLevel==='TRUSTED_CONTEXTS'},async set(v){Object.assign(stored,v)},async get(k){return {[k]:stored[k]}}}},tabs:{async query(){return [{id:1,url:'https://aqwwiki.wikidot.com/void-aura'},{id:2,url:'https://example.org/'},{id:3},{id:4,url:'https://aqwwiki.wikidot.com/classes'}]},async sendMessage(id,msg,opts){sent.push({id,msg,opts});if(id===3)throw Error('No receiving end');return {ok:true}}}};
+ const api=vm.runInNewContext(read('extension/worker.js')+'\n({handle,notifyTabs})',{chrome,URL,TextEncoder});
+ const result=await api.handle({type:'wiki-appearance-save',appearance:{background:'light'}},{url:'chrome-extension://test/popup.html'});
+ assert.equal(restricted,true);assert.equal(result.delivered,2);assert.deepEqual(sent.map(x=>x.id),[1,3,4]);assert.ok(sent.every(x=>x.msg.type==='aqwc-theme-changed'&&Object.keys(x.msg).length===1&&x.opts.frameId===0));
+ assert.equal((await api.handle({type:'wiki-appearance-read'},{url:'https://aqwwiki.wikidot.com/classes',frameId:0})).appearance.background,'light');
+ console.log('Theme notification dispatch: all eligible tabs, absent receivers, trusted storage restriction, readback passed.');
+})().catch(e=>{console.error(e);process.exitCode=1});
+
+assert.ok(!read("extension/popup.html").includes("appearance-reset"));assert.ok(!read("extension/popup.js").includes("appearance-reset"));assert.ok(read("extension/popup.html").includes('value="companion"'));assert.ok(read("extension/popup.html").includes("#75e3a4"));
+
+// Pending intent moves rows immediately, without falsely confirming checks or mixing frequencies.
+(async()=>{
+ class El{constructor(){this.children=[];this.style={};this.dataset={};this.attrs={};this.events={};this.hidden=false}append(...items){this.children.push(...items)}replaceChildren(){this.children=[]}setAttribute(k,v){this.attrs[k]=v}addEventListener(k,f){this.events[k]=f}}
+ const goals=new El(),routines=new El(),updated=new El(),nodes={'mini-goals':goals,'mini-routines':routines,'mini-updated':updated};
+ const task=(id,freq,state='todo')=>({id,name:id,freq,state,join:'/join timeinn'});
+ const snapshot={goals:[],complete:true,at:1,routines:{canEdit:true,dailyPeriod:'d',weeklyPeriod:'w',entries:[task('D1','daily'),task('D2','daily','done'),task('D3','daily'),task('D4','daily'),task('D5','daily'),task('D6','daily','alternative'),task('W1','weekly'),task('W2','weekly','done'),task('W3','weekly')]}};
+ let pending=[],poll,dailyPeriod='d';const doc={getElementById:id=>nodes[id],createElement:()=>new El(),addEventListener(){},hidden:false};
+ const sendMessage=async m=>{if(m.type==='mini-tracker-read')return {ok:true,snapshot,pending};pending=[{taskId:m.taskId,freq:m.freq,period:m.period,done:m.done}];return {ok:true,pending:true}};
+ vm.runInNewContext(read('extension/mini-popup.js'),{document:doc,AQWCMiniTracker:{period:f=>f==='daily'?dailyPeriod:'w'},chrome:{runtime:{sendMessage}},setInterval:f=>poll=f});await new Promise(r=>setImmediate(r));
+ const rows=f=>routines.children.find(x=>x.id==='mini-rows-'+f).children;
+ const names=f=>rows(f).map(x=>x.children[1].textContent);
+ const button=(f,id)=>rows(f).find(x=>x.children[1].textContent===id).children[0];
+ const group=f=>routines.children.find(x=>x.className==='mini-group'&&x.children[0].textContent===f).children[1].textContent;
+ assert.deepEqual(names('daily'),['D1','D3','D4','D5','D6','D2']);
+ await button('daily','D1').events.click();assert.deepEqual(names('daily'),['D3','D4','D5','D6','D1','D2']);assert.equal(button('daily','D1').dataset.state,'pending');assert.equal(button('daily','D1').attrs['aria-pressed'],'false');assert.equal(group('Daily'),'1 checked · 6 pinned');assert.equal(rows('daily').filter(x=>!x.hidden).length,4);assert.deepEqual(names('weekly'),['W1','W3','W2']);
+ snapshot.routines.entries[0].state='done';pending=[];await poll();assert.equal(group('Daily'),'2 checked · 6 pinned');assert.equal(button('daily','D1').dataset.state,'done');
+ await button('daily','D1').events.click();assert.equal(names('daily')[0],'D1');assert.equal(button('daily','D1').dataset.state,'pending');assert.equal(group('Daily'),'2 checked · 6 pinned');
+ // Rejected/cleared undo rolls back to confirmed ordering.
+ pending=[];await poll();assert.deepEqual(names('daily'),['D3','D4','D5','D6','D1','D2']);
+ await button('weekly','W1').events.click();assert.deepEqual(names('weekly'),['W3','W1','W2']);assert.deepEqual(names('daily'),['D3','D4','D5','D6','D1','D2']);
+ pending=[{taskId:'D3',freq:'daily',period:'old',done:true}];await poll();assert.equal(names('daily')[0],'D3');
+ dailyPeriod='new';await poll();assert.deepEqual(names('daily'),['D1','D2','D3','D4','D5','D6']);assert.equal(button('daily','D3').dataset.state,'unknown');
+ console.log('Completed quests last: independent stable ordering, pending check/undo, confirmed counts, rollback, reset and four-row preview passed.');
+})().catch(e=>{console.error(e);process.exitCode=1});
+
+{const guide=read("extension/quick-start.html");assert.ok(guide.includes("Import &amp; Sync"));assert.ok(guide.includes("Enable inventory export"));for(const name of ["sync","appearance","tracker"])assert.ok(read("extension/guide-images/"+name+".png"));assert.ok(read("index.html").includes("extension/quick-start.html"));assert.equal(manifest.icons["128"],"icons/store128.png");console.log("Release guide, store icon and site link checked.");}
+
+(async()=>{
+ // Reproduce a moving default order across pages, with a stable sort fallback.
+ const origin='https://account.aq.com',count=2392;
+ const rows=Array.from({length:count},(_,i)=>({ID:i+1,Name:'Item '+i,Type:'Item',Count:1,Bank:i%2}));
+ const calls=[];let mode='bulk';
+ const ctx={URL,AbortSignal,location:{origin,pathname:'/AQW/Inventory'},performance:{getEntriesByType:()=>[{name:origin+'/AQW/InventoryData?filter=ignored&sort=ignored'}]},setTimeout:f=>f(),fetch:async(url)=>{
+  const u=new URL(url),skip=Number(u.searchParams.get('skip')),take=Number(u.searchParams.get('take')),sort=u.searchParams.get('sort');calls.push({skip,take,sort});
+  assert.equal(u.searchParams.has('filter'),false);
+  if(mode==='reject-bulk'&&take>100)return {ok:false,status:400};
+  const limit=(mode==='cap'||mode==='overlap'||mode==='incomplete')?Math.min(100,take):take;
+  let data=rows.slice(skip,skip+limit);
+  if(skip===100&&mode==='overlap')data=rows.slice(99,199);
+  if(skip===100&&mode==='incomplete')data=data.slice(0,99);
+  if(mode==='duplicate'&&take===count)data[100]={...data[99]};
+  if(mode==='invalid-id'&&take===count)data[100]={...data[100],ID:' '};
+  return {ok:true,json:async()=>({data,totalCount:mode==='changed'&&take===count?count+1:count})};
+ }};
+ const capture=vm.runInNewContext(read('extension/account-capture.js')+'\ncaptureAccountInventory',ctx);
+ const events=[];assert.equal((await capture(e=>events.push(e))).items.length,count);assert.deepEqual(events.map(e=>e.phase),['connecting','bulk','reading']);assert.equal(events.at(-1).read,count);assert.equal(calls.length,2);assert.equal(calls[1].take,count);
+ for(const fallback of ['cap','reject-bulk']){
+  mode=fallback;calls.length=0;events.length=0;const snap=await capture(e=>events.push(e));assert.equal(events.find(e=>e.phase==='reading').read,0);assert.equal(events.at(-1).read,count);assert.ok(events.some(e=>e.phase==='reading'&&e.read===100&&e.total===count));assert.ok(events.filter(e=>e.phase==='reading').every((e,i,a)=>i===0||e.read>=a[i-1].read));assert.equal(snap.items.length,count);assert.equal(new Set(snap.items.map(x=>x.ID)).size,count);
+  assert.equal(calls.length,26);for(const call of calls.slice(2))assert.deepEqual(JSON.parse(call.sort),[{selector:'ID',desc:false},{selector:'Bank',desc:false}]);
+ }
+ for(const [failure,expected] of [['duplicate',/Repeated item ID\/location at row 101 of 2392/],['overlap',/Repeated item ID\/location at row 101 of 2392/],['invalid-id',/Invalid item ID at row 101/],['incomplete',/Incomplete inventory page at offset 100/],['changed',/total changed/]]){mode=failure;await assert.rejects(capture(),expected);}
+ console.log('Account capture RC: full 2392-row response, capped and rejected bulk fallback, stable pagination, repeated/invalid rows, incomplete page and total drift checked.');
+})().catch(e=>{console.error(e);process.exitCode=1});
+
+assert.ok(read("extension/popup.html").includes('id="account-progress"'));assert.ok(read("extension/account-popup.js").includes("progress.removeAttribute('value')"));console.log("Export progress: pending, real row counts, acknowledged success and failure checked.");
