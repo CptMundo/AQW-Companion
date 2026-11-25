@@ -316,6 +316,64 @@ function flatLinkNodes(content,accept){
  return rows;
 }
 function weaponSlug(a){try{const u=new URL(a.getAttribute('href'),location.origin),slug=u.pathname.replace(/^\/|\/$/g,'');return u.origin===location.origin&&weaponKinds.has(slug)&&!u.hash&&!u.search?slug:null}catch{return null}}
+
+// Reuse the homepage's own category artwork, not invented lookalike glyphs.
+// Fetch only once on category pages; a tab-local cache also avoids repeat visits.
+const homepageItemKinds=new Set('armors capes-back-items classes enhancements grounds helmets-hoods houses floor-items wall-items misc-items necklaces pets weapons'.split(' '));
+const categoryAliases={'housing':'houses','use-items':'misc-items','battle-pets':'pets','back-items':'capes-back-items','helmets':'helmets-hoods'};
+function categoryIconKey(href,origin){
+ try{const u=new URL(href,origin);if(u.origin!==origin||u.search||u.hash)return null;const slug=u.pathname.replace(/^\/|\/$/g,'');const key=categoryAliases[slug]||slug;return homepageItemKinds.has(key)?key:null}catch{return null}
+}
+function categoryImageUrl(src,origin){
+ try{const u=new URL(src,origin);if(u.protocol==='http:')u.protocol='https:';if(u.protocol!=='https:'||u.username||u.password)return null;if(!['aqwwiki.wikidot.com','aqwwiki.wdfiles.com','i.imgur.com','imgur.com','static.wikidot.com'].includes(u.hostname))return null;return u.href}catch{return null}
+}
+function homepageIcons(content,origin){
+ const result={};
+ if(!content)return result;
+ for(const a of content.querySelectorAll('a[href]')){
+  const key=categoryIconKey(a.getAttribute('href'),origin);if(!key||result[key])continue;
+  // Support a linked image, inline background, or a single adjacent icon.
+  const candidates=[a,...a.querySelectorAll('img,[style*="background"]')];
+  const p=a.parentElement;if(p&&p.querySelectorAll('a[href]').length===1)candidates.push(p,...p.querySelectorAll('img,[style*="background"]'));
+  for(const el of candidates){
+   const src=el.getAttribute('src')||el.getAttribute('data-src')||((el.getAttribute('style')||'').match(/url\(\s*["']?([^"')]+)["']?\s*\)/i)||[])[1];
+   const url=src&&categoryImageUrl(src,origin);if(url){result[key]=url;break}
+  }
+ }
+ return result;
+}
+const categoryIconCache='aqwc-home-category-icons-v1';
+let categoryIconPromise;
+function readHomeIcons(){
+ if(categoryIconPromise)return categoryIconPromise;
+ categoryIconPromise=(async()=>{
+  const origin=location.origin;
+  try{const stored=JSON.parse(sessionStorage.getItem(categoryIconCache)||'null');if(stored&&Date.now()-stored.time<86400000&&Object.keys(stored.icons||{}).length>=10){const safe={};for(const key of homepageItemKinds){const url=categoryImageUrl(stored.icons[key],origin);if(url&&stored.icons[key])safe[key]=url}if(Object.keys(safe).length>=10)return safe}}catch{}
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);
+  try{const r=await fetch(origin+'/',{credentials:'omit',referrerPolicy:'no-referrer',signal:controller.signal});if(!r.ok||new URL(r.url||origin).origin!==origin||!String(r.headers.get('content-type')).includes('text/html'))return {};
+   const template=document.createElement('template');template.innerHTML=await readWikiHtml(r);
+   const icons=homepageIcons(template.content.querySelector('#page-content'),origin);
+   if(Object.keys(icons).length)try{sessionStorage.setItem(categoryIconCache,JSON.stringify({time:Date.now(),icons}))}catch{}
+   return icons;
+  }catch{return {}}finally{clearTimeout(timer)}
+ })();return categoryIconPromise;
+}
+function applyHomeIcon(mark,key,icons){
+ const url=icons[key];if(!url||mark.querySelector('img'))return;
+ const img=document.createElement('img');img.className='aqwc-category-home-icon';img.alt='';img.decoding='async';img.referrerPolicy='no-referrer';
+ img.addEventListener('load',()=>{mark.replaceChildren(img);mark.classList.add('aqwc-category-has-icon')},{once:true});img.src=url;
+}
+function upgradeCategoryIcons(content){
+ const marks=[...content.querySelectorAll('[data-aqwc-category-icon]')];if(!marks.length)return;
+ readHomeIcons().then(icons=>{for(const mark of marks)applyHomeIcon(mark,mark.dataset.aqwcCategoryIcon,icons)});
+}
+function categorySubIcons(list){
+ for(const a of list.querySelectorAll('ul li > a[href]')){
+  const key=categoryIconKey(a.getAttribute('href'),location.origin);if(!key)continue;
+  const mark=document.createElement('span');mark.className='aqwc-category-glyph aqwc-category-small-glyph';mark.dataset.aqwcCategoryIcon=key;mark.setAttribute('aria-hidden','true');mark.textContent=({'houses':'⌂','floor-items':'▱','wall-items':'▥','grounds':'◯','misc-items':'◆','pets':'✧'})[key]||'◆';a.prepend(mark);a.classList.add('aqwc-category-sub-link');
+ }
+}
+
 function styleWeapons(content){
  const rows=flatLinkNodes(content,a=>!!weaponSlug(a));if(!rows.length)return false;
  const grid=document.createElement('section');grid.className='aqwc-weapon-grid';const seen=new Set();
@@ -341,7 +399,7 @@ function init(){
  if(!kind){if(styleHome(content)){paletteHome(content);return}if(styleSearch(content)||styleWars(content)||styleFactionV2(content)||styleShop(content))return;if(styleMap(content)){moveRoomGallery(content);mapNavigation(content);decorateMapCards(content);layoutRoomVariants(content);return}if(styleRegion(content))return;styleMonster(content);return}
  if(kind==='categories'){
   if(directoryPath(location.pathname)==='/weapons'&&styleWeapons(content))return;
-  const list=[...content.children].find(el=>el.tagName==='UL'&&el.children.length>=3);if(!list)return;content.classList.add('aqwc-directory','aqwc-category-index');list.classList.add('aqwc-category-grid');document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');for(const li of list.children){const sub=li.querySelector('ul'),a=li.querySelector('a');if(!sub)li.classList.add('aqwc-category-leaf');if(sub&&sub.children.length>=6)li.classList.add('aqwc-category-wide');if(a){a.classList.add('aqwc-category-title');const glyph=document.createElement('span');glyph.className='aqwc-category-glyph';glyph.setAttribute('aria-hidden','true');glyph.textContent=({'armors':'♜','classes':'✦','weapons':'⚔','helmets-hoods':'◈','pets':'✧','housing':'⌂','enhancements':'◇'})[(a.getAttribute('href')||'').replace(/^\//,'')]||'◆';a.prepend(glyph)}}return;
+  const list=[...content.children].find(el=>el.tagName==='UL'&&el.children.length>=3);if(!list)return;content.classList.add('aqwc-directory','aqwc-category-index');list.classList.add('aqwc-category-grid');document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');for(const li of list.children){const sub=li.querySelector('ul'),a=li.querySelector('a');if(!sub)li.classList.add('aqwc-category-leaf');if(sub&&sub.children.length>=6)li.classList.add('aqwc-category-wide');if(a){a.classList.add('aqwc-category-title');const glyph=document.createElement('span');glyph.className='aqwc-category-glyph';glyph.setAttribute('aria-hidden','true');glyph.textContent=({'armors':'♜','classes':'✦','weapons':'⚔','helmets-hoods':'◈','pets':'✧','housing':'⌂','enhancements':'◇'})[(a.getAttribute('href')||'').replace(/^\//,'')]||'◆';const key=categoryIconKey(a.getAttribute('href'),location.origin);if(key)glyph.dataset.aqwcCategoryIcon=key;a.prepend(glyph)}}categorySubIcons(list);upgradeCategoryIcons(content);return;
  }
  const rows=directoryEntries(content,location.origin);if(!rows.length)return;
  const host=document.createElement('section');host.id='aqwc-directory-v2';host.style.display='none';host.setAttribute('aria-label','Wiki directory');
@@ -402,6 +460,6 @@ function styleMonster(content){
  content.classList.add('aqwc-monster-profile');if(node.parentElement!==content)return;
  const wrap=document.createElement('section');wrap.className='aqwc-monster-art';const heading=document.createElement('h3');heading.textContent='Monster artwork';const next=node.nextElementSibling;wrap.append(heading,node);if(next&&/^Thanks to\b/i.test(clean(next.textContent)))wrap.append(next);content.prepend(wrap);
 }
-globalThis.AQWCDirectory=Object.freeze({indexKind,rowName,runs,entry,directoryEntries,letter,mapSectionName,mapSections,tagLabels,nameTags,factionName,factionHeading,searchUrl,isMapOverviewSection,directoryPath,searchKey,matchesDirectory,paginationLinks,pageNumber,exactCandidates,lookupExactDirectory,readWikiHtml});
+globalThis.AQWCDirectory=Object.freeze({indexKind,rowName,runs,entry,directoryEntries,letter,mapSectionName,mapSections,tagLabels,nameTags,factionName,factionHeading,searchUrl,isMapOverviewSection,directoryPath,searchKey,matchesDirectory,paginationLinks,pageNumber,exactCandidates,lookupExactDirectory,readWikiHtml,categoryIconKey,categoryImageUrl,homepageIcons});
 if(typeof document!=='undefined'){try{init()}finally{globalThis.AQWCWikiBoot?.layoutReady()}}
 })();

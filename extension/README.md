@@ -166,3 +166,6 @@ Four distinct presets: Companion (default, site palette), Dark (neutral graphite
 
 ### v0.12.27 — Actual Light Mode
 Light-only surface overrides for native Wiki and Companion panels, navigation, header decorations, item/quest/farm shadows, list cards, shop tables, location/faction surfaces and popup. Explicit light text on dark-literal fallbacks is replaced with dark text; artwork stays unchanged. Corrected malformed card class assignment in shared renderer. No new permissions. Browser verification pending; cross-origin search iframe contents remain outside extension CSS control.
+
+### v0.12.28 — Homepage category icons
+Items and Housing category cards reuse homepage artwork by destination link; relevant child links get smaller icons. Single bounded homepage request, tab-local cache, allowlisted image hosts and existing glyph fallback if art fails. Weapon-specific subcategories keep distinct glyphs where the homepage has no matching icon. Browser verification pending.
