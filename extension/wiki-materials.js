@@ -69,7 +69,51 @@
  function sourceLink(a,origin){
   try{const u=new URL(a.getAttribute('href'),origin),name=clean(a.textContent).replace(/^['‘“]+|['’”]+$/g,'');if(u.origin!==origin||u.search||!/^\/[a-z0-9][a-z0-9-]{0,199}\/?$/.test(u.pathname)||!name||name.length>180||u.hash&&!/^#[a-zA-Z0-9_-]{1,80}$/.test(u.hash))return null;return {name,slug:u.pathname.replace(/^\/|\/$/g,''),hash:u.hash}}catch{return null}
  }
+ function acquisitionKind(text){
+ const t=clean(text).replace(/^Price:\s*/i,'').replace(/^N\/A\s*\(?\s*/i,'');
+ if(/^(?:Notes?|Description|Sellback|Type|Used (?:in|to)|Required (?:for|to)|Also see)\b/i.test(t))return 'stop';
+ if(/^Locations?\s*:/i.test(t))return 'locations';
+ if(/^Dropped by\b/i.test(t))return 'drops';
+ if(/^(?:Reward(?:ed)? from|Quest reward)\b/i.test(t)&&/\bquests?\b/i.test(t))return 'quests';
+ if(/^(?:Purchased from|Bought from|Available from)\b/i.test(t))return 'shops';
+ if(/^Merge the following\b/i.test(t))return 'stop';
+ return null;
+ }
+ function acquisitionLines(content){
+  const rows=[];let value='',links=[],listDepth=0;
+  function flush(){const text=clean(value);if(text||links.length)rows.push({text,links,listDepth});value='';links=[]}
+  function walk(node){
+   if(node.nodeType===3){value+=node.textContent||'';return}
+   if(node.nodeType!==1)return;
+   const tag=node.tagName;if(['SCRIPT','STYLE','IMG','IFRAME'].includes(tag))return;
+   if(node.matches?.('#breadcrumbs,.breadcrumbs,.breadcrumb,.page-tags,.page-rate-widget-box'))return;
+   if(tag==='BR'||tag==='HR'){flush();return}
+   if(tag==='A'){value+=node.textContent||'';links.push(node);return}
+   const block=['P','DIV','LI','UL','OL','H1','H2','H3','H4','H5','TABLE','TR','TD'].includes(tag);if(block)flush();
+   if(tag==='LI')listDepth++;
+   for(const c of node.childNodes||[])walk(c);
+   if(block)flush();if(tag==='LI')listDepth--;
+  }
+  for(const child of content.childNodes||[])walk(child);flush();return rows;
+ }
+ function parseAcquisitionLines(rows,origin){
+  const out={locations:[],drops:[],quests:[],shops:[]};let active=null,notes=false;
+  for(const row of rows){
+   if(/^(?:Notes?|Description|Sellback|Type)\s*:/i.test(row.text)){active=null;if(/^Notes?\s*:/i.test(row.text))notes=true;continue}
+   if(notes)continue;
+   const kind=acquisitionKind(row.text);
+   if(kind==='stop'){active=null;continue}
+   if(kind)active=kind;else if(!row.listDepth){active=null;continue}
+   if(!active)continue;
+   for(const a of row.links){const item=sourceLink(a,origin);if(!item)continue;
+    const bucket=active==='locations'&&(/\b(?:shop|merge)\b/i.test(item.name)||/(?:-merge|-shop)$/.test(item.slug))?'shops':active;
+    if(!out[bucket].some(x=>x.slug===item.slug&&x.name===item.name&&x.hash===item.hash)&&out[bucket].length<40)out[bucket].push(item);
+   }
+  }
+  return out;
+ }
  function parseSources(content,origin){
+  if(content.childNodes)return parseAcquisitionLines(acquisitionLines(content),origin);
   const out={locations:[],drops:[],quests:[],shops:[]};
   function add(kind,a){const item=sourceLink(a,origin);if(item&&!out[kind].some(x=>x.slug===item.slug&&x.name===item.name&&x.hash===item.hash)&&out[kind].length<40)out[kind].push(item)}
   // Read only acquisition-labelled lines and their immediately attached list.
@@ -242,6 +286,35 @@
   const merge=recipe?.groups?.length===1?recipe.groups[0].map(x=>[x.name,x.target]):recipe?.groups?.length>1?null:hint?.merge;
   return {sources,merge,alternatives:recipe?.groups?.length>1?recipe.groups.length:0};
  }
+ function acquisitionGroups(data){
+ const s=data.sources||{},mergeShops=(s.shops||[]).filter(x=>/\bmerge\b/i.test(x.name)||/-merge$/.test(x.slug||''));
+ const otherShops=(s.shops||[]).filter(x=>!mergeShops.includes(x));
+ const groups=[
+  {kind:'quest',title:'Quest rewards',description:'Complete these quests and claim the material as a reward.',items:s.quests||[]},
+  {kind:'drop',title:'Monster drops',description:'Defeat these monsters to obtain the material as a drop.',items:s.drops||[]},
+  {kind:'merge',title:'Merge recipe',description:'Exchange the required ingredients for this material.',items:data.merge?.map(([name,qty])=>({name:name+' ×'+qty}))|| (data.alternatives?[{name:data.alternatives+' alternative recipes — choose below'}]:[])},
+  {kind:'merge',title:'Merge shops',description:'Listed merge shop locations. Check the shop for the required exchange.',items:mergeShops},
+  {kind:'shop',title:'Shops',description:'Listed shop sources. Check the price and access requirements.',items:otherShops},
+  {kind:'location',title:'Locations',description:'Travel to these listed maps to find the acquisition source.',items:(s.locations||[]).filter(x=>!/\b(?:shop|merge shop)\b/i.test(x.name))}
+ ];
+ return groups.filter(g=>g.items.length);
+ }
+ function renderAcquisitionGuide(container,slug,recipe,origin){
+  const groups=acquisitionGroups(compactData(slug,recipe));if(!groups.length)return false;
+  const guide=document.createElement('div');guide.className='aqwc-acquisition-guide';
+  const title=document.createElement('strong');title.className='aqwc-acquisition-heading';title.textContent='How to obtain';guide.append(title);
+  const grid=document.createElement('div');grid.className='aqwc-acquisition-grid';guide.append(grid);
+  for(const g of groups){const card=document.createElement('section');card.className='aqwc-acquisition-card';card.dataset.kind=g.kind;
+   const h=document.createElement('strong');h.textContent=g.title;const p=document.createElement('p');p.textContent=g.description;card.append(h,p);
+   const list=document.createElement('ul');
+   for(const x of g.items){const li=document.createElement('li'),el=document.createElement(x.slug?'a':'span');el.textContent=x.name;if(x.slug)el.href=origin+'/'+x.slug+(x.hash||'');li.append(el);
+    if(g.kind==='location'&&x.slug)joinControl(li,x,origin);list.append(li)}
+   card.append(list);grid.append(card);
+  }
+  const foot=document.createElement('div');foot.className='aqwc-acquisition-footer';const link=document.createElement('a');link.href=origin+'/'+slug;link.textContent='Material Wiki ↗';foot.append(link);
+  if(recipe?.incomplete||!recipe?.sources||!groups.some(g=>g.kind!=='location')){const small=document.createElement('small');small.textContent='Some acquisition details may be missing. Verify on the Wiki.';foot.append(small)}
+  guide.append(foot);container.append(guide);return true;
+ }
  function compactSummary(row,slug,recipe,origin,{all=false}={}){
   const data=compactData(slug,recipe),s=data.sources;
   if(!s&&!data.merge&&!data.alternatives)return false;
@@ -255,7 +328,7 @@
     items.slice(0,limit).forEach((x,j)=>{
      if(j)body.append(document.createTextNode(' · '));
      const cmd=kind==='location'&&x.slug&&!/\b(shop|merge shop)\b/i.test(x.name)?x.join||(Object.hasOwn(verifiedMaps,x.slug)?verifiedMaps[x.slug]:null)||mapCache.get(x.slug):null;
-     if(cmd){joinControl(body,{...x,join:cmd},origin);return}
+     if(cmd){const map=document.createElement('a');map.href=origin+'/'+x.slug;map.textContent=x.name;body.append(map);joinControl(body,{...x,join:cmd},origin);return}
      const el=document.createElement(x.slug?'a':'span');el.textContent=x.name;if(x.slug)el.href=origin+'/'+x.slug+(x.hash||'');body.append(el);
      if(expanded&&kind==='location'&&x.slug&&!/\b(shop|merge shop)\b/i.test(x.name))joinControl(body,x,origin);
     });
@@ -346,7 +419,7 @@
      if(n.reason){const msg=note(n.reason);msg.className='aqwc-material-note';row.append(msg)}
      if(!s?.open||!n.missing)return;
      const nested=document.createElement('div');nested.className='aqwc-material-nested';row.append(nested);
-     const recipe=cache.get(n.slug);const found=compactSummary(nested,n.slug,recipe||{sources:s.sources,groups:s.groups,incomplete:s.partial},origin,{all:true});
+     const recipe=cache.get(n.slug);const found=renderAcquisitionGuide(nested,n.slug,recipe||{sources:s.sources,groups:s.groups,incomplete:s.partial},origin);
      if(found&&summaryShown&&!s.error){const summary=row.querySelector(':scope > .aqwc-compact-sources');if(summary){summary.textContent='Acquisition details below';summary.style.color='#b5c8d1';summary.style.fontSize='12px'}}
      if(s.error){nested.append(note('Wiki unavailable: '+s.error));const retry=button('Retry');retry.addEventListener('click',e=>{if(e.isTrusted&&!busy){states.delete(n.path);expand(n)}});nested.append(retry);return}
      if(busy&&!s.groups.length){nested.append(note('Loading…'));return}
@@ -365,5 +438,5 @@
   }
   draw();lookup().catch(()=>{statusLine.textContent='Inventory unavailable. Sync in Companion and refresh this page.'}).finally(()=>{busy=false;draw()});return panel;
  }
- globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources,mapCommand,joinControl,recipeLabel,sourceLink,compactData,monsterPreview,monsterImage,monsterImages,itemImages,itemPreview});
+ globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources,mapCommand,joinControl,recipeLabel,sourceLink,compactData,acquisitionKind,parseAcquisitionLines,acquisitionGroups,monsterPreview,monsterImage,monsterImages,itemImages,itemPreview});
 })();
