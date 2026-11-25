@@ -199,7 +199,7 @@ const APPEARANCE_KEY='aqwc-wiki-appearance-v1';
 function normalizeAppearance(value){
  const v=value&&typeof value==='object'?value:{};
  return {
-  background:['original','neutral','midnight','slate','obsidian','void','companion'].includes(v.background)?v.background:'original',
+  background:['original','neutral','midnight','slate','obsidian','void','companion','light'].includes(v.background)?v.background:'original',
   banner:['original','prometheus','arcane','void'].includes(v.banner)?v.banner:'original',
   panel:['integrated','blue'].includes(v.panel)?v.panel:'integrated'
  };
