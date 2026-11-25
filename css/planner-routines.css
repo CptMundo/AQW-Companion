@@ -165,6 +165,6 @@ nav.tabs.subnav[aria-label="Section navigation"]:has(button[data-parent="planner
 .planner-quest-actions .planner-complete-action:disabled{opacity:.45;cursor:not-allowed}
 
 /* Home activity: same green completion action as the recurring quest tracker. */
-#homeactivities .home-complete-action{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;flex:none;width:27px;min-width:27px;height:27px;min-height:27px;padding:0!important;border:1px solid #488b70;background:#245a46;color:#b6f4d1;border-radius:6px;font-size:15px!important;font-weight:800}
-#homeactivities .home-complete-action:hover:not(:disabled){color:#e3ffed;background:#2e7055;border-color:#75e3a4}
-#homeactivities .home-complete-action:focus-visible{outline:2px solid #8edcff;outline-offset:2px}
+#overview #homeactivities .home-active-task>button.home-complete-action{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;flex:none;width:32px!important;min-width:32px!important;height:32px!important;min-height:32px!important;padding:0!important;border:1px solid #488b70!important;background:transparent!important;color:#75e3a4!important;border-radius:6px!important;font-size:22px!important;line-height:1!important;font-weight:800!important}
+#overview #homeactivities .home-active-task>button.home-complete-action:hover:not(:disabled){color:#e3ffed!important;background:#1b3f37!important;border-color:#75e3a4!important}
+#overview #homeactivities .home-active-task>button.home-complete-action:focus-visible{outline:2px solid #8edcff;outline-offset:2px}

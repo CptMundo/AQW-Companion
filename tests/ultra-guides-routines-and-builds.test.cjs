@@ -45,7 +45,7 @@ assert.ok(html.includes("planner-show-all"),"Extended catalog must remain usable
 assert.ok(html.includes("name:'Mine Crafting',group:'Metals',freq:'daily',join:'/join stalagbite'"));
 assert.ok(html.includes("name:'Hard Core Metals',group:'Metals',freq:'daily',join:'/join stalagbite'"));
 assert.ok(plannerCSS.includes("column-gap:14px"));
-assert.ok(html.includes('href="css/planner-routines.css?v=116"'));
+assert.match(html,/href="css\/planner-routines\.css\?v=\d+"/,"Planner stylesheet uses a versioned URL");
 assert.ok(html.includes('src="js/ultra-guide-rows.js"'));
 for(const [i,m] of [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].entries())
  if(!m[1].includes("src=")&&m[2].trim())new vm.Script(m[2],{filename:"index-inline-"+i});
@@ -438,7 +438,7 @@ assert.match(toolbar114,/<select id="planner-my-categories" aria-label="Quest ca
 assert.match(toolbar114,/<select id="plannerstatus" aria-label="Completion status">/);
 assert.ok(!toolbar114.includes('planner-category-controls'));
 assert.ok(html.includes("categoryBar.value=plannerMyCategory;categoryBar.onchange=()=>{plannerMyCategory=categoryBar.value;renderPlanner()}"));
-assert.ok(html.includes("css/planner-routines.css?v=116"));
+assert.match(html,/href="css\/planner-routines\.css\?v=\d+"/,"Planner stylesheet uses a versioned URL");
 for(const [id,file] of [['friendship-twilly','0KftqqS.png'],['friendship-warlic','sq7rbv5.png'],['friendship-sally','GI2CmjZ.png'],['friendship-twig','Ke7Ri6j.png']]){
  const task=active.find(t=>t.id===id);assert.ok(task,id);assert.ok(portrait.plannerArt(task).url.endsWith('/'+file),id);
 }
@@ -556,7 +556,9 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.ok(homeCheck[0].includes("check.title='Mark complete'"));
  assert.ok(homeCheck[0].includes("check.setAttribute('aria-label','Mark '+task.name+' completed')"));
  assert.ok(homeCheck[0].includes('check.onclick=()=>toggleTask(task,true)'),'Same completion handler');
- assert.ok(plannerCSS.includes('#homeactivities .home-complete-action{'));
- assert.ok(plannerCSS.includes('border:1px solid #488b70;background:#245a46;color:#b6f4d1'));
+ assert.ok(html.includes('css/planner-routines.css?v=184'),'Invalidate previously cached stylesheet');
+ const rule=plannerCSS.match(/#overview #homeactivities \.home-active-task>button\.home-complete-action\{([^}]+)\}/);
+ assert.ok(rule);
+ for(const declaration of ['width:32px!important','height:32px!important','font-size:22px!important','border:1px solid #488b70!important','background:transparent!important','color:#75e3a4!important'])assert.ok(rule[1].includes(declaration),declaration);
  console.log('Home green check: shared palette, accessible label and completion action verified.');
 }
