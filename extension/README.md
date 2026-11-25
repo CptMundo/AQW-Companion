@@ -175,3 +175,45 @@ Shared neutral light canvas, white cards, neutral secondary surfaces, readable n
 
 ### v0.12.30 — Category icon fix
 Use a bundled transparent 13-tile sprite based on the Wiki homepage artwork supplied in the project screenshots (26 px source tiles). Avoid remote image lookups during category rendering, duplicate root/subcategory icons, and theme-colored icon backgrounds. The Wiki artwork remains attributable to its original authors. Manual visual browser QA pending.
+
+
+### Compact Home trackers (v0.12.33)
+Wishlist shows the Companion’s saved tracked progress; Daily / Weekly Tracker shows manually checked pinned tasks, not live game completion. Open or refresh Companion and keep it visible until the snapshot updates (normally within the next polling cycle). The popup shows the last sync time and flags old reset periods; use Open to edit in the full tracker. All data stays in local browser storage, with no new permissions.
+
+### v0.12.34 — Expandable mini trackers
+Wishlist, Daily and Weekly each show up to four entries by default. Select Show N more to expand that group and Show less to collapse it. The groups expand independently, with a single popup content scrollbar; the fixed outer popup size is unchanged.
+
+
+### v0.12.35 — Extension branding
+The browser extension, toolbar title, popup and usage guide are named AQW Companion. The AQW Wiki Companion banner and branding on Wiki pages remain unchanged.
+
+### v0.12.36 — Copy map commands from mini trackers
+
+Click the compact `/join` button on a Daily or Weekly task to copy the same main map command as the Companion quest card (accept location first, otherwise primary map). No guessed maps; if the saved task has no valid command, no button appears. Refresh the Companion to publish updated task data.
+
+
+### v0.12.37 — Check quests from the popup
+
+Click the green check button beside a Daily or Weekly quest to mark it done or undo it. A pending check is stored locally until the updated Companion site is open and visible. Only after the site saves and acknowledges it does the popup show the new state. Pending checks from an expired reset period are rejected; mutually exclusive weekly quests cannot both be checked. This changes only your local tracker, not the game. No new permissions. The updated website is required.
+
+
+### v0.12.39 — Instant theme switching
+Choose a theme and click Apply theme. The popup and already-connected Wiki tabs update automatically, without reloading. After installing or reloading the extension itself, refresh existing Wiki tabs once to connect the new scripts.
+
+### v0.12.40 — Compact controls
+Green check buttons use the website planner palette. Outlined means unchecked, filled means confirmed; pending and unavailable states remain distinct. To restore the default theme, select Companion and click Apply theme.
+
+### v0.12.41 — Completed quests last
+
+Daily and Weekly are independently stable-sorted: to-do tasks first, alternatives next, completed tasks last. A queued check moves the row to the bottom immediately; a queued undo returns it to the to-do section. Pending controls and confirmed counts remain distinct until site acknowledgement; stale-period data is not reordered by old checks. Four-row preview and independent expansion are preserved.
+
+### v0.12.42 — release candidate
+Reconciled local 0.12.32–0.12.41 extension work; visual guide, store icon and metadata preparation. No claim of Chrome Web Store approval or end-to-end browser QA.
+
+### v0.12.43 — inventory export recovery
+- Read the reported total and prefer a single complete response; if capped or rejected with an applicable request-size error, use explicitly ordered ID/Bank pagination.
+- Preserve strict row count, duplicate and field validation. Report the row position (not the item ID) on a duplicate or invalid ID. Do not overwrite existing inventory on failure.
+- Account Manager live confirmation is still required; the endpoint may not support bulk or sorting, or may return genuine duplicate item/location pairs.
+
+### v0.12.44 — export feedback
+Account Manager export shows an indeterminate bar while waiting for a bulk response or saving, actual validated row progress during paginated capture, and a green full bar only after local staging succeeds. Popup fallback is indeterminate until acknowledged. No new permissions or capture changes.

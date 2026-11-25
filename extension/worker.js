@@ -196,6 +196,20 @@ function searchLocalInventory(snapshot,query,location){
  return {rows:sorted.slice(0,50),total:sorted.length,syncedAt:snapshot.syncedAt};
 }
 const APPEARANCE_KEY='aqwc-wiki-appearance-v1';
+// Content scripts cannot receive storage changes under TRUSTED_CONTEXTS.
+// Send a narrow notification to our own content scripts instead. URL metadata
+// may be unavailable without tabs permission; unknown tabs receive only the
+// non-sensitive notification and non-matching scripts ignore it.
+async function notifyTabs(type,origin){
+ if(!chrome.tabs?.query||!chrome.tabs?.sendMessage)return {delivered:0};
+ try{
+  const tabs=await chrome.tabs.query({});
+  const targets=tabs.filter(t=>Number.isInteger(t.id)&&(!t.url||t.url.startsWith(origin)));
+  const results=await Promise.allSettled(targets.map(t=>chrome.tabs.sendMessage(t.id,{type},{frameId:0})));
+  return {delivered:results.filter(r=>r.status==='fulfilled'&&r.value?.ok===true).length};
+ }catch{return {delivered:0}}
+}
+
 function normalizeAppearance(value){
  const v=value&&typeof value==='object'?value:{};
  return {background:['companion','dark','light','cas'].includes(v.background)?v.background:'companion',banner:'prometheus',panel:'integrated'};
@@ -206,16 +220,62 @@ function cleanGoalStatus(v){
  if(!v||!Array.isArray(v.goals)||!Array.isArray(v.pins)||v.goals.length>500||v.pins.length>500)return null;
  const name=x=>typeof x==='string'&&x.trim()&&x.length<=350&&!/[\u0000-\u001f\u007f]/.test(x);
  if(v.goals.some(x=>!name(x?.name)||!Number.isFinite(x.progress)||x.progress<0||x.progress>100)||v.pins.some(x=>!name(x?.name)||typeof x.source!=='string'||! /^[a-z0-9][a-z0-9-]{0,199}$/.test(x.source)||typeof x.completed!=='boolean'))return null;
- return {goals:v.goals.map(x=>({name:x.name,progress:x.progress})),pins:v.pins.map(x=>({name:x.name,source:x.source,completed:x.completed})),complete:v.complete===true,at:Date.now()};
+ const r=v.routines;const validPeriod=(x,p)=>typeof x==='string'&&new RegExp('^'+p+':\\d{4}-\\d{2}-\\d{2}$').test(x);
+ const routines=r&&validPeriod(r.dailyPeriod,'d')&&validPeriod(r.weeklyPeriod,'w')&&Array.isArray(r.entries)&&r.entries.length<=250&&r.entries.every(x=>name(x?.name)&&['daily','weekly'].includes(x.freq)&&['done','todo','alternative'].includes(x.state))?{dailyPeriod:r.dailyPeriod,weeklyPeriod:r.weeklyPeriod,canEdit:r.canEdit===true,entries:r.entries.map(x=>({...(routineId(x.id)?{id:x.id}:{}),name:x.name,freq:x.freq,state:x.state,...(typeof x.join==='string'&&x.join.length<=100&&/^\/join [a-z0-9_-]+$(?![\s\S])/i.test(x.join)?{join:x.join}:{})}))}:null;
+ return {routines,goals:v.goals.map(x=>({name:x.name,progress:x.progress})),pins:v.pins.map(x=>({name:x.name,source:x.source,completed:x.completed})),complete:v.complete===true,at:Date.now()};
 }
 function goalStatus(data,query,source){
  if(!data||!Array.isArray(data.goals)||!Array.isArray(data.pins))return {state:'unknown'};
  const matches=query.kind==='quest'?data.pins.filter(x=>x.source===source&&nameKey(x.name)===nameKey(query.name)):data.goals.filter(x=>nameKey(x.name)===nameKey(query.name));
  return {state:matches.length===1?'saved':matches.length>1?'unknown':data.complete?'absent':'unknown',...(matches.length===1?(query.kind==='quest'?{completed:matches[0].completed}:{progress:matches[0].progress}):{}),at:data.at};
 }
+// Recurring check queue: only the popup may request changes, only Companion may apply them.
+const ROUTINE_QUEUE='aqwc-routine-check-queue-v1',ROUTINE_NOTICE='aqwc-routine-check-notice-v1';
+const routineId=x=>typeof x==='string'&&/^[a-zA-Z0-9_-]{1,150}$/.test(x);
+function currentRoutinePeriod(freq,now=new Date()){
+ const day=new Date(now.getTime()-5*3600000-(freq==='weekly'?60000:0)).toISOString().slice(0,10);
+ if(freq==='daily')return 'd:'+day;
+ const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-(d.getUTCDay()+2)%7);return 'w:'+d.toISOString().slice(0,10);
+}
+let trackerLock=Promise.resolve();
+function trackerSerial(fn){const r=trackerLock.then(fn);trackerLock=r.catch(()=>{});return r}
+async function routineQueue(){const v=(await chrome.storage.local.get(ROUTINE_QUEUE))[ROUTINE_QUEUE];return Array.isArray(v)?v:[]}
+function routineRequest(message,sender){return trackerSerial(async()=>{
+ const type=message.type,popup=popupSender(sender),main=mainSender(sender);
+ if(!(popup&&type==='routine-check-set'||main&&['routine-check-read','routine-check-ack'].includes(type)))return {ok:false,error:'Invalid tracker request.'};
+ await restrictStorage();const all=await routineQueue();
+ if(type==='routine-check-read')return {ok:true,entries:all};
+ if(type==='routine-check-set'){
+  const {taskId,freq,period,done}=message;
+  if(!routineId(taskId)||!['daily','weekly'].includes(freq)||period!==currentRoutinePeriod(freq)||typeof done!=='boolean')return {ok:false,error:'Refresh Companion after the reset.'};
+  const data=(await chrome.storage.local.get(GOAL_STATUS))[GOAL_STATUS],r=data?.routines;
+  const matches=r?.entries?.filter(t=>t.id===taskId&&t.freq===freq)||[];
+  if(r?.canEdit!==true||r?.[freq+'Period']!==period||matches.length!==1||matches[0].state==='alternative')return {ok:false,error:'Refresh Companion or undo the alternative quest first.'};
+  const entries=all.filter(e=>e.period===currentRoutinePeriod(e.freq));
+  if(entries.some(e=>e.taskId===taskId&&e.freq===freq&&e.period===period))return {ok:true,pending:true};
+  if((matches[0].state==='done')===done)return {ok:true,pending:false};
+  if(entries.length>=250)return {ok:false,error:'Open Companion to sync pending checks.'};
+  await chrome.storage.local.set({[ROUTINE_QUEUE]:[...entries,{id:crypto.randomUUID(),taskId,freq,period,done}],[ROUTINE_NOTICE]:null});void notifyTabs('aqwc-routine-queued','https://cptmundo.github.io/AQW-Companion/');return {ok:true,pending:true};
+ }
+ const results=message.results;
+ if(!Array.isArray(results)||results.length>250||results.some(x=>typeof x?.id!=='string'||x.id.length>64||!['saved','reset','missing','conflict','invalid'].includes(x.status)))return {ok:false};
+ const applied=results.filter(x=>all.some(e=>e.id===x.id));if(!applied.length)return {ok:true};
+ const data=(await chrome.storage.local.get(GOAL_STATUS))[GOAL_STATUS];
+ const checked=cleanGoalStatus({goals:[],pins:[],routines:message.routines,complete:false})?.routines;
+ if(!checked||checked.canEdit!==true)return {ok:false,error:'Could not confirm updated tracker.'};
+ const rejected=applied.find(x=>x.status!=='saved');
+ const notices={reset:'A pending check expired at reset.',missing:'A quest is no longer pinned.',conflict:'Undo the alternative quest first.',invalid:'A pending check was invalid.'};
+ await chrome.storage.local.set({[ROUTINE_QUEUE]:all.filter(e=>!applied.some(x=>x.id===e.id)),[ROUTINE_NOTICE]:rejected?notices[rejected.status]:null,...(data?{[GOAL_STATUS]:{...data,routines:checked}}:{})});
+ return {ok:true};
+})}
 async function handle(message,sender){
+ if(['routine-check-set','routine-check-read','routine-check-ack'].includes(message?.type))return routineRequest(message,sender);
  if(message?.type==='goal-status-publish'){
-  if(!mainSender(sender))return {ok:false};const data=cleanGoalStatus(message.status);if(!data)return {ok:false};await restrictStorage();await chrome.storage.local.set({[GOAL_STATUS]:data});return {ok:true};
+  if(!mainSender(sender))return {ok:false};const data=cleanGoalStatus(message.status);if(!data)return {ok:false};return trackerSerial(async()=>{await restrictStorage();await chrome.storage.local.set({[GOAL_STATUS]:data});return {ok:true}});
+ }
+ if(message?.type==='mini-tracker-read'){
+  if(!popupSender(sender))return {ok:false};return trackerSerial(async()=>{await restrictStorage();const data=(await chrome.storage.local.get(GOAL_STATUS))[GOAL_STATUS];
+  return {ok:true,snapshot:data?{goals:data.goals,routines:data.routines??null,complete:data.complete,at:data.at}:null,pending:(await routineQueue()).map(({taskId,freq,period,done})=>({taskId,freq,period,done})),notice:(await chrome.storage.local.get(ROUTINE_NOTICE))[ROUTINE_NOTICE]??null}});
  }
  if(message?.type==='goal-status-read'){
   const q=message.query;if(!wikiSender(sender)||!q||!['item','quest'].includes(q.kind)||typeof q.name!=='string'||!q.name.trim()||q.name.length>350)return {ok:false};
@@ -229,7 +289,7 @@ async function handle(message,sender){
   await restrictStorage();
   if(message.type==='wiki-appearance-save'){
    const appearance=normalizeAppearance(message.appearance);
-   await chrome.storage.local.set({[APPEARANCE_KEY]:appearance});return {ok:true,appearance};
+   await chrome.storage.local.set({[APPEARANCE_KEY]:appearance});const notification=await notifyTabs('aqwc-theme-changed','https://aqwwiki.wikidot.com/');return {ok:true,appearance,...notification};
   }
   const stored=await chrome.storage.local.get(APPEARANCE_KEY);return {ok:true,appearance:normalizeAppearance(stored[APPEARANCE_KEY]??{background:'companion',banner:'prometheus'})};
  }

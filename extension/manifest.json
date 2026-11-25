@@ -1,11 +1,16 @@
 {
   "manifest_version": 3,
-  "name": "AQW Wiki Companion",
-  "version": "0.12.31",
-  "description": "Local AQW Companion inventory lookup on AQWorlds Wiki item pages.",
+  "name": "AQW Companion",
+  "version": "0.12.44",
+  "description": "Customize AQWorlds Wiki and connect your local inventory, Wishlist and daily/weekly quest tracker.",
   "action": {
-    "default_title": "AQW Wiki Companion",
-    "default_popup": "popup.html"
+    "default_title": "AQW Companion",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png"
+    }
   },
   "content_scripts": [
     {
@@ -26,6 +31,7 @@
       "js": [
         "sync.js",
         "account-bridge.js",
+        "mini-tracker.js",
         "wishlist-queue.js"
       ],
       "run_at": "document_idle",
@@ -82,5 +88,11 @@
         "https://aqwwiki.wikidot.com/*"
       ]
     }
-  ]
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/store128.png"
+  }
 }
