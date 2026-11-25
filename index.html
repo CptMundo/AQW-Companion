@@ -2750,8 +2750,8 @@ function renderHomeInsights(){
    for(const {task} of group.slice(0,6)){
      const row=node('div',undefined,'homeentry home-active-task'),left=node('div');
      left.append(node('strong',task.name));const targets=node('div',undefined,'home-targets');const route=taskRoutes[task.id];if(route&&Array.isArray(route.targets)&&route.targets.length){for(const target of route.targets){const chip=node('span',undefined,'home-target');chip.append(node('span',target[0]));if(target[2])chip.append(makeCopyJoin(target[2]));targets.append(chip)}}else if(task.join&&/^\/join [a-z0-9-]+$/i.test(task.join.trim())){targets.append(makeCopyJoin(task.join.trim()))}left.append(targets);
-     const check=node('button','Mark done','smallbutton');
-     check.type='button';check.setAttribute('aria-label','Mark '+task.name+' completed');
+     const check=node('button','✓','smallbutton home-complete-action');
+     check.type='button';check.title='Mark complete';check.setAttribute('aria-label','Mark '+task.name+' completed');
      check.onclick=()=>toggleTask(task,true);
      row.append(left,check);activity.append(row);
    }
