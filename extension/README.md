@@ -148,3 +148,6 @@ Category search: bounded batches of three, automatic retry per failed page, 20-m
 
 ### v0.12.21
 Quest details open automatically on arrival (linked quest hash when recognized, otherwise first quest). Single-quest pages omit the redundant selector, keeping the official name and pin identity. Multi-quest pages keep the selector and active quest open. Pin actions remain gesture-gated.
+
+### v0.12.22
+Compact extension popup with Home (inventory search and links), Sync (guided export/import), Settings (appearance and advanced tools). Existing data handling and permissions unchanged. Theme synchronization is deferred.
