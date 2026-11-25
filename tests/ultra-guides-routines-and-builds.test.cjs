@@ -556,7 +556,9 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.ok(homeCheck[0].includes("check.title='Mark complete'"));
  assert.ok(homeCheck[0].includes("check.setAttribute('aria-label','Mark '+task.name+' completed')"));
  assert.ok(homeCheck[0].includes('check.onclick=()=>toggleTask(task,true)'),'Same completion handler');
- assert.ok(plannerCSS.includes('#homeactivities .home-complete-action{'));
- assert.ok(plannerCSS.includes('border:1px solid #488b70;background:#245a46;color:#b6f4d1'));
+ assert.ok(html.includes('css/planner-routines.css?v=184'),'Invalidate previously cached stylesheet');
+ const rule=plannerCSS.match(/#overview #homeactivities \.home-active-task>button\.home-complete-action\{([^}]+)\}/);
+ assert.ok(rule);
+ for(const declaration of ['width:32px!important','height:32px!important','font-size:22px!important','border:1px solid #488b70!important','background:transparent!important','color:#75e3a4!important'])assert.ok(rule[1].includes(declaration),declaration);
  console.log('Home green check: shared palette, accessible label and completion action verified.');
 }
