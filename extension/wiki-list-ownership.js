@@ -122,5 +122,5 @@ function init(){
  search.addEventListener('keydown',e=>{if(e.isTrusted&&e.key==='Enter'){e.preventDefault();renderSearch()}});
 }
 globalThis.AQWCListOwnership=Object.freeze({categoryFor,candidate,sectionMarker,collect,groupRows,label,checkAll});
-if(typeof document!=='undefined')init();
+// Category directories no longer mount a separate Wishlist search card. Item detail actions remain available.
 })();
