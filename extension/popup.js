@@ -4,7 +4,7 @@
  for(const b of nav)b.addEventListener('click',e=>{if(e.isTrusted)showView(b.dataset.view)});
  for(const b of document.querySelectorAll('[data-go]'))b.addEventListener('click',e=>{if(e.isTrusted){showView(b.dataset.go);nav.find(n=>n.dataset.view===b.dataset.go)?.focus()}});
  showView('home');
- const theme=globalThis.AQWCTheme,style=document.querySelector('style');if(theme&&style){style.textContent=theme.recolor(style.textContent)+theme.rootCss+"\nhtml[data-aqwc-background=\"companion\"] body{background:linear-gradient(145deg,#0a1420,#0d1926 52%,#101e2b);color:var(--aqwc-theme-txt)}\nhtml[data-aqwc-background=\"companion\"] header,html[data-aqwc-background=\"companion\"] section,html[data-aqwc-background=\"companion\"] details{background:var(--aqwc-theme-panel);border-color:var(--aqwc-theme-line)}\nhtml[data-aqwc-background=\"companion\"] .primary,html[data-aqwc-background=\"companion\"] #quick-search button,html[data-aqwc-background=\"companion\"] .popup-nav button[aria-pressed=\"true\"]{background:var(--aqwc-theme-selected);border-color:var(--aqwc-theme-selectedBorder);color:var(--aqwc-theme-txt)}\nhtml[data-aqwc-background=\"companion\"] :is(input,select){background:var(--aqwc-theme-input)!important;color:var(--aqwc-theme-txt)!important;border-color:var(--aqwc-theme-line)!important}\n";}
+ const theme=globalThis.AQWCTheme,style=document.querySelector('style');if(theme&&style){style.textContent=theme.recolor(style.textContent)+theme.rootCss+"\nhtml:is([data-aqwc-background=\"companion\"],[data-aqwc-background=\"light\"],[data-aqwc-background=\"cas\"]) body{background:linear-gradient(145deg,var(--aqwc-theme-bgStart),var(--aqwc-theme-bgMid) 52%,var(--aqwc-theme-bgEnd));color:var(--aqwc-theme-txt)}\nhtml:is([data-aqwc-background=\"companion\"],[data-aqwc-background=\"light\"],[data-aqwc-background=\"cas\"]) header,html:is([data-aqwc-background=\"companion\"],[data-aqwc-background=\"light\"],[data-aqwc-background=\"cas\"]) section,html:is([data-aqwc-background=\"companion\"],[data-aqwc-background=\"light\"],[data-aqwc-background=\"cas\"]) details{background:var(--aqwc-theme-panel);border-color:var(--aqwc-theme-line)}\nhtml:is([data-aqwc-background=\"companion\"],[data-aqwc-background=\"light\"],[data-aqwc-background=\"cas\"]) .primary,html:is([data-aqwc-background=\"companion\"],[data-aqwc-background=\"light\"],[data-aqwc-background=\"cas\"]) #quick-search button,html:is([data-aqwc-background=\"companion\"],[data-aqwc-background=\"light\"],[data-aqwc-background=\"cas\"]) .popup-nav button[aria-pressed=\"true\"]{background:var(--aqwc-theme-selected);border-color:var(--aqwc-theme-selectedBorder);color:var(--aqwc-theme-txt)}\nhtml:is([data-aqwc-background=\"companion\"],[data-aqwc-background=\"light\"],[data-aqwc-background=\"cas\"]) :is(input,select){background:var(--aqwc-theme-input)!important;color:var(--aqwc-theme-txt)!important;border-color:var(--aqwc-theme-line)!important}\n"+"\nhtml[data-aqwc-background=\"cas\"] button,html[data-aqwc-background=\"cas\"] .action{background:#ff00ff!important;color:#440066!important;border-color:#cf00cf!important}html[data-aqwc-background=\"cas\"] button[aria-label*=\"close\" i]{background:#00ffff!important}\n";}
  const status=document.getElementById('inventory-summary'),clear=document.getElementById('clear-inventory');
  function send(type){clear.disabled=true;chrome.runtime.sendMessage({type},result=>{
   clear.disabled=false;if(chrome.runtime.lastError||!result?.ok){status.textContent='Could not access local inventory.';return}
@@ -24,10 +24,10 @@
    for(const row of r.rows){const div=document.createElement('div'),name=document.createElement('strong'),meta=document.createElement('small');name.textContent=row.name;meta.textContent=row.type+' · '+(row.bank?'Bank':'Inventory')+' ×'+row.count.toLocaleString();meta.style.display='block';div.style.cssText='padding:5px 0;border-bottom:1px solid #38566d';div.append(name,meta);results.append(div)}
   }catch(err){notice.textContent=String(err?.message||err)}finally{button.disabled=false}
  });
- const bg=document.getElementById('appearance-background'),banner=document.getElementById('appearance-banner'),panel=document.getElementById('appearance-panel'),save=document.getElementById('appearance-save'),reset=document.getElementById('appearance-reset'),feedback=document.getElementById('appearance-status');
- if(bg&&banner&&panel&&save&&reset&&feedback){
-  const fill=v=>{bg.value=v.background;banner.value=v.banner;panel.value=v.panel;document.documentElement.setAttribute('data-aqwc-background',v.background)};
-  const quick=document.getElementById('appearance-prometheus'),unified=document.getElementById('appearance-companion');const enabled=v=>{save.disabled=reset.disabled=!v;if(quick)quick.disabled=!v;if(unified)unified.disabled=!v};
+ const bg=document.getElementById('appearance-background'),save=document.getElementById('appearance-save'),reset=document.getElementById('appearance-reset'),feedback=document.getElementById('appearance-status');
+ if(bg&&save&&reset&&feedback){
+  const fill=v=>{bg.value=v.background;document.documentElement.setAttribute('data-aqwc-background',v.background)};
+  const enabled=v=>{save.disabled=reset.disabled=!v};
   async function load(){try{const r=await chrome.runtime.sendMessage({type:'wiki-appearance-read'});if(!r?.ok)throw Error('Could not load preferences');fill(r.appearance);enabled(true);feedback.textContent='Choose a theme and apply.'}catch(err){feedback.textContent=String(err?.message||err)}}
   async function persist(value){
    enabled(false);
@@ -37,10 +37,8 @@
     try{const [tab]=await chrome.tabs.query({active:true,currentWindow:true});if(Number.isInteger(tab?.id)&&new URL(tab.url).origin==='https://aqwwiki.wikidot.com'){const ack=await chrome.tabs.sendMessage(tab.id,{type:'aqwc-appearance-preview',appearance:r.appearance},{frameId:0});feedback.textContent=ack?.artworkLoaded===true?'Saved · Prometheus image loaded. Check the header.':ack?.artworkLoaded===false?'Saved · image could not load. Check extension files.':ack?.applied?'Saved · banner CSS confirmed. Check the artwork on the page.':ack?.bannerTarget?'Saved · banner CSS not confirmed. Try disabling competing Wiki themes.':'Saved · refresh the Wiki page to apply.'}}catch{}
    }catch(err){feedback.textContent=String(err?.message||err)}finally{enabled(true)}
   }
-  save.addEventListener('click',e=>{if(e.isTrusted&&!save.disabled)persist({background:bg.value,banner:banner.value,panel:panel.value})});
-  reset.addEventListener('click',e=>{if(e.isTrusted&&!reset.disabled)persist({background:'original',banner:'original',panel:'integrated'})});
-  if(quick)quick.addEventListener('click',e=>{if(e.isTrusted&&!save.disabled){showView('settings');persist({background:bg.value,banner:'prometheus',panel:panel.value})}});
-  if(unified)unified.addEventListener('click',e=>{if(e.isTrusted&&!unified.disabled)persist({background:'companion',banner:'prometheus',panel:'integrated'})});
+  save.addEventListener('click',e=>{if(e.isTrusted&&!save.disabled)persist({background:bg.value,banner:'prometheus',panel:'integrated'})});
+  reset.addEventListener('click',e=>{if(e.isTrusted&&!reset.disabled)persist({background:'companion',banner:'prometheus',panel:'integrated'})});
   load();
  }
  send('inventory-summary');
