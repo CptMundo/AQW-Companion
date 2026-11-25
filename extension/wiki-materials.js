@@ -352,7 +352,7 @@
   if(!groups.length&&!incomplete)return;
   const panel=document.createElement('details');panel.open=true;panel.className='aqwc-section aqwc-farming';panel.style.cssText='min-width:0;max-width:100%;';
   const heading=document.createElement('summary');heading.textContent='Farming Progress';panel.append(heading);card.append(panel);
-  const note=text=>{const n=document.createElement('div');n.textContent=text;n.style.cssText='font-size:11px;color:#b6cddd;margin:5px 0;font-weight:400';return n};
+  const note=text=>{const n=document.createElement('div');n.textContent=text;n.style.cssText=(globalThis.AQWCTheme?.recolor('font-size:11px;color:#b6cddd;margin:5px 0;font-weight:400')||'font-size:11px;color:#b6cddd;margin:5px 0;font-weight:400');return n};
 
   if(incomplete)panel.append(note('Some recipe rows could not be read; check the original Wiki requirements.'));
   if(!groups.length)return panel;
@@ -368,7 +368,7 @@
   }
   function button(text){
    const b=document.createElement('button');b.type='button';b.textContent=text;b.disabled=busy;
-   b.style.cssText='font:600 11px system-ui;color:#a9ddff;background:#19334a;border:1px solid #466781;border-radius:4px;padding:2px 5px;cursor:pointer;white-space:nowrap';return b
+   b.style.cssText=(globalThis.AQWCTheme?.recolor('font:600 11px system-ui;color:#a9ddff;background:#19334a;border:1px solid #466781;border-radius:4px;padding:2px 5px;cursor:pointer;white-space:nowrap')||'font:600 11px system-ui;color:#a9ddff;background:#19334a;border:1px solid #466781;border-radius:4px;padding:2px 5px;cursor:pointer;white-space:nowrap');return b
   }
   async function expand(n){
    if(busy)return;
@@ -406,7 +406,7 @@
      const nameBox=document.createElement('div');nameBox.style.cssText='display:flex;align-items:center;gap:5px;min-width:0';
      const s=states.get(n.path);row.setAttribute('data-open',String(!!s?.open));
      if(n.missing>0&&n.depth<4&&!n.reason){const b=button(s?.open?'▾':'▸');b.setAttribute('aria-label',(s?.open?'Collapse ':'How to get ')+n.name);b.setAttribute('aria-expanded',String(!!s?.open));b.addEventListener('click',e=>{if(e.isTrusted)expand(n)});nameBox.append(b)}
-     const a=document.createElement('a');a.href=origin+'/'+n.slug;a.textContent=n.name;a.style.cssText='color:#a9ddff;text-decoration:underline;overflow-wrap:anywhere';nameBox.append(a);
+     const a=document.createElement('a');a.href=origin+'/'+n.slug;a.textContent=n.name;a.style.cssText=(globalThis.AQWCTheme?.recolor('color:#a9ddff;text-decoration:underline;overflow-wrap:anywhere')||'color:#a9ddff;text-decoration:underline;overflow-wrap:anywhere');nameBox.append(a);
      const status=document.createElement('span');status.className='aqwc-material-progress';const done=n.missing===0,known=n.allocated!==null;
      const count=document.createElement('span');count.className='aqwc-progress-count';count.textContent=(known?(done?'✓ ':n.allocated?'◐ ':'✕ ')+n.allocated.toLocaleString():'?')+' / '+n.target.toLocaleString();
      status.style.color=done?'#90edb5':!known||n.allocated?'#ffdb93':'#ffc2a8';
@@ -420,13 +420,13 @@
      if(!s?.open||!n.missing)return;
      const nested=document.createElement('div');nested.className='aqwc-material-nested';row.append(nested);
      const recipe=cache.get(n.slug);const found=renderAcquisitionGuide(nested,n.slug,recipe||{sources:s.sources,groups:s.groups,incomplete:s.partial},origin);
-     if(found&&summaryShown&&!s.error){const summary=row.querySelector(':scope > .aqwc-compact-sources');if(summary){summary.textContent='Acquisition details below';summary.style.color='#b5c8d1';summary.style.fontSize='12px'}}
+     if(found&&summaryShown&&!s.error){const summary=row.querySelector(':scope > .aqwc-compact-sources');if(summary){summary.textContent='Acquisition details below';summary.style.color=(globalThis.AQWCTheme?.value('#b5c8d1','color')||'#b5c8d1');summary.style.fontSize='12px'}}
      if(s.error){nested.append(note('Wiki unavailable: '+s.error));const retry=button('Retry');retry.addEventListener('click',e=>{if(e.isTrusted&&!busy){states.delete(n.path);expand(n)}});nested.append(retry);return}
      if(busy&&!s.groups.length){nested.append(note('Loading…'));return}
      if(s.incomplete)nested.append(note('Some requirements could not be read. Verify the original Wiki page.'));
      if(!s.groups.length){if(!found)nested.append(note('No acquisition links recognized. Open the material page to check its sources.'));return}
      if(s.groups.length>1||s.incomplete){
-      const select=document.createElement('select');select.setAttribute('aria-label','Recipe option for '+n.name);select.disabled=busy;select.style.cssText='max-width:100%;background:#19334a;color:#e5f5ff;border:1px solid #466781;border-radius:4px;font:12px system-ui';
+      const select=document.createElement('select');select.setAttribute('aria-label','Recipe option for '+n.name);select.disabled=busy;select.style.cssText=(globalThis.AQWCTheme?.recolor('max-width:100%;background:#19334a;color:#e5f5ff;border:1px solid #466781;border-radius:4px;font:12px system-ui')||'max-width:100%;background:#19334a;color:#e5f5ff;border:1px solid #466781;border-radius:4px;font:12px system-ui');
       const first=document.createElement('option');first.value='-1';first.textContent='Choose merge option';select.append(first);
       s.groups.forEach((g,j)=>{const opt=document.createElement('option');opt.value=String(j);opt.textContent='Option '+(j+1)+' · '+g.map(x=>x.name+' ×'+x.target).join(', ');select.append(opt)});
       select.value=String(s.choice);select.addEventListener('change',e=>{if(!e.isTrusted||busy)return;const choice=Number(select.value);if(choice!==s.choice){for(const key of states.keys())if(key.startsWith(n.path+'.'))states.delete(key);s.choice=choice}draw()});nested.append(select);
