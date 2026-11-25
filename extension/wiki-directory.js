@@ -3,7 +3,7 @@
 'use strict';
 const clean=s=>String(s||'').replace(/\s+/g,' ').trim();
 const indexes=new Set('quests monsters locations shops factions npcs armors capes-back-items classes enhancements helmets-hoods houses floor-items wall-items misc-items use-items necklaces grounds pets battle-pets axes bows daggers gauntlets guns handguns maces polearms rifles staffs swords wands whips'.split(' '));
-function indexKind(path){const s=String(path||'').replace(/^\/|\/$/g,'');if(['items','weapons','housing'].includes(s))return 'categories';return indexes.has(s)||(/^sort-by-[a-z0-9-]+$/.test(s)&&[...indexes].some(x=>s.endsWith('-'+x)))?'alphabetic':null}
+function indexKind(path){const s=directoryPath(path).replace(/^\//,'');if(['items','weapons','housing'].includes(s))return 'categories';return indexes.has(s)||(/^sort-by-[a-z0-9-]+$/.test(s)&&[...indexes].some(x=>s.endsWith('-'+x)))?'alphabetic':null}
 function rowName(el,origin){
  if(!['P','LI','DIV'].includes(el.tagName)||el.querySelector('ul,ol,table,form,input,button,h1,h2,h3,h4,h5,h6,div,p,li,a[name]:not([href]),a[id]:not([href])')||el.id)return null;
  const links=[...el.querySelectorAll('a[href]')].filter(a=>!a.querySelector('img')&&clean(a.textContent));
@@ -25,8 +25,8 @@ function directoryEntries(content,origin){
  const jump=links.filter(a=>{if(!/^[A-Z#0-9]$/i.test(clean(a.textContent)))return false;try{const href=a.getAttribute('href')||'',u=new URL(href,origin);return !!u.hash&&u.origin===origin&&(href.startsWith('#')||!!indexKind(u.pathname))}catch{return false}});
  const last=jump.length>=5?links.lastIndexOf(jump[jump.length-1]):-1;
  const seen=new Set(),out=[];
- for(const a of links.slice(last+1)){
-  if(last<0&&!a.closest('.list-pages-box,.list-pages-item')&&!rowName(a.closest('p,li,div')||a,origin))continue;
+ for(const a of links){
+  if(!a.closest('.list-pages-box,.list-pages-item')&&(last<0||links.indexOf(a)<=last)&&!rowName(a.closest('p,li,div')||a,origin))continue;
   if(a.closest('#breadcrumbs,.breadcrumbs,.breadcrumb,.pager,.pagination'))continue;
   const item=entry(a,origin);if(!item||seen.has(item.url+'\n'+item.name))continue;seen.add(item.url+'\n'+item.name);out.push(item);
  }
@@ -61,7 +61,7 @@ function coloredBadges(a){
  return [...labels].map(label=>{const b=document.createElement('span');b.className='aqwc-tag';b.dataset.kind=label.toLowerCase().replace(/[^a-z0-9]+/g,'-');b.textContent=label;return b});
 }
 function letter(name){const c=name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').charAt(0).toUpperCase();return /^[A-Z]$/.test(c)?c:'#'}
-function mapSectionName(value){const name=clean(value).replace(/:\s*$/,'').toLowerCase();return ({monsters:'Monsters',npcs:'NPCs',quests:'Quests',shops:'Shops','access points':'Access Points'})[name]||null}
+function mapSectionName(value){const name=clean(value).replace(/:\s*$/,'').toLowerCase();return ({monsters:'Monsters',npcs:'NPCs',quests:'Quests',shops:'Shops',locations:'Locations','access points':'Access Points'})[name]||null}
 function mapSections(content){
  const result=[];for(const list of content.children){
   if(!['UL','OL'].includes(list.tagName))continue;
@@ -85,7 +85,7 @@ function styleMap(content){
 function pageHasCategory(category){const crumb=document.querySelector('#breadcrumbs,.breadcrumbs,#breadcrumb,.breadcrumb');return !!crumb&&[...crumb.querySelectorAll('a[href]')].some(a=>{try{return new URL(a.getAttribute('href'),location.origin).pathname.replace(/\/$/,'')==='/'+category}catch{return false}})}
 function moveRoomGallery(content){
  const galleries=[...content.children].filter(el=>el.matches('.yui-navset')&&el.querySelector('img')&&[...el.querySelectorAll('.yui-nav a')].some(a=>/^Screen\s*\d/i.test(clean(a.textContent))));
- if(!galleries.length)return;const current=galleries[0],first=content.querySelector('.aqwc-map-grid');if(!first)return;
+ if(!galleries.length){const nodes=[...content.children].filter(el=>el.matches('.collapsible-block,.yui-navset')&&el.querySelector('img'));const first=content.querySelector('.aqwc-map-grid,.aqwc-map-access');if(first&&nodes.length){const gallery=wrapNative(content,nodes,'aqwc-room-gallery','Room gallery');first.before(gallery)}return}const current=galleries[0],first=content.querySelector('.aqwc-map-grid,.aqwc-map-access');if(!first)return;
  const block=document.createElement('section');block.className='aqwc-room-gallery';const title=document.createElement('h3');title.textContent='Room gallery';block.append(title,current);
  // Move only the first current gallery; historical galleries stay where the Wiki placed them.
  first.before(block);const notes=content.querySelector('.aqwc-map-card.aqwc-map-access');if(notes)notes.classList.add('aqwc-map-compact');
@@ -133,14 +133,14 @@ function sectionNav(content,sections,defaultName){
 function wrapNative(content,nodes,cls,title){
  if(!nodes.length)return null;const card=document.createElement('section');card.className=cls;content.insertBefore(card,nodes[0]);if(title){const h=document.createElement('h3');h.textContent=title;card.append(h)}card.append(...nodes);return card;
 }
-function isMapOverviewSection(name){return ['Rooms','NPCs','Quests','Shops'].includes(name)}
+function isMapOverviewSection(name){return ['Rooms','NPCs','Quests','Shops','Locations'].includes(name)}
 function mapOverview(content,sections){
  const visible=sections.filter(s=>isMapOverviewSection(s.name)),optional=sections.filter(s=>!isMapOverviewSection(s.name));
  const first=[...content.children].find(node=>sections.some(s=>s.nodes.includes(node)));if(!first)return;
  const layout=document.createElement('div');layout.className='aqwc-map-overview';content.insertBefore(layout,first);
  const rooms=visible.filter(s=>s.name==='Rooms'),directory=visible.filter(s=>s.name!=='Rooms');
  if(rooms.length){const art=document.createElement('div');art.className='aqwc-map-overview-rooms';for(const s of rooms)art.append(...s.nodes);layout.append(art)}
- if(directory.length){const stack=document.createElement('div');stack.className='aqwc-map-overview-directory';for(const name of ['NPCs','Quests','Shops'])for(const s of directory.filter(s=>s.name===name))stack.append(...s.nodes);layout.append(stack)}
+ if(directory.length){const stack=document.createElement('div');stack.className='aqwc-map-overview-directory';for(const name of ['NPCs','Quests','Shops','Locations'])for(const s of directory.filter(s=>s.name===name))stack.append(...s.nodes);layout.append(stack)}
  if(!rooms.length||!directory.length)layout.classList.add('aqwc-map-overview-single');
  if(!visible.length)layout.hidden=true;
  if(!optional.length)return;
@@ -209,7 +209,7 @@ function setupSearch(content){
  hero.append(heading,desc,form,actions,hint);content.append(hero,original);
 }
 function decorateMapCards(content){
- const glyphs={NPCs:'♟',Quests:'▤',Shops:'◇',Monsters:'⚔'};
+ const glyphs={Locations:'⌖',NPCs:'♟',Quests:'▤',Shops:'◇',Monsters:'⚔'};
  for(const card of content.querySelectorAll('.aqwc-map-tab-card')){
   const name=mapSectionName(card.firstElementChild?.textContent);if(!glyphs[name])continue;
   const list=card.querySelector(':scope > ul,:scope > ol');if(!list)continue;
@@ -248,13 +248,66 @@ function paletteHome(content){
  }};
  recolor();requestAnimationFrame(recolor);window.addEventListener('load',recolor,{once:true});
 }
+function directoryPath(path){return String(path||'').replace(/\/p\/[1-9]\d*\/?$/,'').replace(/\/$/,'')}
+function searchKey(value){return clean(value).normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[’‘']/g,'').replace(/[^a-z0-9]+/g,' ').trim()}
+function matchesDirectory(row,query){const q=searchKey(query);if(!q)return true;const name=searchKey(row.name),slug=searchKey(String(row.url||'').split('/').pop());return q.split(' ').every(word=>name.includes(word)||slug.includes(word))}
+function pageNumber(path){return Number(String(path).match(/\/p\/([1-9]\d*)\/?$/)?.[1]||1)}
+function paginationLinks(content,origin,path){
+ const root=directoryPath(path),out=new Set();
+ for(const a of content.querySelectorAll('.pager a[href],.pagination a[href]')){
+  try{const u=new URL(a.getAttribute('href'),origin);if(u.origin!==origin||u.search||directoryPath(u.pathname)!==root)continue;if(u.pathname!==root&&!/\/p\/[1-9]\d*\/?$/.test(u.pathname))continue;const n=pageNumber(u.pathname);if(n<=200)out.add(n)}catch{}
+ }
+ // A native pager advertises the final page; fill gaps without relying on visible pager buttons.
+ const max=Math.max(0,...out);if(max)for(let n=1;n<=max;n++)out.add(n);
+ return [...out].sort((a,b)=>a-b);
+}
+async function fetchDirectoryPage(origin,path,n){
+ if(origin!=='https://aqwwiki.wikidot.com'||!/^\/[a-z0-9-]+$/.test(path)||!Number.isInteger(n)||n<1||n>200)throw Error('Invalid directory page');
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+ try{const url=origin+path+'/p/'+n,r=await fetch(url,{credentials:'omit',redirect:'error',referrerPolicy:'no-referrer',signal:controller.signal});if(!r.ok||!String(r.headers.get('content-type')).includes('text/html'))throw Error('Wiki page unavailable');
+  const reader=r.body?.getReader();if(!reader)throw Error('Missing response');let size=0,html='';const decoder=new TextDecoder();
+  try{while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>4000000){await reader.cancel();throw Error('Page too large')}html+=decoder.decode(value,{stream:true})}html+=decoder.decode()}finally{reader.releaseLock()}
+  const t=document.createElement('template');t.innerHTML=html;const content=t.content.querySelector('#page-content');if(!content)throw Error('Missing directory');
+  const entries=directoryEntries(content,origin);if(!entries.length)throw Error('No entries parsed');return {entries,pages:paginationLinks(content,origin,path)};
+ }finally{clearTimeout(timer)}
+}
+const weaponKinds=new Set('axes bows daggers gauntlets guns handguns maces polearms rifles staffs swords wands whips'.split(' '));
+function flatLinkNodes(content,accept){
+ const rows=[];
+ function onlyLinks(node){if(node.nodeType===3)return !clean(node.textContent);if(node.nodeType!==1)return true;if(node.tagName==='BR')return true;if(node.tagName==='A')return accept(node);return ['P','DIV','STRONG','B','SPAN','LI','UL','OL','CENTER'].includes(node.tagName)&&[...node.childNodes].every(onlyLinks)}
+ for(const el of content.children){if(!['P','DIV','UL','OL','CENTER','A'].includes(el.tagName)||el.matches('#breadcrumbs,.breadcrumbs,.breadcrumb,.pager,.pagination,.collapsible-block,.yui-navset')||!onlyLinks(el))continue;
+  const links=el.tagName==='A'?[el]:[...el.querySelectorAll('a[href]')];if(links.length&&links.every(accept))rows.push({el,links})}
+ return rows;
+}
+function weaponSlug(a){try{const u=new URL(a.getAttribute('href'),location.origin),slug=u.pathname.replace(/^\/|\/$/g,'');return u.origin===location.origin&&weaponKinds.has(slug)&&!u.hash&&!u.search?slug:null}catch{return null}}
+function styleWeapons(content){
+ const rows=flatLinkNodes(content,a=>!!weaponSlug(a));if(!rows.length)return false;
+ const grid=document.createElement('section');grid.className='aqwc-weapon-grid';const seen=new Set();
+ const glyph={axes:'◈',bows:'➶',daggers:'✦',gauntlets:'✊',guns:'◎',handguns:'◎',maces:'✺',polearms:'⚑',rifles:'◎',staffs:'✧',swords:'⚔',wands:'✧',whips:'〰'};
+ content.insertBefore(grid,rows[0].el);
+ for(const {el,links} of rows){for(const a of links){const slug=weaponSlug(a);if(seen.has(slug))continue;seen.add(slug);const card=document.createElement('a');card.href=a.href;card.className='aqwc-weapon-card';const mark=document.createElement('span');mark.className='aqwc-category-glyph';mark.setAttribute('aria-hidden','true');mark.textContent=glyph[slug];const label=document.createElement('strong');label.textContent=clean(a.textContent);card.append(mark,label);grid.append(card)}el.hidden=true}
+ content.classList.add('aqwc-directory','aqwc-category-index');document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');return true;
+}
+function regionLink(a){try{const u=new URL(a.getAttribute('href'),location.origin);return u.origin===location.origin&&!u.hash&&!u.search&&/^\/[a-z0-9][a-z0-9-]*$/.test(u.pathname)&&!indexKind(u.pathname)&&!!clean(a.textContent)&&!a.querySelector('img')}catch{return false}}
+function styleRegion(content){
+ if(!pageHasCategory('locations'))return false;
+ const rows=flatLinkNodes(content,regionLink);
+ const art=[...content.children].filter(el=>!rows.some(r=>r.el===el)&&!el.matches('#breadcrumbs,.breadcrumbs,.breadcrumb')&&(el.matches('.collapsible-block,.yui-navset')||el.matches('img')||(['P','DIV','CENTER','A'].includes(el.tagName)&&el.querySelector('img')&&!clean(el.textContent)&&!el.querySelector('ul,ol,table,form'))));
+ if(!rows.length&&!art.length)return false;
+ // Region maps and small locations without the usual Monsters/NPCs headings.
+ const sections=[];if(rows.length){const card=document.createElement('section');card.className='aqwc-map-card aqwc-map-tab-card';const h=document.createElement('h3');h.textContent='Locations:';const ul=document.createElement('ul');content.insertBefore(card,rows[0].el);card.append(h,ul);
+ for(const {el,links} of rows){for(const a of links){const li=document.createElement('li');li.append(a);ul.append(li)}el.remove()}sections.push({name:'Locations',nodes:[card],count:ul.children.length})}
+ if(art.length){const gallery=wrapNative(content,art,'aqwc-room-gallery','Map gallery');sections.unshift({name:'Rooms',nodes:[gallery]})}
+ content.classList.add('aqwc-map-profile');document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');mapOverview(content,sections);decorateMapCards(content);layoutRoomVariants(content);return true;
+}
 function init(){
  if(location.origin!=='https://aqwwiki.wikidot.com')return;const kind=indexKind(location.pathname),content=document.getElementById('page-content');if(!content||document.getElementById('aqwc-directory-v2'))return;
- if(!kind){if(styleHome(content)){paletteHome(content);return}if(styleSearch(content)||styleWars(content)||styleFactionV2(content)||styleShop(content))return;if(styleMap(content)){moveRoomGallery(content);mapNavigation(content);decorateMapCards(content);layoutRoomVariants(content);return}styleMonster(content);return}
+ if(!kind){if(styleHome(content)){paletteHome(content);return}if(styleSearch(content)||styleWars(content)||styleFactionV2(content)||styleShop(content))return;if(styleMap(content)){moveRoomGallery(content);mapNavigation(content);decorateMapCards(content);layoutRoomVariants(content);return}if(styleRegion(content))return;styleMonster(content);return}
  if(kind==='categories'){
+  if(directoryPath(location.pathname)==='/weapons'&&styleWeapons(content))return;
   const list=[...content.children].find(el=>el.tagName==='UL'&&el.children.length>=3);if(!list)return;content.classList.add('aqwc-directory','aqwc-category-index');list.classList.add('aqwc-category-grid');document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');for(const li of list.children){const sub=li.querySelector('ul'),a=li.querySelector('a');if(!sub)li.classList.add('aqwc-category-leaf');if(sub&&sub.children.length>=6)li.classList.add('aqwc-category-wide');if(a){a.classList.add('aqwc-category-title');const glyph=document.createElement('span');glyph.className='aqwc-category-glyph';glyph.setAttribute('aria-hidden','true');glyph.textContent=({'armors':'♜','classes':'✦','weapons':'⚔','helmets-hoods':'◈','pets':'✧','housing':'⌂','enhancements':'◇'})[(a.getAttribute('href')||'').replace(/^\//,'')]||'◆';a.prepend(glyph)}}return;
  }
- const rows=directoryEntries(content,location.origin);if(rows.length<2)return;
+ const rows=directoryEntries(content,location.origin);if(!rows.length)return;
  const host=document.createElement('section');host.id='aqwc-directory-v2';host.style.display='none';host.setAttribute('aria-label','Wiki directory');
  const toolbar=document.createElement('div');toolbar.className='aqwc-index-toolbar';const search=document.createElement('input');search.type='search';search.placeholder='Search '+(document.getElementById('page-title')?.textContent.trim()||'directory')+'…';search.setAttribute('aria-label','Search directory');const status=document.createElement('span');status.setAttribute('role','status');
  const original=document.createElement('button');original.type='button';original.textContent='Show original Wiki list';original.setAttribute('aria-expanded','false');original.addEventListener('click',()=>{const open=content.classList.toggle('aqwc-index-original-open');original.textContent=open?'Hide original Wiki list':'Show original Wiki list';original.setAttribute('aria-expanded',String(open))});
@@ -263,19 +316,24 @@ function init(){
  for(const a of content.querySelectorAll('a[href]')){const href=a.getAttribute('href')||'';if(!/^(?:\/|https:\/\/aqwwiki\.wikidot\.com\/)sort-by-[a-z0-9-]+\/?$/.test(href)||!clean(a.textContent))continue;const link=document.createElement('a');link.href=a.href;link.textContent=clean(a.textContent);filters.append(link)}
  const alphabet=document.createElement('div');alphabet.className='aqwc-index-alphabet';const body=document.createElement('div');const groups=new Map();for(const row of rows){const l=letter(row.name);if(!groups.has(l))groups.set(l,[]);groups.get(l).push(row)}
  let active='All',page=1;const perPage=96;
+ const knownPages=new Set(paginationLinks(content,location.origin,location.pathname)),loadedPages=new Set([pageNumber(location.pathname)]),rowKeys=new Set(rows.map(r=>r.url+'\n'+r.name));let loading=false,failed=false,searchTimer=null;
+ const coverage=document.createElement('div');coverage.className='aqwc-index-coverage';const coverageText=document.createElement('span');coverageText.setAttribute('role','status');const load=document.createElement('button');load.type='button';load.textContent='Load all Wiki pages';coverage.append(coverageText,load);
+ function updateCoverage(){const remaining=[...knownPages].filter(n=>!loadedPages.has(n)).length;load.hidden=!remaining;load.disabled=loading;load.textContent=failed?'Retry remaining Wiki pages':'Load all Wiki pages';coverageText.textContent=loading?'Loading Wiki pages · '+loadedPages.size+' / '+knownPages.size:remaining?(failed?'Partial search · some Wiki pages failed. ':'Current Wiki page only · ')+remaining+' more pages to load':knownPages.size?'All discovered Wiki pages loaded · '+loadedPages.size+' pages':'All entries on this Wiki page';}
+ async function loadAll(){if(loading||![...knownPages].some(n=>!loadedPages.has(n)))return;loading=true;failed=false;updateCoverage();const attempted=new Set();try{while(true){const n=[...knownPages].sort((a,b)=>a-b).find(n=>!loadedPages.has(n)&&!attempted.has(n));if(n===undefined)break;attempted.add(n);try{const result=await fetchDirectoryPage(location.origin,directoryPath(location.pathname),n);for(const p of result.pages)knownPages.add(p);for(const r of result.entries){const key=r.url+'\n'+r.name;if(rowKeys.has(key))continue;rowKeys.add(key);rows.push(r);const l=letter(r.name);if(!groups.has(l))groups.set(l,[]);groups.get(l).push(r)}loadedPages.add(n);updateAlphabet();render();}catch{failed=true}updateCoverage();await new Promise(resolve=>setTimeout(resolve,120))}}finally{loading=false;updateCoverage();render()}}
+ load.addEventListener('click',loadAll);updateCoverage();
  const nav=document.createElement('div');nav.className='aqwc-index-pager';const prev=document.createElement('button'),next=document.createElement('button'),pageLabel=document.createElement('span');prev.textContent='← Previous';next.textContent='Next →';prev.type=next.type='button';nav.append(prev,pageLabel,next);
- const keys=['All',...['#',...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].filter(l=>groups.has(l))];
- for(const l of keys){const b=document.createElement('button');b.type='button';b.textContent=l;b.dataset.letter=l;b.addEventListener('click',()=>{active=l;page=1;render()});alphabet.append(b)}
+ function updateAlphabet(){const keys=['All',...['#',...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].filter(l=>groups.has(l))];alphabet.replaceChildren();
+ for(const l of keys){const b=document.createElement('button');b.type='button';b.textContent=l;b.dataset.letter=l;b.addEventListener('click',()=>{active=l;page=1;render()});alphabet.append(b)}}updateAlphabet();
  function render(){
-  const q=clean(search.value).toLowerCase(),filtered=rows.filter(r=>(active==='All'||letter(r.name)===active)&&r.name.toLowerCase().includes(q));
+  const q=clean(search.value),filtered=rows.filter(r=>(active==='All'||letter(r.name)===active)&&matchesDirectory(r,q)).sort((a,b)=>a.name.localeCompare(b.name));
   const pages=Math.max(1,Math.ceil(filtered.length/perPage));page=Math.min(page,pages);status.textContent=filtered.length.toLocaleString()+' / '+rows.length.toLocaleString()+' entries';for(const b of alphabet.children)b.setAttribute('aria-pressed',String(b.dataset.letter===active));
   body.replaceChildren();const visible=filtered.slice((page-1)*perPage,page*perPage);const sectionGroups=new Map();for(const r of visible){const l=letter(r.name);if(!sectionGroups.has(l))sectionGroups.set(l,[]);sectionGroups.get(l).push(r)}
   for(const [l,group] of sectionGroups){const section=document.createElement('section');section.className='aqwc-index-section';const title=document.createElement('h3');title.textContent=l;const grid=document.createElement('div');grid.className='aqwc-index-grid';for(const r of group){const a=document.createElement('a');a.className='aqwc-index-entry';a.href=r.url;const name=document.createElement('span');name.textContent=r.name.replace(/\s*\((?:0\s*AC|AC|Non-AC|Legend|Seasonal|Rare|Pseudo-Rare|Special Offer|Free Player)\)/gi,'').trim()||r.name;const badges=document.createElement('span');badges.className='aqwc-index-badges';badges.append(...coloredBadges(r.anchor));a.append(name,badges);grid.append(a)}section.append(title,grid);body.append(section)}
-  if(!visible.length){const p=document.createElement('p');p.textContent='No matching entries.';body.append(p)}
+  if(!visible.length){const p=document.createElement('p');p.textContent=loading?'Searching remaining Wiki pages…':[...knownPages].some(n=>!loadedPages.has(n))?'No matches in loaded pages. Load remaining Wiki pages to finish searching.':'No matching entries.';body.append(p)}
   prev.disabled=page===1;next.disabled=page===pages;pageLabel.textContent='Page '+page+' / '+pages;nav.hidden=pages===1;
  }
- search.addEventListener('input',()=>{page=1;render()});prev.addEventListener('click',()=>{page--;render();toolbar.scrollIntoView({block:'nearest'})});next.addEventListener('click',()=>{page++;render();toolbar.scrollIntoView({block:'nearest'})});
- host.append(toolbar,filters,alphabet,body,nav);content.before(host);content.classList.add('aqwc-index-source');render();document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');document.getElementById('aqwc-list-wishlist')?.remove();
+ search.addEventListener('input',()=>{active='All';page=1;render();clearTimeout(searchTimer);if(clean(search.value).length>=2)searchTimer=setTimeout(loadAll,350)});prev.addEventListener('click',()=>{page--;render();toolbar.scrollIntoView({block:'nearest'})});next.addEventListener('click',()=>{page++;render();toolbar.scrollIntoView({block:'nearest'})});
+ host.append(toolbar,coverage,filters,alphabet,body,nav);content.before(host);content.classList.add('aqwc-index-source');render();document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');document.getElementById('aqwc-list-wishlist')?.remove();
 }
 function styleMonster(content){
  const api=globalThis.AQWCWikiMaterials,slug=location.pathname.replace(/^\/|\/$/g,'');if(!api?.monsterImages||!slug)return;
@@ -286,6 +344,6 @@ function styleMonster(content){
  content.classList.add('aqwc-monster-profile');if(node.parentElement!==content)return;
  const wrap=document.createElement('section');wrap.className='aqwc-monster-art';const heading=document.createElement('h3');heading.textContent='Monster artwork';const next=node.nextElementSibling;wrap.append(heading,node);if(next&&/^Thanks to\b/i.test(clean(next.textContent)))wrap.append(next);content.prepend(wrap);
 }
-globalThis.AQWCDirectory=Object.freeze({indexKind,rowName,runs,entry,directoryEntries,letter,mapSectionName,mapSections,tagLabels,nameTags,factionName,factionHeading,searchUrl,isMapOverviewSection});
+globalThis.AQWCDirectory=Object.freeze({indexKind,rowName,runs,entry,directoryEntries,letter,mapSectionName,mapSections,tagLabels,nameTags,factionName,factionHeading,searchUrl,isMapOverviewSection,directoryPath,searchKey,matchesDirectory,paginationLinks,pageNumber});
 if(typeof document!=='undefined'){try{init()}finally{globalThis.AQWCWikiBoot?.layoutReady()}}
 })();
