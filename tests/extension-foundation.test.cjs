@@ -733,7 +733,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  const origin='https://aqwwiki.wikidot.com',enc=new TextEncoder(),dec=new TextDecoder();
  let title='Necrotic Sword of Doom (Sword)',category='/swords',requests=0;
  const ctx={URL,AbortController,TextDecoder,setTimeout,clearTimeout,document:{createElement:()=>({content:{querySelector:s=>s==='#page-title'?{textContent:title}:s==='#page-content'?{}:null,querySelectorAll:()=>[{getAttribute:()=>category}]}})},fetch:async()=>{requests++;return {ok:true,headers:{get:()=> 'text/html'},body:{getReader:()=>{let read=false;return {read:async()=>read?{done:true}:(read=true,{done:false,value:enc.encode('<html>fixture</html>')}),releaseLock(){}}}}}}};
- const api=vm.runInNewContext(read('extension/wiki-directory.js')+'\nAQWCDirectory',ctx);
+ const fixtureDocument=ctx.document;delete ctx.document;const api=vm.runInNewContext(read('extension/wiki-directory.js')+'\nAQWCDirectory',ctx);ctx.document=fixtureDocument;
  let matches=[];const result=await api.lookupExactDirectory('Necrotic Sword of Doom','/swords',origin,new AbortController().signal,r=>matches.push(r));
  assert.equal(result.name,title);assert.ok(matches.length>=1);assert.equal(requests,2);
  category='/armors';matches=[];assert.equal(await api.lookupExactDirectory('Necrotic Sword of Doom','/swords',origin,new AbortController().signal,r=>matches.push(r)),null);assert.equal(matches.length,0);
