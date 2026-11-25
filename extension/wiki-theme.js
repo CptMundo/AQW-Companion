@@ -72,7 +72,7 @@ function normalizeAppearance(value){
    // the narrow, offset #header. Replace only its background; never overlay
    // or move the header links, search box or menu.
    const selector='html[data-aqwc-banner="'+v.banner+'"] div#container-wrap';
-   const target=document.getElementById('container-wrap');if(target?.style?.getPropertyValue){originalInline={target,values:bannerProps.map(k=>[k,target.style.getPropertyValue(k),target.style.getPropertyPriority(k)])};[images.join(','),sizes.join(','),positions.join(','),'no-repeat'].forEach((v,i)=>target.style.setProperty(bannerProps[i],v,'important'))}
+   const target=document.getElementById('container-wrap');if(target?.style?.getPropertyValue){originalInline={target,values:bannerProps.map(k=>[k,target.style.getPropertyValue(k),target.style.getPropertyPriority(k)])};[v.background==='light'?'none':images.join(','),sizes.join(','),positions.join(','),'no-repeat'].forEach((v,i)=>target.style.setProperty(bannerProps[i],v,'important'))}
    rules.push(selector+'{background-image:'+images.join(',')+' !important;background-size:'+sizes.join(',')+' !important;background-position:'+positions.join(',')+' !important;background-repeat:no-repeat !important;}');
    rules.push('html[data-aqwc-banner="'+v.banner+'"] #top-bar{border-top:1px solid '+preset.accent+';background:#13232f!important;height:26px!important;line-height:22px!important;padding:2px 0!important;} html[data-aqwc-banner="'+v.banner+'"] #top-bar > ul > li > a{font-size:12px!important;padding:6px 10px!important;line-height:14px!important;max-height:none!important;}');
 
