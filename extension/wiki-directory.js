@@ -156,7 +156,7 @@ function styleFactionV2(content){
  }
  const valid=sections.filter(s=>s.nodes.some(n=>n.matches('ul,ol')));if(!valid.length)return false;
  content.classList.add('aqwc-faction-profile');document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');
- const panels=[];for(const s of valid){const card=wrapNative(content,s.nodes,'aqwc-faction-card');card.dataset.section=s.name.toLowerCase().replace(/\s+/g,'-');panels.push({name:s.name,nodes:[card]})}
+ const panels=[];for(const s of valid){const shared=/^Leader\s*:/i.test(clean(s.nodes[0].textContent));const card=wrapNative(content,shared?s.nodes.slice(1):s.nodes,'aqwc-faction-card',shared?s.name:null);card.dataset.section=s.name.toLowerCase().replace(/\s+/g,'-');panels.push({name:s.name,nodes:[card]})}
  sectionNav(content,panels,'Faction Quests');return true;
 }
 function styleWars(content){
@@ -172,7 +172,7 @@ function styleWars(content){
  function filter(){const q=clean(input.value).toLowerCase();let visible=0;for(const e of entries){e.card.hidden=!(e.name+' '+e.date).toLowerCase().includes(q);if(!e.card.hidden)visible++}count.textContent=visible+' / '+entries.length+' wars'}input.addEventListener('input',filter);filter();return true;
 }
 function styleSearch(content){
- const path=location.pathname.replace(/\/$/,'');if(!/^\/(?:search(?:[-:][a-z0-9-]+)?|system:search)$/.test(path))return false;
+ const path=location.pathname.replace(/%3a/ig,':').replace(/\/$/,'');if(!/^\/(?:search(?:[-:][a-z0-9-]+)?|system:search)$/.test(path))return false;
  content.classList.add('aqwc-search-profile');document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');return true;
 }
 function paletteHome(content){
