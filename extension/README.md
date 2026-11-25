@@ -157,3 +157,6 @@ Set a 420px intrinsic popup width on both html and body; remove the viewport-rel
 
 ### v0.12.24
 Settings → Use AQW Companion theme applies the website's effective aqw-safe-redesign palette to the Wiki and popup. Shared semantic CSS variables flow into closed shadow roots; original styles remain fallbacks for other presets. Existing saved settings remain unchanged until selection. This is a bundled palette, not live remote theme synchronization. No permission or inventory changes.
+
+### Theme simplification (draft)
+Adds a light semantic palette alongside the existing dark site palette. Final theme selector and migration await the community theme reference. Not released.
