@@ -133,6 +133,25 @@ function sectionNav(content,sections,defaultName){
 function wrapNative(content,nodes,cls,title){
  if(!nodes.length)return null;const card=document.createElement('section');card.className=cls;content.insertBefore(card,nodes[0]);if(title){const h=document.createElement('h3');h.textContent=title;card.append(h)}card.append(...nodes);return card;
 }
+function isMapOverviewSection(name){return ['Rooms','NPCs','Quests','Shops'].includes(name)}
+function mapOverview(content,sections){
+ const visible=sections.filter(s=>isMapOverviewSection(s.name)),optional=sections.filter(s=>!isMapOverviewSection(s.name));
+ const first=[...content.children].find(node=>sections.some(s=>s.nodes.includes(node)));if(!first)return;
+ const layout=document.createElement('div');layout.className='aqwc-map-overview';content.insertBefore(layout,first);
+ const rooms=visible.filter(s=>s.name==='Rooms'),directory=visible.filter(s=>s.name!=='Rooms');
+ if(rooms.length){const art=document.createElement('div');art.className='aqwc-map-overview-rooms';for(const s of rooms)art.append(...s.nodes);layout.append(art)}
+ if(directory.length){const stack=document.createElement('div');stack.className='aqwc-map-overview-directory';for(const name of ['NPCs','Quests','Shops'])for(const s of directory.filter(s=>s.name===name))stack.append(...s.nodes);layout.append(stack)}
+ if(!rooms.length||!directory.length)layout.classList.add('aqwc-map-overview-single');
+ if(!visible.length)layout.hidden=true;
+ if(!optional.length)return;
+ const extra=document.createElement('section');extra.className='aqwc-map-extras';const nav=document.createElement('nav');nav.className='aqwc-profile-nav aqwc-map-extra-nav';nav.setAttribute('aria-label','Additional map information');const title=document.createElement('strong');title.textContent='More map information';nav.append(title);extra.append(nav);layout.after(extra);
+ for(const name of [...new Set(optional.map(s=>s.name))]){
+  const group=optional.filter(s=>s.name===name),panel=document.createElement('div');panel.hidden=true;panel.className='aqwc-map-extra-panel';panel.id='aqwc-map-extra-'+name.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+  for(const s of group)panel.append(...s.nodes);
+  const b=document.createElement('button');b.type='button';b.textContent=name+(group.length===1&&group[0].count!=null?' · '+group[0].count:'');b.setAttribute('aria-expanded','false');b.setAttribute('aria-controls',panel.id);
+  b.addEventListener('click',()=>{panel.hidden=!panel.hidden;b.setAttribute('aria-expanded',String(!panel.hidden))});nav.append(b);extra.append(panel);
+ }
+}
 function mapNavigation(content){
  const cards=[...content.querySelectorAll('.aqwc-map-grid > .aqwc-map-card')];const gallery=content.querySelector(':scope > .aqwc-room-gallery');
  const sections=[];if(gallery)sections.push({name:'Rooms',nodes:[gallery]});
@@ -144,7 +163,7 @@ function mapNavigation(content){
  for(const gallery of historical){const prev=gallery.previousElementSibling;if(prev&&/^Old\b/i.test(clean(prev.textContent)))other.push(prev);other.push(gallery)}
  const details=[...new Set(other)].filter(el=>el.parentElement===content).sort((a,b)=>a.compareDocumentPosition(b)&4?-1:1);
  if(details.length){const card=wrapNative(content,details,'aqwc-map-card aqwc-map-tab-card','Additional information');sections.push({name:'Notes & History',nodes:[card]})}
- sectionNav(content,sections,'Rooms');
+ mapOverview(content,sections);
 }
 function factionHeading(value){const s=clean(value);const m=s.match(/\b(Faction Quests|Faction Shops|Faction Items|Locations|Notes)\s*:/i);return m?({'faction quests':'Faction Quests','faction shops':'Faction Shops','faction items':'Faction Items','locations':'Locations','notes':'Notes'})[m[1].toLowerCase()]:null}
 function styleFactionV2(content){
@@ -267,6 +286,6 @@ function styleMonster(content){
  content.classList.add('aqwc-monster-profile');if(node.parentElement!==content)return;
  const wrap=document.createElement('section');wrap.className='aqwc-monster-art';const heading=document.createElement('h3');heading.textContent='Monster artwork';const next=node.nextElementSibling;wrap.append(heading,node);if(next&&/^Thanks to\b/i.test(clean(next.textContent)))wrap.append(next);content.prepend(wrap);
 }
-globalThis.AQWCDirectory=Object.freeze({indexKind,rowName,runs,entry,directoryEntries,letter,mapSectionName,mapSections,tagLabels,nameTags,factionName,factionHeading,searchUrl});
+globalThis.AQWCDirectory=Object.freeze({indexKind,rowName,runs,entry,directoryEntries,letter,mapSectionName,mapSections,tagLabels,nameTags,factionName,factionHeading,searchUrl,isMapOverviewSection});
 if(typeof document!=='undefined'){try{init()}finally{globalThis.AQWCWikiBoot?.layoutReady()}}
 })();
