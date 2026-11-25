@@ -243,10 +243,9 @@ function init(){
  const ui=globalThis.AQWCWikiUI;ui?.decorate(shadow,panel,kind==='quest'?'Quest tools':'Shop tools');if(ui)panel.style.cssText='';b.className='aqwc-primary';
  if(kind==='quest'){panel.classList.add('aqwc-quest-top');questCards(panel,content,title);shadow.append(panel);host.style.cssText='display:block;float:none;width:100%;max-width:100%;margin:8px 0 16px;';if(content.parentElement)content.parentElement.insertBefore(host,content);else (document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);return}
  const summary=document.createElement('section');summary.className='aqwc-section';summary.hidden=true;
- panel.replaceChildren();panel.classList.add('aqwc-shop-inline');label.textContent='Inventory · local snapshot';note.textContent='Check owned items and linked material costs. Not purchase eligibility.';const line=document.createElement('div');line.style.cssText='display:flex;gap:12px;align-items:center;flex-wrap:wrap';line.append(label,b,status);panel.append(line,note,summary);
- shadow.append(panel);host.style.cssText='display:block;width:100%;max-width:none;margin:12px 0;';host.setAttribute('data-aqwc-layout','compact');content.prepend(host);
- b.addEventListener('click',async e=>{
-  if(!e.isTrusted||b.disabled)return;b.disabled=true;status.textContent='Checking…';summary.hidden=true;summary.replaceChildren();const revision=scopeRevision;
+ // Shops show local stock badges automatically, without mounting any inventory card.
+ async function checkShop(){
+  const revision=scopeRevision;
   try{
    const {groups,skipped}=initial;if(!groups.length)throw Error('No supported linked requirements detected.');
    const names=[...new Set(groups.flatMap(g=>g.items.map(x=>x.name)))],selected=names,matches=new Map();let syncedAt=null;
@@ -267,10 +266,9 @@ function init(){
     label.style.cssText='display:inline-block;margin-left:4px;padding:0 4px;border-radius:4px;background:#142b3e;color:'+color+';font:600 11px/1.5 system-ui';item.anchor.insertAdjacentElement('afterend',badge);
    }
 
-   status.textContent='Snapshot: '+new Date(syncedAt).toLocaleString()+' · '+selected.length+' names checked'+(skipped?' · '+skipped+' unsupported rows/price cells skipped':'');b.textContent=kind==='quest'?'Refresh quest materials':'Refresh inventory status';
-  }catch(err){status.textContent=String(err?.message||err)}
-  finally{b.disabled=false}
- });
+  }catch{/* Missing local snapshot or unsupported shop: keep the native table usable. */}
+ }
+ void checkShop();
 }
 globalThis.AQWCQuestShop=Object.freeze({pageKind,quantity,questQuantity,linkedRow,shopCosts,collect,labels,questScope,questLists,questLocationLinks});
 if(typeof document!=='undefined')init();
