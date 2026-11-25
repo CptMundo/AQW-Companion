@@ -19,8 +19,8 @@ const noFragments=[
 ];
 for(const token of noFragments)assert.ok(!html.includes(token),"retired Damage Simulator is still present: "+token);
 const groupNames=[...html.matchAll(/<button\b[^>]*data-group="([^"]+)"/g)].map(m=>m[1]);
-const groups=["home","projects","planner","ultras","builds","story","explore","inventory"];
-assert.deepEqual(groupNames,groups,"primary navigation must retain the other eight sections");
+const groups=["home","projects","planner","ultras","builds","story","badges","explore","inventory"];
+assert.deepEqual(groupNames,groups,"primary navigation must retain the existing sections plus Badge Hunter");
 const tabs=[...html.matchAll(/<button\b[^>]*data-tab="([^"]+)"[^>]*data-parent="([^"]+)"/g)]
   .map(m=>({name:m[1],parent:m[2]}));
 const views=new Set([...html.matchAll(/<section\s+id="([^"]+)"\s+class="view\b/g)].map(m=>m[1]));
@@ -41,7 +41,7 @@ assert.ok(siteCss.includes("#forge .forge-tracker-items"),"Forge CSS was lost du
 const scripts=[...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
 assert.equal(scripts.filter(x=>!x[1].includes("src=")).length,1,"main inline application is preserved");
 assert.ok(!scripts.some(x=>/combat-engine|damage-simulator/.test(x[1])),"retired Damage Simulator scripts stay removed");
-assert.ok(scripts.filter(x=>x[1].includes("src=")).every(x=>/umami-analytics\.js|account-statistics\.js|recipe-integrity\.js|ultra-quote-actions\.js|wishlist-finds\.js|meta-class-builds\.js|ultra-guide-rows\.js|routine-library\.js|stack-alerts\.js|src="extension\/wishlist-link\.js\?v=126"/.test(x[1])),"only reviewed local scripts may load");
+assert.ok(scripts.filter(x=>x[1].includes("src=")).every(x=>/badge-catalog\.js|badge-hunter\.js|umami-analytics\.js|account-statistics\.js|recipe-integrity\.js|ultra-quote-actions\.js|wishlist-finds\.js|meta-class-builds\.js|ultra-guide-rows\.js|routine-library\.js|stack-alerts\.js|src="extension\/wishlist-link\.js\?v=126"/.test(x[1])),"only reviewed local scripts may load");
 for(const [index,script] of scripts.entries())if(script[2].trim())new vm.Script(script[2],{filename:"index:inline-"+index});
 assert.ok(html.includes("activateTab('overview')"),"home default navigation preserved");
 console.log("Navigation smoke passed: all primary sections, Forge and Account Statistics views; simulator removed.");

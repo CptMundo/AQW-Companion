@@ -585,3 +585,27 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.equal(calls.length,2);
  console.log('Pinned quest navigation, legacy deep link and existing storage preserved.');
 }
+
+{
+ const badgeCatalog=require('../js/badge-catalog.js'),badgeHunter=require('../js/badge-hunter.js');
+ assert.equal(new Set(badgeCatalog.map(b=>b.id)).size,badgeCatalog.length);
+ assert.ok(badgeCatalog.length>=25);
+ for(const b of badgeCatalog){assert.ok(b.source.startsWith('https://'));assert.ok(['quest','seasonal','legacy'].includes(b.kind));if(b.join)assert.match(b.join,/^\/join [a-z0-9-]+$/);}
+ const harvest=badgeCatalog.find(b=>b.id==='harvest-hunter');
+ assert.equal(badgeHunter.availability(harvest,'2026-10-31'),'Announced');
+ assert.equal(badgeHunter.availability(harvest,'2026-11-30'),'Within announced dates');
+ assert.equal(badgeHunter.availability(harvest,'2026-12-01'),'Window ended');
+ assert.equal(badgeHunter.availability(harvest,'2027-11-01'),'Window ended');
+ assert.equal(badgeHunter.availability(badgeCatalog.find(b=>b.id==='avast'),'2026-09-19'),'Return unconfirmed');
+ const owned=badgeHunter.update({},'harvest-hunter','owned',badgeCatalog);
+ assert.equal(badgeHunter.opportunities(badgeCatalog,owned,'2026-11-26').length,0);
+ assert.equal(badgeHunter.opportunities(badgeCatalog,{},'2026-11-26').length,1);
+ assert.deepEqual(badgeHunter.clean({lr:'tracked',unknown:'owned',nsod:'bad'},badgeCatalog),{lr:'tracked'});
+ assert.deepEqual(badgeHunter.update({lr:'owned'},'lr','unmarked',badgeCatalog),{});
+ assert.equal(badgeHunter.filterBadges(badgeCatalog,{},'Fealty','all','all').length,1);
+ assert.ok(html.includes('data-group="badges">🏆 Badge Hunter'));
+ assert.ok(html.includes('data-tab="badge-hunter" data-parent="badges"'));
+ assert.ok(html.includes('id="badge-hunter-home"'));
+ assert.ok(html.includes("if(tab==='badge-hunter')window.AQWCBadgeHunter?.render?.()"));
+ console.log('Badge Hunter catalog, local states, filtering and explicit seasonal windows verified.');
+}

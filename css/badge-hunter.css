@@ -1,0 +1,21 @@
+/* Badge Hunter: scoped styles using the Companion palette. */
+#badge-hunter .badge-hunter-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+#badge-hunter .badge-hunter-metric{padding:14px;background:#102435;border:1px solid #34516b;border-radius:9px;display:flex;flex-direction:column;gap:5px}
+#badge-hunter .badge-hunter-metric strong{font-size:24px;color:#83d8f5}
+#badge-hunter progress{width:100%;height:9px;accent-color:#62d8b2}
+#badge-hunter .badge-hunter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px;margin-top:12px;align-items:start}
+#badge-hunter .badge-hunter-card{display:flex;flex-direction:column;gap:8px;padding:14px;border:1px solid #34516b;background:#132637;border-radius:10px}
+#badge-hunter .badge-hunter-card.badge-owned{border-color:#488b70;background:#142e2c}
+#badge-hunter .badge-hunter-heading{display:flex;gap:9px;align-items:center}
+#badge-hunter .badge-hunter-heading h3{margin:0;font-size:15px}
+#badge-hunter .badge-hunter-symbol{font-size:24px;color:#75e3a4}
+#badge-hunter .badge-hunter-tag{color:#c5d9eb;border:1px solid #43617b;border-radius:5px;padding:4px 7px;align-self:flex-start;font-size:11px}
+#badge-hunter .badge-season-active{border-color:#9f77cc;color:#e3c9ff;background:#332541}
+#badge-hunter .badge-hunter-card p{margin:0;line-height:1.5;font-size:13px}
+#badge-hunter .badge-hunter-card details{border-top:1px solid #34516b;padding-top:8px}
+#badge-hunter .badge-hunter-card details p{margin:8px 0}
+#badge-hunter .badge-hunter-card summary{cursor:pointer;color:#83d8f5}
+#badge-hunter .badge-hunter-links{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0;font-size:12px}
+#badge-hunter-home{margin:12px 0;border-color:#9f77cc;background:#282337}
+#badge-hunter-home .homehead{flex-wrap:wrap}
+@media(max-width:600px){#badge-hunter .badge-hunter-metric{padding:8px}#badge-hunter .badge-hunter-metric strong{font-size:19px}}
