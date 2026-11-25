@@ -455,7 +455,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  assert.ok(bridge.includes('width>=1080'));assert.ok(bridge.includes('parent.insertBefore(host,content)'));
  assert.ok(!bridge.includes('append(content)'),'Do not move the Wiki article into a wrapper');
  assert.ok(read('extension/wiki-items.js').includes('ui.mount(host,content,title)'));
- assert.ok(read('extension/wiki-quest-shop.js').includes('ui.mount(host,content,title)'));
+ assert.ok(read('extension/wiki-quest-shop.js').includes('content.prepend(host)'));assert.ok(!read('extension/wiki-quest-shop.js').includes('ui.mount(host,content,title)'),'Shop inventory must not reserve a floating sidebar');
  assert.ok(read('extension/popup.html').includes('class="quick-links"'));
  assert.ok(read('extension/wiki-materials.js').includes('materials ready'));
 }
