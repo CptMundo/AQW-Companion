@@ -25,8 +25,8 @@ function directoryEntries(content,origin){
  const jump=links.filter(a=>{if(!/^[A-Z#0-9]$/i.test(clean(a.textContent)))return false;try{const href=a.getAttribute('href')||'',u=new URL(href,origin);return !!u.hash&&u.origin===origin&&(href.startsWith('#')||!!indexKind(u.pathname))}catch{return false}});
  const last=jump.length>=5?links.lastIndexOf(jump[jump.length-1]):-1;
  const seen=new Set(),out=[];
- for(const a of links){
-  if(!a.closest('.list-pages-box,.list-pages-item')&&(last<0||links.indexOf(a)<=last)&&!rowName(a.closest('p,li,div')||a,origin))continue;
+ for(const [position,a] of links.entries()){
+  if(!a.closest('.list-pages-box,.list-pages-item')&&(last<0||position<=last)&&!rowName(a.closest('p,li,div')||a,origin))continue;
   if(a.closest('#breadcrumbs,.breadcrumbs,.breadcrumb,.pager,.pagination'))continue;
   const item=entry(a,origin);if(!item||seen.has(item.url+'\n'+item.name))continue;seen.add(item.url+'\n'+item.name);out.push(item);
  }
@@ -85,7 +85,7 @@ function styleMap(content){
 function pageHasCategory(category){const crumb=document.querySelector('#breadcrumbs,.breadcrumbs,#breadcrumb,.breadcrumb');return !!crumb&&[...crumb.querySelectorAll('a[href]')].some(a=>{try{return new URL(a.getAttribute('href'),location.origin).pathname.replace(/\/$/,'')==='/'+category}catch{return false}})}
 function moveRoomGallery(content){
  const galleries=[...content.children].filter(el=>el.matches('.yui-navset')&&el.querySelector('img')&&[...el.querySelectorAll('.yui-nav a')].some(a=>/^Screen\s*\d/i.test(clean(a.textContent))));
- if(!galleries.length){const nodes=[...content.children].filter(el=>el.matches('.collapsible-block,.yui-navset')&&el.querySelector('img'));const first=content.querySelector('.aqwc-map-grid,.aqwc-map-access');if(first&&nodes.length){const gallery=wrapNative(content,nodes,'aqwc-room-gallery','Room gallery');first.before(gallery)}return}const current=galleries[0],first=content.querySelector('.aqwc-map-grid,.aqwc-map-access');if(!first)return;
+ if(!galleries.length){const nodes=[...content.children].filter(el=>el.matches('.collapsible-block,.yui-navset')&&el.querySelector('img')||el.matches('img')||(['P','DIV','CENTER','A'].includes(el.tagName)&&el.querySelector('img')&&!clean(el.textContent)&&!el.querySelector('ul,ol,table,form')));const first=content.querySelector('.aqwc-map-grid,.aqwc-map-access');if(first&&nodes.length){const gallery=wrapNative(content,nodes,'aqwc-room-gallery','Room gallery');first.before(gallery)}return}const current=galleries[0],first=content.querySelector('.aqwc-map-grid,.aqwc-map-access');if(!first)return;
  const block=document.createElement('section');block.className='aqwc-room-gallery';const title=document.createElement('h3');title.textContent='Room gallery';block.append(title,current);
  // Move only the first current gallery; historical galleries stay where the Wiki placed them.
  first.before(block);const notes=content.querySelector('.aqwc-map-card.aqwc-map-access');if(notes)notes.classList.add('aqwc-map-compact');
@@ -264,7 +264,7 @@ function paginationLinks(content,origin,path){
 async function fetchDirectoryPage(origin,path,n){
  if(origin!=='https://aqwwiki.wikidot.com'||!/^\/[a-z0-9-]+$/.test(path)||!Number.isInteger(n)||n<1||n>200)throw Error('Invalid directory page');
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
- try{const url=origin+path+'/p/'+n,r=await fetch(url,{credentials:'omit',redirect:'error',referrerPolicy:'no-referrer',signal:controller.signal});if(!r.ok||!String(r.headers.get('content-type')).includes('text/html'))throw Error('Wiki page unavailable');
+ try{const url=origin+path+(n===1?'':'/p/'+n),r=await fetch(url,{credentials:'omit',redirect:'error',referrerPolicy:'no-referrer',signal:controller.signal});if(!r.ok||!String(r.headers.get('content-type')).includes('text/html'))throw Error('Wiki page unavailable');
   const reader=r.body?.getReader();if(!reader)throw Error('Missing response');let size=0,html='';const decoder=new TextDecoder();
   try{while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>4000000){await reader.cancel();throw Error('Page too large')}html+=decoder.decode(value,{stream:true})}html+=decoder.decode()}finally{reader.releaseLock()}
   const t=document.createElement('template');t.innerHTML=html;const content=t.content.querySelector('#page-content');if(!content)throw Error('Missing directory');
@@ -296,7 +296,7 @@ function styleRegion(content){
  if(!rows.length&&!art.length)return false;
  // Region maps and small locations without the usual Monsters/NPCs headings.
  const sections=[];if(rows.length){const card=document.createElement('section');card.className='aqwc-map-card aqwc-map-tab-card';const h=document.createElement('h3');h.textContent='Locations:';const ul=document.createElement('ul');content.insertBefore(card,rows[0].el);card.append(h,ul);
- for(const {el,links} of rows){for(const a of links){const li=document.createElement('li');li.append(a);ul.append(li)}el.remove()}sections.push({name:'Locations',nodes:[card],count:ul.children.length})}
+ for(const {el,links} of rows){for(const a of links){const li=document.createElement('li');li.append(a);ul.append(li)}if(el.parentElement===content)el.remove()}sections.push({name:'Locations',nodes:[card],count:ul.children.length})}
  if(art.length){const gallery=wrapNative(content,art,'aqwc-room-gallery','Map gallery');sections.unshift({name:'Rooms',nodes:[gallery]})}
  content.classList.add('aqwc-map-profile');document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');mapOverview(content,sections);decorateMapCards(content);layoutRoomVariants(content);return true;
 }
