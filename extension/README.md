@@ -136,3 +136,6 @@ Search landing card: explicit Google site search and exact phrase (new tab), ori
 
 ### v0.12.17
 Location overview keeps the native room gallery, NPCs, quests and shops visible on arrival, side-by-side on wide screens and stacked on narrow screens. Monsters, Access Points and Notes & History are independent collapsed sections. Existing location card filters, tags, room variant buttons and native widgets retained. Opera visual QA pending.
+
+### v0.12.18
+Remove redundant category Wishlist panel (item/quest detail actions remain). Weapons flat-link landing grid. Category search covers native pagination, with on-demand sequential same-origin requests, progress, retry and explicit partial-coverage messaging; matches normalized names and slugs, preserves original filters and links. Regional location overview maps use the same gallery and directory layout as Yulgar. Locations with unusual unsupported markup remain native. Browser QA and exhaustive live category coverage not yet verified.
