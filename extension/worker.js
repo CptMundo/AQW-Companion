@@ -198,7 +198,7 @@ function searchLocalInventory(snapshot,query,location){
 const APPEARANCE_KEY='aqwc-wiki-appearance-v1';
 function normalizeAppearance(value){
  const v=value&&typeof value==='object'?value:{};
- return {background:['companion','light','cas'].includes(v.background)?v.background:'companion',banner:'prometheus',panel:'integrated'};
+ return {background:['companion','dark','light','cas'].includes(v.background)?v.background:'companion',banner:'prometheus',panel:'integrated'};
 }
 
 const GOAL_STATUS='aqwc-goal-status-v1';

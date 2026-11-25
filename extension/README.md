@@ -160,3 +160,18 @@ Settings → Use AQW Companion theme applies the website's effective aqw-safe-re
 
 ### Theme presets (0.12.25)
 Dark Mode (site palette), Light Mode and Cas B Neophyte (community joke: black/green/magenta/purple/cyan). Old saved presets migrate to Dark. Shared banner and integrated panels. The original Wiki content toggle remains available.
+
+### v0.12.26 — Release readiness
+Four distinct presets: Companion (default, site palette), Dark (neutral graphite), Light, Cas B Neophyte. Existing supported choices remain; no additional permissions. Popup offers first-sync guidance only without a snapshot; compact daily Home retains search and links. Directory exact candidates are bounded and stale queries cancelled; current pages enter the session cache. See [Quick start and browser QA matrix](quick-start.md). Real browser QA remains required.
+
+### v0.12.27 — Actual Light Mode
+Light-only surface overrides for native Wiki and Companion panels, navigation, header decorations, item/quest/farm shadows, list cards, shop tables, location/faction surfaces and popup. Explicit light text on dark-literal fallbacks is replaced with dark text; artwork stays unchanged. Corrected malformed card class assignment in shared renderer. No new permissions. Browser verification pending; cross-origin search iframe contents remain outside extension CSS control.
+
+### v0.12.28 — Homepage category icons
+Items and Housing category cards reuse homepage artwork by destination link; relevant child links get smaller icons. Single bounded homepage request, tab-local cache, allowlisted image hosts and existing glyph fallback if art fails. Weapon-specific subcategories keep distinct glyphs where the homepage has no matching icon. Browser verification pending.
+
+### v0.12.29 — Unified light surfaces
+Shared neutral light canvas, white cards, neutral secondary surfaces, readable navigation, search and consistent active/hover states across Wiki and popup. Stronger scoped overrides for native Wiki styles; preserve artwork and other themes. Manual browser visual QA remains pending.
+
+### v0.12.30 — Category icon fix
+Use a bundled transparent 13-tile sprite based on the Wiki homepage artwork supplied in the project screenshots (26 px source tiles). Avoid remote image lookups during category rendering, duplicate root/subcategory icons, and theme-colored icon backgrounds. The Wiki artwork remains attributable to its original authors. Manual visual browser QA pending.

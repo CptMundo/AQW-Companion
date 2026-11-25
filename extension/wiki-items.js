@@ -43,7 +43,7 @@
  const itemTitle=document.createElement('h2');itemTitle.className='aqwc-title';itemTitle.textContent=name;
  const line=document.createElement('div'),note=document.createElement('small');line.className='aqwc-state';note.className='aqwc-meta';note.style.cssText=(globalThis.AQWCTheme?.recolor('display:block;color:#b6cddd;font-weight:400;margin-top:6px')||'display:block;color:#b6cddd;font-weight:400;margin-top:6px');
  line.setAttribute?.('role','status');const heading=document.createElement('div');heading.className='aqwc-item-heading';heading.append(itemTitle,line);card.append(heading,note);shadow.append(card);
- const show=(text,detail,color)=>{line.textContent=text;line.style.color=color;note.textContent=detail;note.hidden=!detail};
+ const show=(text,detail,color)=>{line.textContent=text;line.style.color=globalThis.AQWCTheme?.value(color,'color')||color;note.textContent=detail;note.hidden=!detail};
  const badge=document.getElementById('aqwc-foundation-badge');const mountStatus=()=>{if(ui)ui.mount(host,content,title);else (badge||title).insertAdjacentElement('afterend',host)};
  if(!category){ui?.styleItem?.(content);return}
  // Decorate actual large item illustrations only; preserve the Wiki image/link,

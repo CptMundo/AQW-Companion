@@ -275,7 +275,7 @@ function init(){
    for(const g of groups)for(const {item,text,color} of labels(g,matches)){
     if(!matches.has(item.name))continue;
     const badge=document.createElement('span');badge.setAttribute('data-aqwc-quest-shop-status','');const label=document.createElement('span');label.textContent=' ['+text+']';label.title='AQW Companion local snapshot; not proof of quest or shop eligibility';badge.attachShadow({mode:'closed'}).append(label);
-    label.style.cssText='display:inline-block;margin-left:4px;padding:0 4px;border-radius:4px;background:#142b3e;color:'+color+';font:600 11px/1.5 system-ui';item.anchor.insertAdjacentElement('afterend',badge);
+    label.style.cssText='display:inline-block;margin-left:4px;padding:0 4px;border-radius:4px;background:var(--aqwc-theme-panel2,#142b3e);color:'+(globalThis.AQWCTheme?.value(color,'color')||color)+';font:600 11px/1.5 system-ui';item.anchor.insertAdjacentElement('afterend',badge);
    }
 
   }catch{/* Missing local snapshot or unsupported shop: keep the native table usable. */}

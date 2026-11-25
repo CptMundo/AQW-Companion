@@ -4,7 +4,7 @@
 if(location.origin!=='https://aqwwiki.wikidot.com'||globalThis.AQWCWikiBoot)return;
 const root=document.documentElement;if(!root)return;
 const style=document.createElement('style');style.id='aqwc-first-paint';
-const colors={light:'#eef3f8',companion:'#0b1420',cas:'#000000'};
+const colors={dark:'#101010',light:'#f5f6f8',companion:'#0b1420',cas:'#000000'};
 const paint=color=>{style.textContent='html{background-color:'+color+'!important}html > body{opacity:0!important}'};
 paint(colors.companion);root.append(style);
 let released=false,settled=false,appearance=null,themeDone=false,layoutDone=false,subscribers=[];
