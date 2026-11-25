@@ -169,3 +169,6 @@ Light-only surface overrides for native Wiki and Companion panels, navigation, h
 
 ### v0.12.28 — Homepage category icons
 Items and Housing category cards reuse homepage artwork by destination link; relevant child links get smaller icons. Single bounded homepage request, tab-local cache, allowlisted image hosts and existing glyph fallback if art fails. Weapon-specific subcategories keep distinct glyphs where the homepage has no matching icon. Browser verification pending.
+
+### v0.12.29 — Unified light surfaces
+Shared neutral light canvas, white cards, neutral secondary surfaces, readable navigation, search and consistent active/hover states across Wiki and popup. Stronger scoped overrides for native Wiki styles; preserve artwork and other themes. Manual browser visual QA remains pending.

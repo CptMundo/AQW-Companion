@@ -325,6 +325,7 @@ function categoryIconKey(href,origin){
  try{const u=new URL(href,origin);if(u.origin!==origin||u.search||u.hash)return null;const slug=u.pathname.replace(/^\/|\/$/g,'');const key=categoryAliases[slug]||slug;return homepageItemKinds.has(key)?key:null}catch{return null}
 }
 function categoryImageUrl(src,origin){
+ if(typeof src!=='string'||!src.trim())return null;
  try{const u=new URL(src,origin);if(u.protocol==='http:')u.protocol='https:';if(u.protocol!=='https:'||u.username||u.password)return null;if(!['aqwwiki.wikidot.com','aqwwiki.wdfiles.com','i.imgur.com','imgur.com','static.wikidot.com'].includes(u.hostname))return null;return u.href}catch{return null}
 }
 function homepageIcons(content,origin){

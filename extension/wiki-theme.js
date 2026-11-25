@@ -9,7 +9,7 @@ function normalizeAppearance(value){
  return {background:['companion','dark','light','cas'].includes(v.background)?v.background:'companion',banner:'prometheus',panel:'integrated'};
 }
 
- const palettes={dark:['#101010','#f0f0f0','#dedede'],companion:['#0b1420','#f0f5fb','#69c8e8'],light:['#eef3f8','#172b40','#126387'],cas:['#000000','#39ff14','#39ff14']};
+ const palettes={dark:['#101010','#f0f0f0','#dedede'],companion:['#0b1420','#f0f5fb','#69c8e8'],light:['#f5f6f8','#172b40','#126387'],cas:['#000000','#39ff14','#39ff14']};
  // Original artwork composed locally, with a separate readable wordmark and
  // full-width decorative background. No assets or code from other extensions.
  const svgUrl=svg=>'url("data:image/svg+xml,'+encodeURIComponent(svg)+'")';
