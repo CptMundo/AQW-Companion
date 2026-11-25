@@ -1,6 +1,8 @@
 (()=>{'use strict';
  const ORIGIN='https://aqwwiki.wikidot.com';
- if(location.origin!==ORIGIN||!document.getElementById('page-title')||!document.getElementById('page-content'))return;
+ if(location.origin!==ORIGIN)return;
+ const boot=globalThis.AQWCWikiBoot;
+ if(!document.getElementById('page-title')||!document.getElementById('page-content')){boot?.themeReady();return}
  const APPEARANCE_KEY='aqwc-wiki-appearance-v1';
 function normalizeAppearance(value){
  const v=value&&typeof value==='object'?value:{};
@@ -101,7 +103,7 @@ function normalizeAppearance(value){
   respond({ok:true,bannerTarget:!!target,applied});return false;
  });
  const start=revision;
- chrome.runtime.sendMessage({type:'wiki-appearance-read'},response=>{
-  if(!chrome.runtime.lastError&&response?.ok&&start===revision)apply(response.appearance);
- });
+ const finish=appearance=>{try{if(appearance&&start===revision)apply(appearance)}finally{boot?.themeReady()}};
+ if(boot)boot.read(finish);
+ else chrome.runtime.sendMessage({type:'wiki-appearance-read'},response=>{finish(!chrome.runtime.lastError&&response?.ok?response.appearance:null)});
 })();
