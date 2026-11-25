@@ -391,7 +391,8 @@ assert.match(portrait.plannerArt(active.find(t=>/^Daily Exercise 3:/.test(t.name
 console.log("Planner full-width art, expanded routines and direct library discovery passed.");
 
 const plannerNav=html.slice(html.indexOf('<nav class="tabs subnav"'),html.indexOf('</nav>',html.indexOf('<nav class="tabs subnav"')));
-assert.match(plannerNav,/data-tab="planner" data-parent="planner">📅 My Tracker/);
+assert.match(plannerNav,/data-tab="planner" data-parent="planner">📅 Daily \/ Weekly/);
+assert.match(plannerNav,/data-tab="planner-pinned" data-parent="planner">📌 Pinned Quests/);
 assert.match(plannerNav,/data-tab="planner-discover" data-parent="planner">📚 Quest Library/);
 assert.match(plannerNav,/data-tab="planner-history" data-parent="planner" hidden/);
 assert.ok(plannerCSS.includes('nav.tabs.subnav[aria-label="Section navigation"]:has(button[data-parent="planner"].group-visible:not([hidden])){display:flex!important}'));
@@ -561,4 +562,26 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.ok(rule);
  for(const declaration of ['width:32px!important','height:32px!important','font-size:22px!important','border:1px solid #488b70!important','background:transparent!important','color:#75e3a4!important'])assert.ok(rule[1].includes(declaration),declaration);
  console.log('Home green check: shared palette, accessible label and completion action verified.');
+}
+
+{
+ assert.match(html, /data-group="planner">📅 Quest Tracker<\/button>/);
+ const wishlist=html.match(/<section id="unlocks" class="view">([\s\S]*?)<\/section>/)[1];
+ const pinsView=html.match(/<section id="planner-pinned" class="view">([\s\S]*?)<\/section>/)[1];
+ assert.ok(!wishlist.includes('wiki-pinned-quests'));
+ assert.ok(pinsView.includes('id="wiki-pinned-quest-list"'));
+ assert.equal((html.match(/id="wiki-pinned-quest-list"/g)||[]).length,1);
+ assert.ok(html.includes("const wikiQuestPinKey='aqwc-pinned-wiki-quests-v1'"));
+ const code=html.slice(html.indexOf('const wikiQuestPinKey='),html.indexOf('// Apply explicit popup checks'));
+ const saved=[{name:'Example quest',source:'example-quest',completed:true}];
+ const store={getItem:k=>{assert.equal(k,'aqwc-pinned-wiki-quests-v1');return JSON.stringify(saved)}};
+ const calls=[];
+ const loc={hash:'#aqwc-pinned-quests'};
+ const api=vm.runInNewContext(code+'\n({readWikiQuestPins,openWikiQuestPins})',{localStorage:store,location:loc,selectTab:t=>calls.push(t),$:id=>id==='wiki-pinned-quests'?{scrollIntoView:()=>calls.push('scroll')}:null});
+ assert.equal(JSON.stringify(api.readWikiQuestPins()),JSON.stringify(saved));
+ api.openWikiQuestPins();
+ assert.deepEqual(calls,['planner-pinned','scroll']);
+ loc.hash='#aqwc-open-tracker';api.openWikiQuestPins();
+ assert.equal(calls.length,2);
+ console.log('Pinned quest navigation, legacy deep link and existing storage preserved.');
 }
