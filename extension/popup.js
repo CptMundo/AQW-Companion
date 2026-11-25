@@ -4,6 +4,7 @@
  for(const b of nav)b.addEventListener('click',e=>{if(e.isTrusted)showView(b.dataset.view)});
  for(const b of document.querySelectorAll('[data-go]'))b.addEventListener('click',e=>{if(e.isTrusted){showView(b.dataset.go);nav.find(n=>n.dataset.view===b.dataset.go)?.focus()}});
  showView('home');
+ const theme=globalThis.AQWCTheme,style=document.querySelector('style');if(theme&&style){style.textContent=theme.recolor(style.textContent)+theme.rootCss+"\nhtml[data-aqwc-background=\"companion\"] body{background:linear-gradient(145deg,#0a1420,#0d1926 52%,#101e2b);color:var(--aqwc-theme-txt)}\nhtml[data-aqwc-background=\"companion\"] header,html[data-aqwc-background=\"companion\"] section,html[data-aqwc-background=\"companion\"] details{background:var(--aqwc-theme-panel);border-color:var(--aqwc-theme-line)}\nhtml[data-aqwc-background=\"companion\"] .primary,html[data-aqwc-background=\"companion\"] #quick-search button,html[data-aqwc-background=\"companion\"] .popup-nav button[aria-pressed=\"true\"]{background:var(--aqwc-theme-selected);border-color:var(--aqwc-theme-selectedBorder);color:var(--aqwc-theme-txt)}\nhtml[data-aqwc-background=\"companion\"] :is(input,select){background:var(--aqwc-theme-input)!important;color:var(--aqwc-theme-txt)!important;border-color:var(--aqwc-theme-line)!important}\n";}
  const status=document.getElementById('inventory-summary'),clear=document.getElementById('clear-inventory');
  function send(type){clear.disabled=true;chrome.runtime.sendMessage({type},result=>{
   clear.disabled=false;if(chrome.runtime.lastError||!result?.ok){status.textContent='Could not access local inventory.';return}
@@ -25,8 +26,8 @@
  });
  const bg=document.getElementById('appearance-background'),banner=document.getElementById('appearance-banner'),panel=document.getElementById('appearance-panel'),save=document.getElementById('appearance-save'),reset=document.getElementById('appearance-reset'),feedback=document.getElementById('appearance-status');
  if(bg&&banner&&panel&&save&&reset&&feedback){
-  const fill=v=>{bg.value=v.background;banner.value=v.banner;panel.value=v.panel};
-  const quick=document.getElementById('appearance-prometheus');const enabled=v=>{save.disabled=reset.disabled=!v;if(quick)quick.disabled=!v};
+  const fill=v=>{bg.value=v.background;banner.value=v.banner;panel.value=v.panel;document.documentElement.setAttribute('data-aqwc-background',v.background)};
+  const quick=document.getElementById('appearance-prometheus'),unified=document.getElementById('appearance-companion');const enabled=v=>{save.disabled=reset.disabled=!v;if(quick)quick.disabled=!v;if(unified)unified.disabled=!v};
   async function load(){try{const r=await chrome.runtime.sendMessage({type:'wiki-appearance-read'});if(!r?.ok)throw Error('Could not load preferences');fill(r.appearance);enabled(true);feedback.textContent='Choose a theme and apply.'}catch(err){feedback.textContent=String(err?.message||err)}}
   async function persist(value){
    enabled(false);
@@ -39,6 +40,7 @@
   save.addEventListener('click',e=>{if(e.isTrusted&&!save.disabled)persist({background:bg.value,banner:banner.value,panel:panel.value})});
   reset.addEventListener('click',e=>{if(e.isTrusted&&!reset.disabled)persist({background:'original',banner:'original',panel:'integrated'})});
   if(quick)quick.addEventListener('click',e=>{if(e.isTrusted&&!save.disabled){showView('settings');persist({background:bg.value,banner:'prometheus',panel:panel.value})}});
+  if(unified)unified.addEventListener('click',e=>{if(e.isTrusted&&!unified.disabled)persist({background:'companion',banner:'prometheus',panel:'integrated'})});
   load();
  }
  send('inventory-summary');
