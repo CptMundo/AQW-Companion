@@ -160,3 +160,6 @@ Settings → Use AQW Companion theme applies the website's effective aqw-safe-re
 
 ### Theme presets (0.12.25)
 Dark Mode (site palette), Light Mode and Cas B Neophyte (community joke: black/green/magenta/purple/cyan). Old saved presets migrate to Dark. Shared banner and integrated panels. The original Wiki content toggle remains available.
+
+### v0.12.26 — Release readiness
+Four distinct presets: Companion (default, site palette), Dark (neutral graphite), Light, Cas B Neophyte. Existing supported choices remain; no additional permissions. Popup offers first-sync guidance only without a snapshot; compact daily Home retains search and links. Directory exact candidates are bounded and stale queries cancelled; current pages enter the session cache. See [Quick start and browser QA matrix](quick-start.md). Real browser QA remains required.

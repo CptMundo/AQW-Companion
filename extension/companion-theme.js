@@ -1,5 +1,5 @@
 /* Shared extension theme. Effective tokens from css/site.css, aqw-safe-redesign.
-   Keep original CSS values as fallbacks; only the Companion preset defines these variables. */
+   Keep original CSS values as fallbacks; all four presets define these variables. */
 (()=>{'use strict';
  const tokens=Object.freeze({
   "bg": "#0b1420",
@@ -26,7 +26,8 @@
 });
  const lightTokens=Object.freeze({"bg":"#eef3f8","panel":"#ffffff","panel2":"#e7eef6","line":"#b8c8d8","txt":"#172b40","muted":"#465f75","cyan":"#126387","blue":"#245e9c","gold":"#82530d","green":"#176b48","red":"#a32c45","input":"#f7fafc","nav":"#e4edf6","selected":"#c8e0f4","selectedBorder":"#5586ad","hover":"#dce9f5","table":"#dce7f0","focus":"#276b9e","bgStart":"#f4f7fb","bgMid":"#edf3f8","bgEnd":"#e7eff6"});
  const casTokens=Object.freeze({"bg":"#000000","panel":"#080008","panel2":"#140014","line":"#7e007e","txt":"#39ff14","muted":"#70e64e","cyan":"#39ff14","blue":"#ff00ff","gold":"#ffff00","green":"#39ff14","red":"#ff6978","input":"#080008","nav":"#000000","selected":"#ff00ff","selectedBorder":"#cf00cf","hover":"#220022","table":"#100010","focus":"#00ffff","bgStart":"#000000","bgMid":"#000000","bgEnd":"#000000","buttonText":"#440066"});
- const rootCss='html[data-aqwc-background="companion"]{'+Object.entries(tokens).map(([k,v])=>'--aqwc-theme-'+k+':'+v).join(';')+';color-scheme:dark}'+'html[data-aqwc-background="light"]{'+Object.entries(lightTokens).map(([k,v])=>'--aqwc-theme-'+k+':'+v).join(';')+';color-scheme:light}'+'html[data-aqwc-background="cas"]{'+Object.entries(casTokens).map(([k,v])=>'--aqwc-theme-'+k+':'+v).join(';')+';color-scheme:dark}';
+ const darkTokens=Object.freeze({"bg":"#101010","panel":"#181818","panel2":"#222222","line":"#383838","txt":"#f0f0f0","muted":"#b6b6b6","cyan":"#dedede","blue":"#bdbdbd","gold":"#efc478","green":"#63caa3","red":"#f18c98","input":"#141414","nav":"#151515","selected":"#393939","selectedBorder":"#737373","hover":"#2c2c2c","table":"#252525","focus":"#aaaaaa","bgStart":"#0b0b0b","bgMid":"#101010","bgEnd":"#131313"});
+ const rootCss='html[data-aqwc-background="companion"]{'+Object.entries(tokens).map(([k,v])=>'--aqwc-theme-'+k+':'+v).join(';')+';color-scheme:dark}'+'html[data-aqwc-background="light"]{'+Object.entries(lightTokens).map(([k,v])=>'--aqwc-theme-'+k+':'+v).join(';')+';color-scheme:light}'+'html[data-aqwc-background="cas"]{'+Object.entries(casTokens).map(([k,v])=>'--aqwc-theme-'+k+':'+v).join(';')+';color-scheme:dark}'+'html[data-aqwc-background="dark"]{'+Object.entries(darkTokens).map(([k,v])=>'--aqwc-theme-'+k+':'+v).join(';')+';color-scheme:dark}';
 
  const semantic={'#90edb5':'green','#62dca1':'green','#52d3a2':'green','#ffdb93':'gold','#ffc2a8':'red','#fd8290':'red'};
  function role(hex,prop){
@@ -62,5 +63,5 @@
   return css.replace(/(?<![\w-])(background(?:-color|-image)?|color|border(?:-(?:top|right|bottom|left))?(?:-color)?|outline(?:-color)?|text-decoration-color)\s*:\s*([^;{}]+)/gi,
    (all,prop,body)=>prop+':'+body.replace(/url\([^)]*\)|#[0-9a-f]{6}(?![0-9a-f])/gi,x=>x.startsWith('#')?value(x,prop.toLowerCase()):x));
  }
- globalThis.AQWCTheme=Object.freeze({tokens,lightTokens,casTokens,rootCss,recolor,value});
+ globalThis.AQWCTheme=Object.freeze({tokens,darkTokens,lightTokens,casTokens,rootCss,recolor,value});
 })();
