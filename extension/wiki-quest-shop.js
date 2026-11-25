@@ -191,7 +191,24 @@ function questCards(panel,content,title){
    if(linked.length)try{const result=await chrome.runtime.sendMessage({type:'wiki-material-lookup',names:linked});if(result?.ok&&result.syncedAt&&result.matches?.length===linked.length)linked.forEach((n,i)=>stock.set(n,result.matches[i]))}catch{}
    // One preview per distinct monster on the selected quest; never guess artwork.
    const targets=[...new Map(lists.filter(g=>g.role==='requirement').flatMap(g=>g.rows.flatMap(x=>x.drops)).map(d=>[d.slug,d])).values()].slice(0,6);
-   if(targets.length&&api?.monsterPreview){const strip=document.createElement('div');strip.className='aqwc-quest-targets';body.append(strip);for(const d of targets){const tile=document.createElement('a');tile.className='aqwc-quest-target';tile.href=origin+'/'+d.slug;tile.hidden=true;strip.append(tile);api.monsterPreview(origin,d.slug).then(url=>{const name=document.createElement('span');name.textContent=d.name;const missing=()=>{tile.setAttribute('data-no-image','true');const hint=document.createElement('small');hint.className='aqwc-target-unavailable';hint.textContent='Image unavailable · View Wiki';tile.replaceChildren(name,hint)};if(url){const img=document.createElement('img');img.alt=d.name;img.loading='lazy';img.referrerPolicy='no-referrer';img.addEventListener('error',missing,{once:true});tile.append(img,name);img.src=url}else missing();tile.hidden=false})}}
+
+   const artKey=slug=>'aqwc-monster-art-v1:'+slug;
+   const validArt=s=>typeof s==='string'&&s.length<=420000&&/^data:image\/webp;base64,[A-Za-z0-9+/=]+$/.test(s);
+   async function savedArt(slug){try{const key=artKey(slug),r=await chrome.storage.local.get(key);return validArt(r[key])?r[key]:null}catch{return null}}
+   async function storeArt(slug,file){
+    if(!file||!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>8000000)throw Error('Choose PNG, JPG or WebP under 8 MB');
+    const bitmap=await createImageBitmap(file);try{const scale=Math.min(1,440/Math.max(bitmap.width,bitmap.height)),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);const data=canvas.toDataURL('image/webp',.78);if(!validArt(data))throw Error('Image could not be saved');await chrome.storage.local.set({[artKey(slug)]:data});return data}finally{bitmap.close()}
+   }
+   if(targets.length&&api?.monsterPreview){
+    const strip=document.createElement('div');strip.className='aqwc-quest-targets';body.append(strip);
+    for(const d of targets){
+     const tile=document.createElement('div');tile.className='aqwc-quest-target';tile.hidden=true;strip.append(tile);
+     const name=document.createElement('a');name.href=origin+'/'+d.slug;name.textContent=d.name;
+     const missing=()=>{tile.setAttribute('data-no-image','true');const hint=document.createElement('small');hint.className='aqwc-target-unavailable';hint.textContent='Image unavailable';const upload=document.createElement('button');upload.type='button';upload.className='aqwc-primary aqwc-local-art';upload.textContent='+ Add screenshot';const picker=document.createElement('input');picker.type='file';picker.accept='image/png,image/jpeg,image/webp';picker.hidden=true;upload.addEventListener('click',e=>{if(e.isTrusted)picker.click()});picker.addEventListener('change',async e=>{if(!e.isTrusted)return;try{upload.disabled=true;show(await storeArt(d.slug,picker.files?.[0]),true)}catch(err){hint.textContent=String(err?.message||err);upload.disabled=false}});tile.replaceChildren(name,hint,upload,picker)};
+     function show(url,local=false){if(!url){missing();return}tile.removeAttribute('data-no-image');const img=document.createElement('img');img.alt=d.name;img.loading='lazy';img.referrerPolicy='no-referrer';img.addEventListener('error',missing,{once:true});tile.replaceChildren(img,name);if(local){const remove=document.createElement('button');remove.type='button';remove.className='aqwc-primary aqwc-local-art';remove.textContent='Remove local screenshot';remove.addEventListener('click',async e=>{if(!e.isTrusted)return;try{await chrome.storage.local.remove(artKey(d.slug));missing()}catch{}});tile.append(remove)}img.src=url}
+     savedArt(d.slug).then(local=>local?show(local,true):api.monsterPreview(origin,d.slug).then(url=>show(url))).catch(missing).finally(()=>{tile.hidden=false});
+    }
+   }
    for(const g of lists){
     const section=document.createElement('div');section.className='aqwc-quest-block';const h=document.createElement('strong');h.textContent=g.role==='requirement'?'Objectives':'Rewards';section.append(h);
     for(const x of g.rows){
