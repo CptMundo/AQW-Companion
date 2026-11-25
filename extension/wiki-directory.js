@@ -54,7 +54,7 @@ function mapSections(content){
  const result=[];for(const list of content.children){
   if(!['UL','OL'].includes(list.tagName))continue;
   const heading=list.previousElementSibling;if(!heading||!['P','H2','H3','H4','H5','DIV'].includes(heading.tagName))continue;
-  const name=mapSectionName(heading.textContent);if(!name||heading.querySelector('ul,ol,table,form'))continue;
+  const name=mapSectionName(heading.textContent)||(/^Map Name:/i.test(clean(heading.textContent))&&/Access Points:\s*$/i.test(clean(heading.textContent))?'Access Points':null);if(!name||heading.querySelector('ul,ol,table,form'))continue;
   result.push({name,heading,list});
  }return result;
 }
