@@ -163,3 +163,6 @@ Dark Mode (site palette), Light Mode and Cas B Neophyte (community joke: black/g
 
 ### v0.12.26 — Release readiness
 Four distinct presets: Companion (default, site palette), Dark (neutral graphite), Light, Cas B Neophyte. Existing supported choices remain; no additional permissions. Popup offers first-sync guidance only without a snapshot; compact daily Home retains search and links. Directory exact candidates are bounded and stale queries cancelled; current pages enter the session cache. See [Quick start and browser QA matrix](quick-start.md). Real browser QA remains required.
+
+### v0.12.27 — Actual Light Mode
+Light-only surface overrides for native Wiki and Companion panels, navigation, header decorations, item/quest/farm shadows, list cards, shop tables, location/faction surfaces and popup. Explicit light text on dark-literal fallbacks is replaced with dark text; artwork stays unchanged. Corrected malformed card class assignment in shared renderer. No new permissions. Browser verification pending; cross-origin search iframe contents remain outside extension CSS control.
