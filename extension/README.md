@@ -130,3 +130,6 @@ Move recognized native item artwork galleries intact beside farming; palette hom
 
 ### v0.12.15
 Wars cards with date/name search; apply theme to titleless search pages and style native search controls; recolor computed warm homepage surfaces; section navigation for locations (rooms, monsters, NPCs, quests, shops, access, notes/history) and factions (including combined heading/intro blocks); inline shop inventory control retaining existing lookup. Native nodes and links preserved; no new permissions. Live Opera QA pending, including external Google search styles and varied Wiki markup.
+
+### v0.12.16
+Search landing card: explicit Google site search and exact phrase (new tab), original embedded search and /join/Jump controls retained in disclosure, tag search link. No added permissions. Shop inventory panel not mounted; existing local stock badges checked automatically, no purchase-eligibility inference. Location NPC/quest/shop/monster directory cards with icons, counts and filters; native room variant collapsibles styled horizontally with open panels full-width. Browser QA pending.

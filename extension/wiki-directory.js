@@ -110,7 +110,7 @@ function styleShop(content){
  if(!pageHasCategory('shops')&&!pageHasCategory('merge-shops'))return false;
  const tables=[...content.querySelectorAll('table')].filter(t=>!t.querySelector('table')&&[...t.querySelectorAll('tr')].slice(0,3).some(r=>/\b(?:name|item)\b/i.test(r.textContent)&&/\b(?:price|cost)\b/i.test(r.textContent)));
  if(!tables.length)return false;
- content.classList.add('aqwc-shop-profile');const inventory=document.getElementById('aqwc-quest-shop');if(inventory)content.prepend(inventory);
+ content.classList.add('aqwc-shop-profile');
  const api=globalThis.AQWCWikiMaterials;
  for(const table of tables){const box=document.createElement('div');box.className='aqwc-shop-workspace';table.before(box);box.append(table);
  const preview=document.createElement('aside');preview.className='aqwc-shop-preview';const title=document.createElement('h3');title.textContent='Item preview';const name=document.createElement('a');const status=document.createElement('div');status.className='aqwc-shop-preview-status';status.textContent='Hover over an item or focus its link to preview it.';const art=document.createElement('div');art.className='aqwc-shop-preview-art';preview.append(title,name,status,art);box.append(preview);
@@ -171,9 +171,53 @@ function styleWars(content){
  for(const n of children)if(n.parentElement===content&&n.matches('p,h2,h3,h4,h5')&&/^[A-Z#]$/.test(clean(n.textContent)))n.classList.add('aqwc-war-letter');
  function filter(){const q=clean(input.value).toLowerCase();let visible=0;for(const e of entries){e.card.hidden=!(e.name+' '+e.date).toLowerCase().includes(q);if(!e.card.hidden)visible++}count.textContent=visible+' / '+entries.length+' wars'}input.addEventListener('input',filter);filter();return true;
 }
+function searchUrl(query,exact=false){
+ const value=clean(query);if(!value)return null;
+ const url=new URL('https://www.google.com/search');url.searchParams.set('q','site:aqwwiki.wikidot.com '+(exact?'"'+value.replace(/"/g,'')+'"':value));return url.href;
+}
+function setupSearch(content){
+ if(!/^\/search(?::main)?\/?$/.test(location.pathname.replace(/%3a/ig,':')))return;
+ const frames=[...content.querySelectorAll('iframe')];if(!frames.length)return;
+ const original=document.createElement('details');original.className='aqwc-search-original';const disclosure=document.createElement('summary');disclosure.textContent='Original Wiki search · exact name / Jump / embedded Google';original.append(disclosure);
+ const nodes=[...content.childNodes];original.append(...nodes);
+ const hero=document.createElement('section');hero.className='aqwc-search-hero';const heading=document.createElement('h1');heading.textContent='Search the AQW Wiki';const desc=document.createElement('p');desc.textContent='Find items, classes, quests, monsters and locations.';
+ const form=document.createElement('form');form.className='aqwc-search-form';const field=document.createElement('input');field.type='search';field.placeholder='Search the Wiki…';field.required=true;field.setAttribute('aria-label','Wiki search query');const submit=document.createElement('button');submit.type='submit';submit.textContent='Search Wiki';form.append(field,submit);
+ const actions=document.createElement('div');actions.className='aqwc-search-actions';const exact=document.createElement('button');exact.type='button';exact.textContent='Exact phrase';exact.addEventListener('click',()=>{if(!field.reportValidity())return;const url=searchUrl(field.value,true);if(url)window.open(url,'_blank','noopener,noreferrer')});
+ const native=document.createElement('button');native.type='button';native.textContent='Exact name / Jump';native.addEventListener('click',()=>{original.open=true;original.scrollIntoView({block:'nearest'})});actions.append(exact,native);
+ const tag=[...original.querySelectorAll('a[href]')].find(a=>/search items by tag/i.test(clean(a.textContent)));if(tag){const a=document.createElement('a');a.href=tag.href;a.textContent='Search Items by Tag';actions.append(a)}
+ const hint=document.createElement('small');hint.textContent='Search Wiki and Exact phrase open Google results limited to the AQW Wiki. For the original exact-name and /join tools, choose Exact name / Jump.';
+ form.addEventListener('submit',e=>{e.preventDefault();const url=searchUrl(field.value);if(url)window.open(url,'_blank','noopener,noreferrer')});
+ hero.append(heading,desc,form,actions,hint);content.append(hero,original);
+}
+function decorateMapCards(content){
+ const glyphs={NPCs:'♟',Quests:'▤',Shops:'◇',Monsters:'⚔'};
+ for(const card of content.querySelectorAll('.aqwc-map-tab-card')){
+  const name=mapSectionName(card.firstElementChild?.textContent);if(!glyphs[name])continue;
+  const list=card.querySelector(':scope > ul,:scope > ol');if(!list)continue;
+  const rows=[...list.children].filter(n=>n.tagName==='LI');if(!rows.length)continue;
+  list.classList.add('aqwc-map-entry-grid');card.classList.add('aqwc-map-directory-card');
+  for(const row of rows){const a=[...row.querySelectorAll('a[href]')].find(a=>clean(a.textContent));if(!a)continue;const tags=coloredBadges(a);const mark=document.createElement('span');mark.className='aqwc-map-glyph';mark.setAttribute('aria-hidden','true');mark.textContent=glyphs[name];row.prepend(mark);
+   const label=document.createElement('div');label.className='aqwc-map-entry-label';for(const node of [...row.childNodes])if(node!==mark)label.append(node);row.append(label);
+   if(tags.length){const badges=document.createElement('div');badges.className='aqwc-map-tags';badges.append(...tags);label.append(badges);
+    // Hide only recognized original tag images; retain all links and any other annotations.
+    for(const img of label.querySelectorAll('img')){const key=(img.getAttribute('alt')||'')+' '+(img.getAttribute('src')||'');if(/(?:ac|legend|rare|seasonal|special|pseudo|free)(?:small|large)|(?:^|\s)(?:AC|Legend|Rare|Seasonal|Pseudo-Rare|Special Offer)(?:\s|$)/i.test(key))img.classList.add('aqwc-map-native-tag')}
+   }
+  }
+  const bar=document.createElement('div');bar.className='aqwc-map-entry-toolbar';const count=document.createElement('span');count.textContent=rows.length+' '+name.toLowerCase();bar.append(count);
+  if(rows.length>=5){const filter=document.createElement('input');filter.type='search';filter.placeholder='Find '+name.toLowerCase()+'…';filter.setAttribute('aria-label','Filter '+name);bar.prepend(filter);filter.addEventListener('input',()=>{const q=clean(filter.value).toLowerCase();let n=0;for(const row of rows){row.hidden=!clean(row.textContent).toLowerCase().includes(q);if(!row.hidden)n++}count.textContent=n+' / '+rows.length+' '+name.toLowerCase()})}
+  list.before(bar);
+ }
+}
+function layoutRoomVariants(content){
+ const blocks=[...content.querySelectorAll('.aqwc-room-gallery .collapsible-block,.aqwc-map-tab-card .yui-navset .collapsible-block')];
+ for(const block of blocks){const folded=block.querySelector(':scope > .collapsible-block-folded'),unfolded=block.querySelector(':scope > .collapsible-block-unfolded');if(!folded||!unfolded)continue;
+  block.classList.add('aqwc-room-variant');const update=()=>{block.classList.toggle('aqwc-room-variant-open',!unfolded.hidden&&getComputedStyle(unfolded).display!=='none')};update();
+  if(typeof MutationObserver==='function'){const observer=new MutationObserver(update);observer.observe(unfolded,{attributes:true,attributeFilter:['style','class','hidden']});observer.observe(folded,{attributes:true,attributeFilter:['style','class','hidden']})}
+ }
+}
 function styleSearch(content){
  const path=location.pathname.replace(/%3a/ig,':').replace(/\/$/,'');if(!/^\/(?:search(?:[-:][a-z0-9-]+)?|system:search)$/.test(path))return false;
- content.classList.add('aqwc-search-profile');document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');return true;
+ content.classList.add('aqwc-search-profile');document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');setupSearch(content);return true;
 }
 function paletteHome(content){
  const warm=(value)=>{const m=String(value||'').match(/^rgba?\(\s*(\d+),\s*(\d+),\s*(\d+)/);if(!m)return false;const [r,g,b]=m.slice(1).map(Number);return r>g+7&&r>b+8};
@@ -187,7 +231,7 @@ function paletteHome(content){
 }
 function init(){
  if(location.origin!=='https://aqwwiki.wikidot.com')return;const kind=indexKind(location.pathname),content=document.getElementById('page-content');if(!content||document.getElementById('aqwc-directory-v2'))return;
- if(!kind){if(styleHome(content)){paletteHome(content);return}if(styleSearch(content)||styleWars(content)||styleFactionV2(content)||styleShop(content))return;if(styleMap(content)){moveRoomGallery(content);mapNavigation(content);return}styleMonster(content);return}
+ if(!kind){if(styleHome(content)){paletteHome(content);return}if(styleSearch(content)||styleWars(content)||styleFactionV2(content)||styleShop(content))return;if(styleMap(content)){moveRoomGallery(content);mapNavigation(content);decorateMapCards(content);layoutRoomVariants(content);return}styleMonster(content);return}
  if(kind==='categories'){
   const list=[...content.children].find(el=>el.tagName==='UL'&&el.children.length>=3);if(!list)return;content.classList.add('aqwc-directory','aqwc-category-index');list.classList.add('aqwc-category-grid');document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');for(const li of list.children){const sub=li.querySelector('ul'),a=li.querySelector('a');if(!sub)li.classList.add('aqwc-category-leaf');if(sub&&sub.children.length>=6)li.classList.add('aqwc-category-wide');if(a){a.classList.add('aqwc-category-title');const glyph=document.createElement('span');glyph.className='aqwc-category-glyph';glyph.setAttribute('aria-hidden','true');glyph.textContent=({'armors':'♜','classes':'✦','weapons':'⚔','helmets-hoods':'◈','pets':'✧','housing':'⌂','enhancements':'◇'})[(a.getAttribute('href')||'').replace(/^\//,'')]||'◆';a.prepend(glyph)}}return;
  }
@@ -223,6 +267,6 @@ function styleMonster(content){
  content.classList.add('aqwc-monster-profile');if(node.parentElement!==content)return;
  const wrap=document.createElement('section');wrap.className='aqwc-monster-art';const heading=document.createElement('h3');heading.textContent='Monster artwork';const next=node.nextElementSibling;wrap.append(heading,node);if(next&&/^Thanks to\b/i.test(clean(next.textContent)))wrap.append(next);content.prepend(wrap);
 }
-globalThis.AQWCDirectory=Object.freeze({indexKind,rowName,runs,entry,directoryEntries,letter,mapSectionName,mapSections,tagLabels,nameTags,factionName,factionHeading});
+globalThis.AQWCDirectory=Object.freeze({indexKind,rowName,runs,entry,directoryEntries,letter,mapSectionName,mapSections,tagLabels,nameTags,factionName,factionHeading,searchUrl});
 if(typeof document!=='undefined'){try{init()}finally{globalThis.AQWCWikiBoot?.layoutReady()}}
 })();
