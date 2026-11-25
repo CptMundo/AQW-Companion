@@ -151,3 +151,6 @@ Quest details open automatically on arrival (linked quest hash when recognized, 
 
 ### v0.12.22
 Compact extension popup with Home (inventory search and links), Sync (guided export/import), Settings (appearance and advanced tools). Existing data handling and permissions unchanged. Theme synchronization is deferred.
+
+### v0.12.23
+Set a 420px intrinsic popup width on both html and body; remove the viewport-relative body cap that can shrink browser action popups. No functional or permission changes. Verify actual width in Opera.
