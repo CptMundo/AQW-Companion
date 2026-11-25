@@ -50,3 +50,6 @@ Use a clean browser profile and a separate existing-profile upgrade. Record brow
 | Slow or offline Wiki | Existing entries usable, partial coverage honest, retry available |
 
 No live-browser pass is implied by this checklist.
+
+## v0.12.31 stability regression matrix
+Automated: coalesced directory updates, preview request deduplication and retry cooldown, cache timestamp validation, existing foundation checks. Manual (not yet performed): fresh profile/no inventory; upgrade preserving storage; rapid search typing and clear; category pages with failed pagination; hover away and return after failed artwork; four themes on homepage, item, quest, location, shop and search; sync, Wishlist and quest pin in Chrome, Opera, Edge. No timing claims until measured in a real browser. Record browser/version, page URL, expected/actual behavior and screenshot for failures.

@@ -277,6 +277,8 @@ async function lookupExactDirectory(query,path,origin,signal,onMatch){
  }));
  return results.find(Boolean)||null;
 }
+// Coalesce bursts of network results into a single render per frame.
+function coalescedUpdate(callback,schedule){let pending=false;return ()=>{if(pending)return;pending=true;schedule(()=>{pending=false;callback()})}}
 function pageNumber(path){return Number(String(path).match(/\/p\/([1-9]\d*)\/?$/)?.[1]||1)}
 function paginationLinks(content,origin,path){
  const root=directoryPath(path),out=new Set();
@@ -289,7 +291,7 @@ function paginationLinks(content,origin,path){
 }
 function directoryCacheKey(path,n){return 'aqwc-directory-v3:'+path+':'+n}
 function readDirectoryCache(origin,path,n){
- try{const saved=JSON.parse(sessionStorage.getItem(directoryCacheKey(path,n))||'null');if(!saved||Date.now()-saved.at>20*60*1000||!Array.isArray(saved.entries)||!saved.entries.length||saved.entries.length>3000||!Array.isArray(saved.pages))return null;
+ try{const saved=JSON.parse(sessionStorage.getItem(directoryCacheKey(path,n))||'null');if(!saved||!Number.isFinite(saved.at)||saved.at>Date.now()||Date.now()-saved.at>20*60*1000||!Array.isArray(saved.entries)||!saved.entries.length||saved.entries.length>3000||!Array.isArray(saved.pages))return null;
  const entries=saved.entries.filter(r=>{try{const u=new URL(r.url);return u.origin===origin&&/^\/[a-z0-9][a-z0-9-]{0,199}\/?$/.test(u.pathname)&&!u.search&&!u.hash&&typeof r.name==='string'&&r.name.length<=300&&Array.isArray(r.tags)&&r.tags.every(x=>typeof x==='string'&&x.length<=30)}catch{return false}});if(entries.length!==saved.entries.length)return null;
  return {entries,pages:saved.pages.filter(p=>Number.isInteger(p)&&p>=1&&p<=200)};
  }catch{return null}
@@ -421,10 +423,10 @@ function init(){
  const filters=document.createElement('div');filters.className='aqwc-index-filters';const nativeCrumb=content.querySelector('#breadcrumbs,.breadcrumbs,#breadcrumb,.breadcrumb');if(nativeCrumb){const trail=document.createElement('div');trail.className='aqwc-index-trail';for(const a of nativeCrumb.querySelectorAll('a[href]')){const link=document.createElement('a');link.href=a.href;link.textContent=clean(a.textContent);trail.append(link,document.createTextNode(' › '))}trail.append(document.createTextNode(document.getElementById('page-title')?.textContent.trim()||''));host.append(trail)}
  for(const a of content.querySelectorAll('a[href]')){const href=a.getAttribute('href')||'';if(!/^(?:\/|https:\/\/aqwwiki\.wikidot\.com\/)sort-by-[a-z0-9-]+\/?$/.test(href)||!clean(a.textContent))continue;const link=document.createElement('a');link.href=a.href;link.textContent=clean(a.textContent);filters.append(link)}
  const alphabet=document.createElement('div');alphabet.className='aqwc-index-alphabet';const body=document.createElement('div');const groups=new Map();for(const row of rows){const l=letter(row.name);if(!groups.has(l))groups.set(l,[]);groups.get(l).push(row)}
- let active='All',page=1;const perPage=96;
+ let active='All',page=1;const perPage=96;let sortedRows=null,alphabetKey='';
  const knownPages=new Set(paginationLinks(content,location.origin,location.pathname)),loadedPages=new Set([pageNumber(location.pathname)]),rowKeys=new Set(rows.map(r=>r.url+'\n'+r.name));let loading=false,failed=false,searchTimer=null,exactRevision=0,exactController=null,exactPending=false;
  const coverage=document.createElement('div');coverage.className='aqwc-index-coverage';const coverageText=document.createElement('span');coverageText.setAttribute('role','status');const load=document.createElement('button');load.type='button';load.textContent='Load all Wiki pages';coverage.append(coverageText,load);
- function mergePage(result,n){for(const p of result.pages)knownPages.add(p);for(const r of result.entries){const key=r.url+'\n'+r.name;if(rowKeys.has(key))continue;rowKeys.add(key);rows.push(r);const l=letter(r.name);if(!groups.has(l))groups.set(l,[]);groups.get(l).push(r)}if(n)loadedPages.add(n)}
+ function mergePage(result,n){for(const p of result.pages)knownPages.add(p);for(const r of result.entries){const key=r.url+'\n'+r.name;if(rowKeys.has(key))continue;rowKeys.add(key);rows.push(r);sortedRows=null;const l=letter(r.name);if(!groups.has(l))groups.set(l,[]);groups.get(l).push(r)}if(n)loadedPages.add(n)}
  function hydrateCached(){for(const n of knownPages){if(loadedPages.has(n))continue;const cached=readDirectoryCache(location.origin,directoryPath(location.pathname),n);if(cached)mergePage(cached,n)}}
  function updateCoverage(){const remaining=[...knownPages].filter(n=>!loadedPages.has(n)).length;load.hidden=!remaining;load.disabled=loading;load.textContent=loading?'Loading…':failed?'Retry remaining Wiki pages':'Load all Wiki pages';coverageText.textContent=loading?'Loading Wiki pages · '+loadedPages.size+' / '+knownPages.size:remaining?(failed?'Partial search · some Wiki pages failed. ':'Current Wiki page only · ')+remaining+' more pages to load':knownPages.size?'All discovered Wiki pages loaded · '+loadedPages.size+' pages':'All entries on this Wiki page';}
  async function loadAll(){
@@ -442,7 +444,7 @@ function init(){
      failed=[...knownPages].some(p=>!loadedPages.has(p)&&(attempts.get(p)||0)>=2);
      updateCoverage();
      // Display a matching entry immediately, even while other pages are still downloading.
-     updateAlphabet();render();
+     scheduleResults();
     }));
     await new Promise(resolve=>setTimeout(resolve,100));
    }
@@ -450,17 +452,18 @@ function init(){
  }
  writeDirectoryCache(directoryPath(location.pathname),pageNumber(location.pathname),{entries:rows,pages:[...knownPages]});hydrateCached();load.addEventListener('click',loadAll);updateCoverage();
  const nav=document.createElement('div');nav.className='aqwc-index-pager';const prev=document.createElement('button'),next=document.createElement('button'),pageLabel=document.createElement('span');prev.textContent='← Previous';next.textContent='Next →';prev.type=next.type='button';nav.append(prev,pageLabel,next);
- function updateAlphabet(){const keys=['All',...['#',...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].filter(l=>groups.has(l))];alphabet.replaceChildren();
+ function updateAlphabet(){const keys=['All',...['#',...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].filter(l=>groups.has(l))];const key=keys.join(',');if(key===alphabetKey)return;alphabetKey=key;alphabet.replaceChildren();
  for(const l of keys){const b=document.createElement('button');b.type='button';b.textContent=l;b.dataset.letter=l;b.addEventListener('click',()=>{active=l;page=1;render()});alphabet.append(b)}}updateAlphabet();
  function render(){
-  const q=clean(search.value),filtered=rows.filter(r=>(active==='All'||letter(r.name)===active)&&matchesDirectory(r,q)).sort((a,b)=>a.name.localeCompare(b.name));
+  const q=clean(search.value);if(!sortedRows)sortedRows=rows.slice().sort((a,b)=>a.name.localeCompare(b.name));const filtered=sortedRows.filter(r=>(active==='All'||letter(r.name)===active)&&matchesDirectory(r,q));
   const pages=Math.max(1,Math.ceil(filtered.length/perPage));page=Math.min(page,pages);status.textContent=filtered.length.toLocaleString()+' / '+rows.length.toLocaleString()+' entries';for(const b of alphabet.children)b.setAttribute('aria-pressed',String(b.dataset.letter===active));
   body.replaceChildren();const visible=filtered.slice((page-1)*perPage,page*perPage);const sectionGroups=new Map();for(const r of visible){const l=letter(r.name);if(!sectionGroups.has(l))sectionGroups.set(l,[]);sectionGroups.get(l).push(r)}
-  for(const [l,group] of sectionGroups){const section=document.createElement('section');section.className='aqwc-index-section';const title=document.createElement('h3');title.textContent=l;const grid=document.createElement('div');grid.className='aqwc-index-grid';for(const r of group){const a=document.createElement('a');a.className='aqwc-index-entry';a.href=r.url;const name=document.createElement('span');name.textContent=r.name.replace(/\s*\((?:0\s*AC|AC|Non-AC|Legend|Seasonal|Rare|Pseudo-Rare|Special Offer|Free Player)\)/gi,'').trim()||r.name;const badges=document.createElement('span');badges.className='aqwc-index-badges';badges.append(...coloredBadges(r.anchor,r.tags));a.append(name,badges);grid.append(a)}section.append(title,grid);body.append(section)}
+  for(const [l,group] of sectionGroups){const section=document.createElement('section');section.className='aqwc-index-section';const title=document.createElement('h3');title.textContent=l;const grid=document.createElement('div');grid.className='aqwc-index-grid';for(const r of group){const a=document.createElement('a');a.className='aqwc-index-entry';a.href=r.url;const name=document.createElement('span');name.textContent=r.name.replace(/\s*\((?:0\s*AC|AC|Non-AC|Legend|Seasonal|Rare|Pseudo-Rare|Special Offer|Free Player)\)/gi,'').trim()||r.name;const badges=document.createElement('span');badges.className='aqwc-index-badges';if(!r.tags)r.tags=directoryTags(r.anchor);badges.append(...coloredBadges(r.anchor,r.tags));a.append(name,badges);grid.append(a)}section.append(title,grid);body.append(section)}
   if(!visible.length){const p=document.createElement('p');p.textContent=exactPending?'Checking exact item name…':loading?'Searching remaining Wiki pages…':[...knownPages].some(n=>!loadedPages.has(n))?'No matches in loaded pages. Load remaining Wiki pages to finish searching.':'No matching entries.';body.append(p)}
   prev.disabled=page===1;next.disabled=page===pages;pageLabel.textContent='Page '+page+' / '+pages;nav.hidden=pages===1;
  }
- search.addEventListener('input',()=>{active='All';page=1;render();clearTimeout(searchTimer);exactController?.abort();exactPending=false;render();const q=clean(search.value),rev=++exactRevision;if(q.length>=2){hydrateCached();updateAlphabet();updateCoverage();render();searchTimer=setTimeout(()=>{if(q.length>=4&&!rows.some(r=>searchKey(r.name)===searchKey(q))&&exactCandidates(q,directoryPath(location.pathname)).length){exactController=new AbortController();exactPending=true;render();lookupExactDirectory(q,directoryPath(location.pathname),location.origin,exactController.signal,r=>{if(rev!==exactRevision)return;mergePage({entries:[r],pages:[]});updateAlphabet();render()}).finally(()=>{if(rev===exactRevision){exactPending=false;render()}})}loadAll()},180)}});prev.addEventListener('click',()=>{page--;render();toolbar.scrollIntoView({block:'nearest'})});next.addEventListener('click',()=>{page++;render();toolbar.scrollIntoView({block:'nearest'})});
+ const scheduleResults=coalescedUpdate(()=>{updateAlphabet();render()},cb=>typeof requestAnimationFrame==='function'?requestAnimationFrame(cb):setTimeout(cb,16));
+ search.addEventListener('input',()=>{active='All';page=1;clearTimeout(searchTimer);exactController?.abort();exactPending=false;const q=clean(search.value),rev=++exactRevision;if(q.length>=2){hydrateCached();updateAlphabet();updateCoverage();render();searchTimer=setTimeout(()=>{if(q.length>=4&&!rows.some(r=>searchKey(r.name)===searchKey(q))&&exactCandidates(q,directoryPath(location.pathname)).length){exactController=new AbortController();exactPending=true;render();lookupExactDirectory(q,directoryPath(location.pathname),location.origin,exactController.signal,r=>{if(rev!==exactRevision)return;mergePage({entries:[r],pages:[]});updateAlphabet();render()}).finally(()=>{if(rev===exactRevision){exactPending=false;render()}})}loadAll()},180)}else render()});prev.addEventListener('click',()=>{page--;render();toolbar.scrollIntoView({block:'nearest'})});next.addEventListener('click',()=>{page++;render();toolbar.scrollIntoView({block:'nearest'})});
  host.append(toolbar,coverage,filters,alphabet,body,nav);content.before(host);content.classList.add('aqwc-index-source');render();document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');document.getElementById('aqwc-list-wishlist')?.remove();
 }
 function styleMonster(content){
@@ -472,6 +475,6 @@ function styleMonster(content){
  content.classList.add('aqwc-monster-profile');if(node.parentElement!==content)return;
  const wrap=document.createElement('section');wrap.className='aqwc-monster-art';const heading=document.createElement('h3');heading.textContent='Monster artwork';const next=node.nextElementSibling;wrap.append(heading,node);if(next&&/^Thanks to\b/i.test(clean(next.textContent)))wrap.append(next);content.prepend(wrap);
 }
-globalThis.AQWCDirectory=Object.freeze({indexKind,rowName,runs,entry,directoryEntries,letter,mapSectionName,mapSections,tagLabels,nameTags,factionName,factionHeading,searchUrl,isMapOverviewSection,directoryPath,searchKey,matchesDirectory,paginationLinks,pageNumber,exactCandidates,lookupExactDirectory,readWikiHtml,categoryIconKey,categoryImageUrl,homepageIcons,categorySpriteIndex,addCategoryIcon,categorySubIcons});
+globalThis.AQWCDirectory=Object.freeze({indexKind,rowName,runs,entry,directoryEntries,letter,mapSectionName,mapSections,tagLabels,nameTags,factionName,factionHeading,searchUrl,isMapOverviewSection,directoryPath,searchKey,matchesDirectory,paginationLinks,pageNumber,exactCandidates,lookupExactDirectory,readWikiHtml,categoryIconKey,categoryImageUrl,homepageIcons,categorySpriteIndex,addCategoryIcon,categorySubIcons,coalescedUpdate});
 if(typeof document!=='undefined'){try{init()}finally{globalThis.AQWCWikiBoot?.layoutReady()}}
 })();
