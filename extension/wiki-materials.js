@@ -192,6 +192,19 @@
   if(monsterRequests>=64)return Promise.resolve([]);monsterRequests++;
   const p=monsterQueue.then(()=>loadDocument(origin,slug)).then(doc=>monsterImages(doc,origin,slug)).catch(()=>[]);monsterQueue=p.then(()=>{});monsterCache.set(slug,p);return p;
  }
+ const itemArtCache=new Map();let itemArtRequests=0,itemArtQueue=Promise.resolve();
+ function itemImages(doc,origin,slug){
+  const crumb=doc.querySelector('#breadcrumbs,.breadcrumbs,#breadcrumb,.breadcrumb'),content=doc.querySelector('#page-content');
+  if(!content||![...(crumb?.querySelectorAll('a[href]')||[])].some(a=>sourceLink(a,origin)?.slug==='items'))return [];
+  const headings=[...content.querySelectorAll('strong,b')].filter(el=>/^(?:Description|Rarity|Base Damage|Sellback|Notes?)\s*:/i.test(String(el.textContent||'').trim()));
+  const last=headings[headings.length-1];if(!last)return [];
+  const urls=[];for(const img of content.querySelectorAll('img[src]')){
+   if(!(last.compareDocumentPosition(img)&4)||img.closest('li,table,.page-rate-widget-box'))continue;
+   const src=img.getAttribute('src')||'';if(/(?:badge|icon|(?:ac|legend|rare|seasonal)(?:small|large))\.(?:png|gif|jpe?g)/i.test(src))continue;
+   try{const u=new URL(src,origin+'/'+slug);if(u.protocol==='http:')u.protocol='https:';if(u.protocol!=='https:'||u.username||u.password||!/\.(png|gif|jpe?g|webp)$/i.test(u.pathname)||!(u.hostname==='aqwwiki.wikidot.com'||u.hostname.endsWith('.wdfiles.com')||u.hostname==='i.imgur.com'))continue;const w=Number(img.getAttribute('width')),h=Number(img.getAttribute('height'));if((w>0&&w<90)||(h>0&&h<75))continue;urls.push(u.href)}catch{}
+  }return [...new Set(urls)].slice(0,4);
+ }
+ function itemPreview(origin,slug){if(itemArtCache.has(slug))return itemArtCache.get(slug);if(itemArtRequests>=48)return Promise.resolve([]);itemArtRequests++;const p=itemArtQueue.then(()=>loadDocument(origin,slug)).then(doc=>itemImages(doc,origin,slug)).catch(()=>[]);itemArtQueue=p.then(()=>{});itemArtCache.set(slug,p);return p}
  async function loadRecipe(origin,slug){
    const doc=await loadDocument(origin,slug),content=doc.querySelector('#page-content'),url=origin+'/'+slug;
    const body=String(content?.textContent||'');
@@ -349,5 +362,5 @@
   }
   draw();lookup().catch(()=>{statusLine.textContent='Inventory unavailable. Sync in Companion and refresh this page.'}).finally(()=>{busy=false;draw()});return panel;
  }
- globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources,mapCommand,joinControl,recipeLabel,sourceLink,compactData,monsterPreview,monsterImage,monsterImages});
+ globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources,mapCommand,joinControl,recipeLabel,sourceLink,compactData,monsterPreview,monsterImage,monsterImages,itemImages,itemPreview});
 })();
