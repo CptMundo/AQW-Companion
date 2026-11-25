@@ -337,7 +337,7 @@ function init(){
   loading=true;failed=false;updateCoverage();render();const attempts=new Map();
   try{
    while(true){
-    const batch=[...knownPages].sort((a,b)=>a-b).filter(n=>!loadedPages.has(n)&&(attempts.get(n)||0)<2).slice(0,3);
+    const batch=[...knownPages].filter(n=>!loadedPages.has(n)&&(attempts.get(n)||0)<2).sort((a,b)=>(attempts.get(a)||0)-(attempts.get(b)||0)||a-b).slice(0,3);
     if(!batch.length)break;
     await Promise.all(batch.map(async n=>{
      attempts.set(n,(attempts.get(n)||0)+1);
