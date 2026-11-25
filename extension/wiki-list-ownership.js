@@ -90,15 +90,15 @@ function init(){
  if(location.origin!==origin||!category||document.getElementById('aqwc-list-wishlist'))return;
  const content=document.getElementById('page-content'),title=document.getElementById('page-title');if(!content||!title)return;
  const host=document.createElement('div');host.id='aqwc-list-wishlist';host.style.cssText='margin:8px 0';
- const shadow=host.attachShadow({mode:'closed'}),panel=document.createElement('div');panel.style.cssText='display:inline-block;padding:8px 12px;border:1px solid #38566d;border-radius:8px;background:#142b3e;color:#e5f5ff;font:600 13px/1.5 system-ui;max-width:100%;box-sizing:border-box';
+ const shadow=host.attachShadow({mode:'closed'}),panel=document.createElement('div');panel.style.cssText=(globalThis.AQWCTheme?.recolor('display:inline-block;padding:8px 12px;border:1px solid #38566d;border-radius:8px;background:#142b3e;color:#e5f5ff;font:600 13px/1.5 system-ui;max-width:100%;box-sizing:border-box')||'display:inline-block;padding:8px 12px;border:1px solid #38566d;border-radius:8px;background:#142b3e;color:#e5f5ff;font:600 13px/1.5 system-ui;max-width:100%;box-sizing:border-box');
  const ui=globalThis.AQWCWikiUI;ui?.decorate(shadow,panel,'Wishlist');if(ui)panel.style.cssText='max-width:460px';
  const heading=document.createElement('strong');heading.textContent='Wishlist search';
- const note=document.createElement('small');note.style.cssText='display:block;font-weight:400;color:#b6cddd';note.textContent='Find an item on this page and add it directly. No ownership scan.';
+ const note=document.createElement('small');note.style.cssText=(globalThis.AQWCTheme?.recolor('display:block;font-weight:400;color:#b6cddd')||'display:block;font-weight:400;color:#b6cddd');note.textContent='Find an item on this page and add it directly. No ownership scan.';
  const controls=document.createElement('div');controls.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-top:5px';
- const search=document.createElement('input');search.type='search';search.placeholder='Item name';search.setAttribute('aria-label','Find item for Wishlist');search.style.cssText='padding:5px;background:#101d2c;border:1px solid #466781;border-radius:4px;color:#e5f5ff';
- function btn(text){const b=document.createElement('button');b.type='button';b.textContent=text;b.style.cssText='padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;cursor:pointer';return b}
+ const search=document.createElement('input');search.type='search';search.placeholder='Item name';search.setAttribute('aria-label','Find item for Wishlist');search.style.cssText=(globalThis.AQWCTheme?.recolor('padding:5px;background:#101d2c;border:1px solid #466781;border-radius:4px;color:#e5f5ff')||'padding:5px;background:#101d2c;border:1px solid #466781;border-radius:4px;color:#e5f5ff');
+ function btn(text){const b=document.createElement('button');b.type='button';b.textContent=text;b.style.cssText=(globalThis.AQWCTheme?.recolor('padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;cursor:pointer')||'padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;cursor:pointer');return b}
  const find=btn('Find item'),results=document.createElement('div');results.style.cssText='max-height:240px;overflow:auto;margin-top:6px';
- const status=document.createElement('small');status.setAttribute('role','status');status.style.cssText='display:block;color:#b6cddd;font-weight:400';
+ const status=document.createElement('small');status.setAttribute('role','status');status.style.cssText=(globalThis.AQWCTheme?.recolor('display:block;color:#b6cddd;font-weight:400')||'display:block;color:#b6cddd;font-weight:400');
  controls.append(search,find);panel.append(heading,note,controls,status,results);shadow.append(panel);(document.getElementById('aqwc-foundation-badge')||title).insertAdjacentElement('afterend',host);
  let groups=null;const queued=new Set();
  function renderSearch(){
@@ -107,7 +107,7 @@ function init(){
   const hits=groups.filter(g=>g.name.toLowerCase().includes(query));status.textContent=hits.length?hits.length+' matching items'+(hits.length>40?' · first 40':''):groups.length?'No matching items.':'No supported item links detected on this index.';
   for(const g of hits.slice(0,40)){
    const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:6px;margin:4px 0';
-   const data={name:g.name,slug:[...g.slugs][0],category},a=document.createElement('a');a.href=origin+'/'+data.slug;a.textContent=g.name;a.style.color='#a9ddff';row.append(a);
+   const data={name:g.name,slug:[...g.slugs][0],category},a=document.createElement('a');a.href=origin+'/'+data.slug;a.textContent=g.name;a.style.color=(globalThis.AQWCTheme?.value('#a9ddff','color')||'#a9ddff');row.append(a);
    const target=globalThis.AQWCWikiWishlist?.target(data);
    if(g.slugs.size===1&&target&&!target.variant){
     const b=btn(queued.has(data.slug)?'✓':'+');b.disabled=queued.has(data.slug);b.title='Add to Wishlist without leaving Wiki';b.setAttribute('aria-label','Add '+data.name+' to Wishlist');
