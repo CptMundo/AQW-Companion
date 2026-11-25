@@ -133,3 +133,6 @@ Wars cards with date/name search; apply theme to titleless search pages and styl
 
 ### v0.12.16
 Search landing card: explicit Google site search and exact phrase (new tab), original embedded search and /join/Jump controls retained in disclosure, tag search link. No added permissions. Shop inventory panel not mounted; existing local stock badges checked automatically, no purchase-eligibility inference. Location NPC/quest/shop/monster directory cards with icons, counts and filters; native room variant collapsibles styled horizontally with open panels full-width. Browser QA pending.
+
+### v0.12.17
+Location overview keeps the native room gallery, NPCs, quests and shops visible on arrival, side-by-side on wide screens and stacked on narrow screens. Monsters, Access Points and Notes & History are independent collapsed sections. Existing location card filters, tags, room variant buttons and native widgets retained. Opera visual QA pending.
