@@ -163,3 +163,8 @@ nav.tabs.subnav[aria-label="Section navigation"]:has(button[data-parent="planner
 .planner-quest-actions .planner-complete-action.is-complete:hover:not(:disabled),.planner-quest-actions .planner-pin-action.is-pinned:hover{color:#ffe0e0;background:#66323b;border-color:#f29a9a}
 .planner-quest-actions .planner-complete-action:focus-visible{outline:2px solid #8edcff;outline-offset:2px}
 .planner-quest-actions .planner-complete-action:disabled{opacity:.45;cursor:not-allowed}
+
+/* Home activity: same green completion action as the recurring quest tracker. */
+#homeactivities .home-complete-action{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;flex:none;width:27px;min-width:27px;height:27px;min-height:27px;padding:0!important;border:1px solid #488b70;background:#245a46;color:#b6f4d1;border-radius:6px;font-size:15px!important;font-weight:800}
+#homeactivities .home-complete-action:hover:not(:disabled){color:#e3ffed;background:#2e7055;border-color:#75e3a4}
+#homeactivities .home-complete-action:focus-visible{outline:2px solid #8edcff;outline-offset:2px}
