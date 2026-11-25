@@ -142,3 +142,6 @@ Remove redundant category Wishlist panel (item/quest detail actions remain). Wea
 
 ### v0.12.19
 Farming Progress readability: larger item/source text, explicit missing quantities, per-material progress meters, clearer source labels and copy controls, direct-ingredient completion percentage, responsive rows and visually separated expanded recipes. No changes to inventory allocation or acquisition data.
+
+### v0.12.20
+Category search: bounded batches of three, automatic retry per failed page, 20-minute per-tab cache of successfully parsed pages, progressive results and explicit incomplete coverage. Farming: parse physical HTML lines so Location/Price/Notes are distinct; show structured quest, drop, merge, shop and location acquisition cards with source links and verified map commands. Never treat Used in notes as acquisition. Opera and live Wiki performance need visual verification.
