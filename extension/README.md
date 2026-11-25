@@ -154,3 +154,6 @@ Compact extension popup with Home (inventory search and links), Sync (guided exp
 
 ### v0.12.23
 Set a 420px intrinsic popup width on both html and body; remove the viewport-relative body cap that can shrink browser action popups. No functional or permission changes. Verify actual width in Opera.
+
+### v0.12.24
+Settings → Use AQW Companion theme applies the website's effective aqw-safe-redesign palette to the Wiki and popup. Shared semantic CSS variables flow into closed shadow roots; original styles remain fallbacks for other presets. Existing saved settings remain unchanged until selection. This is a bundled palette, not live remote theme synchronization. No permission or inventory changes.

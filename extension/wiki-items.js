@@ -37,11 +37,11 @@
  const host=document.createElement('div');host.id='aqwc-item-status';
  host.style.cssText='display:block;margin:8px 0;max-width:100%';
  const shadow=host.attachShadow({mode:'closed'});
- const card=document.createElement('div');card.style.cssText='display:inline-block;max-width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid #38566d;border-radius:8px;background:#142b3e;color:#e5f5ff;font:600 13px/1.5 system-ui,sans-serif;';
+ const card=document.createElement('div');card.style.cssText=(globalThis.AQWCTheme?.recolor('display:inline-block;max-width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid #38566d;border-radius:8px;background:#142b3e;color:#e5f5ff;font:600 13px/1.5 system-ui,sans-serif;')||'display:inline-block;max-width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid #38566d;border-radius:8px;background:#142b3e;color:#e5f5ff;font:600 13px/1.5 system-ui,sans-serif;');
  const ui=globalThis.AQWCWikiUI;ui?.decorate(shadow,card,'Item overview');
  if(ui)card.style.cssText='';
  const itemTitle=document.createElement('h2');itemTitle.className='aqwc-title';itemTitle.textContent=name;
- const line=document.createElement('div'),note=document.createElement('small');line.className='aqwc-state';note.className='aqwc-meta';note.style.cssText='display:block;color:#b6cddd;font-weight:400;margin-top:6px';
+ const line=document.createElement('div'),note=document.createElement('small');line.className='aqwc-state';note.className='aqwc-meta';note.style.cssText=(globalThis.AQWCTheme?.recolor('display:block;color:#b6cddd;font-weight:400;margin-top:6px')||'display:block;color:#b6cddd;font-weight:400;margin-top:6px');
  line.setAttribute?.('role','status');const heading=document.createElement('div');heading.className='aqwc-item-heading';heading.append(itemTitle,line);card.append(heading,note);shadow.append(card);
  const show=(text,detail,color)=>{line.textContent=text;line.style.color=color;note.textContent=detail;note.hidden=!detail};
  const badge=document.getElementById('aqwc-foundation-badge');const mountStatus=()=>{if(ui)ui.mount(host,content,title);else (badge||title).insertAdjacentElement('afterend',host)};
@@ -57,8 +57,8 @@
  const actionable=!!target&&!target.variant;
  if(actionable){
   const actions=document.createElement('div');actions.className='aqwc-actions';
-  const link=document.createElement('button');link.type='button';link.className='aqwc-primary';link.textContent='+ Add to Wishlist';link.style.cssText='display:inline-block;margin-top:8px;padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;font:600 12px system-ui;cursor:pointer';
-  const wishlistNote=document.createElement('small');wishlistNote.style.cssText='display:block;color:#b6cddd;font-weight:400;margin-top:3px';
+  const link=document.createElement('button');link.type='button';link.className='aqwc-primary';link.textContent='+ Add to Wishlist';link.style.cssText=(globalThis.AQWCTheme?.recolor('display:inline-block;margin-top:8px;padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;font:600 12px system-ui;cursor:pointer')||'display:inline-block;margin-top:8px;padding:5px 9px;border:1px solid #67bcdf;border-radius:6px;background:#214e70;color:#e5f7ff;font:600 12px system-ui;cursor:pointer');
+  const wishlistNote=document.createElement('small');wishlistNote.style.cssText=(globalThis.AQWCTheme?.recolor('display:block;color:#b6cddd;font-weight:400;margin-top:3px')||'display:block;color:#b6cddd;font-weight:400;margin-top:3px');
   if(target.variant){link.disabled=true;wishlistNote.textContent='Ambiguous item variant; direct addition is not supported.'}
   link.addEventListener('click',async e=>{
    if(!e.isTrusted||link.disabled)return;
@@ -73,7 +73,7 @@
   async function readGoal(){if(document.hidden)return;try{const r=await chrome.runtime.sendMessage({type:'goal-status-read',query:{kind:'item',name:target.name||name}});if(!r?.ok)return;if(r.state==='saved'){queued=false;goal.textContent='In Wishlist · '+r.progress+'% tracked · last synced '+new Date(r.at).toLocaleTimeString();link.textContent='✓ In Wishlist';link.disabled=true}else if(r.state==='absent'&&!queued&&!target.variant){goal.textContent='Wishlist status · last synced '+new Date(r.at).toLocaleTimeString();link.textContent='+ Add to Wishlist';link.disabled=false}else if(r.state==='unknown'){goal.textContent='Wishlist status unavailable · open Companion to sync'}}catch{}}
   link.addEventListener('click',e=>{if(e.isTrusted)queued=true});actions.append(link,wishlistNote,goal);readGoal();window.addEventListener('focus',readGoal);const goalTimer=setInterval(readGoal,10000);window.addEventListener('pagehide',()=>clearInterval(goalTimer),{once:true});
   const href=!target.variant?globalThis.AQWCWikiWishlist?.build(item):null;
-  if(href){const view=document.createElement('a');view.href=href;view.target='_blank';view.rel='noopener noreferrer';view.textContent='View in Wishlist ↗';view.style.cssText='display:inline-block;margin-top:5px;color:#a9ddff;font:600 11px system-ui';actions.append(view)}
+  if(href){const view=document.createElement('a');view.href=href;view.target='_blank';view.rel='noopener noreferrer';view.textContent='View in Wishlist ↗';view.style.cssText=(globalThis.AQWCTheme?.recolor('display:inline-block;margin-top:5px;color:#a9ddff;font:600 11px system-ui')||'display:inline-block;margin-top:5px;color:#a9ddff;font:600 11px system-ui');actions.append(view)}
   card.append(actions);
  }
  let farming,aligned=false;try{const api=globalThis.AQWCWikiMaterials;farming=api?.render(card,content,location.origin);if(farming)aligned=!!ui?.mountFarm?.(farming,content,shadow);if(stackable&&api){const slug=location.pathname.replace(/^\/|\/$/g,'');api.renderSources(card,api.mergeSources(api.parseSources(content,location.origin),api.reviewedSources(slug)),location.origin,slug,{partial:!!api.reviewedSources(slug)})}}catch{console.warn('AQW Companion: material progress unavailable on this page.')}
