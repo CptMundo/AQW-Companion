@@ -3483,12 +3483,47 @@ function renderWikiQuestPins(){
  }catch(err){root.append(node('p','Could not read saved quest pins.','muted tiny'))}
 }
 function openWikiQuestPins(){if(location.hash==='#aqwc-pinned-quests'){selectTab('unlocks');renderWikiQuestPins();$('wiki-pinned-quests')?.scrollIntoView({block:'start'});}}
+// Apply explicit popup checks only to currently pinned recurring tasks in the matching reset period.
+function applyExtensionRoutineChecks(planner,entries,now=new Date()){
+ if(!planner||!Array.isArray(planner.pinned)||!planner.checks||typeof planner.checks!=='object'||Array.isArray(planner.checks))throw Error('Invalid tracker');
+ const pins=planner.pinned,checks={...planner.checks},results=[];let changed=false;
+ for(const e of entries){
+  if(typeof e?.id!=='string'||e.id.length>64)continue;
+  let status='invalid';
+  if(typeof e.taskId==='string'&&/^[a-zA-Z0-9_-]{1,150}$/.test(e.taskId)&&['daily','weekly'].includes(e.freq)&&typeof e.done==='boolean'){
+   const period=taskPeriod(e.freq,now);
+   if(e.period!==period)status='reset';
+   else{
+    const matches=pins.filter(t=>t.id===e.taskId&&t.freq===e.freq&&routineIsRecurring(t));
+    if(matches.length!==1)status='missing';
+    else{
+     const t=taskCatalog.find(x=>x.id===e.taskId&&x.freq===e.freq)||matches[0],key=period+'|'+e.taskId;
+     const conflict=e.done&&t.exclusiveGroup&&taskCatalog.some(x=>x.id!==t.id&&x.exclusiveGroup===t.exclusiveGroup&&x.freq===t.freq&&checks[period+'|'+x.id]===true);
+     if(conflict)status='conflict';else{status='saved';if((checks[key]===true)!==e.done){checks[key]=e.done;changed=true}}
+    }
+   }
+  }
+  results.push({id:e.id,status});
+ }
+ return {checks,results,changed};
+}
 function initWikiWishlistQueue(){
  const root=$('wiki-wishlist-review'),api=window.AQWCWikiWishlist,key='aqw-companion-unlocks',channel='aqwc-wishlist-queue-v1';
  if(!root||!api)return;
  window.addEventListener('message',e=>{
   if(e.source!==window||e.origin!==location.origin||location.origin!=='https://cptmundo.github.io'||!['/AQW-Companion/','/AQW-Companion/index.html'].includes(location.pathname))return;
-  const m=e.data;if(m?.channel===channel&&m.type==='status-request'&&typeof m.nonce==='string'&&/^[a-f0-9]{32}$/.test(m.nonce)){try{const projects=JSON.parse(localStorage.getItem(key)||'[]'),pins=readWikiQuestPins();if(!Array.isArray(projects))return;const goals=projects.slice(0,500).map(p=>({name:p.name,progress:Math.max(0,Math.min(100,Math.round(owned(p.name)?100:projectProgress(p).trackedPct)))}));window.postMessage({channel,type:'status-response',nonce:m.nonce,status:{goals,pins:pins.slice(0,500).map(p=>({name:p.name,source:p.source,completed:p.completed===true})),complete:projects.length<=500&&pins.length<=500}},location.origin)}catch{}return}
+  const m=e.data;
+  if(m?.channel===channel&&m.type==='routine-check-entries'&&typeof m.nonce==='string'&&/^[a-f0-9]{32}$/.test(m.nonce)&&Array.isArray(m.entries)&&m.entries.length<=250){
+   try{
+    const planner=JSON.parse(localStorage.getItem(plannerKey)||'{"pinned":[],"checks":{}}');
+    const result=applyExtensionRoutineChecks(planner,m.entries);
+    if(result.changed)localStorage.setItem(plannerKey,JSON.stringify({...planner,checks:result.checks}));
+    pinnedTasks=planner.pinned;taskChecks=result.checks;
+    try{renderPlanner();renderHomeInsights();renderCleanupAlerts()}catch(err){console.warn('Routine checks saved; redraw failed',err)}
+    window.postMessage({channel,type:'routine-check-saved',nonce:m.nonce,results:result.results},location.origin);
+   }catch(err){console.warn('Pending routine checks retained',err)}return;
+  }
+  if(m?.channel===channel&&m.type==='status-request'&&typeof m.nonce==='string'&&/^[a-f0-9]{32}$/.test(m.nonce)){try{const projects=JSON.parse(localStorage.getItem(key)||'[]'),pins=readWikiQuestPins();if(!Array.isArray(projects))return;const goals=projects.slice(0,500).map(p=>({name:p.name,progress:Math.max(0,Math.min(100,Math.round(owned(p.name)?100:projectProgress(p).trackedPct)))}));window.postMessage({channel,type:'status-response',nonce:m.nonce,status:{goals,pins:pins.slice(0,500).map(p=>({name:p.name,source:p.source,completed:p.completed===true})),complete:projects.length<=500&&pins.length<=500}},location.origin)}catch{}return}
   if(m?.channel!==channel||m.type!=='entries'||typeof m.nonce!=='string'||!/^[a-f0-9]{32}$/.test(m.nonce)||!Array.isArray(m.entries)||m.entries.length>200)return;
   // Use latest persisted projects, not a stale tab copy. Never clear on parse error.
   try{
@@ -3526,6 +3561,8 @@ function initWikiWishlistQueue(){
  });
  window.addEventListener('storage',e=>{if(e.key===key){loadUnlocks();try{renderUnlocks();renderHomeInsights();renderHomeInventoryChanges();renderStackAlerts()}catch(err){console.warn(err)}}});
  renderWikiQuestPins();openWikiQuestPins();window.addEventListener('hashchange',openWikiQuestPins);window.addEventListener('storage',e=>{if(e.key===wikiQuestPinKey)renderWikiQuestPins()});
+ window.addEventListener('storage',e=>{if(e.key===plannerKey){loadPlanner();try{renderPlanner();renderHomeInsights();renderCleanupAlerts()}catch(err){console.warn(err)}}});
+ root.dataset.routineCheckReady='1';
  root.dataset.queueReady='1';
 }
 
