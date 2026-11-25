@@ -262,7 +262,7 @@ async function readWikiHtml(r){
  const reader=r.body?.getReader();if(!reader)throw Error('Missing response');let size=0,html='';const decoder=new TextDecoder();
  try{while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>4000000){await reader.cancel();throw Error('Page too large')}html+=decoder.decode(value,{stream:true})}return html+decoder.decode()}finally{reader.releaseLock()}
 }
-async function lookupExactDirectory(query,path,origin,signal){
+async function lookupExactDirectory(query,path,origin,signal,onMatch){
  if(origin!=='https://aqwwiki.wikidot.com'||signal?.aborted)return null;
  const candidates=exactCandidates(query,path);
  const results=await Promise.all(candidates.map(async slug=>{
@@ -272,7 +272,7 @@ async function lookupExactDirectory(query,path,origin,signal){
    if(!title||!content||!matchesDirectory({name:title,url},query)||!([searchKey(title),searchKey(title.replace(/\s*\([^)]*\)$/,''))].includes(searchKey(query))))return null;
    const links=[...t.content.querySelectorAll('#breadcrumbs a[href],#breadcrumb a[href],.breadcrumbs a[href],.breadcrumb a[href]')];
    if(!links.some(a=>{try{const u=new URL(a.getAttribute('href'),origin);return u.origin===origin&&directoryPath(u.pathname)===path}catch{return false}}))return null;
-   return {name:title,url,tags:nameTags(title)};
+   const match={name:title,url,tags:nameTags(title)};if(!signal?.aborted)onMatch?.(match);return match;
   }catch{return null}finally{clearTimeout(timer);signal?.removeEventListener('abort',cancel)}
  }));
  return results.find(Boolean)||null;
@@ -390,7 +390,7 @@ function init(){
   if(!visible.length){const p=document.createElement('p');p.textContent=exactPending?'Checking exact item name…':loading?'Searching remaining Wiki pages…':[...knownPages].some(n=>!loadedPages.has(n))?'No matches in loaded pages. Load remaining Wiki pages to finish searching.':'No matching entries.';body.append(p)}
   prev.disabled=page===1;next.disabled=page===pages;pageLabel.textContent='Page '+page+' / '+pages;nav.hidden=pages===1;
  }
- search.addEventListener('input',()=>{active='All';page=1;render();clearTimeout(searchTimer);exactController?.abort();exactPending=false;render();const q=clean(search.value),rev=++exactRevision;if(q.length>=2){hydrateCached();updateAlphabet();updateCoverage();render();searchTimer=setTimeout(()=>{if(q.length>=4&&!rows.some(r=>searchKey(r.name)===searchKey(q))&&exactCandidates(q,directoryPath(location.pathname)).length){exactController=new AbortController();exactPending=true;render();lookupExactDirectory(q,directoryPath(location.pathname),location.origin,exactController.signal).then(r=>{if(rev!==exactRevision)return;if(r){mergePage({entries:[r],pages:[]});updateAlphabet()}}).finally(()=>{if(rev===exactRevision){exactPending=false;render()}})}loadAll()},180)}});prev.addEventListener('click',()=>{page--;render();toolbar.scrollIntoView({block:'nearest'})});next.addEventListener('click',()=>{page++;render();toolbar.scrollIntoView({block:'nearest'})});
+ search.addEventListener('input',()=>{active='All';page=1;render();clearTimeout(searchTimer);exactController?.abort();exactPending=false;render();const q=clean(search.value),rev=++exactRevision;if(q.length>=2){hydrateCached();updateAlphabet();updateCoverage();render();searchTimer=setTimeout(()=>{if(q.length>=4&&!rows.some(r=>searchKey(r.name)===searchKey(q))&&exactCandidates(q,directoryPath(location.pathname)).length){exactController=new AbortController();exactPending=true;render();lookupExactDirectory(q,directoryPath(location.pathname),location.origin,exactController.signal,r=>{if(rev!==exactRevision)return;mergePage({entries:[r],pages:[]});updateAlphabet();render()}).finally(()=>{if(rev===exactRevision){exactPending=false;render()}})}loadAll()},180)}});prev.addEventListener('click',()=>{page--;render();toolbar.scrollIntoView({block:'nearest'})});next.addEventListener('click',()=>{page++;render();toolbar.scrollIntoView({block:'nearest'})});
  host.append(toolbar,coverage,filters,alphabet,body,nav);content.before(host);content.classList.add('aqwc-index-source');render();document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');document.getElementById('aqwc-list-wishlist')?.remove();
 }
 function styleMonster(content){
@@ -402,6 +402,6 @@ function styleMonster(content){
  content.classList.add('aqwc-monster-profile');if(node.parentElement!==content)return;
  const wrap=document.createElement('section');wrap.className='aqwc-monster-art';const heading=document.createElement('h3');heading.textContent='Monster artwork';const next=node.nextElementSibling;wrap.append(heading,node);if(next&&/^Thanks to\b/i.test(clean(next.textContent)))wrap.append(next);content.prepend(wrap);
 }
-globalThis.AQWCDirectory=Object.freeze({indexKind,rowName,runs,entry,directoryEntries,letter,mapSectionName,mapSections,tagLabels,nameTags,factionName,factionHeading,searchUrl,isMapOverviewSection,directoryPath,searchKey,matchesDirectory,paginationLinks,pageNumber,exactCandidates});
+globalThis.AQWCDirectory=Object.freeze({indexKind,rowName,runs,entry,directoryEntries,letter,mapSectionName,mapSections,tagLabels,nameTags,factionName,factionHeading,searchUrl,isMapOverviewSection,directoryPath,searchKey,matchesDirectory,paginationLinks,pageNumber,exactCandidates,lookupExactDirectory,readWikiHtml});
 if(typeof document!=='undefined'){try{init()}finally{globalThis.AQWCWikiBoot?.layoutReady()}}
 })();

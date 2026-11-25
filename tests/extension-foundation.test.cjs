@@ -727,4 +727,17 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
 
 {const d=vm.runInNewContext(read('extension/wiki-directory.js')+'\nAQWCDirectory',{URL});assert.equal(JSON.stringify(d.exactCandidates('Necrotic Sword of Doom','/swords')),'["necrotic-sword-of-doom","necrotic-sword-of-doom-sword"]');assert.equal(JSON.stringify(d.exactCandidates('Infernal Flame Pyromancer','/armors')),'["infernal-flame-pyromancer","infernal-flame-pyromancer-armor"]');assert.equal(d.exactCandidates('Example','/sort-by-rare-swords').length,0);}
 
-{const html=read('extension/popup.html'),js=read('extension/popup.js'),directory=read('extension/wiki-directory.js');assert.ok(html.includes('id="first-sync" hidden'));assert.ok(html.includes('quick-start.md'));assert.ok(js.includes('searchPanel.hidden=empty'));assert.ok(directory.includes('exactController?.abort()'));assert.ok(directory.includes('readWikiHtml(r)'));assert.ok(directory.includes('hydrateCached();load.addEventListener'));assert.ok(read('extension/quick-start.md').includes('Browser QA before public release'));}
+{const html=read('extension/popup.html'),js=read('extension/popup.js'),directory=read('extension/wiki-directory.js');assert.ok(html.includes('id="first-sync" hidden'));assert.ok(html.includes('quick-start.html'));assert.ok(js.includes('searchPanel.hidden=empty'));assert.ok(directory.includes('exactController?.abort()'));assert.ok(directory.includes('readWikiHtml(r)'));assert.ok(directory.includes('hydrateCached();load.addEventListener'));assert.ok(read('extension/quick-start.md').includes('Browser QA before public release'));}
+
+(async()=>{
+ const origin='https://aqwwiki.wikidot.com',enc=new TextEncoder(),dec=new TextDecoder();
+ let title='Necrotic Sword of Doom (Sword)',category='/swords',requests=0;
+ const ctx={URL,AbortController,TextDecoder,setTimeout,clearTimeout,document:{createElement:()=>({content:{querySelector:s=>s==='#page-title'?{textContent:title}:s==='#page-content'?{}:null,querySelectorAll:()=>[{getAttribute:()=>category}]}})},fetch:async()=>{requests++;return {ok:true,headers:{get:()=> 'text/html'},body:{getReader:()=>{let read=false;return {read:async()=>read?{done:true}:(read=true,{done:false,value:enc.encode('<html>fixture</html>')}),releaseLock(){}}}}}}};
+ const api=vm.runInNewContext(read('extension/wiki-directory.js')+'\nAQWCDirectory',ctx);
+ let matches=[];const result=await api.lookupExactDirectory('Necrotic Sword of Doom','/swords',origin,new AbortController().signal,r=>matches.push(r));
+ assert.equal(result.name,title);assert.ok(matches.length>=1);assert.equal(requests,2);
+ category='/armors';matches=[];assert.equal(await api.lookupExactDirectory('Necrotic Sword of Doom','/swords',origin,new AbortController().signal,r=>matches.push(r)),null);assert.equal(matches.length,0);
+ const controller=new AbortController();controller.abort();const before=requests;assert.equal(await api.lookupExactDirectory('Necrotic Sword of Doom','/swords',origin,controller.signal),null);assert.equal(requests,before);
+ let cancelled=false,released=false;await assert.rejects(api.readWikiHtml({body:{getReader:()=>({read:async()=>({done:false,value:new Uint8Array(4000001)}),cancel:async()=>{cancelled=true},releaseLock(){released=true}})}}),/Page too large/);assert.ok(cancelled&&released);
+ console.log('Exact directory search: category validation, cancellation, early results and bounded response passed.');
+})().catch(e=>{console.error(e);process.exitCode=1});
