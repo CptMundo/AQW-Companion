@@ -53,12 +53,14 @@ function tagLabels(value){
  for(const m of String(value||'').matchAll(re)){const k=m[0].toLowerCase().replace(/[\s-]/g,'');const label=({pseudorare:'Pseudo-Rare',specialoffer:'Special Offer',nonac:'Non-AC','0ac':'0 AC',adventurecoin:'AC',seasonal:'Seasonal',legend:'Legend',rare:'Rare',freeplayer:'Free Player',ac:'AC'})[k];if(label&&!labels.includes(label))labels.push(label)}return labels;
 }
 function nameTags(name){const labels=[];for(const m of name.matchAll(/\((0\s*AC|AC|Non-AC|Legend|Seasonal|Rare|Pseudo-Rare|Special Offer|Free Player)\)/gi))for(const label of tagLabels(m[1]))if(!labels.includes(label))labels.push(label);return labels}
-function coloredBadges(a){
+function directoryTags(a){
  const labels=new Set(nameTags(clean(a.textContent)));
  for(const n of badgeNodes(a)){const src=n.getAttribute('src')||'',alt=n.getAttribute('alt')||'';for(const label of tagLabels(alt||n.textContent))labels.add(label);
   const key=src.split('/').pop().replace(/\.(png|gif|jpe?g|webp).*$/i,'').replace(/(?:small|large)$/i,'');for(const label of tagLabels(key.replace(/_/g,' ')))labels.add(label);
  }
- return [...labels].map(label=>{const b=document.createElement('span');b.className='aqwc-tag';b.dataset.kind=label.toLowerCase().replace(/[^a-z0-9]+/g,'-');b.textContent=label;return b});
+ return [...labels];
+}
+function coloredBadges(a,stored){return (stored||directoryTags(a)).map(label=>{const b=document.createElement('span');b.className='aqwc-tag';b.dataset.kind=label.toLowerCase().replace(/[^a-z0-9]+/g,'-');b.textContent=label;return b});
 }
 function letter(name){const c=name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').charAt(0).toUpperCase();return /^[A-Z]$/.test(c)?c:'#'}
 function mapSectionName(value){const name=clean(value).replace(/:\s*$/,'').toLowerCase();return ({monsters:'Monsters',npcs:'NPCs',quests:'Quests',shops:'Shops',locations:'Locations','access points':'Access Points'})[name]||null}
@@ -261,14 +263,25 @@ function paginationLinks(content,origin,path){
  const max=Math.max(0,...out);if(max)for(let n=1;n<=max;n++)out.add(n);
  return [...out].sort((a,b)=>a-b);
 }
+function directoryCacheKey(path,n){return 'aqwc-directory-v3:'+path+':'+n}
+function readDirectoryCache(origin,path,n){
+ try{const saved=JSON.parse(sessionStorage.getItem(directoryCacheKey(path,n))||'null');if(!saved||Date.now()-saved.at>20*60*1000||!Array.isArray(saved.entries)||!saved.entries.length||saved.entries.length>3000||!Array.isArray(saved.pages))return null;
+ const entries=saved.entries.filter(r=>{try{const u=new URL(r.url);return u.origin===origin&&/^\/[a-z0-9][a-z0-9-]{0,199}\/?$/.test(u.pathname)&&!u.search&&!u.hash&&typeof r.name==='string'&&r.name.length<=300&&Array.isArray(r.tags)&&r.tags.every(x=>typeof x==='string'&&x.length<=30)}catch{return false}});if(entries.length!==saved.entries.length)return null;
+ return {entries,pages:saved.pages.filter(p=>Number.isInteger(p)&&p>=1&&p<=200)};
+ }catch{return null}
+}
+function writeDirectoryCache(path,n,result){
+ try{sessionStorage.setItem(directoryCacheKey(path,n),JSON.stringify({at:Date.now(),entries:result.entries.map(r=>({name:r.name,url:r.url,tags:r.tags||directoryTags(r.anchor)})),pages:result.pages}))}catch{}
+}
 async function fetchDirectoryPage(origin,path,n){
  if(origin!=='https://aqwwiki.wikidot.com'||!/^\/[a-z0-9-]+$/.test(path)||!Number.isInteger(n)||n<1||n>200)throw Error('Invalid directory page');
- const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+ const cached=readDirectoryCache(origin,path,n);if(cached)return cached;
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);
  try{const url=origin+path+(n===1?'':'/p/'+n),r=await fetch(url,{credentials:'omit',redirect:'error',referrerPolicy:'no-referrer',signal:controller.signal});if(!r.ok||!String(r.headers.get('content-type')).includes('text/html'))throw Error('Wiki page unavailable');
   const reader=r.body?.getReader();if(!reader)throw Error('Missing response');let size=0,html='';const decoder=new TextDecoder();
   try{while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>4000000){await reader.cancel();throw Error('Page too large')}html+=decoder.decode(value,{stream:true})}html+=decoder.decode()}finally{reader.releaseLock()}
   const t=document.createElement('template');t.innerHTML=html;const content=t.content.querySelector('#page-content');if(!content)throw Error('Missing directory');
-  const entries=directoryEntries(content,origin);if(!entries.length)throw Error('No entries parsed');return {entries,pages:paginationLinks(content,origin,path)};
+  const entries=directoryEntries(content,origin);if(!entries.length)throw Error('No entries parsed');const result={entries:entries.map(r=>({name:r.name,url:r.url,tags:directoryTags(r.anchor)})),pages:paginationLinks(content,origin,path)};writeDirectoryCache(path,n,result);return result;
  }finally{clearTimeout(timer)}
 }
 const weaponKinds=new Set('axes bows daggers gauntlets guns handguns maces polearms rifles staffs swords wands whips'.split(' '));
@@ -318,8 +331,30 @@ function init(){
  let active='All',page=1;const perPage=96;
  const knownPages=new Set(paginationLinks(content,location.origin,location.pathname)),loadedPages=new Set([pageNumber(location.pathname)]),rowKeys=new Set(rows.map(r=>r.url+'\n'+r.name));let loading=false,failed=false,searchTimer=null;
  const coverage=document.createElement('div');coverage.className='aqwc-index-coverage';const coverageText=document.createElement('span');coverageText.setAttribute('role','status');const load=document.createElement('button');load.type='button';load.textContent='Load all Wiki pages';coverage.append(coverageText,load);
- function updateCoverage(){const remaining=[...knownPages].filter(n=>!loadedPages.has(n)).length;load.hidden=!remaining;load.disabled=loading;load.textContent=failed?'Retry remaining Wiki pages':'Load all Wiki pages';coverageText.textContent=loading?'Loading Wiki pages · '+loadedPages.size+' / '+knownPages.size:remaining?(failed?'Partial search · some Wiki pages failed. ':'Current Wiki page only · ')+remaining+' more pages to load':knownPages.size?'All discovered Wiki pages loaded · '+loadedPages.size+' pages':'All entries on this Wiki page';}
- async function loadAll(){if(loading||![...knownPages].some(n=>!loadedPages.has(n)))return;loading=true;failed=false;updateCoverage();const attempted=new Set();try{while(true){const n=[...knownPages].sort((a,b)=>a-b).find(n=>!loadedPages.has(n)&&!attempted.has(n));if(n===undefined)break;attempted.add(n);try{const result=await fetchDirectoryPage(location.origin,directoryPath(location.pathname),n);for(const p of result.pages)knownPages.add(p);for(const r of result.entries){const key=r.url+'\n'+r.name;if(rowKeys.has(key))continue;rowKeys.add(key);rows.push(r);const l=letter(r.name);if(!groups.has(l))groups.set(l,[]);groups.get(l).push(r)}loadedPages.add(n);updateAlphabet();render();}catch{failed=true}updateCoverage();await new Promise(resolve=>setTimeout(resolve,120))}}finally{loading=false;updateCoverage();render()}}
+ function updateCoverage(){const remaining=[...knownPages].filter(n=>!loadedPages.has(n)).length;load.hidden=!remaining;load.disabled=loading;load.textContent=loading?'Loading…':failed?'Retry remaining Wiki pages':'Load all Wiki pages';coverageText.textContent=loading?'Loading Wiki pages · '+loadedPages.size+' / '+knownPages.size:remaining?(failed?'Partial search · some Wiki pages failed. ':'Current Wiki page only · ')+remaining+' more pages to load':knownPages.size?'All discovered Wiki pages loaded · '+loadedPages.size+' pages':'All entries on this Wiki page';}
+ async function loadAll(){
+  if(loading||![...knownPages].some(n=>!loadedPages.has(n)))return;
+  loading=true;failed=false;updateCoverage();render();const attempts=new Map();
+  try{
+   while(true){
+    const batch=[...knownPages].sort((a,b)=>a-b).filter(n=>!loadedPages.has(n)&&(attempts.get(n)||0)<2).slice(0,3);
+    if(!batch.length)break;
+    await Promise.all(batch.map(async n=>{
+     attempts.set(n,(attempts.get(n)||0)+1);
+     try{const result=await fetchDirectoryPage(location.origin,directoryPath(location.pathname),n);
+      for(const p of result.pages)knownPages.add(p);
+      for(const r of result.entries){const key=r.url+'\n'+r.name;if(rowKeys.has(key))continue;rowKeys.add(key);rows.push(r);const l=letter(r.name);if(!groups.has(l))groups.set(l,[]);groups.get(l).push(r)}
+      loadedPages.add(n);
+     }catch{}
+     failed=[...knownPages].some(p=>!loadedPages.has(p)&&(attempts.get(p)||0)>=2);
+     updateCoverage();
+     // Display a matching entry immediately, even while other pages are still downloading.
+     updateAlphabet();render();
+    }));
+    await new Promise(resolve=>setTimeout(resolve,250));
+   }
+  }finally{loading=false;failed=[...knownPages].some(n=>!loadedPages.has(n));updateCoverage();render()}
+ }
  load.addEventListener('click',loadAll);updateCoverage();
  const nav=document.createElement('div');nav.className='aqwc-index-pager';const prev=document.createElement('button'),next=document.createElement('button'),pageLabel=document.createElement('span');prev.textContent='← Previous';next.textContent='Next →';prev.type=next.type='button';nav.append(prev,pageLabel,next);
  function updateAlphabet(){const keys=['All',...['#',...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].filter(l=>groups.has(l))];alphabet.replaceChildren();
@@ -328,11 +363,11 @@ function init(){
   const q=clean(search.value),filtered=rows.filter(r=>(active==='All'||letter(r.name)===active)&&matchesDirectory(r,q)).sort((a,b)=>a.name.localeCompare(b.name));
   const pages=Math.max(1,Math.ceil(filtered.length/perPage));page=Math.min(page,pages);status.textContent=filtered.length.toLocaleString()+' / '+rows.length.toLocaleString()+' entries';for(const b of alphabet.children)b.setAttribute('aria-pressed',String(b.dataset.letter===active));
   body.replaceChildren();const visible=filtered.slice((page-1)*perPage,page*perPage);const sectionGroups=new Map();for(const r of visible){const l=letter(r.name);if(!sectionGroups.has(l))sectionGroups.set(l,[]);sectionGroups.get(l).push(r)}
-  for(const [l,group] of sectionGroups){const section=document.createElement('section');section.className='aqwc-index-section';const title=document.createElement('h3');title.textContent=l;const grid=document.createElement('div');grid.className='aqwc-index-grid';for(const r of group){const a=document.createElement('a');a.className='aqwc-index-entry';a.href=r.url;const name=document.createElement('span');name.textContent=r.name.replace(/\s*\((?:0\s*AC|AC|Non-AC|Legend|Seasonal|Rare|Pseudo-Rare|Special Offer|Free Player)\)/gi,'').trim()||r.name;const badges=document.createElement('span');badges.className='aqwc-index-badges';badges.append(...coloredBadges(r.anchor));a.append(name,badges);grid.append(a)}section.append(title,grid);body.append(section)}
+  for(const [l,group] of sectionGroups){const section=document.createElement('section');section.className='aqwc-index-section';const title=document.createElement('h3');title.textContent=l;const grid=document.createElement('div');grid.className='aqwc-index-grid';for(const r of group){const a=document.createElement('a');a.className='aqwc-index-entry';a.href=r.url;const name=document.createElement('span');name.textContent=r.name.replace(/\s*\((?:0\s*AC|AC|Non-AC|Legend|Seasonal|Rare|Pseudo-Rare|Special Offer|Free Player)\)/gi,'').trim()||r.name;const badges=document.createElement('span');badges.className='aqwc-index-badges';badges.append(...coloredBadges(r.anchor,r.tags));a.append(name,badges);grid.append(a)}section.append(title,grid);body.append(section)}
   if(!visible.length){const p=document.createElement('p');p.textContent=loading?'Searching remaining Wiki pages…':[...knownPages].some(n=>!loadedPages.has(n))?'No matches in loaded pages. Load remaining Wiki pages to finish searching.':'No matching entries.';body.append(p)}
   prev.disabled=page===1;next.disabled=page===pages;pageLabel.textContent='Page '+page+' / '+pages;nav.hidden=pages===1;
  }
- search.addEventListener('input',()=>{active='All';page=1;render();clearTimeout(searchTimer);if(clean(search.value).length>=2)searchTimer=setTimeout(loadAll,350)});prev.addEventListener('click',()=>{page--;render();toolbar.scrollIntoView({block:'nearest'})});next.addEventListener('click',()=>{page++;render();toolbar.scrollIntoView({block:'nearest'})});
+ search.addEventListener('input',()=>{active='All';page=1;render();clearTimeout(searchTimer);if(clean(search.value).length>=2)searchTimer=setTimeout(loadAll,250)});prev.addEventListener('click',()=>{page--;render();toolbar.scrollIntoView({block:'nearest'})});next.addEventListener('click',()=>{page++;render();toolbar.scrollIntoView({block:'nearest'})});
  host.append(toolbar,coverage,filters,alphabet,body,nav);content.before(host);content.classList.add('aqwc-index-source');render();document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');document.getElementById('aqwc-list-wishlist')?.remove();
 }
 function styleMonster(content){
