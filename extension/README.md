@@ -172,3 +172,6 @@ Items and Housing category cards reuse homepage artwork by destination link; rel
 
 ### v0.12.29 — Unified light surfaces
 Shared neutral light canvas, white cards, neutral secondary surfaces, readable navigation, search and consistent active/hover states across Wiki and popup. Stronger scoped overrides for native Wiki styles; preserve artwork and other themes. Manual browser visual QA remains pending.
+
+### v0.12.30 — Category icon fix
+Use a bundled transparent 13-tile sprite based on the Wiki homepage artwork supplied in the project screenshots (26 px source tiles). Avoid remote image lookups during category rendering, duplicate root/subcategory icons, and theme-colored icon backgrounds. The Wiki artwork remains attributable to its original authors. Manual visual browser QA pending.

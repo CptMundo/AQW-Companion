@@ -368,10 +368,21 @@ function upgradeCategoryIcons(content){
  const marks=[...content.querySelectorAll('[data-aqwc-category-icon]')];if(!marks.length)return;
  readHomeIcons().then(icons=>{for(const mark of marks)applyHomeIcon(mark,mark.dataset.aqwcCategoryIcon,icons)});
 }
+// Local transparent sprite from the Wiki homepage category artwork, used immediately.
+const categorySpriteKeys=Object.freeze(['armors','capes-back-items','classes','enhancements','grounds','helmets-hoods','houses','floor-items','wall-items','misc-items','necklaces','pets','weapons']);
+function categorySpriteIndex(key){return categorySpriteKeys.indexOf(key)}
+function addCategoryIcon(a,key,small=false){
+ if(!key||a.querySelector(':scope > .aqwc-category-glyph'))return;
+ const index=categorySpriteIndex(key);if(index<0)return;
+ const mark=document.createElement('span');mark.className='aqwc-category-glyph aqwc-category-has-icon'+(small?' aqwc-category-small-glyph':'');mark.dataset.aqwcCategoryIcon=key;mark.setAttribute('aria-hidden','true');
+ const sprite=document.createElement('span');sprite.className='aqwc-category-sprite';sprite.style.backgroundImage='url("'+chrome.runtime.getURL('category-icons.png')+'")';sprite.style.backgroundPosition=(index*100/(categorySpriteKeys.length-1))+'% 50%';mark.append(sprite);a.prepend(mark);
+ if(small)a.classList.add('aqwc-category-sub-link');
+}
 function categorySubIcons(list){
- for(const a of list.querySelectorAll('ul li > a[href]')){
-  const key=categoryIconKey(a.getAttribute('href'),location.origin);if(!key)continue;
-  const mark=document.createElement('span');mark.className='aqwc-category-glyph aqwc-category-small-glyph';mark.dataset.aqwcCategoryIcon=key;mark.setAttribute('aria-hidden','true');mark.textContent=({'houses':'⌂','floor-items':'▱','wall-items':'▥','grounds':'◯','misc-items':'◆','pets':'✧'})[key]||'◆';a.prepend(mark);a.classList.add('aqwc-category-sub-link');
+ // The selector "ul li > a" also matches the top-level list when scoped
+ // to an existing UL. Walk only its actual child lists instead.
+ for(const li of list.children){const nested=li.querySelector(':scope > ul');if(!nested)continue;
+  for(const a of nested.querySelectorAll('li > a[href]')){if(a.classList.contains('aqwc-category-title'))continue;addCategoryIcon(a,categoryIconKey(a.getAttribute('href'),location.origin),true)}
  }
 }
 
@@ -400,7 +411,7 @@ function init(){
  if(!kind){if(styleHome(content)){paletteHome(content);return}if(styleSearch(content)||styleWars(content)||styleFactionV2(content)||styleShop(content))return;if(styleMap(content)){moveRoomGallery(content);mapNavigation(content);decorateMapCards(content);layoutRoomVariants(content);return}if(styleRegion(content))return;styleMonster(content);return}
  if(kind==='categories'){
   if(directoryPath(location.pathname)==='/weapons'&&styleWeapons(content))return;
-  const list=[...content.children].find(el=>el.tagName==='UL'&&el.children.length>=3);if(!list)return;content.classList.add('aqwc-directory','aqwc-category-index');list.classList.add('aqwc-category-grid');document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');for(const li of list.children){const sub=li.querySelector('ul'),a=li.querySelector('a');if(!sub)li.classList.add('aqwc-category-leaf');if(sub&&sub.children.length>=6)li.classList.add('aqwc-category-wide');if(a){a.classList.add('aqwc-category-title');const glyph=document.createElement('span');glyph.className='aqwc-category-glyph';glyph.setAttribute('aria-hidden','true');glyph.textContent=({'armors':'♜','classes':'✦','weapons':'⚔','helmets-hoods':'◈','pets':'✧','housing':'⌂','enhancements':'◇'})[(a.getAttribute('href')||'').replace(/^\//,'')]||'◆';const key=categoryIconKey(a.getAttribute('href'),location.origin);if(key)glyph.dataset.aqwcCategoryIcon=key;a.prepend(glyph)}}categorySubIcons(list);upgradeCategoryIcons(content);return;
+  const list=[...content.children].find(el=>el.tagName==='UL'&&el.children.length>=3);if(!list)return;content.classList.add('aqwc-directory','aqwc-category-index');list.classList.add('aqwc-category-grid');document.getElementById('main-content')?.classList.add('aqwc-directory-aligned');for(const li of list.children){const sub=li.querySelector('ul'),a=li.querySelector('a');if(!sub)li.classList.add('aqwc-category-leaf');if(sub&&sub.children.length>=6)li.classList.add('aqwc-category-wide');if(a){a.classList.add('aqwc-category-title');const key=categoryIconKey(a.getAttribute('href'),location.origin);addCategoryIcon(a,key)}}categorySubIcons(list);return;
  }
  const rows=directoryEntries(content,location.origin);if(!rows.length)return;
  const host=document.createElement('section');host.id='aqwc-directory-v2';host.style.display='none';host.setAttribute('aria-label','Wiki directory');
@@ -461,6 +472,6 @@ function styleMonster(content){
  content.classList.add('aqwc-monster-profile');if(node.parentElement!==content)return;
  const wrap=document.createElement('section');wrap.className='aqwc-monster-art';const heading=document.createElement('h3');heading.textContent='Monster artwork';const next=node.nextElementSibling;wrap.append(heading,node);if(next&&/^Thanks to\b/i.test(clean(next.textContent)))wrap.append(next);content.prepend(wrap);
 }
-globalThis.AQWCDirectory=Object.freeze({indexKind,rowName,runs,entry,directoryEntries,letter,mapSectionName,mapSections,tagLabels,nameTags,factionName,factionHeading,searchUrl,isMapOverviewSection,directoryPath,searchKey,matchesDirectory,paginationLinks,pageNumber,exactCandidates,lookupExactDirectory,readWikiHtml,categoryIconKey,categoryImageUrl,homepageIcons});
+globalThis.AQWCDirectory=Object.freeze({indexKind,rowName,runs,entry,directoryEntries,letter,mapSectionName,mapSections,tagLabels,nameTags,factionName,factionHeading,searchUrl,isMapOverviewSection,directoryPath,searchKey,matchesDirectory,paginationLinks,pageNumber,exactCandidates,lookupExactDirectory,readWikiHtml,categoryIconKey,categoryImageUrl,homepageIcons,categorySpriteIndex,addCategoryIcon,categorySubIcons});
 if(typeof document!=='undefined'){try{init()}finally{globalThis.AQWCWikiBoot?.layoutReady()}}
 })();
