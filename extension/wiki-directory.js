@@ -88,7 +88,7 @@ function moveRoomGallery(content){
  if(!galleries.length)return;const current=galleries[0],first=content.querySelector('.aqwc-map-grid');if(!first)return;
  const block=document.createElement('section');block.className='aqwc-room-gallery';const title=document.createElement('h3');title.textContent='Room gallery';block.append(title,current);
  // Move only the first current gallery; historical galleries stay where the Wiki placed them.
- first.after(block);const notes=content.querySelector('.aqwc-map-card.aqwc-map-access');if(notes)notes.classList.add('aqwc-map-compact');
+ first.before(block);const notes=content.querySelector('.aqwc-map-card.aqwc-map-access');if(notes)notes.classList.add('aqwc-map-compact');
 }
 function factionName(value){const label=clean(value).replace(/:\s*$/,'');return /^(Faction Quests|Faction Shops|Faction Items|Notes)$/i.test(label)?label:null}
 function styleFaction(content){
@@ -143,7 +143,7 @@ function init(){
   const q=clean(search.value).toLowerCase(),filtered=rows.filter(r=>(active==='All'||letter(r.name)===active)&&r.name.toLowerCase().includes(q));
   const pages=Math.max(1,Math.ceil(filtered.length/perPage));page=Math.min(page,pages);status.textContent=filtered.length.toLocaleString()+' / '+rows.length.toLocaleString()+' entries';for(const b of alphabet.children)b.setAttribute('aria-pressed',String(b.dataset.letter===active));
   body.replaceChildren();const visible=filtered.slice((page-1)*perPage,page*perPage);const sectionGroups=new Map();for(const r of visible){const l=letter(r.name);if(!sectionGroups.has(l))sectionGroups.set(l,[]);sectionGroups.get(l).push(r)}
-  for(const [l,group] of sectionGroups){const section=document.createElement('section');section.className='aqwc-index-section';const title=document.createElement('h3');title.textContent=l;const grid=document.createElement('div');grid.className='aqwc-index-grid';for(const r of group){const a=document.createElement('a');a.className='aqwc-index-entry';a.href=r.url;const name=document.createElement('span');name.textContent=r.name;const badges=document.createElement('span');badges.className='aqwc-index-badges';badges.append(...coloredBadges(r.anchor));a.append(name,badges);grid.append(a)}section.append(title,grid);body.append(section)}
+  for(const [l,group] of sectionGroups){const section=document.createElement('section');section.className='aqwc-index-section';const title=document.createElement('h3');title.textContent=l;const grid=document.createElement('div');grid.className='aqwc-index-grid';for(const r of group){const a=document.createElement('a');a.className='aqwc-index-entry';a.href=r.url;const name=document.createElement('span');name.textContent=r.name.replace(/\s*\((?:0\s*AC|AC|Non-AC|Legend|Seasonal|Rare|Pseudo-Rare|Special Offer|Free Player)\)/gi,'').trim()||r.name;const badges=document.createElement('span');badges.className='aqwc-index-badges';badges.append(...coloredBadges(r.anchor));a.append(name,badges);grid.append(a)}section.append(title,grid);body.append(section)}
   if(!visible.length){const p=document.createElement('p');p.textContent='No matching entries.';body.append(p)}
   prev.disabled=page===1;next.disabled=page===pages;pageLabel.textContent='Page '+page+' / '+pages;nav.hidden=pages===1;
  }
