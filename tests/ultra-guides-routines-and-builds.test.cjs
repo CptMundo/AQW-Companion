@@ -549,3 +549,14 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.ok(source.includes("if(added.length||!changed.length)root.append(highlights)"));
  console.log('Home quantity changes: positive/negative deltas, split stacks, moves, new/missing items and shared comparison verified.');
 }
+
+{
+ const homeCheck=html.match(/const check=node\('button','✓','smallbutton home-complete-action'\);[\s\S]*?row\.append\(left,check\);/);
+ assert.ok(homeCheck,'Home activity uses the compact check action');
+ assert.ok(homeCheck[0].includes("check.title='Mark complete'"));
+ assert.ok(homeCheck[0].includes("check.setAttribute('aria-label','Mark '+task.name+' completed')"));
+ assert.ok(homeCheck[0].includes('check.onclick=()=>toggleTask(task,true)'),'Same completion handler');
+ assert.ok(plannerCSS.includes('#homeactivities .home-complete-action{'));
+ assert.ok(plannerCSS.includes('border:1px solid #488b70;background:#245a46;color:#b6f4d1'));
+ console.log('Home green check: shared palette, accessible label and completion action verified.');
+}
