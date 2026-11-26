@@ -23,7 +23,7 @@ function normalizeAppearance(value){
  let appliedBackground=null,style,revision=0,originalInline=null,artwork=null,backdrop=null,wordmarkLayer=null;
 
  const SIDEBAR_KEY='aqwc-wiki-sidebar-expanded-v1';
- let sidebarExpanded=false,sidebarTouched=false,sidebarButton=null;
+ let sidebarExpanded=typeof matchMedia==='function'&&matchMedia('(min-width: 1400px)').matches,sidebarTouched=false,sidebarButton=null;
  function updateSidebar(active){
   const root=document.documentElement,side=document.getElementById('side-bar'),title=document.getElementById('page-title')||document.getElementById('page-content');
   if(!active||!side||!title?.parentElement||typeof title.insertAdjacentElement!=='function'){
@@ -44,7 +44,7 @@ function normalizeAppearance(value){
   else if(!active&&loginHome){const {node,parent,next}=loginHome;if(parent.isConnected)parent.insertBefore(node,next?.parentNode===parent?next:null);loginHome=null}
  }
  let sidebarActive=false;
- try{chrome.storage?.local?.get(SIDEBAR_KEY,result=>{if(chrome.runtime.lastError||sidebarTouched)return;sidebarExpanded=result?.[SIDEBAR_KEY]===true;if(sidebarActive)updateSidebar(true)})}catch{}
+ try{chrome.storage?.local?.get(SIDEBAR_KEY,result=>{if(chrome.runtime.lastError||sidebarTouched)return;if(typeof result?.[SIDEBAR_KEY]==='boolean')sidebarExpanded=result[SIDEBAR_KEY];if(sidebarActive)updateSidebar(true)})}catch{}
  const bannerProps=['background-image','background-size','background-position','background-repeat'];
  function restoreInline(){if(!originalInline)return;const {target,values}=originalInline;for(const [k,v,priority] of values){if(v)target.style.setProperty(k,v,priority);else target.style.removeProperty(k)}originalInline=null;}
  function apply(value){
