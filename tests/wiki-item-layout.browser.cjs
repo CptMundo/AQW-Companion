@@ -36,7 +36,7 @@ async function run(){
   for(const [name,body,farm,art] of scenarios)for(const width of [1440,1100,700]){
    await page.setViewportSize({width,height:900});await page.goto(origin+'/'+name);
    await page.setContent('<div id="page-title">Test '+name+'</div><div id="page-content">'+body+'</div>');
-   await page.evaluate(()=>{globalThis.chrome={runtime:{getManifest:()=>({version:'test'})}};window.nativeNodes=[...document.querySelector('#page-content').childNodes];window.originalGallery=document.querySelector('#native-gallery');window.originalVariant=document.querySelector('#native-variants');window.originalText=document.querySelector('#page-content').textContent;});
+   await page.evaluate(()=>{globalThis.chrome={runtime:{getManifest:()=>({version:'test'}),getURL:()=>'/boost-index.json'}};window.nativeNodes=[...document.querySelector('#page-content').childNodes];window.originalGallery=document.querySelector('#native-gallery');window.originalVariant=document.querySelector('#native-variants');window.originalText=document.querySelector('#page-content').textContent;});
    await page.addScriptTag({path:path.join(root,'companion-theme.js')});
    await page.addScriptTag({path:path.join(root,'bridge.js')});
    await page.addScriptTag({path:path.join(root,'wiki-materials.js')});
@@ -50,8 +50,12 @@ async function run(){
     const galleryOK=!window.originalGallery||art.contains(window.originalGallery);
     const variantOK=!window.originalVariant||details.contains(window.originalVariant);
     const r={shells:c.querySelectorAll('.aqwc-unified-item').length,info:left.contains(info),details:left.contains(details),status:right.contains(status),farm:farm?left.contains(q('#aqwc-inline-farm')):!q('#aqwc-inline-farm'),art:right.contains(art),artVisible:!q('.aqwc-art-placeholder').hidden,media:art.querySelectorAll('.aqwc-art-media img').length,original,galleryOK,variantOK,gap,overflow:document.documentElement.scrollWidth>innerWidth+2,columns:getComputedStyle(q('.aqwc-unified-item')).gridTemplateAreas};
-    r.detailsInitiallyClosed=!details.open;r.rareInSummary=!!info.querySelector('img[alt="Rare"]');r.nativeLogoCount=info.querySelectorAll('.aqwc-tag-logo').length;details.open=true;r.detailsOpen=details.open;return r;
+    r.detailsInitiallyClosed=!details.open;r.rareInSummary=!!info.querySelector('img[alt="Rare"]');r.nativeLogoCount=info.querySelectorAll('.aqwc-tag-logo').length;details.open=true;r.detailsOpen=details.open;details.open=false;return r;
    },{farm});
+   // Real boost renderer must put its host inside the shared tag row.
+   await page.evaluate(()=>{globalThis.AQWCOriginalItemText='Sellback: 0 AC Description: Example. Notes: When equipped, this item provides a 5% bonus to Gold when battling monsters or turning in quests.'});
+   await page.addScriptTag({path:path.join(root,'wiki-boosts.js')});
+   assert.ok(await page.locator('.aqwc-item-info .aqwc-item-tags > #aqwc-item-boosts').count(),name+' boosts alongside native tags');
    for(const key of ['info','details','status','farm','art','original','galleryOK','variantOK','detailsOpen','detailsInitiallyClosed'])assert.ok(result[key],name+' '+width+' '+key+' '+JSON.stringify(result));
    assert.equal(result.rareInSummary,false,name+' variant-only rare tag');
    if(['quest-armor','rare-dagger','variant-hat'].includes(name))assert.equal(result.nativeLogoCount,2,name+' shared native logos');
