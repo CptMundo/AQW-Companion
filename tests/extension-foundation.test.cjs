@@ -163,7 +163,7 @@ console.log('Wiki Wishlist: scoped links, category suffixes, variant guard and e
  assert.equal((await worker.handle(msg,{...sender,frameId:1})).ok,false);
  assert.equal((await worker.handle(msg,{url:'https://example.org/item',frameId:0})).ok,false);
  assert.equal((await worker.handle({...msg,names:Array(81).fill('x')},sender)).ok,false);
- assert.ok(read('extension/wiki-items.js').includes('api?.render(card,content,location.origin)'));
+ assert.ok(read('extension/wiki-items.js').includes('api?.render(card,content,location.origin,hint=>'));
  console.log('Direct material progress: separate merge lists, strict counts, bounded local lookup and ambiguity passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
