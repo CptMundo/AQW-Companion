@@ -8,7 +8,13 @@ OUT=ROOT/'downloads'
 version=json.loads((EXT/'manifest.json').read_text())['version']
 assert re.fullmatch(r'\d+\.\d+\.\d+(?:\.\d+)?',version)
 guide=EXT/'quick-start.html'
-guide.write_text(re.sub(r'Manual preview build · v\d+\.\d+\.\d+(?:\.\d+)?', 'Manual preview build · v'+version, guide.read_text(encoding='utf-8')),encoding='utf-8')
+# Fail the public release build if any user-visible version diverges.
+assert json.loads((EXT/'manifest.json').read_text())['version_name']==version+' Beta'
+assert 'class="tag">BETA '+version+'</span>' in (ROOT/'index.html').read_text(encoding='utf-8')
+assert ' · v'+version+' Beta</div>' in (ROOT/'index.html').read_text(encoding='utf-8')
+assert 'v'+version+' Beta · Your adventure, connected' in (EXT/'popup.html').read_text(encoding='utf-8')
+assert 'Manual preview build · v'+version+' Beta' in guide.read_text(encoding='utf-8')
+assert (ROOT/'README.md').read_text(encoding='utf-8').startswith('# AQW Companion — Beta '+version+'\n')
 shots=['tour','popup-home','popup-settings','home','wishlist','quests','ultras','builds','story','badges','explore','inventory','stats','wiki']
 for name in shots:
     p=EXT/'guide-images'/('guide-'+name+'.png')
