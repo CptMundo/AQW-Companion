@@ -21,9 +21,10 @@ function ownership(r,inventory,loaded,duplicate=false,index=null){
  if(b.families.has(family(name))||c.variant)return 'ambiguous';
  return 'not-found'
 }
-globalThis.AQWCBoostFinderHelpers=Object.freeze({candidate,ownership,typed});
+function artworkUrl(src){try{const u=new URL(src);return u.protocol==='https:'&&!u.username&&!u.password&&(!u.port||u.port==='443')&&['aqwwiki.wikidot.com','aqwwiki.wdfiles.com','i.imgur.com','static.wikidot.com'].includes(u.hostname)&&/\.(?:png|jpe?g|webp)$/i.test(u.pathname)?u.href:null}catch{return null}}
+globalThis.AQWCBoostFinderHelpers=Object.freeze({candidate,ownership,typed,artworkUrl});
 if(typeof document==='undefined'||!core)return;
-let state=null,add=null,data=null,loading=null,root=null,page=0,selected=new Set(),controls=null;
+let state=null,add=null,data=null,loading=null,root=null,page=0,selected=new Set(),controls=null,artwork={};
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n};
 const select=(options,label)=>{const n=el('select');n.setAttribute('aria-label',label);for(const [v,t] of options){const o=el('option',t);o.value=v;n.append(o)}n.addEventListener('change',resetPage);return n};
 function resetPage(){page=0;draw()}
@@ -52,7 +53,7 @@ function validRows(rows){return rows.filter(r=>r&&typeof r.name==='string'&&r.na
 async function load(){
  if(data||loading)return loading;
  controls.status.textContent='Loading local boost index…';
- loading=(async()=>{try{const r=await fetch('extension/boost-index.json',{credentials:'same-origin'});if(!r.ok)throw Error('Catalog unavailable');const d=await r.json();if(!Array.isArray(d.rows)||d.rows.length>10000)throw Error('Invalid catalog');data={rows:validRows(d.rows),updatedAt:String(d.updatedAt||'')};if(!data.rows.length)throw Error('Empty catalog');draw()}catch(err){data=null;controls.status.textContent='Could not load the boost catalog. Reopen Boost Finder to retry.'}finally{loading=null}})();return loading
+ loading=(async()=>{try{const r=await fetch('extension/boost-index.json',{credentials:'same-origin'});if(!r.ok)throw Error('Catalog unavailable');const d=await r.json();if(!Array.isArray(d.rows)||d.rows.length>10000)throw Error('Invalid catalog');data={rows:validRows(d.rows),updatedAt:String(d.updatedAt||'')};fetch('data/boost-artwork.json',{credentials:'same-origin'}).then(r=>r.ok?r.json():null).then(x=>{if(x?.images&&typeof x.images==='object'){artwork=x.images;draw()}}).catch(()=>{});if(!data.rows.length)throw Error('Empty catalog');draw()}catch(err){data=null;controls.status.textContent='Could not load the boost catalog. Reopen Boost Finder to retry.'}finally{loading=null}})();return loading
 }
 function draw(){
  if(!controls)return;
@@ -70,7 +71,7 @@ function draw(){
  for(const r of filtered.slice(page*48,page*48+48)){
   const row=el('div',undefined,'bf-row'),left=el('div',undefined,'bf-item'),a=el('a',r.name);a.href='https://aqwwiki.wikidot.com/'+r.slug;a.target='_blank';a.rel='noopener noreferrer';
   const c=candidate(r),o=owned[r.slug],meta=el('small',[types[r.category],...r.flags,o==='owned'?'Owned':o==='not-found'?'Not in snapshot':o==='ambiguous'?'Ambiguous match':'Ownership unknown'].join(' · '),'muted');
-  left.append(a,meta);const chips=el('div',undefined,'bf-chips');core.showChips(chips,r.boost);row.append(left,chips);
+  const visual=el('a',undefined,'bf-artwork');visual.href=a.href;visual.target='_blank';visual.rel='noopener noreferrer';visual.setAttribute('aria-label','View '+r.name+' on Wiki');const fallback=el('span','No artwork available','bf-art-placeholder');visual.append(fallback);const src=artworkUrl(artwork[r.slug]);if(src){const img=el('img');img.alt=r.name;img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';img.addEventListener('load',()=>{fallback.hidden=true});img.addEventListener('error',()=>{img.remove();fallback.hidden=false});visual.append(img);img.src=src}row.append(visual);left.append(a,meta);const chips=el('div',undefined,'bf-chips');core.showChips(chips,r.boost);row.append(left,chips);
   const duplicate=(duplicates.get(r.category+'|'+norm(c.name))||0)>1;
   if(!c.variant&&!duplicate&&typeof add==='function'){const isSaved=tracked.has(norm(c.name)),b=button(isSaved?'✓ Wishlist':'+ Wishlist',()=>{if(b.disabled)return;try{add(c.name,c.type);draw()}catch(err){status.textContent='Could not add item to Wishlist.'}},'smallbutton');b.disabled=isSaved;row.append(b)}results.append(row)
  }
