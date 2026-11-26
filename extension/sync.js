@@ -5,7 +5,7 @@
  // Fixed extension shortcuts: navigate only, never change stored data.
  function openShortcut(){
   const hash=location.hash;
-  const tab=hash==='#aqwc-open-wishlist'?'unlocks':hash==='#aqwc-open-tracker'?'planner':null;
+  const tab=hash==='#aqwc-open-wishlist'?'unlocks':hash==='#aqwc-open-tracker'?'planner':hash==='#aqwc-open-boosts'?'boost-finder':null;
   if(!tab)return;
   const target=document.querySelector('[data-tab="'+tab+'"]');
   if(target)target.click();
