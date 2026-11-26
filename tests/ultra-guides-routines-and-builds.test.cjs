@@ -484,7 +484,7 @@ assert.ok(siteNav118.includes('.tabs.subnav button.group-visible{display:inline-
 assert.ok(!html.includes('class="ultra-reset-tools"'));
 assert.ok(!html.includes('resetultradaily'));
 assert.ok(!html.includes('resetultraweekly'));
-assert.ok(html.includes('href="css/site.css?v=134"'));
+assert.ok(/href="css\/site\.css\?v=\d+"/.test(html),'Site stylesheet remains cache-versioned');
 assert.ok(html.includes('id="ultracards"')&&html.includes('id="bossguidedetail"'));
 console.log("Ultra/Boss subnav CSS no longer excludes Ultras; reset toolbar removed without touching saved quest state.");
 
