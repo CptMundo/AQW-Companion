@@ -11,7 +11,7 @@ def safe(src):
     try:
         u=urllib.parse.urlsplit(urllib.parse.urljoin(BASE,src))
         if u.hostname not in HOSTS or u.username or u.password or u.port not in (None,443,80):return None
-        if not re.search(r"\.(png|jpe?g|webp)$",u.path,re.I):return None
+        if "/image-tags/" in u.path.lower() or not re.search(r"\.(png|jpe?g|webp)$",u.path,re.I):return None
         return urllib.parse.urlunsplit(("https",u.hostname,u.path,u.query,""))
     except (ValueError,TypeError):return None
 def artwork(html):
@@ -31,7 +31,7 @@ def artwork(html):
 def main():
     rows=json.loads(ROOT.read_text())["rows"]
     old=json.loads(OUT.read_text()) if OUT.exists() else {"images":{},"checked":[]}
-    images=old["images"];checked=set(old.get("checked",[]))
+    images={k:v for k,v in old["images"].items() if safe(v)};checked=set(old.get("checked",[]))-(set(old["images"])-set(images))
     featured=["cape-of-awe","blinding-light-of-destiny-axe","necrotic-sword-of-doom-sword","radiant-goddess-of-war","fire-champion-s-armor"]
     top=sorted(rows,key=lambda r:(-max(r["boost"].values()),r["name"].lower()))
     order=list(dict.fromkeys(featured+[r["slug"] for r in top]))
