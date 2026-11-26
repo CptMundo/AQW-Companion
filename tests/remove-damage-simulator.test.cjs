@@ -45,3 +45,13 @@ assert.ok(scripts.filter(x=>x[1].includes("src=")).every(x=>/badge-catalog\.js|b
 for(const [index,script] of scripts.entries())if(script[2].trim())new vm.Script(script[2],{filename:"index:inline-"+index});
 assert.ok(html.includes("activateTab('overview')"),"home default navigation preserved");
 console.log("Navigation smoke passed: all primary sections, Forge and Account Statistics views; simulator removed.");
+
+// The existing Badge Hunter alert belongs to the calendar, even before an inventory import.
+const calendar=html.indexOf('id="home-calendar-card"'),alert=html.indexOf('id="badge-hunter-home"'),events=html.indexOf('id="homeseasoncontent"');
+assert.ok(calendar>=0&&calendar<alert&&alert<events);
+assert.equal([...html.matchAll(/id="badge-hunter-home"/g)].length,1);
+assert.ok(html.includes('calendarSlot=loaded?document.querySelector(\'#dashboard .home-main-grid\'):$('+"'home-calendar-guest'"+')'));
+assert.ok(html.includes("root.append(feedStatus)"));
+for(const theme of ['stars','dark','light','cas'])assert.ok(siteCss.includes('html[data-aqwc-background="'+theme+'"] #overview .homeseason{--calendar-accent:'));
+const badges=fs.readFileSync(path.join(__dirname,"../js/badge-hunter.js"),"utf8");new vm.Script(badges);assert.ok(badges.includes("calendar-badge-entry"));assert.ok(badges.includes("end.dateTime=b.window.end"));
+console.log("Calendar seasonal alerts, guest access and theme accents checked.");
