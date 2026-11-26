@@ -112,6 +112,53 @@
   }
   return out;
  }
+ // Read only native, explicitly labelled item fields. Never infer acquisition from Notes.
+ function itemSummary(rows,origin,slug){
+  const descriptions=[],locations=[],prices=[],methods=[],shopLinks=[];let active='',merge=false,priceFields=0,locationFields=0;
+  const text=s=>clean(s);
+  const unique=(a,key)=>[...new Map(a.map(x=>[key(x),x])).values()];
+  const links=row=>unique((row.links||[]).map(a=>sourceLink(a,origin)).filter(Boolean),x=>x.slug+(x.hash||''));
+  const addLocation=(value,row)=>{if(!value)return;const ls=links(row);locations.push({text:value,links:ls});for(const l of ls)if(/\b(?:shop|merge)\b/i.test(l.name)||/(?:-merge|-shop)$/.test(l.slug))shopLinks.push(l)};
+  const addMethod=(label,row)=>{const ls=links(row);if(ls.length)methods.push({label,links:ls})};
+  const price=(value,row)=>{
+   const v=text(value);
+   if(/^Merge the following\s*:/i.test(v)){merge=true;return}
+   if(/^(?:N\/A\s*\(?\s*)?(?:Reward(?:ed)? from|Quest reward)\b/i.test(v)&&/\bquests?\b/i.test(v)){addMethod('Quest reward',row);return}
+   if(/^(?:N\/A\s*\(?\s*)?Dropped by\b/i.test(v)){addMethod('Dropped by',row);return}
+   if(/^(?:N\/A\s*\(?\s*)?(?:Purchased from|Bought from|Available from)\b/i.test(v)){addMethod('Shop',row);return}
+   if(/^\d[\d,]*(?:\.\d+)?\s*(?:ACs?|Gold)(?:\s*\([^)]{1,60}\))?$/i.test(v))prices.push(v);
+  };
+  for(const row of rows){
+   const t=text(row.text);if(/^Notes?\s*:/i.test(t))break;
+   const m=t.match(/^(Locations?|Price|Description|Sellback|Rarity|Base Damage|Type|Level|Stack|Quantity)\s*:\s*(.*)$/i);
+   if(m){
+    active=m[1].toLowerCase();const v=m[2];
+    if(active==='description'&&v&&!/^(?:no description|n\/a)[.!]?$/i.test(v))descriptions.push(v);
+    else if(active.startsWith('location')){locationFields++;addLocation(v,row)}
+    else if(active==='price'){priceFields++;price(v,row)}
+    continue;
+   }
+   if(active.startsWith('location')&&row.listDepth>0)addLocation(t,row);
+   else if(active==='price'&&(row.listDepth>0||/^Merge the following\s*:/i.test(t)))price(t,row);
+   else if(!row.listDepth)active='';
+  }
+  if(new Set(descriptions).size>1||locationFields>1||priceFields>1)return null;
+  const distinctPrices=[...new Set(prices)],shops=unique(shopLinks,x=>x.slug);
+  if(slug==='blinding-light-of-destiny-axe'){
+   methods.unshift({label:'Quest unlock',links:[{name:'The Blinding Light of Destiny',slug:'artix-s-quests',hash:''}]});
+   methods.push({label:'Reward shop',links:[{name:'Blinding Light of Destiny (Shop)',slug:'blinding-light-of-destiny-shop',hash:''}]});
+   if(merge)methods.push({label:'Merge shop',links:[{name:"Yulgar's Dual Wield Drop Off",slug:'yulgar-s-dual-wield-drop-off',hash:''}]});
+   // This is a quest-unlocked 0 AC claim, not a paid price.
+   distinctPrices.splice(0,distinctPrices.length,...distinctPrices.filter(v=>!/^0\s*ACs?$/i.test(v)));
+  }else if(merge){
+   const explicit=shops.filter(x=>/\bmerge\b|dual wield drop off/i.test(x.name)||/-merge$/.test(x.slug));
+   const known=distinctPrices.length?explicit:shops;
+   if(known.length)methods.push({label:known.length>1?'Merge shops':'Merge shop',links:known});
+   else if(shops.length)methods.push({label:'Acquisition',links:shops});
+   else methods.push({label:'Merge',links:[]});
+  }
+  return {description:descriptions[0]||'',locations,prices:distinctPrices,methods:unique(methods,x=>x.label+'|'+x.links.map(l=>l.slug+l.hash).join('|'))};
+ }
  function parseSources(content,origin){
   if(content.childNodes)return parseAcquisitionLines(acquisitionLines(content),origin);
   const out={locations:[],drops:[],quests:[],shops:[]};
@@ -470,5 +517,5 @@
   }
   draw();lookup().catch(()=>{statusLine.textContent='Inventory unavailable. Sync in Companion and refresh this page.'}).finally(()=>{busy=false;draw()});return panel;
  }
- globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources,mapCommand,joinControl,recipeLabel,reviewedRoutes,sourceLink,compactData,acquisitionKind,parseAcquisitionLines,acquisitionGroups,monsterPreview,monsterImage,monsterImages,itemImages,itemPreview,previewCacheRequest});
+ globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources,mapCommand,joinControl,recipeLabel,reviewedRoutes,sourceLink,compactData,acquisitionKind,parseAcquisitionLines,acquisitionLines,itemSummary,acquisitionGroups,monsterPreview,monsterImage,monsterImages,itemImages,itemPreview,previewCacheRequest});
 })();
