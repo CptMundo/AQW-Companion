@@ -86,7 +86,7 @@ function showChips(node,boost){
 }
 function itemTag(img){
  const v=String(img.getAttribute('src')||'')+' '+String(img.getAttribute('alt')||'')+' '+String(img.getAttribute('title')||'');
- return /(?:^|[\/\s])(?:ac(?:small|tag)?|legend(?:small)?|rare(?:small)?|pseudo(?:small)?|seasonal(?:small)?|special(?:small)?)(?:\.[a-z]+|\s|$)/i.test(v)
+ return /(?:^|[\/\s])(?:ac(?:small|large|tag)?|legend(?:small|large)?|rare(?:small|large)?|pseudo(?:small|large)?|seasonal(?:small|large)?|special(?:small|large)?)(?:\.[a-z]+|\s|$)/i.test(v)
 }
 globalThis.AQWCBoosts=Object.freeze({labels,keys,slug,notes,parseRows,parseIndex,merge,filter,icon,showChips,itemTag});
 if(typeof document==='undefined'||location.origin!==origin)return;
