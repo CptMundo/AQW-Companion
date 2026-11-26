@@ -1,0 +1,15 @@
+# Badge Hunter source coverage
+
+Snapshot: 26 November 2026. Source: [AQW Wiki Character Page Badges](https://aqwwiki.wikidot.com/character-page-badges), seven category indexes, with individual character badge IDs and original artwork URLs. The source pages carry CC BY-SA 3.0 attribution; artwork belongs to its rights holders. The catalog includes 792 unique index records, not a guarantee of all in-game or newly released badges. Image URLs are from source markup; successful rendering of every asset is not certified. No third-party image proxy or new extension permissions.
+
+The index-only snapshot is intentionally separate from individual detail coverage. The existing curated acquisition summaries are mapped only to a unique matching badge. For others the source link is available and requirements/availability are marked unconfirmed, rather than inferred from the name or category. Seasonal alerts require an explicit dated official announcement; Harvest Hunter uses the official November 2026 window.
+
+To reproduce: install beautifulsoup4 and run `python scripts/inspect_badge_sources.py`. Optional `--details` retrieves individual public badge pages with two workers and throttling, stops network retrieval on HTTP 429, and records source errors. Do not publish raw generated data without reviewing requirements and artwork attribution. No scheduled job or automatic write.
+
+Five further Epic Hero routes were checked against individual Wiki badge, NPC quest and map pages (Verus DoomKnight, Awe Ascension, Head of the Legion Beast, Eclipse Ascension, Hollowborn Paladin). The remaining source links are not represented as complete in-site walkthroughs.
+
+Official limited-time opportunity: 2026 Black Friday Collection, November 20 through announced December 11 departure, 10,000 AC. Unlike recurring seasonal badges, this is the specific 2026 event. Northern Wanderer has a December schedule reference only; no active window assigned without a current confirmation.
+
+## Full individual-source import (26 November 2026)
+
+All 792 individual source pages were retrieved successfully in [source inspection run](https://github.com/CptMundo/AQW-Companion/actions/runs/45728281862). Requirements were extracted for 784 entries; eight HeroMart entries lack extractable requirements, including two entries literally named REUSE (source placeholders, not confirmed actual badges). Requirement text is attributed to the AQW Wiki, with each source link retained; acquisition links are filtered to known public hosts. Source rarity and seasonality tags inform filters, not a live availability guarantee. Dated official announcements override generic rarity labels. The 784 requirement records are unlock conditions, not 784 independently tested step-by-step walkthroughs. Art URLs were verified in source markup, not every asset's runtime rendering.

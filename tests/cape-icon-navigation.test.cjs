@@ -9,7 +9,7 @@ const iconsCss=fs.readFileSync(path.join(__dirname,"../css/item-icons.css"),"utf
 const nav=html.match(/<nav class="primarynav"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
 assert.ok(nav,"Primary navigation exists");
 const groups=[...nav.matchAll(/data-group="([^"]+)"/g)].map(m=>m[1]);
-assert.deepEqual(groups,["home","projects","planner","ultras","builds","story","explore","inventory"],
+assert.deepEqual(groups,["home","projects","planner","ultras","builds","story","badges","explore","inventory"],
   "Ultras must follow Daily / Weekly Tracker and precede Class Builds");
 assert.ok(html.includes('data-tab="ultras" data-parent="ultras"'),"Ultras subtab preserved");
 assert.ok(html.includes('id="ultras" class="view"'),"Ultras content preserved");
