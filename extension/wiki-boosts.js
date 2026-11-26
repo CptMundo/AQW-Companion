@@ -100,12 +100,10 @@ function mountItemChips(boost){
  if(!isItem||!Object.keys(boost).length)return;
  if(itemWrap){itemWrap.replaceChildren();showChips(itemWrap,boost);return}
  const info=content.querySelector('.aqwc-item-info')||content.querySelector('.aqwc-item-native-section');if(!info)return;
- const tagImages=[...info.querySelectorAll('img')].filter(itemTag);
- const host=el('span');host.id='aqwc-item-boosts';host.style.cssText='display:inline-flex;vertical-align:middle;margin:2px 0 2px 8px;max-width:100%';
- itemWrap=mount(host,boost);
- const tag=tagImages.at(-1);
- if(tag){const anchor=tag.closest('a');(anchor&&info.contains(anchor)?anchor:tag).after(host)}
- else{const heading=info.querySelector('.aqwc-item-section-label');if(heading)heading.after(host);else info.prepend(host)}
+ let row=info.querySelector('.aqwc-item-tags');
+ if(!row){row=el('div',null,'aqwc-item-tags');const heading=info.querySelector('.aqwc-item-section-label');if(heading)heading.after(row);else info.prepend(row)}
+ const host=el('span');host.id='aqwc-item-boosts';host.style.cssText='display:inline-flex;vertical-align:middle;margin:0;max-width:100%';
+ itemWrap=mount(host,boost);row.append(host);
 }
 if(isItem)mountItemChips(notes(itemText));
 // All Wiki pages use the bundled public snapshot, not remote Wiki requests.
