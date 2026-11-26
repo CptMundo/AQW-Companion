@@ -12,7 +12,7 @@ Store installation: use the official listing shared by the maintainer when avail
 
 ## First inventory sync
 
-On extension **Home**, choose **1. Account**, sign in on the official Inventory page, reopen the popup and select **2. Export**. Choose **3. Import** to open https://cptmundo.github.io/AQW-Companion/ and select **Import & Sync** there. Optional on-page export: Settings → Troubleshooting & privacy → **Enable inventory export**. For badges, open your public Character Page, click Capture badges, open Badge Hunter and import. Keep the existing inventory if export fails. No password or session token is stored. Inventory and Bank are local snapshots, not live game data. A missing snapshot is not evidence that you do not own an item.
+On extension **Home**, click **Sync Inventory** from the signed-in Inventory page or **Sync Badges** from your public Character Page. The extension captures and stages data, opens Companion if necessary, and confirms only after saving. Real record counts appear when available; unmeasured steps show an animated progress bar. Optional Account Manager access allows automatic opening for known sources. Open the correct page and retry if access or login is required. Settings retains manual export; use **Import & Sync** or Badge Hunter import if automatic sync fails. Keep existing inventory if capture fails. No password or session token is stored. Inventory and Bank are local snapshots, not live game data.
 
 ## Everyday use
 
