@@ -477,7 +477,7 @@ async function handle(message,sender){
  }
  if(popupSender(sender)&&message?.type==='inventory-summary'){
   await restrictStorage();const stored=(await chrome.storage.local.get(KEY))[KEY];
-  return {ok:true,count:stored?.items?.length??null,syncedAt:stored?.syncedAt??null};
+  const pub=(await chrome.storage.local.get('aqwc-public-inventory-v1'))['aqwc-public-inventory-v1'];return {ok:true,count:stored?.items?.length??pub?.items?.length??null,syncedAt:stored?.syncedAt??pub?.capturedAt??null,source:stored?'full':pub?'public':null};
  }
  if(popupSender(sender)&&message?.type==='clear-inventory'){
   await restrictStorage();await chrome.storage.local.remove(KEY);return {ok:true,count:null,syncedAt:null};

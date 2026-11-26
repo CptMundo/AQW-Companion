@@ -86,7 +86,7 @@ if(typeof document==='undefined'){
    }
    if(kind==='public')await chrome.storage.local.set({[PUBLIC]:snapshot});
    const count=kind==='inventory'||kind==='public'?snapshot.items.length:reply.count;
-   await progress('done',kind==='inventory'?'✓ '+count+' records synced':kind==='public'?'✓ '+count+' public items · Bank unknown':'✓ '+count+' badges matched'+(reply.ambiguous||reply.unknown?' · '+reply.ambiguous+' ambiguous, '+reply.unknown+' unrecognized':''),count,count);
+   await progress('done',kind==='inventory'?'✓ '+count+' records synced':kind==='public'?'✓ '+count+' public items · Bank unknown':'✓ '+count+' badges matched · Story updated'+(reply.ambiguous||reply.unknown?' · '+reply.ambiguous+' ambiguous, '+reply.unknown+' unrecognized':''),count,count);
    return {ok:true,count};
   }catch(e){const error=String(e?.message||e);await progress('error',error+(saved?' Website data was saved; sync not fully confirmed.':' Check Companion before retrying; staged data is retained if captured.')).catch(()=>{});return {ok:false,error}}
   finally{job=null}
@@ -127,6 +127,7 @@ if(location.protocol==='chrome-extension:'||location.protocol==='moz-extension:'
  }
  for(const [kind,button] of Object.entries(controls))button.addEventListener('click',async e=>{
   if(!e.isTrusted||localBusy)return;localBusy=true;
+  if(kind==='public'){try{const info=await chrome.runtime.sendMessage({type:'inventory-summary'});if(info?.source==='full'&&!confirm('You already have a full Account Manager / imported inventory snapshot. Public Sync provides less information and will be saved separately. Continue anyway?')){localBusy=false;return}}catch{localBusy=false;return}}
   const status=document.getElementById('one-click-'+kind+'-status'),bar=document.getElementById('one-click-'+kind+'-progress');status.textContent='Starting sync…';bar.hidden=false;bar.removeAttribute('value');for(const b of Object.values(controls))b.disabled=true;
   try{const [tab]=await chrome.tabs.query({active:true,currentWindow:true});if(!Number.isInteger(tab?.id))throw Error('No active browser tab.');const r=await chrome.runtime.sendMessage({type:'one-click-start',kind,tabId:tab.id});if(!r?.ok)status.textContent=r?.error||'Sync was not confirmed.'}
   catch(err){status.textContent=String(err?.message||err);bar.hidden=true}finally{localBusy=false;await paint().catch(()=>{})}
