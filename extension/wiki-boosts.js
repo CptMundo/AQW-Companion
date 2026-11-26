@@ -59,15 +59,7 @@ function filter(rows,{query='',boosts=[],min=0,category='',availability='',owner
  const value=r=>boosts.length?Math.min(...boosts.map(k=>r.boost[k]||0)):Math.max(0,...Object.values(r.boost));
  return rows.filter(r=>norm(r.name).includes(norm(query))&&(!category||category===r.category)&&(!availability||(availability==='unrestricted'?!r.flags.length:r.flags.includes(availability)))&&(!ownership||owned[r.slug]===ownership)&&value(r)>0&&value(r)>=min).sort((a,b)=>sort==='name'?a.name.localeCompare(b.name):sort==='lowest'?value(a)-value(b)||a.name.localeCompare(b.name):value(b)-value(a)||a.name.localeCompare(b.name));
 }
-globalThis.AQWCBoosts=Object.freeze({labels,keys,slug,notes,parseRows,parseIndex,merge,filter});
-if(typeof document==='undefined'||location.origin!==origin)return;
-const content=document.getElementById('page-content'),title=document.getElementById('page-title');if(!content||!title||document.getElementById('aqwc-boost-finder'))return;
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;return n};
-const host=el('div');host.id='aqwc-boost-finder';host.style.cssText='display:block;margin:8px 0';
-const shadow=host.attachShadow({mode:'closed'}),css=el('style');
-css.textContent='.panel{font:600 13px/1.45 system-ui,sans-serif;padding:10px;border:1px solid #456078;border-radius:10px;background:#142b3e;color:#e5f5ff;box-sizing:border-box}.toolbar,.chips,.row,.controls,.group{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.toolbar{justify-content:space-between}.controls,.group{margin:8px 0}button,select,input{font:inherit;border:1px solid #7297b3;border-radius:6px;background:#203d55;color:#f1f8ff;padding:6px;box-sizing:border-box}button{cursor:pointer}button:disabled{opacity:.5;cursor:default}button[aria-pressed=true]{outline:2px solid #4fbde8}.chip{display:inline-flex;gap:4px;align-items:center;white-space:nowrap;font-weight:700}.glyph{display:inline-block;width:28px;height:28px;flex:none;background-repeat:no-repeat;vertical-align:middle}.row{border-top:1px solid #8295a455;padding:7px 0}.name{flex:1;min-width:160px}a{color:inherit;text-decoration:underline}.meta{font-size:11px;opacity:.85}.status{font-weight:400;margin:6px 0}.list{max-height:520px;overflow:auto}[hidden]{display:none!important}.pager{margin-top:8px;display:flex;gap:8px;align-items:center}.group button{display:flex;gap:4px;align-items:center}';
-if(globalThis.AQWCTheme?.recolor)css.textContent=globalThis.AQWCTheme.recolor(css.textContent);
-shadow.append(css);const panel=el('section',null,'panel'),bar=el('div',null,'toolbar'),chips=el('div',null,'chips'),open=el('button','Boost Finder'),detail=el('div');open.type='button';open.setAttribute('aria-expanded','false');detail.hidden=true;bar.append(open,el('span','Find boosted equipment','meta'));panel.append(bar,chips,detail);shadow.append(panel);title.after(host);
 const ns='http://www.w3.org/2000/svg';
 const sprite='data:image/webp;base64,UklGRmIFAABXRUJQVlA4IFYFAAAQGQCdASqQACQAPtlgqE4oJaOiKrccAQAbCWoAs3fxAFnoWZLeep9Zz4hVnE/ZAQHt9zmFnXftEGfijV8mnHcOKTm3szKnkdFPk0wCLlJPsRbmj9qf/JMrs+PrncGgKx87s4EttLg3aW4rVadiyDqVJa5Esy5y+0FDSYJD/vVcCRbF3wIUxBOrWT8aatkInxIzoJ087p0T7odKAJSPotOv89/toyEDsh7ggLALz8kBVJRNT1mSJtDKHeHEkt9xLCMevgBZeHAYb9fJ7dbaDm4LnAD+93TNzwT4nvUJ21VZCM6rGPHBZWinn9OlXENaze2n2v7g5Wc2U8qEk3RqV+GCpXYqCdBtK74FBLtKLfhIC1V2XuIQi6ENeA3vFqV1n63zz037xV4Gi0Swh1NH5oAcNJQe5FxQq+qqxEwl/7Ankv4qCNnXOWZbdy+G5RpVV2acqNlP8yRefY6ZBHZlLJFGwKXGsI61RHP9rO2JOzFc+G1LydZfXb7f6c56kKGL2aIZxvUt7aoVFg4VkRsm/CotSJzSzACRpM+YIdx+lJmt+EcGgFphOo3Z8a+4tOrEy4GSY6zdCdO2jRazJmxsZT+j7kr59XLPAU3dNQV5Q7B7h+oj+yAMWzfXuY4IYLaffCCcDxCHOt93tgtY6I3/yNpKPe02dR+QD3wK0K0FdoqyUJEK67sjMdboxiSrXW3R9Mo799oMbIst2UPxWXueLwfK6irZ5V4mAjq2ZH7qeG6SCOlsjW/sls7kbE558S8QBeomJFe0QSbq/3PbJrJ+mQ2SL/Zy/eLmeMxtIMpq25R+1tbV7Wo9vA7BK1eA0F9hmIebXCTts8s+Pm+9oO0YzLX0W+kb1qFD/PT1Y6iiBk5/nmsL16q3LM488PiWRMJGrrl182hpMOO/orrfltuJjsUBCGj3eXLwqeUCg8O54E+5pJ++UnN7KOTTyhofp5uwzMgy3BNVWT8KiKHb2NFBhzFfJY3NzEY0Dn1p/91ntdy+j03OK0ddxbWlqLzIPvG0yX+xuD1nwAVZu+ekzIAhsmQA8WvNxYMH+QaIX6xTJ/CfO03VZnJPIDuCGDSpuHp0BIUCBrFHFZoq6jgoEqNcqoyfB1TF8sr5YDuncXkyX7Ior8QzTyzv7SGigl5KO6s5dPowf25ufYA/JNfDJ9jop+cdCErfy/KG6WYN2VldOdFbbn4t2wd1iN32EfnDxbICZWLbX7OtJwmqx1fX7uR7wdvxZhSexw0X0/OLk3bILFzIIhUutx2gE2Ez5ScF/ARspvQmBoR5HKmsklMLwgv46qIrjAyeOwZrUO2+4g/6PWh2Bhooye6vDtvS+oalSAeWtufglIyBtCwuBPZCw1zYGJ0191aHI5ai21utc2+GA1+lRXzSls7S0Dhn16v98bpniNkEpXRR8MaqHyB3SD2bxQu3nGG+9vP+m30KA3EEsQbahn8cQ9F+0t7nmqd3GlrAbNIJXVcpl8gYefeb7F2goBWd03pzDerCg2Y1SgIaE7voY5c/5R09QymyMzleZLRHEuIt2BBxPt/tNdB1skGTkt++7oF8qJDWZhH/AIhltiob3jnA3dPBY+KmDB2Gokqx/Ez+1blRJY9SUDX2ktL/87NtyaKh9/bv9HDWnp54otAOxgcInDGuPFgm74STq6uMPoTJ60kIvSZfPdJMH0C+aQzTdZRc6jDeU/zg0z8wNC6qG8WHVwnArUHmEiGYZOV3LvtQ1xzcC/QM+tRhXAQijoEH3gEgTG/Q+solwHVB2js5DFr35HPnzYVQXmP+JMuCIH5KYFCfJZj5zMa1U3Y8UCbekBB5AAAA';
 function icon(k){const p=progress.indexOf(k);if(p>=0){const x=el('span',null,'glyph');x.style.backgroundImage='url("'+sprite+'")';x.style.backgroundSize='400% 100%';x.style.backgroundPosition=(p/3*100)+'% 50%';x.setAttribute('aria-hidden','true');return x}
@@ -85,41 +77,50 @@ function icon(k){const p=progress.indexOf(k);if(p>=0){const x=el('span',null,'gl
  };shape('path',{d:emblems[k],fill:k==='chaos'?'#cb9afa':k==='orc'?'#a8d05e':'#fff0c1',stroke:'#17151b','stroke-width':'.6','stroke-linejoin':'round'});if(k==='dragon')shape('circle',{cx:12,cy:7,r:1,fill:'#321719'});if(k==='orc'){shape('path',{d:'M5 13L5 9 8 13M10 13L13 9 13 13Z',fill:'#fff0c1'});shape('path',{d:'M5 8L7 9M13 8L11 9',stroke:'#231d15','stroke-width':1.4})}if(k==='chaos')shape('circle',{cx:9,cy:9,r:2.5,fill:'#231629'});}}
  return svg;
 }
-let rows=[],loaded=false,loading=false,page=0,selected=new Set(),ownership={};
-const groups=el('div'),controls=el('div',null,'controls'),status=el('div',null,'status'),list=el('div',null,'list'),pager=el('div',null,'pager');status.setAttribute('role','status');
-const credit=el('a','Wiki boost index · CC BY-SA 3.0');credit.href=origin+source;credit.target='_blank';credit.rel='noopener noreferrer';
-detail.append(groups,controls,status,list,pager,el('div','All Tagged excludes Drakathkind, Orckind and untagged monsters. Same-type item boosts do not add together.','meta'),credit);
-function select(opts,label){const n=el('select');n.setAttribute('aria-label',label);for(const [v,t] of opts){const o=el('option',t);o.value=v;n.append(o)}n.addEventListener('change',()=>{page=0;render()});return n}
-const query=el('input');query.type='search';query.placeholder='Item name';query.setAttribute('aria-label','Item name');query.addEventListener('input',()=>{page=0;render()});
-const category=select([['','All equipment'],...Object.entries(types)],'Equipment'),minimum=el('input');minimum.type='number';minimum.min='0';minimum.max='1000';minimum.value='0';minimum.style.width='80px';minimum.setAttribute('aria-label','Minimum boost percent');minimum.addEventListener('input',()=>{page=0;render()});
-const availability=select([['','All availability'],['unrestricted','No listed restriction'],...['Legend','Rare','Pseudo-Rare','Seasonal','Special Offer'].map(x=>[x,x])],'Availability');
-const own=select([['','All ownership'],['owned','Owned'],['not-found','Not in snapshot'],['ambiguous','Ambiguous']],'Ownership');own.disabled=true;
-const sort=select([['highest','Highest boost'],['lowest','Lowest boost'],['name','Name A–Z']],'Sort');
-const check=el('button','Check ownership');check.type='button';check.disabled=true;
-check.addEventListener('click',async e=>{if(!e.isTrusted||check.disabled)return;check.disabled=true;own.disabled=true;own.value='';ownership={};let stamp=null,exp=null,done=0;try{
- for(const cat of Object.keys(types)){const items=rows.filter(r=>r.category===cat);for(let i=0;i<items.length;i+=80){const chunk=items.slice(i,i+80),names=[...new Set(chunk.map(r=>r.name))];const r=await chrome.runtime.sendMessage({type:'wiki-boost-lookup',category:cat,names});if(!r?.ok||!r.syncedAt||r.matches?.length!==names.length)throw Error('Sync inventory first, or reload the extension.');if(stamp&&(stamp!==r.syncedAt||exp!==r.exportedAt))throw Error('Inventory changed during check. Try again.');stamp=r.syncedAt;exp=r.exportedAt;for(const item of chunk)ownership[item.slug]=rows.filter(x=>x.category===cat&&norm(x.name)===norm(item.name)).length>1?'ambiguous':r.matches[names.indexOf(item.name)].state;done+=chunk.length;status.textContent='Checking ownership '+done+'/'+rows.length;await new Promise(r=>setTimeout(r,20));}}
- own.disabled=false;check.textContent='Refresh ownership';page=0;render()
- }catch(err){ownership={};render();status.textContent=String(err.message||err)}finally{check.disabled=false}});
-const reset=el('button','Reset');reset.type='button';reset.addEventListener('click',()=>{selected.clear();query.value='';category.value='';minimum.value='0';availability.value='';own.value='';sort.value='highest';page=0;render()});
-controls.append(query,category,el('span','Min %'),minimum,availability,own,sort,check,reset);
-const buttons={};for(const [name,ks] of [['Damage boosts',Object.keys(labels).filter(k=>!progress.includes(k))],['Progression boosts',progress]]){groups.append(el('div',name,'meta'));const group=el('div',null,'group');for(const k of ks){const b=el('button');b.type='button';b.append(icon(k),el('span',labels[k]));b.setAttribute('aria-pressed','false');b.addEventListener('click',()=>{if(selected.has(k))selected.delete(k);else selected.add(k);page=0;render()});buttons[k]=b;group.append(b)}groups.append(group)}
-function showChips(node,boost,click){for(const [k,v] of Object.entries(boost)){if(!Object.hasOwn(labels,k)||tagged.includes(k)&&v===boost.tagged)continue;const b=el(click?'button':'span',null,'chip');b.title='+'+v+'% '+labels[k];b.setAttribute('aria-label',b.title);b.append(icon(k),el('span','+'+v+'%'));if(click){b.type='button';b.addEventListener('click',()=>{selected.clear();selected.add(k);page=0;show();render()})}node.append(b)}}
-const itemText=String(globalThis.AQWCOriginalItemText||content.textContent||content.innerText||''),isItem=/\bSellback\s*:/i.test(itemText)&&/\bDescription\s*:/i.test(itemText),path=location.pathname.replace(/^\/|\/$/g,'');
-function mountItemChips(){
- if(!isItem||!chips.children.length||document.getElementById('aqwc-item-boosts'))return;
- const info=content.querySelector('.aqwc-item-info')||content.querySelector('.aqwc-item-native-section');
- if(!info)return;
- const itemHost=el('div');itemHost.id='aqwc-item-boosts';itemHost.style.cssText='display:block;margin:8px 0';
- const itemShadow=itemHost.attachShadow({mode:'closed'});itemShadow.append(css.cloneNode(true));
- const label=el('div','Equipment boosts','meta');label.style.marginBottom='5px';itemShadow.append(label,chips);
- const first=info.querySelector('.aqwc-item-section-label');if(first)first.after(itemHost);else info.prepend(itemHost);
+
+function showChips(node,boost){
+ for(const [k,v] of Object.entries(boost)){
+ if(!Object.hasOwn(labels,k)||tagged.includes(k)&&v===boost.tagged)continue;
+ const b=el('span',null,'chip');b.title='+'+v+'% '+labels[k];b.setAttribute('aria-label',b.title);b.append(icon(k),el('span','+'+v+'%'));node.append(b)
+ }
 }
-if(isItem){showChips(chips,notes(itemText),true);mountItemChips()}
-function annotate(){const r=rows.find(r=>r.slug===path);if(r&&isItem){chips.replaceChildren();showChips(chips,{...notes(itemText),...r.boost},true);mountItemChips()}if(location.pathname===source)return;const map=new Map(rows.map(r=>[r.slug,r]));for(const a of [...content.querySelectorAll('a[href]')].slice(0,1200)){const r=map.get(slug(a.getAttribute('href')));if(!r||!clean(a.textContent)||a.querySelector('img')||a.nextElementSibling?.classList.contains('aqwc-inline-boost'))continue;const span=el('span',null,'aqwc-inline-boost');span.style.cssText='display:inline-flex;margin:0 4px;vertical-align:middle;font:600 11px system-ui';const s=span.attachShadow({mode:'closed'});s.append(el('style','.glyph{display:inline-block;width:18px;height:18px;background-repeat:no-repeat;vertical-align:middle}.chip{display:inline-flex;align-items:center;gap:2px;margin-right:4px}'));const wrap=el('span');showChips(wrap,r.boost,false);s.append(wrap);a.after(span)}}
-function render(){for(const [k,b] of Object.entries(buttons))b.setAttribute('aria-pressed',String(selected.has(k)));if(!loaded)return;list.replaceChildren();pager.replaceChildren();const results=filter(rows,{query:query.value,boosts:[...selected],min:Math.max(0,Number(minimum.value)||0),category:category.value,availability:availability.value,ownership:own.value,owned:ownership,sort:sort.value});page=Math.min(page,Math.max(0,Math.ceil(results.length/40)-1));status.textContent=results.length+' matching linked items · '+rows.length+' indexed · '+(selected.size>1?'all selected boosts required':'Wiki coverage may be incomplete');for(const r of results.slice(page*40,page*40+40)){const row=el('div',null,'row'),name=el('div',null,'name'),a=el('a',r.name);a.href=origin+'/'+r.slug;name.append(a,el('div',[types[r.category],...r.flags,ownership[r.slug]||''].filter(Boolean).join(' · '),'meta'));const b=el('div',null,'chips');showChips(b,r.boost,false);row.append(name,b);const data={name:r.name,slug:r.slug,category:r.category},target=globalThis.AQWCWikiWishlist?.target(data);if(target&&!target.variant){const add=el('button','+');add.type='button';add.title='Add to Wishlist';add.setAttribute('aria-label','Add '+r.name+' to Wishlist');add.addEventListener('click',async e=>{if(!e.isTrusted||add.disabled)return;add.disabled=true;try{const x=await chrome.runtime.sendMessage({type:'wishlist-queue-add',item:data});if(!x?.ok)throw Error(x?.error||'Could not save');add.textContent='✓';add.title='Saved to Wishlist queue'}catch(err){add.disabled=false;status.textContent=String(err.message||err)}});row.append(add)}list.append(row)}for(const [t,d] of [['Previous',-1],['Next',1]]){const b=el('button',t);b.type='button';b.disabled=d<0?page===0:(page+1)*40>=results.length;b.addEventListener('click',()=>{page+=d;render();list.scrollTop=0});pager.append(b)}pager.append(el('span','Page '+(page+1)+' / '+Math.max(1,Math.ceil(results.length/40)),'meta'))}
-function cached(){try{const c=JSON.parse(sessionStorage.getItem(cacheKey)||'null');if(!c||Date.now()-c.at>3600000||!Array.isArray(c.rows)||c.rows.length>10000)return [];return c.rows.filter(r=>r&&slug('/'+r.slug)===r.slug&&typeof r.name==='string'&&r.name.length<=350&&Object.hasOwn(types,r.category)&&r.boost&&Array.isArray(r.flags)).map(r=>({...r,flags:r.flags.filter(x=>typeof x==='string'&&x.length<30),boost:Object.fromEntries(Object.entries(r.boost).filter(([k,v])=>Object.hasOwn(labels,k)&&Number.isFinite(v)&&v>0&&v<=1000))}))}catch{return []}}
-async function load(){if(loaded||loading)return;loading=true;status.textContent='Reading Wiki boost index…';try{rows=cached();if(!rows.length){let doc;if(location.pathname.replace(/\/$/,'')===source)doc=document;else{const r=await fetch(origin+source,{credentials:'omit',signal:AbortSignal.timeout(15000)});if(!r.ok||new URL(r.url).origin!==origin)throw Error('Wiki returned '+r.status);doc=new DOMParser().parseFromString(await r.text(),'text/html')}rows=parseIndex(doc);if(!rows.length)throw Error('No supported boost rows found. The Wiki layout may have changed.');try{sessionStorage.setItem(cacheKey,JSON.stringify({at:Date.now(),rows}))}catch{}}loaded=true;check.disabled=false;annotate();render()}catch(err){status.textContent=String(err.message||err)+' Use the original Wiki index or reopen to retry.'}finally{loading=false}}
-function show(){detail.hidden=false;open.setAttribute('aria-expanded','true');load()}
-open.addEventListener('click',()=>{if(detail.hidden)show();else{detail.hidden=true;open.setAttribute('aria-expanded','false')}});
-rows=cached();if(rows.length){loaded=true;check.disabled=false;annotate();render()}
+function itemTag(img){
+ const v=String(img.getAttribute('src')||'')+' '+String(img.getAttribute('alt')||'')+' '+String(img.getAttribute('title')||'');
+ return /(?:^|[\/\s])(?:ac(?:small|tag)?|legend(?:small)?|rare(?:small)?|pseudo(?:small)?|seasonal(?:small)?|special(?:small)?)(?:\.[a-z]+|\s|$)/i.test(v)
+}
+globalThis.AQWCBoosts=Object.freeze({labels,keys,slug,notes,parseRows,parseIndex,merge,filter,icon,showChips,itemTag});
+if(typeof document==='undefined'||location.origin!==origin)return;
+const content=document.getElementById('page-content'),title=document.getElementById('page-title');
+if(!content||!title)return;
+const itemText=String(globalThis.AQWCOriginalItemText||content.textContent||content.innerText||''),isItem=/\bSellback\s*:/i.test(itemText)&&/\bDescription\s*:/i.test(itemText),path=location.pathname.replace(/^\/|\/$/g,'');
+const style='.chips{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;vertical-align:middle}.chip{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;font:700 12px/1.4 system-ui,sans-serif;padding:3px 5px;border:1px solid #7297b3;border-radius:5px}.glyph{display:inline-block;width:26px;height:26px;flex:none;background-repeat:no-repeat;vertical-align:middle}.compact .chip{font-size:10px;padding:1px 3px}.compact .glyph{width:18px;height:18px}';
+function mount(host,boost,compact=false){const shadow=host.attachShadow({mode:'closed'}),css=el('style',style),wrap=el('span',null,'chips'+(compact?' compact':''));shadow.append(css,wrap);showChips(wrap,boost);return wrap}
+let itemWrap=null;
+function mountItemChips(boost){
+ if(!isItem||!Object.keys(boost).length)return;
+ if(itemWrap){itemWrap.replaceChildren();showChips(itemWrap,boost);return}
+ const info=content.querySelector('.aqwc-item-info')||content.querySelector('.aqwc-item-native-section');if(!info)return;
+ const tagImages=[...info.querySelectorAll('img')].filter(itemTag);
+ const host=el('span');host.id='aqwc-item-boosts';host.style.cssText='display:inline-flex;vertical-align:middle;margin:2px 0 2px 8px;max-width:100%';
+ itemWrap=mount(host,boost);
+ const tag=tagImages.at(-1);
+ if(tag){const anchor=tag.closest('a');(anchor&&info.contains(anchor)?anchor:tag).after(host)}
+ else{const heading=info.querySelector('.aqwc-item-section-label');if(heading)heading.after(host);else info.prepend(host)}
+}
+if(isItem)mountItemChips(notes(itemText));
+// All Wiki pages use the bundled public snapshot, not remote Wiki requests.
+// Only relevant item lists are annotated; no inventory lookup or Finder UI.
+const categoryList=globalThis.AQWCListOwnership?.categoryFor(location.pathname)||globalThis.AQWCListOwnership?.categoryFor('/'+path.split('/p/')[0]);
+if((isItem||categoryList||/^(search|search-items-by-tag)(?:\/|$)/.test(path))&&typeof chrome!=='undefined'){
+ fetch(chrome.runtime.getURL('boost-index.json')).then(r=>{if(!r.ok)throw Error('Boost catalog unavailable');return r.json()}).then(data=>{
+ if(!Array.isArray(data.rows))return;
+ const index=new Map(data.rows.map(r=>[r.slug,r]));
+ const current=index.get(path);if(isItem&&current)mountItemChips({...current.boost,...notes(itemText)});
+ if(!categoryList&&!/^(search|search-items-by-tag)(?:\/|$)/.test(path))return;
+ for(const a of [...content.querySelectorAll('a[href]')].slice(0,1200)){
+  const r=index.get(slug(a.getAttribute('href')));if(!r||!clean(a.textContent)||a.querySelector('img')||a.nextElementSibling?.classList.contains('aqwc-inline-boost'))continue;
+  const span=el('span',null,'aqwc-inline-boost');span.style.cssText='display:inline-flex;margin:0 4px;vertical-align:middle';mount(span,r.boost,true);a.after(span);
+ }
+ }).catch(()=>{});
+}
 })();
