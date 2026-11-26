@@ -9,7 +9,7 @@ version=json.loads((EXT/'manifest.json').read_text())['version']
 assert re.fullmatch(r'\d+\.\d+\.\d+(?:\.\d+)?',version)
 guide=EXT/'quick-start.html'
 guide.write_text(re.sub(r'Manual preview build · v\d+\.\d+\.\d+(?:\.\d+)?', 'Manual preview build · v'+version, guide.read_text(encoding='utf-8')),encoding='utf-8')
-shots=['popup-home','popup-settings','home','wishlist','quests','ultras','builds','story','badges','explore','inventory','stats','wiki']
+shots=['tour','popup-home','popup-settings','home','wishlist','quests','ultras','builds','story','badges','explore','inventory','stats','wiki']
 for name in shots:
     p=EXT/'guide-images'/('guide-'+name+'.png')
     assert p.is_file() and p.stat().st_size>5000 and p.read_bytes()[:8]==b'\x89PNG\r\n\x1a\n',p
