@@ -2,7 +2,7 @@
 
 Created by **CptMundo**. Unofficial AdventureQuest Worlds fan project, not affiliated with Artix Entertainment.
 
-[Live Companion](https://cptmundo.github.io/AQW-Companion/) · [Technical architecture](docs/ARCHITECTURE.md)
+[Live Companion](https://cptmundo.github.io/AQW-Companion/) · [Visual guide & manual extension download](https://cptmundo.github.io/AQW-Companion/extension/quick-start.html) · [Technical architecture](docs/ARCHITECTURE.md)
 
 ## Features
 

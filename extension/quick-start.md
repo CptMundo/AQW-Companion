@@ -1,31 +1,12 @@
 # AQW Companion — Quick start
 
-## Install (Opera / Chrome / Edge)
+[Visual guide and manual extension ZIP](https://cptmundo.github.io/AQW-Companion/extension/quick-start.html)
 
-Store installation: use the official listing shared by the maintainer when available. Click Add to Chrome and pin AQW Companion. Until then, use the manual pre-release steps below. The visual guide is `quick-start.html`.
-
-1. Download the ZIP from the project repository: https://github.com/CptMundo/AQW-Companion
-2. Extract it into a permanent folder. Do not load the entire repository.
-3. Open `opera://extensions` or `chrome://extensions`, enable Developer mode, and choose **Load unpacked**.
-4. Select the extracted `extension` folder (the one containing manifest.json). Pin the extension to your toolbar if desired.
-5. Open or refresh https://aqwwiki.wikidot.com/. The default Companion theme and Wiki navigation work without importing inventory.
-
-## First inventory sync
-
-On extension **Home**, click **Sync Inventory** from the signed-in Inventory page or **Sync Badges** from your public Character Page. The extension captures and stages data, opens Companion if necessary, and confirms only after saving. Real record counts appear when available; unmeasured steps show an animated progress bar. Optional Account Manager access allows automatic opening for known sources. Open the correct page and retry if access or login is required. Settings retains manual export; use **Import & Sync** or Badge Hunter import if automatic sync fails. Keep existing inventory if capture fails. No password or session token is stored. Inventory and Bank are local snapshots, not live game data.
-
-## Everyday use
-
-- **Home:** open Companion or AQW Wiki; view saved Wishlist progress and manually checked daily/weekly tasks in compact lists.
-- **Settings:** Companion (default), Dark (neutral grayscale), Light, Cas B Neophyte. Theme changes apply to the Wiki and popup.
-- **Item pages:** view artwork, acquisition and farming materials; add supported unambiguous items to Wishlist.
-- **Quest pages:** select a quest, see objectives and available images, pin it to Companion. Manual completion is not proof of in-game completion.
-- **Directory search:** matching entries appear as pages load. An incomplete search is not a definitive no-match result. Retry failed pages or use the original Wiki list.
-- **Locations and shops:** use available room galleries, copy map commands and previews. Unknown source information or missing artwork remains unknown.
-
-## Update / troubleshoot
-
-Replace files in the same unpacked extension folder, click Reload in the browser extensions manager, then refresh Wiki and Companion tabs. Avoid installing a duplicate copy. If a competing Wiki theme interferes, test with it disabled. In Settings > Troubleshooting & privacy use Test connection when sync fails. Clear synced inventory only if you intend to clear the extension's local copy.
+1. Download the extension-only ZIP, extract to a permanent folder, open chrome://extensions, edge://extensions or opera://extensions, enable Developer mode, and Load unpacked the folder containing manifest.json.
+2. Open Companion and the official Account Manager. Sign in there, then use extension Home → Full Sync. Allow optional access when prompted. Public Sync and Sync Badges use the public Character Page.
+3. Track Wishlist, quests, Ultras, builds, Forge, story and badges; open Explore, Inventory and Account Statistics for saved data. The Wiki supports adding goals and available quest pins.
+4. Settings → Theme; optional purchase totals & loyalty; manual export fallback; troubleshooting; guide. Refresh Companion and Wiki after updating. Inventory is not live.
+5. For manual fallback, export Inventory from the official page and use Import & Sync on the site. Back up via Options. Do not post credentials, cookies, tokens or account exports.
 
 ## Browser QA before public release
 
