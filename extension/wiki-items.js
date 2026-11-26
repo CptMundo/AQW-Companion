@@ -7,6 +7,8 @@
  const raw=String(content.textContent||'');
  if(!/\bSellback\s*:/i.test(raw)||!/\bDescription\s*:/i.test(raw))return;
  const body=String(content.innerText||raw);
+ // Preserve original item text before the redesign collapses the native Notes.
+ globalThis.AQWCOriginalItemText=raw;
  if(/\busually refers to\s*:/i.test(body)||!/\bSellback\s*:/i.test(body)||!/\bDescription\s*:/i.test(body))return;
  const name=String(title.innerText||title.textContent||'').trim();if(!name||name.length>350)return;
  const crumb=document.getElementById('breadcrumbs')||document.querySelector?.('.breadcrumbs, #breadcrumb, .breadcrumb');
