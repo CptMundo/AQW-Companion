@@ -5,16 +5,8 @@ import hashlib, json, pathlib, re, subprocess, zipfile
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 EXT=ROOT/'extension'
 OUT=ROOT/'downloads'
-version=json.loads((EXT/'manifest.json').read_text())['version']
-assert re.fullmatch(r'\d+\.\d+\.\d+(?:\.\d+)?',version)
-guide=EXT/'quick-start.html'
-# Fail the public release build if any user-visible version diverges.
-assert json.loads((EXT/'manifest.json').read_text())['version_name']==version+' Beta'
-assert 'class="tag">BETA '+version+'</span>' in (ROOT/'index.html').read_text(encoding='utf-8')
-assert ' · v'+version+' Beta</div>' in (ROOT/'index.html').read_text(encoding='utf-8')
-assert 'v'+version+' Beta · Your adventure, connected' in (EXT/'popup.html').read_text(encoding='utf-8')
-assert 'Manual preview build · v'+version+' Beta' in guide.read_text(encoding='utf-8')
-assert (ROOT/'README.md').read_text(encoding='utf-8').startswith('# AQW Companion — Beta '+version+'\n')
+from sync_release_version import synchronize
+version,stage=synchronize(ROOT,check=True)
 shots=['tour','popup-home','popup-settings','home','wishlist','quests','ultras','builds','story','badges','explore','inventory','stats','wiki']
 for name in shots:
     p=EXT/'guide-images'/('guide-'+name+'.png')
@@ -32,6 +24,8 @@ with zipfile.ZipFile(zip_path,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
 with zipfile.ZipFile(zip_path) as z:
     assert z.testzip() is None
     assert json.loads(z.read('manifest.json'))['version']==version
+    for name in ('manifest.json','popup.html','quick-start.html'):
+        assert z.read(name)==(EXT/name).read_bytes(), 'Stale packaged '+name
     assert all('guide-images/guide-'+s+'.png' in z.namelist() for s in shots)
     assert '__GUIDE_VERSION__' not in z.read('quick-start.html').decode()
 digest=hashlib.sha256(zip_path.read_bytes()).hexdigest()
