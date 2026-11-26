@@ -10,7 +10,7 @@ const pic=(id)=>'<img id="'+id+'" src="'+svg+'" width="300" height="240" alt="Eq
 const basic='<p><strong>Location:</strong> <a href="/museum">Museum</a><br><strong>Price:</strong> 300 AC<br><strong>Sellback:</strong> 75 AC<br><strong>Rarity:</strong> Awesome Rarity<br><strong>Description:</strong> A test item.</p>';
 const recipe='<ul><li>Merge the following:<ul><li><a href="/void-aura">Void Aura</a> x10</li></ul></li></ul>';
 const event='<p><img src="/local--files/image-tags/staffbirthday.png" width="160" height="160" alt="Staff Birthday"><img src="/local--files/image-tags/acsmall.png" width="45" height="26" alt="AC"></p>';
-const gallery='<div class="yui-navset" id="native-gallery"><ul><li><a href="#male">Male</a></li><li><a href="#female">Female</a></li></ul><div id="male">'+pic('male-art')+'</div><div id="female" hidden>'+pic('female-art')+'</div></div>';
+const gallery='<div class="yui-navset" id="native-gallery"><ul><li><a href="#male">Male</a></li><li><a href="#female">Female</a></li></ul><div id="male"><div class="collapsible-block">Normal'+pic('male-art')+'</div></div><div id="female" hidden><div class="collapsible-block">Animated'+pic('female-art')+'</div></div></div>';
 const variants='<div class="yui-navset" id="native-variants"><ul><li><a href="#one">First</a></li><li><a href="#two">Second</a></li></ul><div id="one">'+basic+recipe+'</div><div id="two">'+basic.replace('300 AC','400 AC')+recipe+'</div></div>';
 const scenarios=[
  ['shop-cape',basic+'<p>'+pic('art')+'</p><p>Thanks to Test.</p>',false,true],
