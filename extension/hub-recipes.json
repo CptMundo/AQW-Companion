@@ -1,0 +1,907 @@
+{
+  "source": "js/recipe-integrity.js",
+  "rows": [
+    {
+      "name": "Sin of the Abyss",
+      "type": "Weapon",
+      "source": "https://aqwwiki.wikidot.com/sin-of-the-abyss",
+      "sourceKind": "final-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Blood Gem of the Archfiend",
+          50
+        ],
+        [
+          "Dark Crystal Shard",
+          200
+        ],
+        [
+          "Diamond of Nulgath",
+          500
+        ],
+        [
+          "Gem of Nulgath",
+          150
+        ],
+        [
+          "Nulgath Insignia",
+          20
+        ],
+        [
+          "Sin of Revontheus",
+          1
+        ],
+        [
+          "Tainted Gem",
+          300
+        ],
+        [
+          "Totem of Nulgath",
+          50
+        ]
+      ]
+    },
+    {
+      "name": "Almighty Aluminum of Destiny",
+      "type": "Misc",
+      "source": "https://aqwwiki.wikidot.com/forge-metal",
+      "sourceKind": "forge-metal",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Loyal Spirit Orb",
+          5
+        ],
+        [
+          "Bright Aura",
+          2
+        ],
+        [
+          "Almighty Aluminum",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Blessed Barium of Destiny",
+      "type": "Misc",
+      "source": "https://aqwwiki.wikidot.com/forge-metal",
+      "sourceKind": "forge-metal",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Loyal Spirit Orb",
+          5
+        ],
+        [
+          "Bright Aura",
+          2
+        ],
+        [
+          "Blessed Barium",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Celestial Copper of Destiny",
+      "type": "Misc",
+      "source": "https://aqwwiki.wikidot.com/forge-metal",
+      "sourceKind": "forge-metal",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Loyal Spirit Orb",
+          5
+        ],
+        [
+          "Bright Aura",
+          2
+        ],
+        [
+          "Celestial Copper",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Glorious Gold of Destiny",
+      "type": "Misc",
+      "source": "https://aqwwiki.wikidot.com/forge-metal",
+      "sourceKind": "forge-metal",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Loyal Spirit Orb",
+          5
+        ],
+        [
+          "Bright Aura",
+          2
+        ],
+        [
+          "Glorious Gold",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Immortal Iron of Destiny",
+      "type": "Misc",
+      "source": "https://aqwwiki.wikidot.com/forge-metal",
+      "sourceKind": "forge-metal",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Loyal Spirit Orb",
+          5
+        ],
+        [
+          "Bright Aura",
+          2
+        ],
+        [
+          "Immortal Iron",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Pious Platinum of Destiny",
+      "type": "Misc",
+      "source": "https://aqwwiki.wikidot.com/forge-metal",
+      "sourceKind": "forge-metal",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Loyal Spirit Orb",
+          5
+        ],
+        [
+          "Bright Aura",
+          2
+        ],
+        [
+          "Pious Platinum",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Sanctified Silver of Destiny",
+      "type": "Misc",
+      "source": "https://aqwwiki.wikidot.com/forge-metal",
+      "sourceKind": "forge-metal",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Loyal Spirit Orb",
+          5
+        ],
+        [
+          "Bright Aura",
+          2
+        ],
+        [
+          "Sanctified Silver",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Accursed Arsenic of Doom",
+      "type": "Misc",
+      "source": "https://aqwwiki.wikidot.com/forge-metal",
+      "sourceKind": "forge-metal",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Corrupt Spirit Orb",
+          5
+        ],
+        [
+          "Ominous Aura",
+          2
+        ],
+        [
+          "Accursed Arsenic",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Baneful Beryllium of Doom",
+      "type": "Misc",
+      "source": "https://aqwwiki.wikidot.com/forge-metal",
+      "sourceKind": "forge-metal",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Corrupt Spirit Orb",
+          5
+        ],
+        [
+          "Ominous Aura",
+          2
+        ],
+        [
+          "Baneful Beryllium",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Calamitous Chromium of Doom",
+      "type": "Misc",
+      "source": "https://aqwwiki.wikidot.com/forge-metal",
+      "sourceKind": "forge-metal",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Corrupt Spirit Orb",
+          5
+        ],
+        [
+          "Ominous Aura",
+          2
+        ],
+        [
+          "Calamitous Chromium",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Malefic Mercury of Doom",
+      "type": "Misc",
+      "source": "https://aqwwiki.wikidot.com/forge-metal",
+      "sourceKind": "forge-metal",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Corrupt Spirit Orb",
+          5
+        ],
+        [
+          "Ominous Aura",
+          2
+        ],
+        [
+          "Malefic Mercury",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Pernicious Palladium of Doom",
+      "type": "Misc",
+      "source": "https://aqwwiki.wikidot.com/forge-metal",
+      "sourceKind": "forge-metal",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Corrupt Spirit Orb",
+          5
+        ],
+        [
+          "Ominous Aura",
+          2
+        ],
+        [
+          "Pernicious Palladium",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Reprehensible Rhodium of Doom",
+      "type": "Misc",
+      "source": "https://aqwwiki.wikidot.com/forge-metal",
+      "sourceKind": "forge-metal",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Corrupt Spirit Orb",
+          5
+        ],
+        [
+          "Ominous Aura",
+          2
+        ],
+        [
+          "Reprehensible Rhodium",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Treacherous Thorium of Doom",
+      "type": "Misc",
+      "source": "https://aqwwiki.wikidot.com/forge-metal",
+      "sourceKind": "forge-metal",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Corrupt Spirit Orb",
+          5
+        ],
+        [
+          "Ominous Aura",
+          2
+        ],
+        [
+          "Treacherous Thorium",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Blade of Destiny",
+      "type": "Weapon",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Basic Weapon Kit",
+          1
+        ],
+        [
+          "Blessed Barium of Destiny",
+          1
+        ],
+        [
+          "Spirit Orb",
+          15
+        ],
+        [
+          "Loyal Spirit Orb",
+          1
+        ],
+        [
+          "Brilliant Aura",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Bright Blade of Destiny",
+      "type": "Weapon",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Blade of Destiny",
+          1
+        ],
+        [
+          "Advanced Weapon Kit",
+          1
+        ],
+        [
+          "Brilliant Aura",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Blinding Blade of Destiny",
+      "type": "Weapon",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Bright Blade of Destiny",
+          1
+        ],
+        [
+          "Ultimate Weapon Kit",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Broadsword of Destiny",
+      "type": "Weapon",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Basic Weapon Kit",
+          1
+        ],
+        [
+          "Glorious Gold of Destiny",
+          1
+        ],
+        [
+          "Spirit Orb",
+          20
+        ],
+        [
+          "Loyal Spirit Orb",
+          1
+        ],
+        [
+          "Brilliant Aura",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Bright Broadsword of Destiny",
+      "type": "Weapon",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Broadsword of Destiny",
+          1
+        ],
+        [
+          "Advanced Weapon Kit",
+          1
+        ],
+        [
+          "Bright Aura",
+          1
+        ],
+        [
+          "Undead Energy",
+          25
+        ]
+      ]
+    },
+    {
+      "name": "Blinding Broadsword of Destiny",
+      "type": "Weapon",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Bright Broadsword of Destiny",
+          1
+        ],
+        [
+          "Ultimate Weapon Kit",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Daggers of Destiny",
+      "type": "Weapon",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Basic Weapon Kit",
+          1
+        ],
+        [
+          "Almighty Aluminum of Destiny",
+          1
+        ],
+        [
+          "Spirit Orb",
+          50
+        ]
+      ]
+    },
+    {
+      "name": "Bright Daggers of Destiny",
+      "type": "Weapon",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Undead Energy",
+          50
+        ],
+        [
+          "Daggers of Destiny",
+          1
+        ],
+        [
+          "Advanced Weapon Kit",
+          1
+        ],
+        [
+          "Spirit Orb",
+          75
+        ]
+      ]
+    },
+    {
+      "name": "Blinding Daggers of Destiny",
+      "type": "Weapon",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Bright Daggers of Destiny",
+          1
+        ],
+        [
+          "Ultimate Weapon Kit",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Bow of Destiny",
+      "type": "Weapon",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Basic Weapon Kit",
+          1
+        ],
+        [
+          "Sanctified Silver of Destiny",
+          1
+        ],
+        [
+          "Undead Energy",
+          17
+        ],
+        [
+          "Spirit Orb",
+          13
+        ],
+        [
+          "Loyal Spirit Orb",
+          1
+        ],
+        [
+          "Brilliant Aura",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Bright Bow of Destiny",
+      "type": "Weapon",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Bow of Destiny",
+          1
+        ],
+        [
+          "Advanced Weapon Kit",
+          1
+        ],
+        [
+          "Loyal Spirit Orb",
+          3
+        ]
+      ]
+    },
+    {
+      "name": "Blinding Bow of Destiny",
+      "type": "Weapon",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Bright Bow of Destiny",
+          1
+        ],
+        [
+          "Ultimate Weapon Kit",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Mace of Destiny",
+      "type": "Weapon",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Basic Weapon Kit",
+          1
+        ],
+        [
+          "Celestial Copper of Destiny",
+          1
+        ],
+        [
+          "Undead Energy",
+          7
+        ],
+        [
+          "Spirit Orb",
+          20
+        ],
+        [
+          "Loyal Spirit Orb",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Bright Mace of Destiny",
+      "type": "Weapon",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Mace of Destiny",
+          1
+        ],
+        [
+          "Advanced Weapon Kit",
+          1
+        ],
+        [
+          "Bright Aura",
+          2
+        ]
+      ]
+    },
+    {
+      "name": "Blinding Mace of Destiny",
+      "type": "Weapon",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Bright Mace of Destiny",
+          1
+        ],
+        [
+          "Ultimate Weapon Kit",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Scythe of Destiny",
+      "type": "Weapon",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Basic Weapon Kit",
+          1
+        ],
+        [
+          "Immortal Iron of Destiny",
+          1
+        ],
+        [
+          "Undead Energy",
+          10
+        ],
+        [
+          "Spirit Orb",
+          10
+        ],
+        [
+          "Loyal Spirit Orb",
+          2
+        ]
+      ]
+    },
+    {
+      "name": "Bright Scythe of Destiny",
+      "type": "Weapon",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Scythe of Destiny",
+          1
+        ],
+        [
+          "Advanced Weapon Kit",
+          1
+        ],
+        [
+          "Brilliant Aura",
+          2
+        ]
+      ]
+    },
+    {
+      "name": "Blinding Scythe of Destiny",
+      "type": "Weapon",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Bright Scythe of Destiny",
+          1
+        ],
+        [
+          "Ultimate Weapon Kit",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "Bright Aura",
+      "type": "Misc",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Loyal Spirit Orb",
+          50
+        ]
+      ]
+    },
+    {
+      "name": "Brilliant Aura",
+      "type": "Misc",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Bright Aura",
+          25
+        ]
+      ]
+    },
+    {
+      "name": "Loyal Spirit Orb",
+      "type": "Misc",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Spirit Orb",
+          100
+        ]
+      ]
+    },
+    {
+      "name": "Spirit Orb",
+      "type": "Misc",
+      "source": "https://aqwwiki.wikidot.com/light-merge",
+      "sourceKind": "light-merge",
+      "reviewedOn": "2026-11-23",
+      "ingredients": [
+        [
+          "Undead Energy",
+          50
+        ]
+      ]
+    },
+    {
+      "name": "Necrotic Sword of the Abyss",
+      "type": "Weapon",
+      "ingredients": [
+        [
+          "Necrotic Sword of Doom",
+          1
+        ],
+        [
+          "Roentgenium of Nulgath",
+          2
+        ],
+        [
+          "Void Crystal A",
+          1
+        ],
+        [
+          "Void Crystal B",
+          1
+        ]
+      ],
+      "source": "https://aqwwiki.wikidot.com/void-highlord-merge-shop",
+      "sourceKind": "void-highlord-shop",
+      "reviewedOn": "2026-11-23"
+    },
+    {
+      "name": "Void Highlord",
+      "type": "Class",
+      "ingredients": [
+        [
+          "Roentgenium of Nulgath",
+          15
+        ],
+        [
+          "Void Crystal A",
+          1
+        ],
+        [
+          "Void Crystal B",
+          1
+        ]
+      ],
+      "source": "https://aqwwiki.wikidot.com/void-highlord-merge-shop",
+      "sourceKind": "void-highlord-shop",
+      "reviewedOn": "2026-11-23"
+    },
+    {
+      "name": "The Mortal Coil",
+      "type": "Misc",
+      "ingredients": [
+        [
+          "Roentgenium of Nulgath",
+          4
+        ]
+      ],
+      "source": "https://aqwwiki.wikidot.com/void-highlord-merge-shop",
+      "sourceKind": "void-highlord-shop",
+      "reviewedOn": "2026-11-23"
+    },
+    {
+      "name": "Void Crystal A",
+      "type": "Misc",
+      "ingredients": [
+        [
+          "Unidentified 10",
+          200
+        ],
+        [
+          "Gem of Nulgath",
+          150
+        ],
+        [
+          "Dark Crystal Shard",
+          200
+        ],
+        [
+          "Tainted Gem",
+          200
+        ]
+      ],
+      "source": "https://aqwwiki.wikidot.com/void-highlord-merge-shop",
+      "sourceKind": "void-highlord-shop",
+      "reviewedOn": "2026-11-23"
+    },
+    {
+      "name": "Void Crystal B",
+      "type": "Misc",
+      "ingredients": [
+        [
+          "Diamond of Nulgath",
+          200
+        ],
+        [
+          "Blood Gem of the Archfiend",
+          30
+        ],
+        [
+          "Totem of Nulgath",
+          15
+        ],
+        [
+          "Elder's Blood",
+          2
+        ]
+      ],
+      "source": "https://aqwwiki.wikidot.com/void-highlord-merge-shop",
+      "sourceKind": "void-highlord-shop",
+      "reviewedOn": "2026-11-23"
+    }
+  ]
+}
