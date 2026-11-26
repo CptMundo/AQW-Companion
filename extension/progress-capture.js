@@ -46,3 +46,27 @@ function captureAccountProgress(){
  return {section,capturedAt,rows};
 }
 if(typeof module!=='undefined')module.exports={captureAccountProgress};
+
+// Discover actual same-origin navigation, never guess authenticated endpoints or submit forms.
+function readProgressNavigation(){
+ if(location.origin!=='https://account.aq.com')return {section:null,links:{}};
+ const norm=s=>String(s||'').replace(/\s+/g,' ').trim().toLowerCase();
+ const lines=document.body?.innerText?.split(/\n/).map(norm)||[];
+ const headings={'progress summary':'summary','sagas completed':'sagas','time played':'playtime','membership progress':'membership','adventurecoins progress':'ac'};
+ const aliases={'summary':'summary','saga progress':'sagas','playtime':'playtime','play time':'playtime','member loyalty':'membership','member loyality':'membership','membership loyalty':'membership','ac loyalty':'ac','ac loyality':'ac','badge tracker':'tracker','progress badges':'tracker','achievement tracker':'tracker','progress':'tracker'};
+ const hits=Object.keys(headings).filter(k=>lines.includes(k));
+ const section=lines.includes('progress badges')&&hits.length===1?headings[hits[0]]:null,links={},ambiguous=new Set();
+ for(const a of document.querySelectorAll('a[href]')){
+  if(!a.getClientRects().length)continue;
+  const key=Object.prototype.hasOwnProperty.call(aliases,norm(a.innerText))?aliases[norm(a.innerText)]:null;
+  if(!key)continue;
+  try{
+   const u=new URL(a.href,location.href);
+   if(u.origin!==location.origin||u.username||u.password||!/progress|badge|achievement/i.test(u.pathname)||/logout|logoff|delete|purchase|payment|reset|password|settings/i.test(u.pathname))continue;
+   if(links[key]&&links[key]!==u.href)ambiguous.add(key);else links[key]=u.href;
+  }catch{}
+ }
+ for(const key of ambiguous)delete links[key];
+ return {section,links};
+}
+if(typeof module!=='undefined')module.exports.readProgressNavigation=readProgressNavigation;
