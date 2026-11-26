@@ -7,13 +7,18 @@ const suffix=/\s+\((sword|axe|bow|dagger|gauntlet|gun|handgun|mace|polearm|rifle
 const weapon=/^(?:weapon|sword|axe|bow|dagger|gauntlet|gun|handgun|mace|polearm|rifle|staff|wand|whip)$/i;
 function typed(row,category){const t=norm(row.Type);return category==='weapons'?weapon.test(t):category==='armors'?t==='armor':category==='capes-back-items'?['cape','back item'].includes(t):category==='helmets-hoods'?['helm','helmet','hood'].includes(t):category==='pets'?['pet','battle pet'].includes(t):false}
 function candidate(r){const m=r.name.match(suffix),base=m?r.name.slice(0,m.index):r.name;return {name:base,variant:!m&&/\s+\([^)]+\)$/.test(r.name),type:m&&r.category==='weapons'?m[1][0].toUpperCase()+m[1].slice(1).toLowerCase():types[r.category]}}
-function ownership(r,inventory,loaded,duplicate=false){
+const family=name=>name.replace(/\s+\([^)]+\)$/,'');
+function inventoryIndex(inventory){
+ const index=new Map(Object.keys(types).map(k=>[k,{exact:new Map(),families:new Set()}]));
+ for(const row of inventory){if(!(Number(row.Count)>0))continue;const name=norm(row.Name);for(const [cat,b] of index){if(!typed(row,cat))continue;if(!b.exact.has(name))b.exact.set(name,[]);b.exact.get(name).push(row);b.families.add(family(name))}}
+ return index
+}
+function ownership(r,inventory,loaded,duplicate=false,index=null){
  if(!loaded)return 'unknown';if(duplicate)return 'ambiguous';
- const c=candidate(r),name=norm(c.name),typedRows=inventory.filter(x=>Number(x.Count)>0&&typed(x,r.category));
- const exact=typedRows.filter(x=>norm(x.Name)===norm(r.name)||norm(x.Name)===name);
+ const c=candidate(r),name=norm(c.name),b=(index||inventoryIndex(inventory)).get(r.category);if(!b)return 'unknown';
+ const exact=[...(b.exact.get(norm(r.name))||[]),...(b.exact.get(name)||[])];
  if(exact.length)return new Set(exact.map(x=>String(x.ID))).size===1?'owned':'ambiguous';
- const base=name.replace(/\s+\([^)]+\)$/,'');
- if(typedRows.some(x=>norm(x.Name).replace(/\s+\([^)]+\)$/,'')===base)||c.variant)return 'ambiguous';
+ if(b.families.has(family(name))||c.variant)return 'ambiguous';
  return 'not-found'
 }
 globalThis.AQWCBoostFinderHelpers=Object.freeze({candidate,ownership,typed});
@@ -55,7 +60,7 @@ function draw(){
  const st=state?.()||{items:[],loaded:false,tracked:[]};own.disabled=!st.loaded;if(!st.loaded)own.value='';
  if(!data)return;
  const duplicates=new Map();for(const r of data.rows){const key=r.category+'|'+norm(candidate(r).name);duplicates.set(key,(duplicates.get(key)||0)+1)}
- const owned={};for(const r of data.rows)owned[r.slug]=ownership(r,st.items||[],st.loaded,(duplicates.get(r.category+'|'+norm(candidate(r).name))||0)>1);
+ const inv=inventoryIndex(st.items||[]),owned={};for(const r of data.rows)owned[r.slug]=ownership(r,st.items||[],st.loaded,(duplicates.get(r.category+'|'+norm(candidate(r).name))||0)>1,inv);
  const tracked=new Set((st.tracked||[]).map(norm));
  const filtered=core.filter(data.rows,{query:q.value,boosts:[...selected],min:Math.max(0,Number(min.value)||0),category:cat.value,availability:avail.value,ownership:own.value,owned,sort:order.value});
  const pages=Math.max(1,Math.ceil(filtered.length/48));page=Math.min(page,pages-1);
