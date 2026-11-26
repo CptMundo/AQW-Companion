@@ -47,7 +47,7 @@ for(const li of unified.children){
 }
 }
 const shell=el('nav','aqwc-nav-shell');shell.id='aqwc-nav-shell';shell.setAttribute('aria-label','AQW Wiki navigation');header.after(shell);shell.append(bar);
-const menuToggle=el('button','aqwc-menu-toggle','Menu');menuToggle.type='button';menuToggle.setAttribute('aria-expanded','false');menuToggle.setAttribute('aria-controls','top-bar');shell.prepend(menuToggle);const sideToggle=document.getElementById('aqwc-sidebar-toggle');if(sideToggle)shell.prepend(sideToggle);
+const menuToggle=el('button','aqwc-menu-toggle','Menu');menuToggle.type='button';menuToggle.setAttribute('aria-expanded','false');menuToggle.setAttribute('aria-controls','top-bar');shell.prepend(menuToggle);const sideToggle=document.getElementById('aqwc-sidebar-toggle');if(sideToggle){shell.prepend(sideToggle);sideToggle.textContent='☰';}
 function toggleMenu(open){shell.classList.toggle('aqwc-menu-open',open);menuToggle.setAttribute('aria-expanded',String(open))}
 menuToggle.addEventListener('click',()=>toggleMenu(!shell.classList.contains('aqwc-menu-open')));document.addEventListener('pointerdown',e=>{if(!shell.contains(e.target))toggleMenu(false)});shell.addEventListener('keydown',e=>{if(e.key==='Escape'&&shell.classList.contains('aqwc-menu-open')){toggleMenu(false);menuToggle.focus()}});
 const form=el('form','aqwc-quick-search');form.setAttribute('role','search');const wrap=el('div','aqwc-search-input');wrap.append(svg(glyphs.search));
