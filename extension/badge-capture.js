@@ -22,7 +22,7 @@ function captureCharacterBadges(doc=document,href=location.href){
  return {character,capturedAt:new Date().toISOString(),badges};
 }
 if(typeof module==='object'&&module.exports)module.exports=captureCharacterBadges;
-else{
+else if(typeof document!=='undefined'){
  const KEY='aqwc-badge-stage-v1',status=document.getElementById('badge-capture-status'),capture=document.getElementById('capture-badges'),discard=document.getElementById('discard-badges');
  const show=s=>status.textContent=s;
  async function summary(){const v=(await chrome.storage.local.get(KEY))[KEY];show(v?v.character+' · '+v.badges.length+' image references ready. Import in Badge Hunter.':'No capture staged.')}
