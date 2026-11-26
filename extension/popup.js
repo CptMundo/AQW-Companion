@@ -27,6 +27,7 @@
   }
   save.addEventListener('click',e=>{if(e.isTrusted&&!save.disabled)persist({background:bg.value,banner:'prometheus',panel:'integrated'})});
   chrome.runtime.onMessage.addListener((m,sender)=>{if(m?.type==='aqwc-theme-changed'&&sender.id===chrome.runtime.id&&!sender.tab)load()});
+  chrome.storage?.onChanged?.addListener((changes,area)=>{if(area==='local'&&changes['aqwc-wiki-appearance-v1'])load()});
   load();
  }
  send('inventory-summary');
