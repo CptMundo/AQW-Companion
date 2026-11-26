@@ -74,10 +74,10 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(result.total,775);assert.equal(result.items,undefined);
  const runWiki=(crumbs,body='Sellback: 0 AC; Description: item',response=result,name='Void Aura',tags=[])=>{
   let request,inserted,closed;
-  function el(){return {style:{},children:[],addEventListener(){},append(...x){this.children.push(...x)},attachShadow({mode}){closed=mode;return el()}}}
+  function el(){return {style:{},children:[],addEventListener(){},setAttribute(){},querySelectorAll(){return []},replaceChildren(...x){this.children=x},append(...x){this.children.push(...x)},attachShadow({mode}){closed=mode;return el()}}}
   const title={textContent:name,insertAdjacentElement(_,host){inserted=host}},content={textContent:body},crumb=crumbs===null?null:{querySelectorAll(){return crumbs.map(x=>typeof x==='string'?{href:'https://aqwwiki.wikidot.com/'+x}:{href:'https://aqwwiki.wikidot.com/'+x.slug,textContent:x.label})}};
   const doc={getElementById:id=>({'page-title':title,'page-content':content,'breadcrumbs':crumb}[id]||null),createElement:el,querySelectorAll:()=>tags.map(textContent=>({textContent}))};
-  const context={URL,URLSearchParams,location:{origin:'https://aqwwiki.wikidot.com',pathname:'/void-aura',href:'https://aqwwiki.wikidot.com/void-aura'},document:doc,window:{addEventListener(){}},setInterval:()=>1,clearInterval(){},chrome:{runtime:{sendMessage(m,cb){if(m.type==='goal-status-read')return Promise.resolve({ok:true,state:'unknown'});if(m.type==='wiki-item-assistant')return Promise.resolve({ok:false});request=m;cb(response)}}}};
+  const context={URL,URLSearchParams,location:{origin:'https://aqwwiki.wikidot.com',pathname:'/void-aura',href:'https://aqwwiki.wikidot.com/void-aura'},document:doc,window:{addEventListener(){}},setInterval:()=>1,clearInterval(){},setTimeout:()=>1,clearTimeout(){},chrome:{runtime:{sendMessage(m,cb){if(m.type==='hub-note-read')return Promise.resolve({ok:false});if(m.type==='goal-status-read')return Promise.resolve({ok:true,state:'unknown'});if(m.type==='wiki-item-assistant')return Promise.resolve({ok:false});request=m;cb(response)}}}};
   vm.runInNewContext(read('extension/wishlist-link.js'),context);vm.runInNewContext(read('extension/wiki-items.js'),context);
   return {request,inserted,closed};
  };
@@ -96,7 +96,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted,undefined);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
  assert.equal(runWiki(['items','houses'],'Sellback: 0 AC; Description: House',result,'Astral Beach Tent (AC)').inserted,undefined);
- assert.equal(manifest.version,'0.12.64');assert.equal(manifest.name,'AQW Companion');assert.equal(manifest.action.default_title,'AQW Companion');assert.ok(read('extension/popup.html').includes('<h1>AQW Companion</h1>'));assert.ok(!read('extension/popup.html').includes('AQW Wiki Companion'));assert.ok(!read('extension/quick-start.html').includes('AQW Wiki Companion'));assert.equal(manifest.content_scripts.length,4);assert.equal(manifest.content_scripts[2].run_at,'document_end');assert.equal(manifest.content_scripts[3].run_at,'document_start');assert.deepEqual(manifest.content_scripts[3].js,['wiki-first-paint.js']);assert.deepEqual(manifest.content_scripts[3].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['companion-theme.js','wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js','wiki-directory.js','wiki-boosts.js','wiki-navigation.js']);
+ assert.equal(manifest.version,'0.12.65');assert.equal(manifest.name,'AQW Companion');assert.equal(manifest.action.default_title,'AQW Companion');assert.ok(read('extension/popup.html').includes('<h1>AQW Companion</h1>'));assert.ok(!read('extension/popup.html').includes('AQW Wiki Companion'));assert.ok(!read('extension/quick-start.html').includes('AQW Wiki Companion'));assert.equal(manifest.content_scripts.length,4);assert.equal(manifest.content_scripts[2].run_at,'document_end');assert.equal(manifest.content_scripts[3].run_at,'document_start');assert.deepEqual(manifest.content_scripts[3].js,['wiki-first-paint.js']);assert.deepEqual(manifest.content_scripts[3].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['companion-theme.js','wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js','wiki-directory.js','wiki-boosts.js','wiki-navigation.js']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -163,7 +163,7 @@ console.log('Wiki Wishlist: scoped links, category suffixes, variant guard and e
  assert.equal((await worker.handle(msg,{...sender,frameId:1})).ok,false);
  assert.equal((await worker.handle(msg,{url:'https://example.org/item',frameId:0})).ok,false);
  assert.equal((await worker.handle({...msg,names:Array(81).fill('x')},sender)).ok,false);
- assert.ok(read('extension/wiki-items.js').includes('api?.render(card,content,location.origin,hint=>'));
+ assert.ok(read('extension/wiki-items.js').includes('api?.render(card,content,location.origin,(hint,plan)=>'));
  console.log('Direct material progress: separate merge lists, strict counts, bounded local lookup and ambiguity passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -679,7 +679,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  marker.textContent='Rarity:';const ul={textContent:'Merge the following: Blade x1'};content.querySelectorAll=s=>s==='strong,b'?[marker]:[ul];assert.equal(priceAnchor(content).node,ul);assert.equal(priceAnchor(content).where,'beforebegin');
  content.querySelectorAll=()=>[];assert.equal(priceAnchor(content).node,content);
  assert.ok(read('extension/wiki-materials.js').includes("'mermaid-sushi':'mermaidsushi'"));
- assert.ok(read('extension/wiki-items.js').includes('joinControl(b,map,location.origin)'));
+ assert.ok(read('extension/wiki-items.js').includes('joinControl(r,map,location.origin)'));
  assert.ok(read('extension/wiki-theme.js').includes('aqwc-faithful-wordmark'));
  const svg=read('extension/prometheus-helm.svg'),data=svg.match(/data:image\/webp;base64,([A-Za-z0-9+/=]+)/);assert.ok(data);const bytes=Buffer.from(data[1],'base64');assert.equal(bytes.length,3516);assert.equal(bytes.toString('ascii',0,4),'RIFF');assert.equal(bytes.toString('ascii',8,12),'WEBP');assert.equal(bytes.readUInt32LE(4)+8,bytes.length);
 }
@@ -993,7 +993,7 @@ assert.ok(read("extension/popup.html").includes('id="account-progress"'));assert
 
 {const nav=read('extension/wiki-navigation.js'),bridge=read('extension/bridge.js');new vm.Script(nav);new vm.Script(bridge);assert.ok(nav.includes('function unifyMenu()'));assert.ok(nav.includes('lists.flatMap'));assert.ok(nav.includes('unified.append(...entries.sort'));assert.ok(nav.includes('flex-wrap:nowrap!important'));assert.ok(nav.includes('aqwc-menu-toggle'));assert.ok(bridge.includes('if(farm)left.append(farm)'));assert.ok(bridge.includes('right.append(status)'));assert.ok(bridge.includes('aqwc-independent-stacks'));assert.ok(bridge.includes('grid-template-areas:\\"left right\\"'));console.log('Single-row Wiki navigation and independent item card stacks checked.');}
 
-{const nav=read('extension/wiki-navigation.js'),theme=read('extension/wiki-theme.js'),items=read('extension/wiki-items.js'),h=read('index.html');new vm.Script(nav);new vm.Script(theme);new vm.Script(items);assert.ok(nav.includes("shell.prepend(sideToggle)"));assert.ok(nav.includes("parent.style.removeProperty('--aqwc-dock-offset')"));assert.ok(theme.includes("sidebarButton.setAttribute('aria-label',label)"));assert.ok(h.includes('class="badge-advanced-tools"'));for(const id of ['badge-character-import','badge-character-clear','badge-hunter-export','badge-hunter-import'])assert.ok(h.includes('id="'+id+'"'));assert.ok(items.includes('aqwc-stock-grid'));assert.ok(items.includes("result.state==='owned'||result.state==='not-found'"));console.log('Aligned sidebar, compact badge tools and collection counts checked.');}
+{const nav=read('extension/wiki-navigation.js'),theme=read('extension/wiki-theme.js'),items=read('extension/wiki-items.js'),h=read('index.html');new vm.Script(nav);new vm.Script(theme);new vm.Script(items);assert.ok(nav.includes("shell.prepend(sideToggle)"));assert.ok(nav.includes("parent.style.removeProperty('--aqwc-dock-offset')"));assert.ok(theme.includes("sidebarButton.setAttribute('aria-label',label)"));assert.ok(h.includes('class="badge-advanced-tools"'));for(const id of ['badge-character-import','badge-character-clear','badge-hunter-export','badge-hunter-import'])assert.ok(h.includes('id="'+id+'"'));assert.ok(items.includes('Inventory: '));assert.ok(items.includes("result.state==='owned'||result.state==='not-found'"));console.log('Aligned sidebar, compact badge tools and collection counts checked.');}
 
 {const b=read('extension/bridge.js');assert.ok(b.includes("if(left)left.append(disclosure)"));assert.ok(b.includes('.aqwc-item-left>.aqwc-native-details{width:100%'));console.log('Native Wiki details remain in the independent farming column.');}
 
@@ -1004,3 +1004,17 @@ assert.ok(read("extension/popup.html").includes('id="account-progress"'));assert
 {const b=read('extension/bridge.js'),w=read('extension/wiki-boosts.js');assert.ok(b.includes('disclosure.open=false'));assert.ok(b.includes("aqwc-tag-"+'kind')||b.includes("'aqwc-tag-'+kind"));assert.ok(w.includes('row.append(host)'));console.log('Collapsed details and original Wiki logos beside boosts checked.');}
 
 {const b=read('extension/bridge.js');assert.ok(b.includes('tagRow.before(eventRow)'));assert.ok(b.includes("kind==='event'?eventRow:tagRow"));assert.ok(b.includes('max-height:150px'));console.log('Event badge above native logos and boosts.');}
+
+{const api=vm.runInNewContext(read('extension/worker.js')+'\n({hubRecipes,hubLoadouts,hubSpending})',{chrome:{runtime:{onMessage:{addListener(){}}}},URL,TextEncoder});
+ const snap={syncedAt:1,items:[{Name:'NSoD',Type:'Sword',Count:1,Bank:0,ID:'1'},{Name:'Racial Armor',Type:'Armor',Count:1,Bank:1,ID:'2'},{Name:'Racial Sword',Type:'Sword',Count:1,Bank:0,ID:'3'},{Name:'Void Aura',Type:'Item',Count:10,Bank:0,ID:'4'}]};
+ const gear=[{name:'NSoD',slug:'nsod',category:'weapons',boost:{all:51}},{name:'Racial Armor',slug:'racial-armor',category:'armors',boost:{undead:50}},{name:'Racial Sword',slug:'racial-sword',category:'weapons',boost:{undead:75}}];
+ assert.equal(api.hubLoadouts(gear,snap).undead.percent,126.5);
+ assert.equal(api.hubLoadouts(gear,null),null);
+ const goals={goals:[{name:'Other goal',progress:40,materials:[{name:'Void Aura',target:10}]}]};
+ assert.equal(api.hubSpending(goals,[{name:'Void Aura',target:4}],snap,'Different goal')[0].extra,4);
+ assert.equal(api.hubSpending(goals,[{name:'Void Aura',target:4}],snap,'Other goal').length,0);
+ const recipes=[{name:'New weapon',type:'Weapon',source:'https://aqwwiki.wikidot.com/test-shop',ingredients:[['Void Aura',4],['Void Aura',7]]}];
+ const r=api.hubRecipes(recipes,{name:'Void Aura'},snap,goals)[0];assert.equal(r.required,11);assert.equal(r.materials[0].missing,1);assert.equal(r.stockReady,false);
+ const bundled=JSON.parse(read('extension/hub-recipes.json'));assert.equal(bundled.rows.length,42);assert.ok(bundled.rows.some(r=>r.name==='Necrotic Sword of the Abyss'));
+ console.log('Smart Hub: recipe stock aggregation, slot-safe boost multiplier and spending impact checked.');
+}
