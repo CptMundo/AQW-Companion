@@ -36,24 +36,109 @@ function matchCapture(snapshot,catalog){
 // Reviewed terminal story quests only. No name matching, paid badges or inferred access gates.
 const CHAOS_CHAPTERS=Object.freeze(['escherion','vath','kitsune','wolfwing','kimberly','ledgermayne','tibicenas','khasaanda','iadoa','lionfang','xiang','alteon','finale'].map(id=>'chaos:'+id));
 const STORY_BADGES=Object.freeze({
+ "cp-31":{"chapter":"chaos:finale","source":"https://aqwwiki.wikidot.com/confrontation-s-quests","category":"Epic Hero","prerequisite":true,"reason":"Both Drakath's Armor badge quest routes require The Final Showdown!."},
+ "cp-61":{"chapter":"chaos:iadoa","source":"https://aqwwiki.wikidot.com/warlic-s-quests","prerequisite":true,"reason":"Defeat Ultra Iadoa requires the Chaos Lord Iadoa story quest."},
+ "cp-635":{"chapter":"other:darkon","source":"https://aqwwiki.wikidot.com/arcana-particle-npc","category":"Epic Hero","prerequisite":true,"reason":"Arcana Invoker requires the completed Elegy of Madness saga."},
+ "cp-591":{"chapter":"ruin:sea","source":"https://aqwwiki.wikidot.com/tara-s-quests","prerequisite":true,"reason":"The badge quest explicitly requires Dead Sea, the main Voice in the Sea boss story quest."},
+ "cp-712":{"chapter":"ruin:thunder","source":"https://aqwwiki.wikidot.com/queen-victoria-alteon-s-quests","category":"Epic Hero","prerequisite":true,"reason":"Echo of the King requires Tell-Tale Heart, which requires The Storm Queen."},
  'cp-29':{chapter:'chaos:finale',source:'https://aqwwiki.wikidot.com/charpage:29',category:'Epic Hero'},
  'cp-30':{chapter:'chaos:finale',source:'https://aqwwiki.wikidot.com/charpage:30',category:'Epic Hero'},
  'cp-436':{chapters:CHAOS_CHAPTERS,source:'https://www.aq.com/gamedesignnotes/12thanniversaryclass-full-8061',category:'Epic Hero',prerequisite:true},
  'cp-60':{chapter:'chaos:tutorial',source:'https://aqwwiki.wikidot.com/charpage:60'},
  'cp-74':{chapter:'chaos:tutorial',source:'https://aqwwiki.wikidot.com/battle-badges'},
  'cp-66':{chapter:'chaos:xiang',source:'https://aqwwiki.wikidot.com/story:xing-xang'},
- 'cp-576':{chapter:'shadows:ruinedcrown',source:'https://www.aq.com/gamedesignnotes/aqw-24feb23-shadowflamefinalevi-9105'},
+ 'cp-576':{chapter:'shadows:ruinedcrown',source:'https://www.aq.com/gamedesignnotes/aqw-24feb23-shadowflamefinalevi-9105',extra:[{chapter:'shadows:fireplanewar',source:'https://aqwwiki.wikidot.com/shadows-of-chaos:alliance-of-crowns',prerequisite:true,reason:'The finale begins with a mandatory Avatar of Fire completion gate.'}]},
  'cp-577':{chapter:'other:darkon',source:'https://aqwwiki.wikidot.com/story:darkon-s-elegy-of-madness'},
  'cp-72':{chapter:'other:ravenloss',source:'https://aqwwiki.wikidot.com/story:ravenloss'}
 });
+const STORY_HINTS=Object.freeze({
+ "cp-436": {
+  "chapters": [
+   "dragons:gluttony",
+   "dragons:pride",
+   "dragons:greed",
+   "dragons:sloth",
+   "dragons:lust",
+   "dragons:envy",
+   "dragons:wrath"
+  ],
+  "category": "Epic Hero",
+  "source": "https://aqwwiki.wikidot.com/the-chest-s-quest",
+  "reason": "Dragon of Time requires the Mysterious Egg and all seven keys. Boss access or key drops may bypass individual story quest turn-ins."
+ },
+ "cp-54": {
+  "chapter": "other:etherstorm",
+  "source": "https://aqwwiki.wikidot.com/story:etherstorm-wastes",
+  "reason": "Open the DragonGate is a story milestone, before the later Desoloth finale."
+ },
+ "cp-73": {
+  "chapter": "other:ravenloss",
+  "source": "https://aqwwiki.wikidot.com/riadne-s-quests",
+  "reason": "Save the SoulWeaver is required, but the later Ravenloss War is separate."
+ },
+ "cp-65": {
+  "chapter": "chaos:xiang",
+  "source": "https://aqwwiki.wikidot.com/battle-badges",
+  "reason": "Defeating the second Chaos Beast does not by itself establish the Chaos Lord finale."
+ },
+ "cp-646": {
+  "chapter": "ruin:thunder",
+  "source": "https://aqwwiki.wikidot.com/felix-taylor-s-quests",
+  "reason": "The separate world-boss badge quest does not list the main story quest as a prerequisite."
+ },
+ "cp-744": {
+  "chapter": "ruin:flame",
+  "source": "https://aqwwiki.wikidot.com/warlic-s-quests",
+  "reason": "World-boss event participation is not proof of all Flame of the Beyond story quests."
+ },
+ "cp-27": {
+  "chapter": "other:doomwood",
+  "category": "Epic Hero",
+  "source": "https://aqwwiki.wikidot.com/artix-s-quests",
+  "reason": "The axe farm starts with a DoomWood Part 1 ending; later parts remain unverified."
+ },
+ "cp-423": {
+  "chapter": "other:doomwood",
+  "source": "https://aqwwiki.wikidot.com/blinding-light-of-destiny-s-quests",
+  "reason": "Never Give Up proves a Stonewood questline milestone, not all Doomwood stories."
+ },
+ "cp-55": {
+  "chapter": "chaos:ledgermayne",
+  "source": "https://aqwwiki.wikidot.com/battle-badges",
+  "reason": "Magic Thief is a separate story event; Arcangrove completion is not established.",
+  "relatedOnly": true
+ },
+ "cp-84": {
+  "chapter": "queen:celestial",
+  "source": "https://aqwwiki.wikidot.com/aranx-s-quests",
+  "reason": "The Celestial Tournament is separate from A Theft of Light; story completion is not established.",
+  "relatedOnly": true
+ },
+ "cp-594": {
+  "chapter": "queen:infernal",
+  "source": "https://aqwwiki.wikidot.com/aranx-s-quests",
+  "reason": "Infernal Arena is a separate questline; Infernal Invasion is not established.",
+  "relatedOnly": true
+ },
+ "cp-9": {
+  "chapter": "other:nythera",
+  "category": "Legendary",
+  "source": "https://aqwwiki.wikidot.com/nythera-s-quests",
+  "reason": "Signing the conduct scroll is unrelated to Nythera's saga.",
+  "relatedOnly": true
+ }
+});
+function storyHints(capture,catalog){
+ const out={};if(!capture||typeof capture.character!=='string'||!capture.character.trim()||!Array.isArray(capture.ids)||!Number.isFinite(Date.parse(capture.capturedAt)))return out;const byId=new Map(catalog.map(b=>[b.id,b]));for(const id of new Set(capture.ids)){if(typeof id!=='string'||!Object.hasOwn(STORY_HINTS,id))continue;const r=STORY_HINTS[id],b=byId.get(id);if(!b||b.paid||b.category!==(r.category||'Battle')||r.relatedOnly)continue;for(const chapter of r.chapters||[r.chapter])(out[chapter]??=[]).push({id,name:b.name,source:r.source,reason:r.reason});}return out;
+}
 function storyEvidence(capture,catalog){
  const out={};if(!capture||typeof capture.character!=='string'||!capture.character.trim()||!Array.isArray(capture.ids)||!Number.isFinite(Date.parse(capture.capturedAt)))return out;
  const byId=new Map(catalog.map(b=>[b.id,b]));
- for(const id of new Set(capture.ids)){if(typeof id!=='string'||!Object.hasOwn(STORY_BADGES,id))continue;const b=byId.get(id),rule=STORY_BADGES[id];if(!b||b.paid||b.category!==(rule.category||'Battle'))continue;for(const chapter of rule.chapters||[rule.chapter])(out[chapter]??=[]).push({id,name:b.name,image:b.image,source:rule.source,character:capture.character,prerequisite:!!rule.prerequisite});}
+ for(const id of new Set(capture.ids)){if(typeof id!=='string'||!Object.hasOwn(STORY_BADGES,id))continue;const b=byId.get(id),rule=STORY_BADGES[id];if(!b||b.paid||b.category!==(rule.category||'Battle'))continue;for(const claim of [...(rule.chapters||[rule.chapter]).map(chapter=>({...rule,chapter})),...(rule.extra||[])]){(out[claim.chapter]??=[]).push({id,name:b.name,image:b.image,source:claim.source,character:capture.character,prerequisite:!!claim.prerequisite,reason:claim.reason||''});}}
  if(Array.isArray(capture.storyGroups)&&capture.storyGroups.includes('champion-of-chaos')&&!capture.ids.some(id=>id==='cp-29'||id==='cp-30')){const a=byId.get('cp-29'),b=byId.get('cp-30');if(a?.category==='Epic Hero'&&b?.category==='Epic Hero'&&!a.paid&&!b.paid)(out['chaos:finale']??=[]).push({id:'champion-of-chaos',name:'Champion of Chaos (variant unknown)',image:a.image,source:'https://www.aq.com/lore/guides/quests',character:capture.character,prerequisite:false});}
  return out;
 }
-const api={KEY,serverDay,availability,clean,update,opportunities,filterBadges,matchCapture,storyEvidence};
+const api={KEY,serverDay,availability,clean,update,opportunities,filterBadges,matchCapture,storyEvidence,storyHints,storyRules:STORY_BADGES,storyHintRules:STORY_HINTS};
 if(typeof module==='object'&&module.exports){module.exports=api;return}
 root.AQWCBadgeHunter=api;
 const d=root.document, catalog=root.AQWCBadgeCatalog||[];
