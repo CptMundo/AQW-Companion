@@ -22,7 +22,7 @@
    enabled(false);
    try{
     const r=await chrome.runtime.sendMessage({type:'wiki-appearance-save',appearance:value});if(!r?.ok)throw Error('Could not save preferences');fill(r.appearance);
-    feedback.textContent=r.delivered?'Theme applied · '+r.delivered+' Wiki tab(s).':'Theme saved · refresh any Wiki tab left open from before this extension update.';
+    feedback.textContent=r.delivered?'Theme applied · '+r.delivered+' Companion / Wiki tab(s).':'Theme saved · refresh any Wiki tab left open from before this extension update.';
    }catch(err){feedback.textContent=String(err?.message||err)}finally{enabled(true)}
   }
   save.addEventListener('click',e=>{if(e.isTrusted&&!save.disabled)persist({background:bg.value,banner:'prometheus',panel:'integrated'})});
