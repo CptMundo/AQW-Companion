@@ -65,10 +65,10 @@ async function main(){
    await go(group,tab);await page.waitForTimeout(200);await shot(page,name,page.locator('#'+tab));
   }
   const popup=await context.newPage();await popup.setViewportSize({width:440,height:760});
-  await popup.addInitScript(()=>{
+  await popup.addInitScript(version=>{
    const store={};const listen={addListener(){},removeListener(){}};const reply=m=>m.type==='inventory-summary'?{ok:true,count:6,source:'full',syncedAt:Date.parse('2026-01-01T12:00:00Z')}:m.type==='wiki-appearance-read'?{ok:true,appearance:{background:'companion'}}:{ok:true};
-   globalThis.chrome={runtime:{id:'guide-fixture',getManifest:()=>({version:'demo'}),getURL:x=>x,onMessage:listen,sendMessage(m,cb){const r=reply(m);if(cb){queueMicrotask(()=>cb(r));return}return Promise.resolve(r)}},storage:{local:{get:async k=>({[k]:store[k]}),set:async v=>Object.assign(store,v),remove:async k=>delete store[k]},onChanged:listen},tabs:{query:async()=>[]},permissions:{contains:async()=>false},scripting:{}};
-  });
+   globalThis.chrome={runtime:{id:'guide-fixture',getManifest:()=>({version}),getURL:x=>x,onMessage:listen,sendMessage(m,cb){const r=reply(m);if(cb){queueMicrotask(()=>cb(r));return}return Promise.resolve(r)}},storage:{local:{get:async k=>({[k]:store[k]}),set:async v=>Object.assign(store,v),remove:async k=>delete store[k]},onChanged:listen},tabs:{query:async()=>[]},permissions:{contains:async()=>false},scripting:{}};
+  },version);
   await popup.goto(origin+'/extension/popup.html',{waitUntil:'domcontentloaded'});await popup.locator('#one-click-inventory').waitFor({state:'visible'});await popup.waitForTimeout(300);await shot(popup,'popup-home');
   await popup.locator('[data-view=settings]').click();await popup.locator('#appearance-background').waitFor({state:'visible'});await shot(popup,'popup-settings');
   await context.close();
