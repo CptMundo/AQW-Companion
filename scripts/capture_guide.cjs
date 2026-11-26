@@ -9,12 +9,25 @@ const root=path.resolve(__dirname,'..'),ext=path.join(root,'extension'),out=path
 const version=JSON.parse(fs.readFileSync(path.join(ext,'manifest.json'),'utf8')).version;
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.png':'image/png','.svg':'image/svg+xml','.jpg':'image/jpeg','.webp':'image/webp'};
 const server=http.createServer((req,res)=>{try{const u=new URL(req.url,'http://localhost'),p=path.resolve(root,'.'+decodeURIComponent(u.pathname==='/'?'/index.html':u.pathname));if(!p.startsWith(root+path.sep)||!fs.statSync(p).isFile()){res.writeHead(404).end();return}res.setHeader('Content-Type',mime[path.extname(p)]||'application/octet-stream');fs.createReadStream(p).pipe(res)}catch{res.writeHead(404).end()}});
-const shot=async(page,name,locator)=>{const dest=path.join(out,'guide-'+name+'.png');await page.evaluate(()=>document.fonts.ready);if(locator){await locator.waitFor({state:'visible'});await locator.scrollIntoViewIfNeeded();const b=await locator.boundingBox(),v=page.viewportSize();if(!b)throw Error('No screenshot bounds '+name);if(b.height<=v.height-4&&b.width<=v.width-4)await locator.screenshot({path:dest,animations:'disabled',timeout:15000});else{await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:dest,animations:'disabled'})}}else{await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:dest,animations:'disabled'})}assert.ok(fs.statSync(dest).size>5000,'Screenshot '+name+' too small');console.log('Captured',name)};
+const shot=async(page,name,locator=null,full=false)=>{
+ const dest=path.join(out,'guide-'+name+'.png');await page.evaluate(()=>document.fonts.ready);
+ if(locator){
+  await locator.waitFor({state:'visible'});await locator.evaluate(el=>el.scrollIntoView({block:'start',inline:'nearest'}));
+  if(full){await locator.screenshot({path:dest,animations:'disabled',timeout:20000});}
+  else{
+   const b=await locator.boundingBox(),v=page.viewportSize();if(!b||!v)throw Error('No screenshot bounds '+name);
+   const x=Math.max(0,Math.floor(b.x)),y=Math.max(0,Math.floor(b.y)),width=Math.min(Math.floor(b.width),v.width-x),height=Math.min(Math.ceil(b.height),v.height-y,1000);
+   if(width<200||height<150)throw Error('Screenshot bounds too small '+name);
+   await page.screenshot({path:dest,clip:{x,y,width,height},animations:'disabled'});
+  }
+ }else{await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:dest,animations:'disabled'});}
+ assert.ok(fs.statSync(dest).size>5000,'Screenshot '+name+' too small');console.log('Captured',name);
+};
 async function main(){
  fs.mkdirSync(out,{recursive:true});await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const origin='http://127.0.0.1:'+server.address().port;
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{
-  const context=await browser.newContext({viewport:{width:1360,height:880},deviceScaleFactor:1});
+  const context=await browser.newContext({viewport:{width:1360,height:1100},deviceScaleFactor:1});
   // No logged-in sessions or analytics. External image requests omitted; fallback artwork stays visible.
   await context.route('**/*',r=>r.request().url().startsWith(origin+'/')?r.continue():r.abort());
   const page=await context.newPage();
@@ -35,9 +48,9 @@ async function main(){
   for(let i=0;i<5;i++){const pin=page.locator('#planner-suggestions .planner-pin-action.is-unpinned').first();await pin.click({timeout:15000})}
   await go('planner','planner');
   await page.locator('#planner-my-tasks .planner-complete-action').first().click({timeout:15000});
-  await go('home','overview');await shot(page,'home');
+  await go('home','overview');await shot(page,'home',page.locator('#dashboard'));
   for(const [group,tab,name] of [['projects','unlocks','wishlist'],['planner','planner','quests'],['ultras','ultras','ultras'],['builds','builds','builds'],['story','story','story'],['badges','badge-hunter','badges'],['explore','discover','explore'],['inventory','inventory','inventory'],['inventory','account-stats','stats']]){
-   await go(group,tab);await page.waitForTimeout(200);await shot(page,name);
+   await go(group,tab);await page.waitForTimeout(200);await shot(page,name,page.locator('#'+tab));
   }
   const popup=await context.newPage();await popup.setViewportSize({width:440,height:760});
   await popup.addInitScript(()=>{
@@ -52,7 +65,7 @@ async function main(){
   await wiki.goto('https://aqwwiki.wikidot.com/example-sword');await wiki.setContent('<div id="page-title">Example Sword</div><div id="breadcrumbs"><a href="/items">Items</a> <a href="/swords">Swords</a></div><div id="page-content"><p><strong>Location:</strong> <a href="/museum">Museum</a><br><strong>Price:</strong> 300 AC<br><strong>Sellback:</strong> 75 AC<br><strong>Rarity:</strong> Awesome Rarity<br><strong>Description:</strong> Fictional demonstration item.</p><ul><li>Also see:<ul><li><a href="/related-sword">Related Sword</a></li></ul></li></ul></div>');
   await wiki.evaluate(version=>{const attach=Element.prototype.attachShadow;Element.prototype.attachShadow=function(o){return attach.call(this,{...o,mode:'open'})};const data={ok:true,comparison:{synced:true,boost:{all:15},best:{all:{name:'Example Sword',slug:'example-sword',value:15}}},goals:{rows:[]},hub:{recipeCount:1,recipes:[{name:'Example Upgrade',source:'https://aqwwiki.wikidot.com/example-shop',owned:'not-found',ready:1,total:2,required:1,materials:[{name:'Void Aura',missing:20}]}],related:[{name:'Related Sword',slug:'related-sword',kind:'related',state:'not-found'}],loadouts:{all:{percent:15,gear:[{name:'Example Sword',slug:'example-sword',category:'weapons'}]}},spending:[],goalsSynced:true}};globalThis.chrome={runtime:{getManifest:()=>({version}),sendMessage(m,cb){const r=m.type==='wiki-item-assistant'?data:m.type==='wiki-item-lookup'?{ok:true,state:'owned',inventory:1,bank:0,total:1,syncedAt:Date.parse('2026-01-01T12:00:00Z')}:m.type==='hub-note-read'?{ok:true,note:{text:'',priority:'normal'}}:m.type==='goal-status-read'?{ok:true,state:'absent',at:1}:{ok:false};if(cb){cb(r);return}return Promise.resolve(r)}}}},version);
   for(const name of ['companion-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js'])await wiki.addScriptTag({path:path.join(ext,name)});
-  const hub=wiki.locator('#aqwc-item-status');await hub.getByText('Used in recipes (1)').waitFor({timeout:15000});await shot(wiki,'wiki',hub);await wc.close();
+  const hub=wiki.locator('#aqwc-item-status');await hub.getByText('Used in recipes (1)').waitFor({timeout:15000});await shot(wiki,'wiki',hub,true);await wc.close();
   console.log('Generated all guide screenshots');
  }finally{await browser.close();server.close()}
 }
