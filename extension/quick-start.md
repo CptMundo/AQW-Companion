@@ -6,7 +6,7 @@
 2. Open Companion and the official Account Manager. Sign in there, then use extension Home → Full Sync. Allow optional access when prompted. Public Sync and Sync Badges use the public Character Page.
 3. Track Wishlist, quests, Ultras, builds, Forge, story and badges; open Explore, Inventory and Account Statistics for saved data. The Wiki supports adding goals and available quest pins.
 4. Settings → Theme; optional purchase totals & loyalty; manual export fallback; troubleshooting; guide. Refresh Companion and Wiki after updating. Inventory is not live.
-5. For manual fallback, export Inventory from the official page and use Import & Sync on the site. Back up via Options. Do not post credentials, cookies, tokens or account exports.
+5. For manual fallback, export Inventory from the official page and use Options → Data Management → Import & Sync on the site. Back up via Options → Data Management → Download backup. Do not post credentials, cookies, tokens or account exports.
 
 ## Browser QA before public release
 

@@ -1327,3 +1327,16 @@ html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-i
 #aqwc-tour .aqwc-tour-guide{font-size:12px;color:var(--cyan);width:fit-content}
 .primarynav .aqwc-tour-target{outline:2px solid var(--cyan);outline-offset:2px}
 @media(max-width:480px){#aqwc-tour{right:8px;bottom:8px;width:calc(100vw - 16px);max-height:calc(100dvh - 16px)}#aqwc-getting-started .aqwc-start-link{width:100%;text-align:center}}
+
+/* Compact options and optional recovery tools. The extension's existing
+   connection status controls visibility; no extra permissions or calls. */
+.top .inventory-header-actions:has(#aqwc-sync-status:is([data-state="ready"],[data-state="success"],[data-state="checking"])) #aqwc-get-extension{display:none}
+.top .inventory-advanced-menu .aqwc-options-main{display:grid;gap:3px;padding-top:5px;border-top:1px solid var(--line)}
+.top .inventory-advanced-menu .aqwc-data-management{padding-top:5px;border-top:1px solid var(--line);min-width:0}
+.top .inventory-advanced-menu .aqwc-data-management>summary{display:flex;justify-content:space-between;align-items:center;width:100%;font-weight:650}
+.top .inventory-advanced-menu .aqwc-data-management[open]>.aqwc-data-actions{display:grid;gap:3px;padding:4px 0 0 8px}
+.top .inventory-advanced-menu .aqwc-data-management:not([open])>.aqwc-data-actions{display:none}
+.top .inventory-advanced-menu .aqwc-data-chevron{font-size:18px;line-height:1}
+.top .inventory-advanced-menu .aqwc-data-management[open] .aqwc-data-chevron{transform:rotate(90deg)}
+.top .inventory-advanced-menu button:disabled{opacity:.48;cursor:not-allowed}
+.top .inventory-advanced-menu{max-height:min(72vh,520px);overflow-y:auto;overscroll-behavior:contain}

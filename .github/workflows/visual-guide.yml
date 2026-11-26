@@ -26,3 +26,34 @@ jobs:
             downloads/AQW_Companion.zip
             downloads/AQW_Companion.sha256
           retention-days: 14
+
+  persist-preview-assets:
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'feat/guide-assets-')
+    needs: preview
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: AQW-Companion-visual-guide
+          path: .
+      - name: Commit only generated public guide files to the source branch
+        env:
+          SOURCE_BRANCH: ${{ github.head_ref }}
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_BRANCH" == feat/guide-assets-* ]]
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test "$(find extension/guide-images -maxdepth 1 -name 'guide-*.png' | wc -l)" -eq 14
+          (cd downloads && sha256sum -c AQW_Companion.sha256)
+          git add -f -- extension/guide-images/guide-*.png downloads/AQW_Companion.zip downloads/AQW_Companion.sha256
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Publish generated guide screenshots and extension ZIP"
+          git push origin "HEAD:refs/heads/$SOURCE_BRANCH"
