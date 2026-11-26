@@ -93,10 +93,15 @@ def enrich(b):
         b['error']=str(e)[:150]
         return b
 # Fast, index-only snapshot for validating complete source coverage independently of individual detail requests.
-data=list(records.values())
+import sys
+if '--details' in sys.argv:
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        data=list(pool.map(enrich,records.values()))
+else:
+    data=list(records.values())
 for b in data:
-    b['detailStatus']='requirements-not-indexed'
+    b.setdefault('detailStatus','requirements-not-indexed')
     print('BADGE_RECORD '+json.dumps(b,ensure_ascii=True,separators=(',',':')),flush=True)
 with open('badge-source-catalog.json','w',encoding='utf-8') as f:
     json.dump(data,f,ensure_ascii=False,indent=2)
-print('BADGE_TOTAL',len(data),'DETAILS',0,'FAILED',0,flush=True)
+print('BADGE_TOTAL',len(data),'DETAILS',sum(x['detailStatus']=='requirements-found' for x in data),'FAILED',sum(x['detailStatus']=='source-unavailable' for x in data),flush=True)

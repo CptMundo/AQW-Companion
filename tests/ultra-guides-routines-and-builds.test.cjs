@@ -588,24 +588,30 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
 
 {
  const badgeCatalog=require('../js/badge-catalog.js'),badgeHunter=require('../js/badge-hunter.js');
+ assert.equal(badgeCatalog.length,792);
  assert.equal(new Set(badgeCatalog.map(b=>b.id)).size,badgeCatalog.length);
- assert.ok(badgeCatalog.length>=25);
- for(const b of badgeCatalog){assert.ok(b.source.startsWith('https://'));assert.ok(['quest','seasonal','legacy'].includes(b.kind));if(b.join)assert.match(b.join,/^\/join [a-z0-9-]+$/);}
- const harvest=badgeCatalog.find(b=>b.id==='harvest-hunter');
+ const categories={};for(const b of badgeCatalog){categories[b.category]=(categories[b.category]||0)+1;assert.match(b.id,/^cp-\d+$/);assert.equal(b.source,'https://aqwwiki.wikidot.com/charpage:'+b.id.slice(3));assert.match(b.image,/^https:\/\/(?:game\.aq\.com|www\.aq\.com|aq\.com|i\.imgur\.com)\//);assert.ok(['quest','seasonal','legacy','unknown'].includes(b.kind));if(b.join)assert.match(b.join,/^\/join [a-z0-9-]+$/);}
+ assert.deepEqual(categories,{'Epic Hero':33,Legendary:60,Battle:87,Support:189,Exclusive:216,'Artix Entertainment':37,HeroMart:170});
+ assert.equal(badgeCatalog.filter(b=>b.name==='Champion of Chaos').length,2);
+ const harvest=badgeCatalog.find(b=>b.id==='cp-332');
  assert.equal(badgeHunter.availability(harvest,'2026-10-31'),'Announced');
  assert.equal(badgeHunter.availability(harvest,'2026-11-30'),'Within announced dates');
  assert.equal(badgeHunter.availability(harvest,'2026-12-01'),'Window ended');
  assert.equal(badgeHunter.availability(harvest,'2027-11-01'),'Window ended');
- assert.equal(badgeHunter.availability(badgeCatalog.find(b=>b.id==='avast'),'2026-09-19'),'Return unconfirmed');
- const owned=badgeHunter.update({},'harvest-hunter','owned',badgeCatalog);
+ assert.equal(badgeHunter.availability(badgeCatalog.find(b=>b.id==='cp-57'),'2026-09-19'),'Return unconfirmed');
+ const owned=badgeHunter.update({},'cp-332','owned',badgeCatalog);
  assert.equal(badgeHunter.opportunities(badgeCatalog,owned,'2026-11-26').length,0);
  assert.equal(badgeHunter.opportunities(badgeCatalog,{},'2026-11-26').length,1);
- assert.deepEqual(badgeHunter.clean({lr:'tracked',unknown:'owned',nsod:'bad'},badgeCatalog),{lr:'tracked'});
- assert.deepEqual(badgeHunter.update({lr:'owned'},'lr','unmarked',badgeCatalog),{});
- assert.equal(badgeHunter.filterBadges(badgeCatalog,{},'Fealty','all','all').length,1);
+ assert.deepEqual(badgeHunter.clean({'cp-424':'tracked',unknown:'owned','cp-426':'bad'},badgeCatalog),{'cp-424':'tracked'});
+ assert.deepEqual(badgeHunter.update({'cp-424':'owned'},'cp-424','unmarked',badgeCatalog),{});
+ assert.ok(badgeHunter.filterBadges(badgeCatalog,{},'Fealty','all','all').some(b=>b.id==='cp-424'));
  assert.ok(html.includes('data-group="badges">🏆 Badge Hunter'));
  assert.ok(html.includes('data-tab="badge-hunter" data-parent="badges"'));
  assert.ok(html.includes('id="badge-hunter-home"'));
+ assert.ok(html.includes('id="badge-hunter-availability"')&&html.includes('id="badge-hunter-more"'));
  assert.ok(html.includes("if(tab==='badge-hunter')window.AQWCBadgeHunter?.render?.()"));
- console.log('Badge Hunter catalog, local states, filtering and explicit seasonal windows verified.');
+ const hunterSource=fs.readFileSync(path.join(__dirname,'../js/badge-hunter.js'),'utf8');
+ assert.ok(hunterSource.includes("img.loading='lazy'")&&hunterSource.includes("img.src=b.image")&&hunterSource.includes("result.slice(0,limit)"));
+ assert.equal(badgeHunter.availability({kind:'unknown'},'2026-11-26'),'Availability unconfirmed');
+ console.log('All seven badge index categories, exact source IDs, artwork URLs, filters and seasonal boundaries verified.');
 }

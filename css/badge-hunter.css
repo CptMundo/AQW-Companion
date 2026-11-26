@@ -19,3 +19,9 @@
 #badge-hunter-home{margin:12px 0;border-color:#9f77cc;background:#282337}
 #badge-hunter-home .homehead{flex-wrap:wrap}
 @media(max-width:600px){#badge-hunter .badge-hunter-metric{padding:8px}#badge-hunter .badge-hunter-metric strong{font-size:19px}}
+
+#badge-hunter .badge-hunter-art{flex:none;width:90px;height:58px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:5px;background:#0c1928;text-align:center}
+#badge-hunter .badge-hunter-art img{display:block;width:100%;height:100%;object-fit:contain}
+#badge-hunter .badge-hunter-heading h3{flex:1;overflow-wrap:anywhere}
+#badge-hunter .badge-hunter-card ul{padding-left:20px;margin:6px 0;font-size:13px;line-height:1.5}
+#badge-hunter-more{display:block;margin:16px auto 0}#badge-hunter-more[hidden]{display:none}
