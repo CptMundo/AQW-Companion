@@ -81,12 +81,12 @@
  let farmHint=null,refreshFarmHint=()=>{},isOwned=false;
  let farming,aligned=false;try{const api=globalThis.AQWCWikiMaterials;farming=api?.render(card,content,location.origin,hint=>{farmHint=hint;refreshFarmHint()});if(farming)aligned=!!ui?.mountFarm?.(farming,content,shadow);if(stackable&&api){const slug=location.pathname.replace(/^\/|\/$/g,'');api.renderSources(card,api.mergeSources(api.parseSources(content,location.origin),api.reviewedSources(slug)),location.origin,slug,{partial:!!api.reviewedSources(slug)})}}catch{console.warn('AQW Companion: material progress unavailable on this page.')}
  if(!actionable){
-  // Keep the farming tool, but never reserve a branded status card without a usable Wishlist action.
-  if(aligned){host.parentElement?.classList.add('aqwc-no-wishlist');host.remove()}
-  else if(farming){card.replaceChildren(farming);host.id='aqwc-farm-only';content.prepend(host)}
-  ui?.styleItem?.(content);return;
+  // Keep a consistent assistant surface but never guess variant ownership or enable an ambiguous Wishlist action.
+  show('Variant / unsupported item','Wishlist and ownership are not verified for this item variant. Check the original Wiki details.','#ffdb93');
+  if(ui?.styleItem)ui.styleItem(content,host);else if(!aligned)mountStatus();
+  return;
  }
- if(!aligned)mountStatus();ui?.styleItem?.(content);
+ if(ui?.styleItem)ui.styleItem(content,host);else if(!aligned)mountStatus();
  const stock=document.createElement('section');stock.className='aqwc-section aqwc-stock';stock.hidden=true;
  const stockHeading=document.createElement('strong');stockHeading.textContent='Your collection';
  const stockGrid=document.createElement('div');stockGrid.className='aqwc-stock-grid';
