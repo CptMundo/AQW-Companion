@@ -96,7 +96,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted,undefined);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
  assert.equal(runWiki(['items','houses'],'Sellback: 0 AC; Description: House',result,'Astral Beach Tent (AC)').inserted,undefined);
- assert.equal(manifest.version,'0.12.45');assert.equal(manifest.name,'AQW Companion');assert.equal(manifest.action.default_title,'AQW Companion');assert.ok(read('extension/popup.html').includes('<h1>AQW Companion</h1>'));assert.ok(!read('extension/popup.html').includes('AQW Wiki Companion'));assert.ok(!read('extension/quick-start.html').includes('AQW Wiki Companion'));assert.equal(manifest.content_scripts.length,4);assert.equal(manifest.content_scripts[2].run_at,'document_end');assert.equal(manifest.content_scripts[3].run_at,'document_start');assert.deepEqual(manifest.content_scripts[3].js,['wiki-first-paint.js']);assert.deepEqual(manifest.content_scripts[3].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['companion-theme.js','wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js','wiki-directory.js']);
+ assert.equal(manifest.version,'0.12.46');assert.equal(manifest.name,'AQW Companion');assert.equal(manifest.action.default_title,'AQW Companion');assert.ok(read('extension/popup.html').includes('<h1>AQW Companion</h1>'));assert.ok(!read('extension/popup.html').includes('AQW Wiki Companion'));assert.ok(!read('extension/quick-start.html').includes('AQW Wiki Companion'));assert.equal(manifest.content_scripts.length,4);assert.equal(manifest.content_scripts[2].run_at,'document_end');assert.equal(manifest.content_scripts[3].run_at,'document_start');assert.deepEqual(manifest.content_scripts[3].js,['wiki-first-paint.js']);assert.deepEqual(manifest.content_scripts[3].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['companion-theme.js','wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js','wiki-directory.js']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -937,3 +937,17 @@ assert.ok(read("extension/popup.html").includes('id="account-progress"'));assert
  assert.throws(()=>capture({querySelectorAll:()=>[]},'https://account.aq.com/CharPage?id=Example'),/No recognized/);
  assert.ok(read('extension/badge-bridge.js').includes("e.origin!==ORIGIN"));
 }
+
+(async()=>{
+ const snapshot={character:'Example',capturedAt:'2026-11-26T09:00:00Z',badges:[{file:'a.jpg',label:'A'}]};
+ let restricted=false;
+ const chrome={runtime:{getURL:x=>'chrome-extension://test/'+x,onMessage:{addListener(){}}},storage:{local:{async setAccessLevel(){restricted=true},async get(k){return {[k]:snapshot}}}}};
+ const api=vm.runInNewContext(read('extension/worker.js')+'\n({handle})',{chrome,URL,TextEncoder});
+ const origin='https://cptmundo.github.io',main={url:origin+'/AQW-Companion/',frameId:0};
+ assert.equal((await api.handle({type:'badge-stage-read'},main)).snapshot,snapshot);assert.equal(restricted,true);
+ for(const sender of [{...main,frameId:1},{...main,url:origin+'/other/'},{...main,url:'https://aqwwiki.wikidot.com/'}])assert.equal((await api.handle({type:'badge-stage-read'},sender)).ok,false);
+ let posted;const win={addEventListener(k,f){this[k]=f},postMessage(m){posted=m}};win.top=win;
+ vm.runInNewContext(read('extension/badge-bridge.js'),{window:win,location:{origin,pathname:'/AQW-Companion/'},chrome:{runtime:{sendMessage:m=>api.handle(m,main)},storage:{local:{get(){throw Error('untrusted storage blocked')}}}}});
+ await win.message({source:win,origin,data:{channel:'aqwc-badge-capture-v1',type:'request',requestId:'test-1'}});assert.equal(posted.snapshot,snapshot);
+ console.log('Protected badge storage regression: service worker + bridge roundtrip passed.');
+})().catch(e=>{console.error(e);process.exitCode=1});
