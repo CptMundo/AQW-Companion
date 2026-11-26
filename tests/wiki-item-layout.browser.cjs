@@ -85,9 +85,9 @@ async function run(){
   await page.evaluate(()=>{
    // Inspect the real closed shadow UI in tests without altering production mode.
    const attach=Element.prototype.attachShadow;Element.prototype.attachShadow=function(options){return attach.call(this,{...options,mode:'open'})};
-   window.savedNote=null;window.requests=[];
+   window.savedNote=null;window.requests=[];window.testOwned=true;
    const payload={ok:true,comparison:{synced:true,boost:{all:51},best:{all:{name:'Example Sword',slug:'example-sword',value:51}}},goals:{rows:[]},hub:{recipeCount:42,recipes:[{name:'New sword',source:'https://aqwwiki.wikidot.com/example-shop',owned:'not-found',ready:1,total:2,required:1,materials:[{name:'Void Aura',missing:20}]}],related:[{name:'Related Sword',slug:'related-sword',kind:'related',state:'not-found'}],loadouts:{all:{percent:51,gear:[{name:'Example Sword',slug:'example-sword',category:'weapons'}]},undead:{percent:126.5,gear:[{name:'Example Sword',slug:'example-sword',category:'weapons'},{name:'Example Armor',slug:'example-armor',category:'armors'}]}},spending:[],goalsSynced:true}};
-   globalThis.chrome={runtime:{getManifest:()=>({version:'test'}),sendMessage(m,cb){window.requests.push(m);let r=m.type==='wiki-item-assistant'?payload:m.type==='wiki-item-lookup'?{ok:true,state:'owned',inventory:1,bank:0,total:1,syncedAt:1}:m.type==='hub-note-read'?{ok:true,note:{text:'Saved note',priority:'normal'}}:m.type==='hub-note-save'?(window.savedNote=m,{ok:true}):m.type==='goal-status-read'?{ok:true,state:'absent',at:1}:{ok:false};if(cb){cb(r);return}return Promise.resolve(r)}}};
+   globalThis.chrome={runtime:{getManifest:()=>({version:'test'}),sendMessage(m,cb){window.requests.push(m);let r=m.type==='wiki-item-assistant'?payload:m.type==='wiki-item-lookup'?{ok:true,state:window.testOwned?'owned':'not-found',inventory:window.testOwned?1:0,bank:0,total:window.testOwned?1:0,syncedAt:1}:m.type==='hub-note-read'?{ok:true,note:{text:'Saved note',priority:'normal'}}:m.type==='hub-note-save'?(window.savedNote=m,{ok:true}):m.type==='goal-status-read'?{ok:true,state:'absent',at:1}:{ok:false};if(cb){cb(r);return}return Promise.resolve(r)}}};
   });
   for(const name of ['companion-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js'])await page.addScriptTag({path:path.join(root,name)});
   const host=page.locator('#aqwc-item-status');await host.getByText('Used in recipes (1)').waitFor();
@@ -102,6 +102,18 @@ async function run(){
   await host.getByText('My notes & priority',{exact:true}).click();await host.getByLabel('Personal item notes').fill('Test reminder');await host.getByLabel('Priority',{exact:true}).selectOption('high');await host.getByText('Save note',{exact:true}).click();
   assert.ok(await host.getByText('Saved locally.',{exact:true}).isVisible());assert.equal(await page.evaluate(()=>savedNote.text),'Test reminder');
   assert.ok(await page.evaluate(()=>requests.some(r=>r.type==='wiki-item-assistant'&&r.related.some(x=>x.slug==='related-sword'))));
+  await page.setViewportSize({width:1440,height:900});await page.goto(origin+'/example-sword');
+  await page.setContent('<div id="page-title">Example Sword</div><div id="breadcrumbs"><a href="/items">Items</a> <a href="/swords">Swords</a></div><div id="page-content">'+basic+'<p>'+pic('art')+'</p><ul><li>Also see:<ul><li><a href="/related-sword">Related Sword</a></li></ul></li></ul></div>');
+  await page.evaluate(()=>{
+   // Inspect the real closed shadow UI in tests without altering production mode.
+   const attach=Element.prototype.attachShadow;Element.prototype.attachShadow=function(options){return attach.call(this,{...options,mode:'open'})};
+   window.savedNote=null;window.requests=[];window.testOwned=false;
+   const payload={ok:true,comparison:{synced:true,boost:{all:5},best:{all:{name:'Better Sword',slug:'better-sword',value:51}}},goals:{rows:[]},hub:{recipeCount:42,recipes:[{name:'New sword',source:'https://aqwwiki.wikidot.com/example-shop',owned:'not-found',ready:1,total:2,required:1,materials:[{name:'Void Aura',missing:20}]}],related:[{name:'Related Sword',slug:'related-sword',kind:'related',state:'not-found'}],loadouts:{all:{percent:51,gear:[{name:'Example Sword',slug:'example-sword',category:'weapons'}]},undead:{percent:126.5,gear:[{name:'Example Sword',slug:'example-sword',category:'weapons'},{name:'Example Armor',slug:'example-armor',category:'armors'}]}},spending:[],goalsSynced:true}};
+   globalThis.chrome={runtime:{getManifest:()=>({version:'test'}),sendMessage(m,cb){window.requests.push(m);let r=m.type==='wiki-item-assistant'?payload:m.type==='wiki-item-lookup'?{ok:true,state:window.testOwned?'owned':'not-found',inventory:window.testOwned?1:0,bank:0,total:window.testOwned?1:0,syncedAt:1}:m.type==='hub-note-read'?{ok:true,note:{text:'Saved note',priority:'normal'}}:m.type==='hub-note-save'?(window.savedNote=m,{ok:true}):m.type==='goal-status-read'?{ok:true,state:'absent',at:1}:{ok:false};if(cb){cb(r);return}return Promise.resolve(r)}}};
+  });
+  for(const name of ['companion-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js'])await page.addScriptTag({path:path.join(root,name)});
+  const unowned=page.locator('#aqwc-item-status');await unowned.getByText('No boost upgrade over your owned gear',{exact:true}).waitFor();
+  assert.ok(await unowned.locator('.aqwc-hub-compare').getByText('+5%',{exact:true}).isVisible());assert.ok(await unowned.locator('.aqwc-hub-compare').getByText('+51%',{exact:true}).isVisible());assert.ok(await unowned.getByText('Better Sword',{exact:true}).isVisible());assert.ok(await unowned.getByText('Same equipment slot · 46 percentage points lower.',{exact:true}).isVisible());
   console.log('SMART_HUB_BROWSER_PASSED');
   assert.deepEqual(errors,[]);
   console.log('BROWSER_MATRIX_PASSED',count);
