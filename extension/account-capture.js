@@ -1,6 +1,6 @@
 /* Runs only after the user invokes capture on the logged-in Inventory tab. */
-async function captureAccountInventory(onProgress){
- const report=(phase,read=0,total=null)=>{if(typeof onProgress==='function')onProgress({phase,read,total});};
+async function captureAccountInventory(onProgress,jobId){
+ const report=(phase,read=0,total=null)=>{if(typeof onProgress==='function')onProgress({phase,read,total});if(jobId&&typeof chrome!=='undefined'&&chrome.runtime?.sendMessage)chrome.runtime.sendMessage({type:'one-click-progress',id:jobId,progress:{phase,read,total}}).catch(()=>{});};
  const origin='https://account.aq.com';
  if(location.origin!==origin||!/^\/AQW\/Inventory\/?$/i.test(location.pathname))throw Error('Open the AQW Account Manager Inventory tab first.');
  const resources=performance.getEntriesByType('resource').map(r=>{try{return new URL(r.name)}catch{return null}}).filter(u=>u&&u.origin===origin&&/(?:^|\/)InventoryData\/?$/i.test(u.pathname));

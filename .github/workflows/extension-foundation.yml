@@ -14,3 +14,15 @@ jobs:
         with:
           node-version: '22'
       - run: node tests/extension-foundation.test.cjs
+      - name: Build local test extension ZIP
+        run: |
+          version=$(node -p "require('./extension/manifest.json').version")
+          mkdir -p "$RUNNER_TEMP/aqwc-package"
+          cd extension
+          zip -q -r "$RUNNER_TEMP/aqwc-package/AQW_Companion_${version}.zip" .
+          unzip -t "$RUNNER_TEMP/aqwc-package/AQW_Companion_${version}.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AQW-Companion-extension
+          path: ${{ runner.temp }}/aqwc-package/*.zip
+          retention-days: 14

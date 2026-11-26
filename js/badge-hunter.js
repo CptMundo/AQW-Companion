@@ -92,6 +92,21 @@ $('badge-hunter-home-open').addEventListener('click',()=>{d.querySelector('[data
 $('badge-hunter-export').addEventListener('click',()=>{read();if(!storageOK)return;const url=URL.createObjectURL(new Blob([JSON.stringify({format:'AQW Companion badge progress v1',states:manual},null,2)],{type:'application/json'}));const a=el('a');a.href=url;a.download='AQW_Badge_Progress.json';d.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)});
 $('badge-hunter-import').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>1000000)throw Error('File too large');const payload=JSON.parse(await file.text());if(payload.format!=='AQW Companion badge progress v1'||!payload.states||typeof payload.states!=='object'||Array.isArray(payload.states))throw Error('Invalid badge backup');const incoming=clean(payload.states,catalog);read();if(!storageOK)throw Error('Storage unavailable');const next={...manual,...incoming};root.localStorage.setItem(KEY,JSON.stringify(next));render();$('badge-hunter-message').textContent='Badge backup merged; other saved badges preserved.'}catch{$('badge-hunter-message').textContent='Could not import badge backup. Existing progress unchanged.'}finally{e.target.value=''}});
 root.addEventListener('storage',e=>{if(e.key===KEY)render()});root.addEventListener('focus',()=>{read();renderAlert()});root.setInterval(()=>{read();renderAlert()},60000);
+function applyCapture(snapshot,ask=false){
+ if(!snapshot)throw Error('No staged capture. Open your Character Page and capture it in the extension.');
+ const next=matchCapture(snapshot,catalog);
+ if(!next.ids.length)throw Error('No unambiguous badges matched; previous progress preserved.');
+ read();if(!storageOK)throw Error('Local storage unavailable.');
+ if(capture&&capture.character.toLowerCase()!==next.character.toLowerCase())throw Error('Different character. Clear Character Page matches before switching.');
+ const count=next.ids.length;
+ if(ask&&!confirm('Import '+count+' matched badges for '+next.character+'? '+next.ambiguous+' ambiguous and '+next.unknown+' unrecognized image references will not be marked owned. Your manual states are preserved.'))return {ok:false,saved:false,error:'Import cancelled'};
+ if(capture?.character.toLowerCase()===next.character.toLowerCase())next.ids=[...new Set([...capture.ids,...next.ids])];
+ root.localStorage.setItem(CAPTURE_KEY,JSON.stringify(next));
+ try{render()}catch(err){return {ok:false,saved:true,error:'Badge data saved, but redraw failed: '+String(err?.message||err)}}
+ return {ok:true,saved:true,count,ambiguous:next.ambiguous,unknown:next.unknown};
+}
+api.applyCapture=applyCapture;
+d.documentElement.dataset.aqwcBadgeReady='1';
 let pending=null;
 $('badge-character-import').addEventListener('click',e=>{
  if(!e.isTrusted)return;
@@ -103,14 +118,7 @@ root.addEventListener('message',e=>{
  if(e.source!==root||e.origin!==location.origin||e.data?.channel!=='aqwc-badge-capture-v1'||e.data?.type!=='response'||!pending||e.data.requestId!==pending)return;
  pending=null;
  try{
-  if(!e.data.snapshot)throw Error('No staged capture. Open your Character Page and capture it in the extension.');
-  const next=matchCapture(e.data.snapshot,catalog);
-  if(!next.ids.length)throw Error('No unambiguous badges matched; previous progress preserved.');
-  read();if(!storageOK)throw Error('Local storage unavailable.');
-  if(capture&&capture.character.toLowerCase()!==next.character.toLowerCase())throw Error('A different character is already imported. Clear Character Page matches before switching. Manual progress is shared in this browser.');
-  if(!confirm('Import '+next.ids.length+' matched badges for '+next.character+'? '+next.ambiguous+' ambiguous and '+next.unknown+' unrecognized image references will not be marked owned. Your manual states are preserved.'))return;
-  if(capture?.character.toLowerCase()===next.character.toLowerCase())next.ids=[...new Set([...capture.ids,...next.ids])];
-  root.localStorage.setItem(CAPTURE_KEY,JSON.stringify(next));render();
+  applyCapture(e.data.snapshot,true);
  }catch(err){$('badge-hunter-message').textContent=String(err?.message||err)}
 });
 $('badge-character-clear').addEventListener('click',e=>{if(e.isTrusted&&confirm('Clear imported Character Page matches? Manual badge progress will remain.')){try{root.localStorage.removeItem(CAPTURE_KEY);render()}catch{$('badge-hunter-message').textContent='Could not clear capture.'}}});

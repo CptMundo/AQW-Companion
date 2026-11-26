@@ -1,4 +1,5 @@
 'use strict';
+if(typeof importScripts==='function')importScripts('account-capture.js','badge-capture.js','unified-sync.js');
 const KEY='aqwc-inventory-v1', MAX_ROWS=20000, MAX_BYTES=6000000;
 const SITE='https://cptmundo.github.io';
 function mainSender(sender){
@@ -269,6 +270,16 @@ function routineRequest(message,sender){return trackerSerial(async()=>{
  return {ok:true};
 })}
 async function handle(message,sender){
+ if(message?.type?.startsWith('one-click-')&&globalThis.AQWCOneClick)return AQWCOneClick.handle(message,sender);
+ // Badge captures are staged in trusted extension storage; content scripts cannot read it directly.
+ if(message?.type==='badge-stage-read'){
+  if(!mainSender(sender))return {ok:false,error:'Invalid badge capture request.'};
+  await restrictStorage();
+  const stage=(await chrome.storage.local.get('aqwc-badge-stage-v1'))['aqwc-badge-stage-v1'];
+  if(!stage)return {ok:false,error:'No staged badge capture.'};
+  return {ok:true,snapshot:stage};
+ }
+
  if(['routine-check-set','routine-check-read','routine-check-ack'].includes(message?.type))return routineRequest(message,sender);
  if(message?.type==='goal-status-publish'){
   if(!mainSender(sender))return {ok:false};const data=cleanGoalStatus(message.status);if(!data)return {ok:false};return trackerSerial(async()=>{await restrictStorage();await chrome.storage.local.set({[GOAL_STATUS]:data});return {ok:true}});

@@ -96,7 +96,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted,undefined);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
  assert.equal(runWiki(['items','houses'],'Sellback: 0 AC; Description: House',result,'Astral Beach Tent (AC)').inserted,undefined);
- assert.equal(manifest.version,'0.12.45');assert.equal(manifest.name,'AQW Companion');assert.equal(manifest.action.default_title,'AQW Companion');assert.ok(read('extension/popup.html').includes('<h1>AQW Companion</h1>'));assert.ok(!read('extension/popup.html').includes('AQW Wiki Companion'));assert.ok(!read('extension/quick-start.html').includes('AQW Wiki Companion'));assert.equal(manifest.content_scripts.length,4);assert.equal(manifest.content_scripts[2].run_at,'document_end');assert.equal(manifest.content_scripts[3].run_at,'document_start');assert.deepEqual(manifest.content_scripts[3].js,['wiki-first-paint.js']);assert.deepEqual(manifest.content_scripts[3].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['companion-theme.js','wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js','wiki-directory.js']);
+ assert.equal(manifest.version,'0.12.48');assert.equal(manifest.name,'AQW Companion');assert.equal(manifest.action.default_title,'AQW Companion');assert.ok(read('extension/popup.html').includes('<h1>AQW Companion</h1>'));assert.ok(!read('extension/popup.html').includes('AQW Wiki Companion'));assert.ok(!read('extension/quick-start.html').includes('AQW Wiki Companion'));assert.equal(manifest.content_scripts.length,4);assert.equal(manifest.content_scripts[2].run_at,'document_end');assert.equal(manifest.content_scripts[3].run_at,'document_start');assert.deepEqual(manifest.content_scripts[3].js,['wiki-first-paint.js']);assert.deepEqual(manifest.content_scripts[3].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['companion-theme.js','wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js','wiki-directory.js']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -193,7 +193,7 @@ console.log('Wiki Wishlist: scoped links, category suffixes, variant guard and e
  assert.equal((await api.handle({type:'account-stage-commit',id:pending.id},main)).ok,true);
  assert.equal(stored['aqwc-inventory-v1'].items.length,101);assert.equal(stored['aqwc-account-stage-v1'],undefined);
  const html=read('index.html');assert.ok(html.includes('const saved=await importFile(file);'));assert.ok(html.includes("type:'imported',nonce,id:stageId"));assert.ok(html.includes("if(!confirm('Import '"));assert.ok(read('extension/account-bridge.js').includes('if(e.isTrusted)gesture=Date.now()'));
- assert.equal(manifest.host_permissions,undefined);assert.deepEqual(manifest.content_scripts[1].js,['sync.js','account-bridge.js','mini-tracker.js','wishlist-queue.js','badge-bridge.js']);
+ assert.equal(manifest.host_permissions,undefined);assert.deepEqual(manifest.content_scripts[1].js,['sync.js','account-bridge.js','mini-tracker.js','wishlist-queue.js','badge-bridge.js','unified-sync.js']);
  console.log('Account import: pagination, completeness, scope, allowlisted fields, staging and commit checked.');
 })().catch(e=>{console.error(e);process.exitCode=1});
 
@@ -464,7 +464,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
 {
  const bridge=read('extension/bridge.js'),popup=read('extension/popup.html');
  assert.ok(bridge.includes('AQW Wiki Companion'));assert.ok(bridge.includes('data:image/png;base64,'));
- assert.ok(bridge.includes('width-590'));assert.ok(popup.includes('Inventory export &amp; sync'));
+ assert.ok(bridge.includes('width-590'));assert.ok(popup.includes('Sync Inventory')&&popup.includes('id="capture-account"'));
  assert.ok(read('extension/wiki-items.js').includes('Inventory snapshot'));
  assert.ok(!read('extension/wiki-items.js').includes('aqwc-facts'));
  assert.ok(popup.includes('id="capture-account"'));assert.ok(popup.includes('id="enable-account-button"'));
@@ -732,7 +732,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
 
 {const api=vm.runInNewContext(read('extension/wiki-quest-shop.js')+'\nAQWCQuestShop',{URL});const tab=(href,controls)=>({getAttribute:k=>k==='href'?href:controls});const choices=[{name:'First',tab:tab('#one')},{name:'Second',tab:tab('#two','two')}];assert.equal(api.initialQuestIndex([]),-1);assert.equal(api.initialQuestIndex(choices),0);assert.equal(api.initialQuestIndex(choices,'#two'),1);assert.equal(api.initialQuestIndex(choices,'#unknown'),0);assert.equal(api.initialQuestIndex([{name:'Get some Help',tab:null}]),0);const src=read('extension/wiki-quest-shop.js');assert.ok(src.includes('void openers[initial]()'));assert.ok(src.includes("cards.style.display='none'"));assert.ok(src.includes("if(e.isTrusted)void openQuest()"));assert.ok(src.includes("type:'quest-pin-add',quest:{source,name}"));}
 
-{const html=read('extension/popup.html'),js=read('extension/popup.js');for(const id of ['view-home','view-sync','view-settings','appearance-background','capture-account','clear-inventory','discard-account'])assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1);for(const tab of ['home','sync','settings']){assert.ok(html.includes('data-view="'+tab+'"'));assert.ok(html.includes('data-panel="'+tab+'"'))}assert.ok(js.includes("showView('home')"));assert.ok(html.includes('data-panel="sync" hidden'));assert.ok(html.includes('data-panel="settings" hidden'));}
+{const html=read('extension/popup.html'),js=read('extension/popup.js');for(const id of ['view-home','view-settings','appearance-background','capture-account','clear-inventory','discard-account'])assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1);for(const tab of ['home','settings']){assert.ok(html.includes('data-view="'+tab+'"'));assert.ok(html.includes('data-panel="'+tab+'"'))}assert.ok(js.includes("showView('home')"));assert.ok(!html.includes('data-panel="sync"'));assert.ok(html.includes('data-panel="settings" hidden'));}
 
 {const popup=read('extension/popup.html');assert.ok(popup.includes('html{color-scheme:dark;width:420px;min-width:420px}'));assert.ok(popup.includes('body{width:420px;min-width:420px;'));assert.ok(!popup.includes('max-width:100vw'));}
 
@@ -937,3 +937,39 @@ assert.ok(read("extension/popup.html").includes('id="account-progress"'));assert
  assert.throws(()=>capture({querySelectorAll:()=>[]},'https://account.aq.com/CharPage?id=Example'),/No recognized/);
  assert.ok(read('extension/badge-bridge.js').includes("e.origin!==ORIGIN"));
 }
+
+(async()=>{
+ const snapshot={character:'Example',capturedAt:'2026-11-26T09:00:00Z',badges:[{file:'a.jpg',label:'A'}]};
+ let restricted=false;
+ const chrome={runtime:{getURL:x=>'chrome-extension://test/'+x,onMessage:{addListener(){}}},storage:{local:{async setAccessLevel(){restricted=true},async get(k){return {[k]:snapshot}}}}};
+ const api=vm.runInNewContext(read('extension/worker.js')+'\n({handle})',{chrome,URL,TextEncoder});
+ const origin='https://cptmundo.github.io',main={url:origin+'/AQW-Companion/',frameId:0};
+ assert.equal((await api.handle({type:'badge-stage-read'},main)).snapshot,snapshot);assert.equal(restricted,true);
+ for(const sender of [{...main,frameId:1},{...main,url:origin+'/other/'},{...main,url:'https://aqwwiki.wikidot.com/'}])assert.equal((await api.handle({type:'badge-stage-read'},sender)).ok,false);
+ let posted;const win={addEventListener(k,f){this[k]=f},postMessage(m){posted=m}};win.top=win;
+ vm.runInNewContext(read('extension/badge-bridge.js'),{window:win,location:{origin,pathname:'/AQW-Companion/'},chrome:{runtime:{sendMessage:m=>api.handle(m,main)},storage:{local:{get(){throw Error('untrusted storage blocked')}}}}});
+ await win.message({source:win,origin,data:{channel:'aqwc-badge-capture-v1',type:'request',requestId:'test-1'}});assert.equal(posted.snapshot,snapshot);
+ console.log('Protected badge storage regression: service worker + bridge roundtrip passed.');
+})().catch(e=>{console.error(e);process.exitCode=1});
+
+{const h=read('extension/popup.html');const home=h.slice(h.indexOf('id="view-home"'),h.indexOf('id="view-settings"'));const settings=h.slice(h.indexOf('id="view-settings"'));for(const id of ['one-click-inventory','one-click-badges','one-click-inventory-progress','one-click-badges-progress','one-click-inventory-status','one-click-badges-status'])assert.ok(home.includes('id="'+id+'"'));for(const id of ['enable-account-button','repair-account-button','discard-badges','capture-account','capture-badges','account-progress'])assert.ok(settings.includes('id="'+id+'"'));assert.ok(home.indexOf('id="one-click-inventory"')<home.indexOf('id="mini-goals"'));assert.ok(!h.includes('data-view="sync"'));assert.ok(read('index.html').includes('id="aqwc-unified-progress"'));console.log('Unified sync buttons, progress and manual fallback verified.');}
+
+(async()=>{
+ const stored={}, sent=[],states=[];
+ const snapshot={items:[{ID:'1',Name:'Void Aura',Type:'Item',Count:100,Bank:0}],reportedTotal:1,exportedAt:'2026-11-26T09:00:00Z'};
+ const tab={id:7,url:'https://account.aq.com/AQW/Inventory',status:'complete'},site={id:8,url:'https://cptmundo.github.io/AQW-Companion/'};
+ let fail=false,api,random=0;
+ const chrome={runtime:{getURL:x=>'chrome-extension://test/'+x,onMessage:{addListener(){}}},permissions:{contains:async()=>false},storage:{local:{async setAccessLevel(){},async get(k){return {[k]:stored[k]}},async set(obj){Object.assign(stored,obj);if(obj['aqwc-one-click-status-v1'])states.push(JSON.parse(JSON.stringify(obj['aqwc-one-click-status-v1'])));},async remove(k){delete stored[k]}}},tabs:{async get(){return tab},async query(){return [site]},async sendMessage(id,m){sent.push(m);if(m.type==='one-click-ping')return {ready:true};return fail?{id:m.id,ok:false,saved:false,error:'Test save failure'}:{id:m.id,ok:true,saved:true,count:1}}},scripting:{async executeScript(o){if(o.args?.length===1)return [{result:true}];await api.handle({type:'one-click-progress',id:o.args[1],progress:{phase:'reading',read:1,total:1}},{url:tab.url,frameId:0,tab:{id:7}});return [{result:snapshot}]}}};
+ const context={chrome,URL,TextEncoder,crypto:{randomUUID:()=>('00000000-0000-4000-8000-'+String(++random).padStart(12,'0'))},setTimeout,clearTimeout,captureAccountInventory:()=>{},captureCharacterBadges:()=>{}};
+ api=vm.runInNewContext(read('extension/unified-sync.js')+'\n'+read('extension/worker.js')+'\n({handle})',context);
+ const popup={url:'chrome-extension://test/popup.html'};
+ assert.equal((await api.handle({type:'one-click-start',kind:'inventory',tabId:7},{url:site.url,frameId:0})).ok,false);
+ const result=await api.handle({type:'one-click-start',kind:'inventory',tabId:7},popup);assert.equal(result.ok,true);
+ assert.equal(stored['aqwc-inventory-v1'].items[0].Count,100);assert.equal(stored['aqwc-account-stage-v1'],undefined);
+ assert.ok(states.some(x=>x.inventory?.read===1&&x.inventory?.total===1));assert.equal(states.at(-1).inventory.phase,'done');
+ fail=true;snapshot.items[0].Count=200;
+ const failed=await api.handle({type:'one-click-start',kind:'inventory',tabId:7},popup);
+ assert.equal(failed.ok,false);assert.equal(stored['aqwc-inventory-v1'].items[0].Count,100);assert.equal(stored['aqwc-account-stage-v1'].snapshot.items[0].Count,200);assert.equal(states.at(-1).inventory.phase,'error');
+ assert.equal(sent.filter(x=>x.type==='one-click-apply').length,2);
+ console.log('One-click worker: real read count, confirmed commit, failed save preservation and sender restriction passed.');
+})().catch(e=>{console.error(e);process.exitCode=1});
