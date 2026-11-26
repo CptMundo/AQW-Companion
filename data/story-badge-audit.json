@@ -1,0 +1,1156 @@
+{
+  "catalogCount": 792,
+  "reviewedOn": "2026-11-26",
+  "scope": "All 792 catalog entries screened; all 63 tracker chapters classified; secondary research reviewed explicit quest gates, locked maps, alternative item sources and intermediate rewards. Not a live quest-log audit or proof no other indirect route exists.",
+  "chapters": [
+    {
+      "id": "chaos:tutorial",
+      "name": "Tutorial",
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-60",
+          "source": "https://aqwwiki.wikidot.com/charpage:60",
+          "prerequisite": false,
+          "reason": ""
+        }
+      ],
+      "hints": [
+        {
+          "badge": "cp-74",
+          "source": "https://aqwwiki.wikidot.com/breakstone",
+          "reason": "Legacy Breakstone rescue proves an introductory quest, not necessarily current tutorial completion."
+        }
+      ]
+    },
+    {
+      "id": "chaos:prologue",
+      "name": "Undead Invasion",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "chaos:escherion",
+      "name": "Chiral Valley",
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-436",
+          "source": "https://www.aq.com/gamedesignnotes/12thanniversaryclass-full-8061",
+          "prerequisite": true,
+          "reason": ""
+        }
+      ],
+      "hints": []
+    },
+    {
+      "id": "chaos:vath",
+      "name": "Dwarfhold",
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-436",
+          "source": "https://www.aq.com/gamedesignnotes/12thanniversaryclass-full-8061",
+          "prerequisite": true,
+          "reason": ""
+        }
+      ],
+      "hints": []
+    },
+    {
+      "id": "chaos:kitsune",
+      "name": "Yokai Isle",
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-436",
+          "source": "https://www.aq.com/gamedesignnotes/12thanniversaryclass-full-8061",
+          "prerequisite": true,
+          "reason": ""
+        }
+      ],
+      "hints": []
+    },
+    {
+      "id": "chaos:wolfwing",
+      "name": "Darkovia",
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-436",
+          "source": "https://www.aq.com/gamedesignnotes/12thanniversaryclass-full-8061",
+          "prerequisite": true,
+          "reason": ""
+        }
+      ],
+      "hints": []
+    },
+    {
+      "id": "chaos:kimberly",
+      "name": "Mythsong",
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-436",
+          "source": "https://www.aq.com/gamedesignnotes/12thanniversaryclass-full-8061",
+          "prerequisite": true,
+          "reason": ""
+        }
+      ],
+      "hints": []
+    },
+    {
+      "id": "chaos:ledgermayne",
+      "name": "Arcangrove",
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-436",
+          "source": "https://www.aq.com/gamedesignnotes/12thanniversaryclass-full-8061",
+          "prerequisite": true,
+          "reason": ""
+        }
+      ],
+      "hints": []
+    },
+    {
+      "id": "chaos:tibicenas",
+      "name": "Sandsea",
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-436",
+          "source": "https://www.aq.com/gamedesignnotes/12thanniversaryclass-full-8061",
+          "prerequisite": true,
+          "reason": ""
+        }
+      ],
+      "hints": []
+    },
+    {
+      "id": "chaos:khasaanda",
+      "name": "Bloodtusk Ravine",
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-436",
+          "source": "https://www.aq.com/gamedesignnotes/12thanniversaryclass-full-8061",
+          "prerequisite": true,
+          "reason": ""
+        }
+      ],
+      "hints": []
+    },
+    {
+      "id": "chaos:iadoa",
+      "name": "The Span",
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-436",
+          "source": "https://www.aq.com/gamedesignnotes/12thanniversaryclass-full-8061",
+          "prerequisite": true,
+          "reason": ""
+        },
+        {
+          "badge": "cp-61",
+          "source": "https://aqwwiki.wikidot.com/warlic-s-quests",
+          "prerequisite": true,
+          "reason": "Defeat Ultra Iadoa requires the Chaos Lord Iadoa story quest."
+        }
+      ],
+      "hints": []
+    },
+    {
+      "id": "chaos:lionfang",
+      "name": "Thunderforge",
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-436",
+          "source": "https://www.aq.com/gamedesignnotes/12thanniversaryclass-full-8061",
+          "prerequisite": true,
+          "reason": ""
+        }
+      ],
+      "hints": []
+    },
+    {
+      "id": "chaos:xiang",
+      "name": "Mirror Realm",
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-436",
+          "source": "https://www.aq.com/gamedesignnotes/12thanniversaryclass-full-8061",
+          "prerequisite": true,
+          "reason": ""
+        },
+        {
+          "badge": "cp-66",
+          "source": "https://aqwwiki.wikidot.com/story:xing-xang",
+          "prerequisite": false,
+          "reason": ""
+        }
+      ],
+      "hints": [
+        {
+          "badge": "cp-65",
+          "source": "https://aqwwiki.wikidot.com/battle-badges",
+          "reason": "Defeating the second Chaos Beast does not by itself establish the Chaos Lord finale."
+        }
+      ]
+    },
+    {
+      "id": "chaos:alteon",
+      "name": "Swordhaven",
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-436",
+          "source": "https://www.aq.com/gamedesignnotes/12thanniversaryclass-full-8061",
+          "prerequisite": true,
+          "reason": ""
+        }
+      ],
+      "hints": []
+    },
+    {
+      "id": "chaos:finale",
+      "name": "Chaos Finale",
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-29",
+          "source": "https://aqwwiki.wikidot.com/charpage:29",
+          "prerequisite": false,
+          "reason": ""
+        },
+        {
+          "badge": "cp-30",
+          "source": "https://aqwwiki.wikidot.com/charpage:30",
+          "prerequisite": false,
+          "reason": ""
+        },
+        {
+          "badge": "cp-31",
+          "source": "https://aqwwiki.wikidot.com/confrontation-s-quests",
+          "prerequisite": true,
+          "reason": "Both Drakath's Armor badge quest routes require The Final Showdown!."
+        },
+        {
+          "badge": "cp-490",
+          "source": "https://aqwwiki.wikidot.com/champion-drakath-location",
+          "prerequisite": true,
+          "reason": "The Chaos Avenger Class quest is at Champion Drakath, a locked location requiring The Final Showdown!."
+        },
+        {
+          "badge": "cp-436",
+          "source": "https://www.aq.com/gamedesignnotes/12thanniversaryclass-full-8061",
+          "prerequisite": true,
+          "reason": ""
+        }
+      ],
+      "hints": []
+    },
+    {
+      "id": "queen:infernal",
+      "name": "Infernal Invasion",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "queen:celestial",
+      "name": "Celestial Realm: A Theft of Light",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "queen:paladin",
+      "name": "Doomwood: Paladin’s Trial",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "queen:darkovia",
+      "name": "Darkovia: Dark Diaspora",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "queen:shadowfall",
+      "name": "Shadowfall: Darkness Rising",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "queen:swordhaven",
+      "name": "Swordhaven: The New World",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "queen:book",
+      "name": "Book of Monsters",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "queen:destroyer",
+      "name": "The Destroyer",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "queen:reshaper",
+      "name": "The Reshaper",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "shadows:shadowwar",
+      "name": "The First Encounter",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "shadows:granitecove",
+      "name": "Teja the Pirate Queen",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "shadows:junkhoard",
+      "name": "Jinx the Cat Burglar",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "shadows:shadowgrove",
+      "name": "Attack on Arcangrove",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "shadows:aozorahills",
+      "name": "Mahou the Spirit Mage",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "shadows:shadowsong",
+      "name": "Attack on Mythsong",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "shadows:darkally",
+      "name": "Alliance of Evil",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "shadows:chaosamulet",
+      "name": "The Chaos Twins",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "shadows:lagunabeach",
+      "name": "Chaos & Shadows",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "shadows:shadowoff",
+      "name": "Attack on Mirror Realm",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "shadows:forestreach",
+      "name": "Shadows of Chaos",
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-471",
+          "source": "https://aqwwiki.wikidot.com/drakath-s-quests",
+          "prerequisite": true,
+          "reason": "Chaos PuppetMaster is awarded for Undying Rage after Heart of the Power; Down Below questline requires Tame the Queen, the final quest of Transformation in the Queen's Past chapter."
+        }
+      ],
+      "hints": []
+    },
+    {
+      "id": "shadows:fireplanewar",
+      "name": "ShadowFlame Onslaught",
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-576",
+          "source": "https://aqwwiki.wikidot.com/shadows-of-chaos:alliance-of-crowns",
+          "prerequisite": true,
+          "reason": "The finale begins with a mandatory Avatar of Fire completion gate."
+        }
+      ],
+      "hints": []
+    },
+    {
+      "id": "shadows:ruinedcrown",
+      "name": "Shadows of War Finale",
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-597",
+          "source": "https://aqwwiki.wikidot.com/ultra-speaker",
+          "prerequisite": true,
+          "reason": "Radiant Goddess of War Badge is earned from Vohu at Ultra Speaker, a locked location requiring Your Hero."
+        },
+        {
+          "badge": "cp-576",
+          "source": "https://www.aq.com/gamedesignnotes/aqw-24feb23-shadowflamefinalevi-9105",
+          "prerequisite": false,
+          "reason": ""
+        }
+      ],
+      "hints": []
+    },
+    {
+      "id": "ruin:temple",
+      "name": "Into the Temple",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "ruin:sea",
+      "name": "Voice in the Sea",
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-591",
+          "source": "https://aqwwiki.wikidot.com/tara-s-quests",
+          "prerequisite": true,
+          "reason": "The badge quest explicitly requires Dead Sea, the main Voice in the Sea boss story quest."
+        }
+      ],
+      "hints": []
+    },
+    {
+      "id": "ruin:thunder",
+      "name": "Rumbling of Cold Thunder",
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-712",
+          "source": "https://aqwwiki.wikidot.com/queen-victoria-alteon-s-quests",
+          "prerequisite": true,
+          "reason": "Echo of the King requires Tell-Tale Heart, which requires The Storm Queen."
+        }
+      ],
+      "hints": [
+        {
+          "badge": "cp-646",
+          "source": "https://aqwwiki.wikidot.com/felix-taylor-s-quests",
+          "reason": "The separate world-boss badge quest does not list the main story quest as a prerequisite."
+        }
+      ]
+    },
+    {
+      "id": "ruin:flame",
+      "name": "Flame of the Beyond",
+      "status": "partial",
+      "rules": [],
+      "hints": [
+        {
+          "badge": "cp-744",
+          "source": "https://aqwwiki.wikidot.com/warlic-s-quests",
+          "reason": "World-boss event participation is not proof of all Flame of the Beyond story quests."
+        }
+      ]
+    },
+    {
+      "id": "throne:vaden",
+      "name": "Vaden’s Tale",
+      "status": "partial",
+      "rules": [],
+      "hints": [
+        {
+          "badge": "cp-468",
+          "source": "https://aqwwiki.wikidot.com/trissa-s-quests",
+          "reason": "Awe-scention requires Vaden's Helm via an earlier quest. Boss tokens do not establish Vaden's Defeat turn-in."
+        }
+      ]
+    },
+    {
+      "id": "throne:xeven",
+      "name": "Xeven’s Tale",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "throne:ziri",
+      "name": "Ziri’s Tale",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "throne:pax",
+      "name": "Pax’s Tale",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "throne:sekt",
+      "name": "Sekt’s Tale",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "throne:scarletta",
+      "name": "Scarletta’s Tale",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "throne:stranger",
+      "name": "Mysterious Stranger’s Tale",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "dragons:gluttony",
+      "name": "Gluttony",
+      "status": "partial",
+      "rules": [],
+      "hints": [
+        {
+          "badge": "cp-436",
+          "source": "https://aqwwiki.wikidot.com/the-chest-s-quest",
+          "reason": "Dragon of Time requires the Mysterious Egg and all seven keys. Boss access or key drops may bypass individual story quest turn-ins."
+        }
+      ]
+    },
+    {
+      "id": "dragons:pride",
+      "name": "Pride",
+      "status": "partial",
+      "rules": [],
+      "hints": [
+        {
+          "badge": "cp-436",
+          "source": "https://aqwwiki.wikidot.com/the-chest-s-quest",
+          "reason": "Dragon of Time requires the Mysterious Egg and all seven keys. Boss access or key drops may bypass individual story quest turn-ins."
+        }
+      ]
+    },
+    {
+      "id": "dragons:greed",
+      "name": "Greed",
+      "status": "partial",
+      "rules": [],
+      "hints": [
+        {
+          "badge": "cp-436",
+          "source": "https://aqwwiki.wikidot.com/the-chest-s-quest",
+          "reason": "Dragon of Time requires the Mysterious Egg and all seven keys. Boss access or key drops may bypass individual story quest turn-ins."
+        }
+      ]
+    },
+    {
+      "id": "dragons:sloth",
+      "name": "Sloth",
+      "status": "partial",
+      "rules": [],
+      "hints": [
+        {
+          "badge": "cp-436",
+          "source": "https://aqwwiki.wikidot.com/the-chest-s-quest",
+          "reason": "Dragon of Time requires the Mysterious Egg and all seven keys. Boss access or key drops may bypass individual story quest turn-ins."
+        }
+      ]
+    },
+    {
+      "id": "dragons:lust",
+      "name": "Lust",
+      "status": "partial",
+      "rules": [],
+      "hints": [
+        {
+          "badge": "cp-436",
+          "source": "https://aqwwiki.wikidot.com/the-chest-s-quest",
+          "reason": "Dragon of Time requires the Mysterious Egg and all seven keys. Boss access or key drops may bypass individual story quest turn-ins."
+        }
+      ]
+    },
+    {
+      "id": "dragons:envy",
+      "name": "Envy",
+      "status": "partial",
+      "rules": [],
+      "hints": [
+        {
+          "badge": "cp-436",
+          "source": "https://aqwwiki.wikidot.com/the-chest-s-quest",
+          "reason": "Dragon of Time requires the Mysterious Egg and all seven keys. Boss access or key drops may bypass individual story quest turn-ins."
+        }
+      ]
+    },
+    {
+      "id": "dragons:wrath",
+      "name": "Wrath",
+      "status": "partial",
+      "rules": [],
+      "hints": [
+        {
+          "badge": "cp-436",
+          "source": "https://aqwwiki.wikidot.com/the-chest-s-quest",
+          "reason": "Dragon of Time requires the Mysterious Egg and all seven keys. Boss access or key drops may bypass individual story quest turn-ins."
+        }
+      ]
+    },
+    {
+      "id": "other:doomwood",
+      "name": "Doomwood",
+      "status": "partial",
+      "rules": [],
+      "hints": [
+        {
+          "badge": "cp-27",
+          "source": "https://aqwwiki.wikidot.com/artix-s-quests",
+          "reason": "The axe farm starts with a DoomWood Part 1 ending; later parts remain unverified."
+        },
+        {
+          "badge": "cp-51",
+          "source": "https://aqwwiki.wikidot.com/story:doomwood",
+          "reason": "Stone Paladin's quest is an intermediate DoomWood milestone."
+        },
+        {
+          "badge": "cp-59",
+          "source": "https://aqwwiki.wikidot.com/doomwood:part1",
+          "reason": "Charging Up! awards Story ARC before the final confrontation."
+        },
+        {
+          "badge": "cp-423",
+          "source": "https://aqwwiki.wikidot.com/blinding-light-of-destiny-s-quests",
+          "reason": "Never Give Up proves a Stonewood questline milestone, not all Doomwood stories."
+        }
+      ]
+    },
+    {
+      "id": "other:sepulchure",
+      "name": "Sepulchure’s Saga",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "other:darkon",
+      "name": "Darkon’s Elegy of Madness",
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-635",
+          "source": "https://aqwwiki.wikidot.com/arcana-particle-s-quests",
+          "prerequisite": true,
+          "reason": "Arcana Invoker requires the completed Elegy of Madness saga."
+        },
+        {
+          "badge": "cp-577",
+          "source": "https://aqwwiki.wikidot.com/story:darkon-s-elegy-of-madness",
+          "prerequisite": false,
+          "reason": ""
+        }
+      ],
+      "hints": []
+    },
+    {
+      "id": "other:j6",
+      "name": "J6’s Saga",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "other:dage",
+      "name": "Dage’s Saga",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    },
+    {
+      "id": "other:ravenloss",
+      "name": "Ravenloss",
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-72",
+          "source": "https://aqwwiki.wikidot.com/story:ravenloss",
+          "prerequisite": false,
+          "reason": ""
+        }
+      ],
+      "hints": [
+        {
+          "badge": "cp-73",
+          "source": "https://aqwwiki.wikidot.com/riadne-s-quests",
+          "reason": "Save the SoulWeaver is required, but the later Ravenloss War is separate."
+        }
+      ]
+    },
+    {
+      "id": "other:etherstorm",
+      "name": "Etherstorm Wastes",
+      "status": "partial",
+      "rules": [],
+      "hints": [
+        {
+          "badge": "cp-54",
+          "source": "https://aqwwiki.wikidot.com/story:etherstorm-wastes",
+          "reason": "Open the DragonGate is a story milestone, before the later Desoloth finale."
+        }
+      ]
+    },
+    {
+      "id": "other:nythera",
+      "name": "Nythera’s Saga",
+      "status": "manual",
+      "rules": [],
+      "hints": [],
+      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+    }
+  ],
+  "excluded": [
+    {
+      "badge": "cp-55",
+      "chapter": "chaos:ledgermayne",
+      "source": "https://aqwwiki.wikidot.com/battle-badges",
+      "reason": "Magic Thief is a separate story event; Arcangrove completion is not established.",
+      "relatedOnly": true
+    },
+    {
+      "badge": "cp-84",
+      "chapter": "queen:celestial",
+      "source": "https://aqwwiki.wikidot.com/aranx-s-quests",
+      "reason": "The Celestial Tournament is separate from A Theft of Light; story completion is not established.",
+      "relatedOnly": true
+    },
+    {
+      "badge": "cp-594",
+      "chapter": "queen:infernal",
+      "source": "https://aqwwiki.wikidot.com/aranx-s-quests",
+      "reason": "Infernal Arena is a separate questline; Infernal Invasion is not established.",
+      "relatedOnly": true
+    },
+    {
+      "badge": "cp-9",
+      "chapter": "other:nythera",
+      "category": "Legendary",
+      "source": "https://aqwwiki.wikidot.com/nythera-s-quests",
+      "reason": "Signing the conduct scroll is unrelated to Nythera's saga.",
+      "relatedOnly": true
+    },
+    {
+      "badge": "cp-468",
+      "chapter": "throne:stranger",
+      "source": "https://aqwwiki.wikidot.com/sdka-gift",
+      "reason": "Alternative Original Helm acquisition invalidates guaranteed story inference."
+    },
+    {
+      "badge": "cp-507",
+      "chapter": "throne:stranger",
+      "source": "https://aqwwiki.wikidot.com/sdka-gift",
+      "reason": "Alternative Original Helm acquisition invalidates guaranteed story inference."
+    },
+    {
+      "badge": "cp-598",
+      "chapter": "throne:stranger",
+      "source": "https://aqwwiki.wikidot.com/sdka-gift",
+      "reason": "Alternative Original Helm acquisition invalidates guaranteed story inference."
+    }
+  ],
+  "limitations": [
+    "The seven dragon keys establish boss/key progress, not necessarily individual story quest turn-ins; reported goto skipping prevents auto-completion.",
+    "World-boss participation alone does not establish narrative quest completion.",
+    "Remaining manual chapters need direct terminal quest or mandatory gate evidence; do not infer from chronology, names or items.",
+    "Existing Dragon of Time Chaos saga mapping retained; individual character-page badges are not a complete Book of Lore or quest log.",
+    "Legacy tutorial alternatives do not prove the current tutorial.",
+    "Some historical Chaos finale routes allow Legends to skip earlier storylines; a finale badge alone must not imply all twelve.",
+    "Sepulchure's Original Helm is obtainable from SDKA Gift without completing Mysterious Stranger's Tale.",
+    "A primary boss quest does not necessarily prove optional epilogues."
+  ],
+  "researchSources": [
+    {
+      "url": "https://aqwwiki.wikidot.com/book-of-lore-badges",
+      "finding": "Separate in-game story achievements"
+    },
+    {
+      "url": "https://aqwwiki.wikidot.com/champion-drakath-location",
+      "finding": "Mandatory Final Showdown gate"
+    },
+    {
+      "url": "https://aqwwiki.wikidot.com/vohu-s-quests",
+      "finding": "Radiant Goddess badge quest"
+    },
+    {
+      "url": "https://aqwwiki.wikidot.com/ultra-speaker",
+      "finding": "Mandatory Your Hero gate"
+    },
+    {
+      "url": "https://aqwwiki.wikidot.com/warlic-s-quests",
+      "finding": "Ultra Iadoa chain and historical Legend bypass"
+    },
+    {
+      "url": "https://aqwwiki.wikidot.com/doomwood:part1",
+      "finding": "Intermediate Story ARC"
+    },
+    {
+      "url": "https://aqwwiki.wikidot.com/sdka-gift",
+      "finding": "Alternative original helm"
+    },
+    {
+      "url": "https://aqwwiki.wikidot.com/aranx-s-quests",
+      "finding": "Celestial tournament distinct from story"
+    },
+    {
+      "url": "https://aqwwiki.wikidot.com/story:heptagonal-chest",
+      "finding": "Seven keys do not establish seven terminal quest flags"
+    },
+    {
+      "url": "https://aqwwiki.wikidot.com/magnum-opus",
+      "finding": "No documented story gate to boss map"
+    },
+    {
+      "url": "https://aqwwiki.wikidot.com/j6-house",
+      "finding": "Story completion unlocks reward shop; future inventory evidence needs separate acquisition validation"
+    },
+    {
+      "url": "https://aqwwiki.wikidot.com/vaden-helm-token",
+      "finding": "Vaden tokens are boss drops"
+    },
+    {
+      "url": "https://www.aq.com/lore/guides/shadowsofwarsaga",
+      "finding": "Official guide groups Forest Reach, Deep Forest and Transformation under Queen's Past."
+    },
+    {
+      "url": "https://aqwwiki.wikidot.com/shadows-of-chaos:queen-s-past",
+      "finding": "Tame the Queen ends Transformation's story chain."
+    },
+    {
+      "url": "https://aqwwiki.wikidot.com/drakath-s-quests",
+      "finding": "Down Below requires Tame the Queen; Undying Rage awards Chaos PuppetMaster after the Anka finale."
+    },
+    {
+      "url": "https://www.aq.com/lore/guides/prizeredemption",
+      "finding": "Book of Lore rewards and miscellaneous items excluded from IoDA; farmed items may have separate IoDA versions."
+    },
+    {
+      "url": "https://www.aq.com/gamedesignnotes/achievementtracker-4289",
+      "finding": "Sagas Completed achievements track main storyline completion."
+    }
+  ],
+  "inventoryEvidence": {
+    "policy": "Use exact name and item type, positive ownership only. Book of Lore reward and miscellaneous item exclusions documented by Artix. Verified public snapshot must match any imported badge character; anonymous full snapshots require user confirmation per active snapshot and badge character. No manual progress overwritten. Item absence is not negative evidence.",
+    "iodaSource": "https://www.aq.com/lore/guides/prizeredemption",
+    "rules": [
+      {
+        "name": "Ascended Avatar's Blade",
+        "type": "Sword",
+        "chapter": "chaos:prologue",
+        "source": "https://aqwwiki.wikidot.com/ascended-avatar-s-blade",
+        "reason": "Exclusive Prologue Complete reward; Robina's quests and the castle cutscenes are required.",
+        "verified": true
+      },
+      {
+        "name": "Phoenix Hunter Quiver",
+        "type": "Cape",
+        "chapter": "chaos:escherion",
+        "source": "https://aqwwiki.wikidot.com/phoenix-hunter-quiver",
+        "reason": "Exclusive Chiral Valley Champion Book of Lore reward.",
+        "verified": true
+      },
+      {
+        "name": "Volcanic Fire Spear",
+        "type": "Polearm",
+        "chapter": "chaos:vath",
+        "source": "https://aqwwiki.wikidot.com/volcanic-fire-spear",
+        "reason": "Exclusive Dwarfhold Champion reward.",
+        "verified": true
+      },
+      {
+        "name": "Amethyst Mace",
+        "type": "Mace",
+        "chapter": "chaos:kitsune",
+        "source": "https://aqwwiki.wikidot.com/yokai-champion",
+        "reason": "Shop requires completed Yokai Island saga.",
+        "verified": true
+      },
+      {
+        "name": "Sapphire Mace",
+        "type": "Mace",
+        "chapter": "chaos:wolfwing",
+        "source": "https://aqwwiki.wikidot.com/darkovia-champion",
+        "reason": "Shop requires completed Darkovia saga.",
+        "verified": true
+      },
+      {
+        "name": "Rocker Locks",
+        "type": "Helm",
+        "chapter": "chaos:kimberly",
+        "source": "https://aqwwiki.wikidot.com/rocker-locks",
+        "reason": "Exclusive Mythsong Champion reward.",
+        "verified": true
+      },
+      {
+        "name": "Invoker Staff",
+        "type": "Staff",
+        "chapter": "chaos:ledgermayne",
+        "source": "https://aqwwiki.wikidot.com/invoker-staff",
+        "reason": "Exclusive Arcangrove Champion reward.",
+        "verified": true
+      },
+      {
+        "name": "Elite Phoenix Locks",
+        "type": "Helm",
+        "chapter": "chaos:khasaanda",
+        "source": "https://aqwwiki.wikidot.com/elite-phoenix-locks",
+        "reason": "Exclusive Bloodtusk Champion reward.",
+        "verified": true
+      },
+      {
+        "name": "Ruler Of The Deep",
+        "type": "Armor",
+        "chapter": "chaos:iadoa",
+        "source": "https://aqwwiki.wikidot.com/ruler-of-the-deep",
+        "reason": "TheSpan Champion shop requires completed Span saga.",
+        "verified": true
+      },
+      {
+        "name": "Dark Summoner",
+        "type": "Armor",
+        "chapter": "chaos:lionfang",
+        "source": "https://aqwwiki.wikidot.com/dark-summoner",
+        "reason": "Exclusive ThunderForge Champion reward.",
+        "verified": true
+      },
+      {
+        "name": "PaladinSlayer Daimyo",
+        "type": "Pet",
+        "chapter": "chaos:xiang",
+        "source": "https://aqwwiki.wikidot.com/paladinslayer-daimyo",
+        "reason": "Exclusive Mirror Realm Champion reward.",
+        "verified": true
+      },
+      {
+        "name": "Lore's Champion Seal",
+        "type": "Item",
+        "chapter": "chaos:finale",
+        "source": "https://aqwwiki.wikidot.com/lore-s-champion-seal",
+        "reason": "DoomSkull Champion shop requires Mount DoomSkull completion; not proof of earlier chapters.",
+        "verified": true
+      },
+      {
+        "name": "Peanut",
+        "type": "Item",
+        "chapter": "other:j6",
+        "source": "https://aqwwiki.wikidot.com/peanut",
+        "reason": "Awarded after choosing to save J6 at the ending, or from the J6 House shop unlocked by the completed quest chain. Miscellaneous items are excluded from IoDA.",
+        "verified": true
+      },
+      {
+        "name": "Arcana Invoker",
+        "type": "Class",
+        "chapter": "other:darkon",
+        "source": "https://aqwwiki.wikidot.com/arcana-invoker",
+        "reason": "Class shop follows The World and the class quest chain; item acquisition provenance not independently verified.",
+        "verified": false
+      },
+      {
+        "name": "Chaos Avenger",
+        "type": "Class",
+        "chapter": "chaos:finale",
+        "source": "https://aqwwiki.wikidot.com/chaos-avenger",
+        "reason": "Normal class acquisition requires access to Champion Drakath. Item alone does not certify the quest route.",
+        "verified": false
+      },
+      {
+        "name": "King's Echo",
+        "type": "Class",
+        "chapter": "ruin:thunder",
+        "source": "https://aqwwiki.wikidot.com/alteon-s-gear",
+        "reason": "Normal class shop requires Echo of the King; item acquisition provenance not independently verified.",
+        "verified": false
+      },
+      {
+        "name": "Radiant Goddess of War",
+        "type": "Armor",
+        "chapter": "shadows:ruinedcrown",
+        "source": "https://aqwwiki.wikidot.com/radiant-goddess-of-war",
+        "reason": "Normal farm uses Ultra Speaker; possession alone does not establish the acquisition route.",
+        "verified": false
+      },
+      {
+        "name": "Chaorrupted Sorcerer's Staff",
+        "type": "Staff",
+        "chapter": "shadows:forestreach",
+        "source": "https://aqwwiki.wikidot.com/deep-tunnel-merge",
+        "reason": "Normal merge shop requires Tame the Queen; alternate acquisition not fully excluded.",
+        "verified": false
+      },
+      {
+        "name": "J6's Sword",
+        "type": "Sword",
+        "chapter": "other:j6",
+        "source": "https://aqwwiki.wikidot.com/bounty-hunter-shop",
+        "reason": "Requires Mission 5, which precedes saga completion.",
+        "verified": false
+      },
+      {
+        "name": "J6's Hammer",
+        "type": "Mace",
+        "chapter": "other:j6",
+        "source": "https://aqwwiki.wikidot.com/j6-s-hammer",
+        "reason": "Requires Mission 1, not the finale.",
+        "verified": false
+      }
+    ]
+  },
+  "bookOfLoreReview": {
+    "rules": [
+      {
+        "name": "Tutorial",
+        "chapter": "chaos:tutorial",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Swordhaven Savior",
+        "chapter": "chaos:prologue",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Chiral Valley Champion",
+        "chapter": "chaos:escherion",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Dwarfhold Champion",
+        "chapter": "chaos:vath",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Yokai Champion",
+        "chapter": "chaos:kitsune",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Darkovia Champion",
+        "chapter": "chaos:wolfwing",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Mythsong Champion",
+        "chapter": "chaos:kimberly",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Arcangrove Champion",
+        "chapter": "chaos:ledgermayne",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Sandsea Champion",
+        "chapter": "chaos:tibicenas",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Bloodtusk Champion",
+        "chapter": "chaos:khasaanda",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "The Span Champion",
+        "chapter": "chaos:iadoa",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Thunderforge Champion",
+        "chapter": "chaos:lionfang",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Mirror Realm Champion",
+        "chapter": "chaos:xiang",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Swordhaven Champion",
+        "chapter": "chaos:alteon",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Chaos Realm",
+        "chapter": "chaos:finale",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      }
+    ],
+    "source": "https://www.aq.com/gamedesignnotes/achievementtracker-4289",
+    "accountManager": "https://account.aq.com/",
+    "status": "Manual batch review implemented. Artix confirms Account Manager Badge Tracker, but authenticated rendered HTML not yet available for verified automatic capture."
+  }
+}
