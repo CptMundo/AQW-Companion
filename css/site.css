@@ -1232,3 +1232,14 @@ html[data-theme=light] #story .story-chapter-card.state-done{background:#e1f4e8!
 #story .story-gate-actions .ultra-copy-join,#story .story-gate-actions a{margin:0!important;font-size:11px}
 #story #storyaccess .story-gate-row select{min-width:0!important;width:auto!important;max-width:190px!important;min-height:30px;padding:5px 8px;font-size:12px}
 @media(max-width:550px){#story .story-gate-heading{flex-wrap:wrap}#story .story-gate-identity{flex-basis:100%}#story #storyaccess .story-gate-row{justify-content:flex-start}}
+
+/* Wishlist item artwork: retain the full checklist layout, including completion cards. */
+#unlocks .wishlist-item-identity{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+#unlocks .wishlist-item-identity>div{min-width:0;overflow-wrap:anywhere}
+#unlocks #unlocklist .unlockcard>.unlockhead .wishlist-item-identity h3{text-align:left!important;margin:0!important}
+#unlocks .wishlist-item-art{display:grid;place-items:center;flex:none;width:88px;height:82px;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:var(--panel);text-decoration:none}
+#unlocks .wishlist-item-art img{width:100%;height:100%;object-fit:contain;padding:3px;display:block}
+#unlocks .wishlist-item-art [hidden]{display:none!important}
+#unlocks .wishlist-art-fallback{display:grid;place-items:center;width:100%;height:100%}
+#unlocks .wishlist-item-art:focus-visible{outline:2px solid var(--accent,#59b7e8);outline-offset:2px}
+@media(max-width:480px){#unlocks .wishlist-item-art{width:64px;height:64px}#unlocks .wishlist-item-identity{gap:8px}}
