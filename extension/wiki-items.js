@@ -78,7 +78,8 @@
   if(href){const view=document.createElement('a');view.href=href;view.target='_blank';view.rel='noopener noreferrer';view.textContent='View in Wishlist ↗';view.style.cssText=(globalThis.AQWCTheme?.recolor('display:inline-block;margin-top:5px;color:#a9ddff;font:600 11px system-ui')||'display:inline-block;margin-top:5px;color:#a9ddff;font:600 11px system-ui');actions.append(view)}
   card.append(actions);
  }
- let farming,aligned=false;try{const api=globalThis.AQWCWikiMaterials;farming=api?.render(card,content,location.origin);if(farming)aligned=!!ui?.mountFarm?.(farming,content,shadow);if(stackable&&api){const slug=location.pathname.replace(/^\/|\/$/g,'');api.renderSources(card,api.mergeSources(api.parseSources(content,location.origin),api.reviewedSources(slug)),location.origin,slug,{partial:!!api.reviewedSources(slug)})}}catch{console.warn('AQW Companion: material progress unavailable on this page.')}
+ let farmHint=null,refreshFarmHint=()=>{},isOwned=false;
+ let farming,aligned=false;try{const api=globalThis.AQWCWikiMaterials;farming=api?.render(card,content,location.origin,hint=>{farmHint=hint;refreshFarmHint()});if(farming)aligned=!!ui?.mountFarm?.(farming,content,shadow);if(stackable&&api){const slug=location.pathname.replace(/^\/|\/$/g,'');api.renderSources(card,api.mergeSources(api.parseSources(content,location.origin),api.reviewedSources(slug)),location.origin,slug,{partial:!!api.reviewedSources(slug)})}}catch{console.warn('AQW Companion: material progress unavailable on this page.')}
  if(!actionable){
   // Keep the farming tool, but never reserve a branded status card without a usable Wishlist action.
   if(aligned){host.parentElement?.classList.add('aqwc-no-wishlist');host.remove()}
@@ -98,6 +99,17 @@
  const insight=(title)=>{const section=make('div','','aqwc-insight');section.append(make('strong',title));assistant.append(section);return section};
  const wikiLink=(label,slug)=>{const a=make('a',label);a.href=location.origin+'/'+slug;return a};
  const styles=make('style');styles.textContent='.aqwc-insights[hidden]{display:none!important}.aqwc-insight+.aqwc-insight{border-top:1px solid var(--aqwc-theme-line,#38566d);margin-top:10px;padding-top:10px}.aqwc-insight>strong{display:block;margin-bottom:6px}.aqwc-insight small{display:block;font-size:11px;font-weight:400;line-height:1.45;color:var(--aqwc-theme-muted,#b6cddd);margin-top:5px}.aqwc-insight-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 8px;padding:6px 0;border-bottom:1px solid var(--aqwc-theme-line,#38566d)}.aqwc-insight-row>a{grid-column:1/-1;font-size:11px}.aqwc-insight-value{color:var(--aqwc-theme-cyan,#a9ddff);font-weight:700;text-align:right}.aqwc-insight a{color:var(--aqwc-theme-cyan,#a9ddff)}.aqwc-stock-grid{gap:4px!important}';shadow.append(styles);card.append(assistant);
+ refreshFarmHint=()=>{
+  assistant.querySelector?.('.aqwc-next-step')?.remove();
+  if(farmHint&&!isOwned&&/^[a-z0-9][a-z0-9-]{0,199}$/.test(farmHint.slug)){
+   const b=insight('Next missing ingredient');b.classList.add('aqwc-next-step');b.append(wikiLink(farmHint.name+' · '+farmHint.missing+' missing',farmHint.slug));
+   const src=farmHint.source;for(const x of [...(src?.quests||[]),...(src?.drops||[])].slice(0,2)){if(/^[a-z0-9][a-z0-9-]{0,199}$/.test(x.slug))b.append(make('small','Listed source: '),wikiLink(x.name,x.slug))}
+   const map=src?.locations?.find(x=>x.join&&/^[a-z0-9-]+$/i.test(x.join));
+   if(map)globalThis.AQWCWikiMaterials?.joinControl(b,map,location.origin);
+   b.append(make('small','Current recipe · direct ingredient, not an optimized farming order.'));
+  }
+  assistant.hidden=!assistant.children.length;
+ };
  async function loadInsights(){try{
   const r=await chrome.runtime.sendMessage({type:'wiki-item-assistant',query:item});if(!r?.ok)return;
   assistant.replaceChildren();
@@ -114,7 +126,7 @@
    b.append(make('small','Item / best owned · same equipment slot · indexed boosts only; not a full loadout or stacking calculation.'));
   }
   if(r.goals?.rows?.length){const b=insight('Needed for your Wishlist');for(const g of r.goals.rows){const row=make('div','','aqwc-insight-row');row.append(make('span',g.name),make('span',g.missing===null?'Need '+g.target:g.missing?g.missing+' missing':'Stock ready','aqwc-insight-value'));b.append(row)}b.append(make('small','Known tracked requirements only. Stock is not reserved across projects.'))}
-  assistant.hidden=!assistant.children.length;
+  refreshFarmHint();
  }catch{}}
  loadInsights();window.addEventListener('focus',loadInsights);
  const sync=document.createElement('div');sync.className='aqwc-sync';const dot=document.createElement('span');dot.className='aqwc-sync-dot';const syncCopy=document.createElement('div'),syncTitle=document.createElement('strong'),syncTime=document.createElement('small');syncTitle.textContent='Inventory snapshot';syncTime.textContent='Checking…';syncCopy.append(syncTitle,syncTime);sync.append(dot,syncCopy);card.append(sync);
@@ -130,6 +142,7 @@
   if(result.state==='owned'||result.state==='not-found'){
    const owned=result.state==='owned';for(const [label,key] of [['Inventory','inventory'],['Bank','bank'],['Total','total']])counts[label].textContent=owned&&Number.isFinite(result[key])?result[key].toLocaleString():owned?'—':'0';stock.hidden=!owned;
   }
+  isOwned=result.state==='owned';refreshFarmHint();
   if(result.state==='owned'){
    show(stackable?'✓ Owned · '+result.total.toLocaleString()+' total':'✓ Owned',stackable?'Combined synced stock':'','#90edb5');
   }else if(result.state==='not-found')show(stackable?'0 total':'Not owned','','#ffc2a8');
