@@ -9,9 +9,9 @@ const svg='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.or
 const pic=(id)=>'<img id="'+id+'" src="'+svg+'" width="300" height="240" alt="Equipment art">';
 const basic='<p><strong>Location:</strong> <a href="/museum">Museum</a><br><strong>Price:</strong> 300 AC<br><strong>Sellback:</strong> 75 AC<br><strong>Rarity:</strong> Awesome Rarity<br><strong>Description:</strong> A test item.</p>';
 const recipe='<ul><li>Merge the following:<ul><li><a href="/void-aura">Void Aura</a> x10</li></ul></li></ul>';
-const event='<p><img src="/local--files/image-tags/staffbirthday.png" width="160" height="160" alt="Staff Birthday"><img src="/local--files/image-tags/acsmall.png" width="45" height="26" alt="AC"></p>';
+const event='<p><img src="/local--files/image-tags/staffbirthday.png" width="160" height="160" alt="Staff Birthday"><img src="/local--files/image-tags/acsmall.png" width="45" height="26" alt="AC"><img src="/local--files/image-tags/legend.png" width="120" height="30" alt="Legend"></p>';
 const gallery='<div class="yui-navset" id="native-gallery"><ul><li><a href="#male">Male</a></li><li><a href="#female">Female</a></li></ul><div id="male"><div class="collapsible-block">Normal'+pic('male-art')+'</div></div><div id="female" hidden><div class="collapsible-block">Animated'+pic('female-art')+'</div></div></div>';
-const variants='<div class="yui-navset" id="native-variants"><ul><li><a href="#one">First</a></li><li><a href="#two">Second</a></li></ul><div id="one">'+basic+recipe+'</div><div id="two">'+basic.replace('300 AC','400 AC')+recipe+'</div></div>';
+const variants='<div class="yui-navset" id="native-variants"><ul><li><a href="#one">First</a></li><li><a href="#two">Second</a></li></ul><div id="one">'+basic+recipe+'</div><div id="two">'+basic.replace('300 AC','400 AC')+'<img src="/local--files/image-tags/rare.png" alt="Rare">'+recipe+'</div></div>';
 const scenarios=[
  ['shop-cape',basic+'<p>'+pic('art')+'</p><p>Thanks to Test.</p>',false,true],
  ['quest-armor',event+basic.replace('300 AC',"N/A (Reward from the <a href='/quests'>Example</a> quest)")+gallery,false,true],
@@ -50,9 +50,11 @@ async function run(){
     const galleryOK=!window.originalGallery||art.contains(window.originalGallery);
     const variantOK=!window.originalVariant||details.contains(window.originalVariant);
     const r={shells:c.querySelectorAll('.aqwc-unified-item').length,info:left.contains(info),details:left.contains(details),status:right.contains(status),farm:farm?left.contains(q('#aqwc-inline-farm')):!q('#aqwc-inline-farm'),art:right.contains(art),artVisible:!q('.aqwc-art-placeholder').hidden,media:art.querySelectorAll('.aqwc-art-media img').length,original,galleryOK,variantOK,gap,overflow:document.documentElement.scrollWidth>innerWidth+2,columns:getComputedStyle(q('.aqwc-unified-item')).gridTemplateAreas};
-    details.open=true;r.detailsOpen=details.open;return r;
+    r.detailsInitiallyClosed=!details.open;r.rareInSummary=!!info.querySelector('img[alt="Rare"]');r.nativeLogoCount=info.querySelectorAll('.aqwc-tag-logo').length;details.open=true;r.detailsOpen=details.open;return r;
    },{farm});
-   for(const key of ['info','details','status','farm','art','original','galleryOK','variantOK','detailsOpen'])assert.ok(result[key],name+' '+width+' '+key+' '+JSON.stringify(result));
+   for(const key of ['info','details','status','farm','art','original','galleryOK','variantOK','detailsOpen','detailsInitiallyClosed'])assert.ok(result[key],name+' '+width+' '+key+' '+JSON.stringify(result));
+   assert.equal(result.rareInSummary,false,name+' variant-only rare tag');
+   if(['quest-armor','rare-dagger','variant-hat'].includes(name))assert.equal(result.nativeLogoCount,2,name+' shared native logos');
    assert.equal(result.shells,1,name+' duplicate shell');
    assert.equal(result.artVisible,!art,name+' art visibility');
    if(farm)assert.ok(Math.abs(result.gap-16)<=1,name+' stack gap '+result.gap);
