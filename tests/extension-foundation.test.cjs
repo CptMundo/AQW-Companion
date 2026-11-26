@@ -96,7 +96,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted,undefined);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
  assert.equal(runWiki(['items','houses'],'Sellback: 0 AC; Description: House',result,'Astral Beach Tent (AC)').inserted,undefined);
- assert.equal(manifest.version,'0.12.67');assert.equal(manifest.name,'AQW Companion');assert.equal(manifest.action.default_title,'AQW Companion');assert.ok(read('extension/popup.html').includes('<h1>AQW Companion</h1>'));assert.ok(!read('extension/popup.html').includes('AQW Wiki Companion'));assert.ok(!read('extension/quick-start.html').includes('AQW Wiki Companion'));assert.equal(manifest.content_scripts.length,4);assert.equal(manifest.content_scripts[2].run_at,'document_end');assert.equal(manifest.content_scripts[3].run_at,'document_start');assert.deepEqual(manifest.content_scripts[3].js,['wiki-first-paint.js']);assert.deepEqual(manifest.content_scripts[3].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['companion-theme.js','wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js','wiki-directory.js','wiki-boosts.js','wiki-navigation.js']);
+ assert.equal(manifest.version,'0.12.68');assert.equal(manifest.name,'AQW Companion');assert.equal(manifest.action.default_title,'AQW Companion');assert.ok(read('extension/popup.html').includes('<h1>AQW Companion</h1>'));assert.ok(!read('extension/popup.html').includes('AQW Wiki Companion'));assert.ok(!read('extension/quick-start.html').includes('AQW Wiki Companion'));assert.equal(manifest.content_scripts.length,4);assert.equal(manifest.content_scripts[2].run_at,'document_end');assert.equal(manifest.content_scripts[3].run_at,'document_start');assert.deepEqual(manifest.content_scripts[3].js,['wiki-first-paint.js']);assert.deepEqual(manifest.content_scripts[3].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['companion-theme.js','wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js','wiki-directory.js','wiki-boosts.js','wiki-navigation.js']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -903,10 +903,11 @@ assert.ok(!read("extension/popup.html").includes("appearance-reset"));assert.ok(
  // Reproduce a moving default order across pages, with a stable sort fallback.
  const origin='https://account.aq.com',count=2392;
  const rows=Array.from({length:count},(_,i)=>({ID:i+1,Name:'Item '+i,Type:'Item',Count:1,Bank:i%2}));
- const calls=[];let mode='bulk';
+ const calls=[];let mode='bulk',inFlight=0,peak=0;
  const ctx={URL,AbortSignal,location:{origin,pathname:'/AQW/Inventory'},performance:{getEntriesByType:()=>[{name:origin+'/AQW/InventoryData?filter=ignored&sort=ignored'}]},setTimeout:f=>f(),fetch:async(url)=>{
   const u=new URL(url),skip=Number(u.searchParams.get('skip')),take=Number(u.searchParams.get('take')),sort=u.searchParams.get('sort');calls.push({skip,take,sort});
   assert.equal(u.searchParams.has('filter'),false);
+  if(sort){inFlight++;peak=Math.max(peak,inFlight);await Promise.resolve();inFlight--;}
   if(mode==='reject-bulk'&&take>100)return {ok:false,status:400};
   const limit=(mode==='cap'||mode==='overlap'||mode==='incomplete')?Math.min(100,take):take;
   let data=rows.slice(skip,skip+limit);
@@ -919,8 +920,8 @@ assert.ok(!read("extension/popup.html").includes("appearance-reset"));assert.ok(
  const capture=vm.runInNewContext(read('extension/account-capture.js')+'\ncaptureAccountInventory',ctx);
  const events=[];assert.equal((await capture(e=>events.push(e))).items.length,count);assert.deepEqual(events.map(e=>e.phase),['connecting','bulk','reading']);assert.equal(events.at(-1).read,count);assert.equal(calls.length,2);assert.equal(calls[1].take,count);
  for(const fallback of ['cap','reject-bulk']){
-  mode=fallback;calls.length=0;events.length=0;const snap=await capture(e=>events.push(e));assert.equal(events.find(e=>e.phase==='reading').read,0);assert.equal(events.at(-1).read,count);assert.ok(events.some(e=>e.phase==='reading'&&e.read===100&&e.total===count));assert.ok(events.filter(e=>e.phase==='reading').every((e,i,a)=>i===0||e.read>=a[i-1].read));assert.equal(snap.items.length,count);assert.equal(new Set(snap.items.map(x=>x.ID)).size,count);
-  assert.equal(calls.length,26);for(const call of calls.slice(2))assert.deepEqual(JSON.parse(call.sort),[{selector:'ID',desc:false},{selector:'Bank',desc:false}]);
+  mode=fallback;calls.length=0;events.length=0;peak=0;const snap=await capture(e=>events.push(e));assert.equal(events.find(e=>e.phase==='reading').read,0);assert.equal(events.at(-1).read,count);assert.ok(events.some(e=>e.phase==='reading'&&e.read===100&&e.total===count));assert.ok(events.filter(e=>e.phase==='reading').every((e,i,a)=>i===0||e.read>=a[i-1].read));assert.equal(snap.items.length,count);assert.equal(new Set(snap.items.map(x=>x.ID)).size,count);
+  assert.equal(calls.length,26);assert.equal(peak,2);for(const call of calls.slice(2))assert.deepEqual(JSON.parse(call.sort),[{selector:'ID',desc:false},{selector:'Bank',desc:false}]);
  }
  for(const [failure,expected] of [['duplicate',/Repeated item ID\/location at row 101 of 2392/],['overlap',/Repeated item ID\/location at row 101 of 2392/],['invalid-id',/Invalid item ID at row 101/],['incomplete',/Incomplete inventory page at offset 100/],['changed',/total changed/]]){mode=failure;await assert.rejects(capture(),expected);}
  console.log('Account capture RC: full 2392-row response, capped and rejected bulk fallback, stable pagination, repeated/invalid rows, incomplete page and total drift checked.');

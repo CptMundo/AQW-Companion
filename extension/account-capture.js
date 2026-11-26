@@ -49,12 +49,18 @@ async function captureAccountInventory(onProgress,jobId){
   // A shorter bulk response is not imported, even if it contains valid records.
  }
  report('reading',0,total);
- for(let offset=0;offset<total;offset+=100){
-  const page=await readPage(offset,100,true);
-  if(page.reported!==total)throw Error('Inventory total changed during capture. Try again.');
-  if(page.rows.length!==Math.min(100,total-offset))throw Error('Incomplete inventory page at offset '+offset+'. No inventory was changed.');
-  append(page.rows,offset);
-  if(offset+100<total)await new Promise(resolve=>setTimeout(resolve,150));
+ // Keep network concurrency bounded at two requests and retain ordered validation.
+ // This reduces the number of sequential round trips when the server caps bulk reads.
+ for(let base=0;base<total;base+=200){
+  const offsets=[base,...(base+100<total?[base+100]:[])];
+  const pages=await Promise.all(offsets.map(offset=>readPage(offset,100,true)));
+  for(let i=0;i<pages.length;i++){
+   const page=pages[i],offset=offsets[i];
+   if(page.reported!==total)throw Error('Inventory total changed during capture. Try again.');
+   if(page.rows.length!==Math.min(100,total-offset))throw Error('Incomplete inventory page at offset '+offset+'. No inventory was changed.');
+   append(page.rows,offset);
+  }
+  if(base+200<total)await new Promise(resolve=>setTimeout(resolve,150));
  }
  return result();
 }
