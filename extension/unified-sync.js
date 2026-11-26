@@ -16,6 +16,7 @@ if(typeof document==='undefined'){
  }
  async function sourceTab(kind,tabId){
   let tab;try{tab=await chrome.tabs.get(tabId)}catch{}
+  if(kind==='progress'){if(!tab?.url||new URL(tab.url).origin!=='https://account.aq.com')throw Error('Open Account Manager → Badge Tracker, select a progress page, then click Sync Progress.');return tab;}
   const expected=kind==='public'?'badges':kind;
   if(sourceKind(tab?.url)===expected)return tab;
   const allowed=await chrome.permissions.contains({origins:['https://account.aq.com/*']});
@@ -31,6 +32,7 @@ if(typeof document==='undefined'){
   return tab||await chrome.tabs.create({url,active:false});
  }
  async function waitSource(tab,kind){
+  if(kind==='progress'){if(tab.status!=='complete')throw Error('Wait for the Progress Badges page to load.');return;}
   for(let i=0;i<50;i++){
    const current=await chrome.tabs.get(tab.id);
    if(current.status==='complete'){
@@ -57,11 +59,11 @@ if(typeof document==='undefined'){
   job={kind,id:crypto.randomUUID(),sourceId:null,phase:'opening'};
   let saved=false;
   try{
-   await restrictStorage();await progress('opening','Opening '+(kind==='inventory'?'Account Manager':'Character Page')+'…');
+   await restrictStorage();await progress('opening','Opening '+(kind==='inventory'||kind==='progress'?'Account Manager':'Character Page')+'…');
    const source=await sourceTab(kind,tabId);job.sourceId=source.id;
    await waitSource(source,kind);
-   await progress('reading',kind==='inventory'?'Reading Inventory & Bank…':kind==='public'?'Reading public inventory…':'Reading Character Page badges…');
-   const result=await chrome.scripting.executeScript({target:{tabId:source.id},func:kind==='inventory'?captureAccountInventory:kind==='public'?capturePublicInventory:captureCharacterBadges,args:kind==='inventory'?[null,job.id]:[]});
+   await progress('reading',kind==='inventory'?'Reading Inventory & Bank…':kind==='public'?'Reading public inventory…':kind==='progress'?'Reading visible Progress Badges…':'Reading Character Page badges…');
+   const result=await chrome.scripting.executeScript({target:{tabId:source.id},func:kind==='inventory'?captureAccountInventory:kind==='public'?capturePublicInventory:kind==='progress'?captureAccountProgress:captureCharacterBadges,args:kind==='inventory'?[null,job.id]:[]});
    let snapshot=result?.[0]?.result,stageId;
    await progress('staging','Preparing local snapshot…');
    if(kind==='inventory'){
@@ -69,13 +71,15 @@ if(typeof document==='undefined'){
     await chrome.storage.local.set({[ACCOUNT_STAGE]:{id:stageId,snapshot}});
    }else if(kind==='public'){
     snapshot=cleanPublicSnapshot(snapshot);
+   }else if(kind==='progress'){
+    if(!snapshot||!['summary','sagas','playtime','membership','ac'].includes(snapshot.section))throw Error('No valid progress captured.');
    }else{
     if(!snapshot||typeof snapshot.character!=='string'||!Array.isArray(snapshot.badges)||!snapshot.badges.length||snapshot.badges.length>2000)throw Error('No valid badges captured.');
     await chrome.storage.local.set({[BADGES]:snapshot});
    }
    await progress('connecting','Connecting to Companion…');
    const target=await companionTab();
-   await progress('importing',kind==='inventory'?'Saving inventory and updating trackers…':kind==='public'?'Saving separate public inventory…':'Matching and saving badges…');
+   await progress('importing',kind==='inventory'?'Saving inventory and updating trackers…':kind==='public'?'Saving separate public inventory…':kind==='progress'?'Saving local account progress…':'Matching and saving badges…');
    const reply=await chrome.tabs.sendMessage(target.id,{type:'one-click-apply',id:job.id,kind,snapshot},{frameId:0});
    saved=!!reply?.saved;
    if(!reply?.ok||!saved||reply.id!==job.id)throw Error(reply?.error||'Companion did not confirm the update. Check the website before retrying.');
@@ -86,7 +90,7 @@ if(typeof document==='undefined'){
    }
    if(kind==='public')await chrome.storage.local.set({[PUBLIC]:snapshot});
    const count=kind==='inventory'||kind==='public'?snapshot.items.length:reply.count;
-   await progress('done',kind==='inventory'?'✓ '+count+' records synced':kind==='public'?'✓ '+count+' public items · Bank unknown':'✓ '+count+' badges matched · Story updated'+(reply.ambiguous||reply.unknown?' · '+reply.ambiguous+' ambiguous, '+reply.unknown+' unrecognized':''),count,count);
+   await progress('done',kind==='inventory'?'✓ '+count+' records synced':kind==='public'?'✓ '+count+' public items · Bank unknown':kind==='progress'?'✓ Progress saved · review in Companion':'✓ '+count+' badges matched · Story updated'+(reply.ambiguous||reply.unknown?' · '+reply.ambiguous+' ambiguous, '+reply.unknown+' unrecognized':''),count,count);
    return {ok:true,count};
   }catch(e){const error=String(e?.message||e);await progress('error',error+(saved?' Website data was saved; sync not fully confirmed.':' Check Companion before retrying; staged data is retained if captured.')).catch(()=>{});return {ok:false,error}}
   finally{job=null}
@@ -100,7 +104,7 @@ if(typeof document==='undefined'){
    return {ok:true}
   }
   if(!popupSender(sender))return {ok:false,error:'Invalid sync request.'};
-  if(m.type==='one-click-start'&&['inventory','badges','public'].includes(m.kind)&&Number.isInteger(m.tabId))return run(m.kind,m.tabId);
+  if(m.type==='one-click-start'&&['inventory','badges','public','progress'].includes(m.kind)&&Number.isInteger(m.tabId))return run(m.kind,m.tabId);
   return {ok:false,error:'Invalid sync request.'}
  }};
  return;
@@ -109,13 +113,13 @@ if(location.protocol==='chrome-extension:'||location.protocol==='moz-extension:'
  const inventory=document.getElementById('one-click-inventory'),badges=document.getElementById('one-click-badges');
  if(!inventory||!badges)return;
  const publicButton=document.getElementById('one-click-public');
- const controls=publicButton?{inventory,public:publicButton,badges}:{inventory,badges},running=['opening','reading','staging','connecting','importing'];let localBusy=false;
+ const progressButton=document.getElementById('one-click-progress');const controls=publicButton?{inventory,public:publicButton,badges}:{inventory,badges};if(progressButton)controls.progress=progressButton;const running=['opening','reading','staging','connecting','importing'];let localBusy=false;
  async function paint(){
   const all=(await chrome.storage.local.get(STATUS))[STATUS]||{};
   const busy=localBusy||Object.values(all).some(s=>running.includes(s.phase)&&Date.now()-s.at<300000);
   for(const [kind,btn] of Object.entries(controls)){
    const s=all[kind],bar=document.getElementById('one-click-'+kind+'-progress'),status=document.getElementById('one-click-'+kind+'-status');
-   btn.disabled=busy;btn.textContent=s&&running.includes(s.phase)&&busy?'Syncing…':kind==='inventory'?'↻ Full Sync':kind==='public'?'↻ Public Sync':'↻ Sync Badges';
+   btn.disabled=busy;btn.textContent=s&&running.includes(s.phase)&&busy?'Syncing…':kind==='inventory'?'↻ Full Sync':kind==='public'?'↻ Public Sync':kind==='progress'?'↻ Sync Progress':'↻ Sync Badges';
    if(!s)continue;
    const stale=running.includes(s.phase)&&Date.now()-s.at>=300000;
    const compact=kind==='badges'&&!stale&&s.phase==='done'&&Number.isSafeInteger(s.read);status.textContent=stale?'Sync interrupted. Retry from the source page.':compact?'✓ '+s.read+' badges':s.text;status.title=compact?s.text:'';if(compact)status.setAttribute('aria-label',s.text);else status.removeAttribute('aria-label');status.dataset.state=stale?'error':s.phase;
@@ -140,7 +144,7 @@ chrome.runtime.onMessage.addListener((m,sender,reply)=>{
  if(sender.id!==chrome.runtime.id||!['one-click-ping','one-click-apply'].includes(m?.type))return;
  const ready=document.documentElement.dataset.aqwcOneClickReady==='1'&&(m.kind!=='badges'||document.documentElement.dataset.aqwcBadgeReady==='1')&&(m.kind!=='public'||document.documentElement.dataset.aqwcPublicReady==='1');
  if(m.type==='one-click-ping'){reply({ready});return}
- if(!ready||!['inventory','badges','public'].includes(m.kind)||typeof m.id!=='string'||! /^[a-f0-9-]{36}$/i.test(m.id)){reply({ok:false,error:'Companion not ready.'});return}
+ if(!ready||!['inventory','badges','public','progress'].includes(m.kind)||typeof m.id!=='string'||! /^[a-f0-9-]{36}$/i.test(m.id)){reply({ok:false,error:'Companion not ready.'});return}
  let timer;const receive=e=>{if(e.source!==window||e.origin!==location.origin||e.data?.channel!==CHANNEL||e.data.type!=='result'||e.data.id!==m.id)return;clearTimeout(timer);window.removeEventListener('message',receive);reply(e.data)};
  window.addEventListener('message',receive);timer=setTimeout(()=>{window.removeEventListener('message',receive);reply({ok:false,error:'Website confirmation timed out; check Companion before retrying.'})},90000);
  window.postMessage({channel:CHANNEL,type:'apply',id:m.id,kind:m.kind,snapshot:m.snapshot},location.origin);return true;
