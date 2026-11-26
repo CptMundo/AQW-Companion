@@ -5,10 +5,10 @@
  const title=document.getElementById('page-title'),content=document.getElementById('page-content');
  if(!title||!content||document.getElementById('aqwc-item-status'))return;
  const raw=String(content.textContent||'');
- const standard=/\bSellback\s*:/i.test(raw)&&/\bDescription\s*:/i.test(raw);
- const itemFields=['Location','Price','Rarity','Description','Sellback','Base Damage','Type'].filter(k=>new RegExp('\\b'+k+'\\s*:', 'i').test(raw));
+ const body=String(content.innerText||raw),fields=raw+'\n'+body;
+ const standard=/\bSellback\s*:/i.test(fields)&&/\bDescription\s*:/i.test(fields);
+ const itemFields=['Location','Price','Rarity','Description','Sellback','Base Damage','Type'].filter(k=>new RegExp('\\b'+k+'\\s*:', 'i').test(fields));
  if(!standard&&itemFields.length<2)return;
- const body=String(content.innerText||raw);
  // Preserve original item text before the redesign collapses the native Notes.
  globalThis.AQWCOriginalItemText=raw;
  if(/\busually refers to\s*:/i.test(body))return;
