@@ -60,14 +60,14 @@ if(typeof document==='undefined'){
   const wanted=includeLoyalty?['sagas','playtime','summary','membership','ac']:['sagas','playtime'];
   const completed=[],failed=[];let tabId=null;
   const safe=url=>{try{const u=new URL(url);return u.origin==='https://account.aq.com'&&!u.username&&!u.password&&/progress|badge|achievement/i.test(u.pathname)&&!/logout|logoff|delete|purchase|payment|reset|password|settings/i.test(u.pathname)}catch{return false}};
-  const inspect=async id=>{
+  const inspect=async (id,expected=null)=>{
    for(let i=0;i<20;i++){
     const t=await chrome.tabs.get(id);
     if(t.status==='complete'){
      if(!safe(t.url))throw Error('Progress page unavailable or sign-in required.');
      const value=await chrome.scripting.executeScript({target:{tabId:id},func:readProgressNavigation});
      const n=value?.[0]?.result;
-     if(n?.section||n?.links?.tracker||Object.keys(n?.links||{}).some(k=>wanted.includes(k)))return n;
+     if(expected?n?.section===expected:n?.section||n?.links?.tracker||Object.keys(n?.links||{}).some(k=>wanted.includes(k)))return n;
     }
     await sleep(400);
    }
@@ -89,7 +89,7 @@ if(typeof document==='undefined'){
      if(n.section!==section){
       if(!safe(links[section]))throw Error('Section link not found.');
       await chrome.tabs.update(tabId,{url:links[section]});
-      n=await inspect(tabId);Object.assign(links,n.links);
+      n=await inspect(tabId,section);Object.assign(links,n.links);
      }
      if(n.section!==section)throw Error('Unexpected progress page.');
      let snapshot;
@@ -149,7 +149,7 @@ if(typeof document==='undefined'){
     await chrome.storage.local.set({[KEY]:cleanSnapshot(snapshot)});await chrome.storage.local.remove(ACCOUNT_STAGE);
     let result;try{result=await syncAccountProgress(source,target)}catch{result={completed:[],failed:['progress'],reason:'Progress sync unavailable.'}}
     const count=snapshot.items.length,partial=result.failed.length>0;
-    const label='✓ '+count+' inventory records · '+result.completed.length+' progress sections'+(partial?' · '+result.failed.length+' not synced'+(result.reason?' · '+result.reason:''):'');
+    const label='✓ '+count+' inventory records · '+result.completed.length+'/'+(result.completed.length+result.failed.length)+' progress sections'+(partial?' · '+result.failed.length+' not synced'+(result.reason?' · '+result.reason:''):'');
     await progress('done',label,count,count);return {ok:true,count,progress:result,partial};
    }
    if(kind==='public')await chrome.storage.local.set({[PUBLIC]:snapshot});
@@ -187,7 +187,7 @@ if(location.protocol==='chrome-extension:'||location.protocol==='moz-extension:'
    btn.disabled=busy;btn.textContent=s&&running.includes(s.phase)&&busy?'Syncing…':kind==='inventory'?'↻ Full Sync':kind==='public'?'↻ Public Sync':'↻ Sync Badges';
    if(!s)continue;
    const stale=running.includes(s.phase)&&Date.now()-s.at>=300000;
-   const compact=kind==='badges'&&!stale&&s.phase==='done'&&Number.isSafeInteger(s.read);status.textContent=stale?'Sync interrupted. Retry from the source page.':compact?'✓ '+s.read+' badges':s.text;status.title=compact?s.text:'';if(compact)status.setAttribute('aria-label',s.text);else status.removeAttribute('aria-label');status.dataset.state=stale?'error':s.phase;
+   const compact=kind==='badges'&&!stale&&s.phase==='done'&&Number.isSafeInteger(s.read);status.textContent=stale?'Sync interrupted. Retry from the source page.':compact?'✓ '+s.read+' badges':s.text;status.title=compact?s.text:'';if(compact)status.setAttribute('aria-label',s.text);else status.removeAttribute('aria-label');status.dataset.state=stale?'error':s.phase==='done'&&kind==='inventory'&&s.text.includes('not synced')?'partial':s.phase;
    bar.hidden=stale||s.phase==='error';
    if(s.phase==='done'){bar.max=1;bar.value=1}
    else if(s.phase==='reading'&&s.total>0){bar.max=s.total;bar.value=s.read}
@@ -196,6 +196,7 @@ if(location.protocol==='chrome-extension:'||location.protocol==='moz-extension:'
  }
  for(const [kind,button] of Object.entries(controls))button.addEventListener('click',async e=>{
   if(!e.isTrusted||localBusy)return;localBusy=true;
+  if(kind==='inventory'){try{await chrome.permissions.request({origins:['https://account.aq.com/*']})}catch{}}
   if(kind==='public'){try{const info=await chrome.runtime.sendMessage({type:'inventory-summary'});if(info?.source==='full'&&!confirm('You already have a full Account Manager / imported inventory snapshot. Public Sync provides less information and will be saved separately. Continue anyway?')){localBusy=false;return}}catch{localBusy=false;return}}
   const status=document.getElementById('one-click-'+kind+'-status'),bar=document.getElementById('one-click-'+kind+'-progress');status.textContent='Starting sync…';bar.hidden=false;bar.removeAttribute('value');for(const b of Object.values(controls))b.disabled=true;
   try{const [tab]=await chrome.tabs.query({active:true,currentWindow:true});if(!Number.isInteger(tab?.id))throw Error('No active browser tab.');const r=await chrome.runtime.sendMessage({type:'one-click-start',kind,tabId:tab.id});if(!r?.ok)status.textContent=r?.error||'Sync was not confirmed.'}
