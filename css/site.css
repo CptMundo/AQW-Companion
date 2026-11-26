@@ -1149,3 +1149,13 @@ html[data-aqwc-background="cas"] #overview .homeseason{--calendar-accent:#ec76f9
 #overview #homeseasoncontent .aqw-cal-legend{margin:0}
 @media(max-width:1100px){#overview #homeseasoncontent .aqw-calendar-detail{min-height:0!important}}
 @media(max-width:600px){#overview #homeseasoncontent .aqw-cal-day{min-height:32px!important}#overview #badge-hunter-home{padding:10px}}
+
+/* Never display the empty-account screen while local inventory is being restored. */
+#overview[data-inventory-booting] :is(#welcome,#dashboard,#home-calendar-guest){display:none!important}
+#overview .home-inventory-loading{display:flex;align-items:center;justify-content:center;gap:12px;min-height:180px;margin:18px auto;padding:24px;max-width:480px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--txt);font-size:15px;font-weight:650;text-align:left}
+#overview .home-inventory-loading[hidden]{display:none!important}
+#overview .home-inventory-loading small{display:block;margin-top:5px;color:var(--muted);font-size:12px;font-weight:400}
+#overview .inventory-loading-spinner{flex:none;width:24px;height:24px;border:2px solid var(--line);border-top-color:var(--cyan);border-radius:50%;animation:aqwc-inventory-spin .8s linear infinite}
+#overview .home-loading-error{flex-direction:column;align-items:flex-start;min-height:0;border-color:var(--line)}
+@keyframes aqwc-inventory-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){#overview .inventory-loading-spinner{animation:none}}

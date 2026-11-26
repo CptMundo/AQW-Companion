@@ -55,3 +55,20 @@ assert.ok(html.includes("root.append(feedStatus)"));
 for(const theme of ['stars','dark','light','cas'])assert.ok(siteCss.includes('html[data-aqwc-background="'+theme+'"] #overview .homeseason{--calendar-accent:'));
 const badges=fs.readFileSync(path.join(__dirname,"../js/badge-hunter.js"),"utf8");new vm.Script(badges);assert.ok(badges.includes("calendar-badge-entry"));assert.ok(badges.includes("end.dateTime=b.window.end"));
 console.log("Calendar seasonal alerts, guest access and theme accents checked.");
+
+assert.ok(html.includes('data-inventory-booting="true"'));
+assert.ok(html.includes('id="welcome" class="placeholder hidden"'));
+assert.ok(siteCss.includes('#overview[data-inventory-booting] :is(#welcome,#dashboard,#home-calendar-guest){display:none!important}'));
+assert.ok(html.indexOf('finishInventoryStartup();')<html.indexOf('try{await loadCommunity();await loadPublicCatalog()'));
+const finishSource=html.match(/function finishInventoryStartup\(\)\{[\s\S]*?\n\}/)[0];
+function startupState(current,error){
+ const overview={boot:true,hasAttribute(){return this.boot},removeAttribute(){this.boot=false},setAttribute(){}};
+ const welcome={classList:{toggle(k,v){this.hidden=v}}},dashboard={classList:{toggle(k,v){this.hidden=v}}},loader={hidden:false,replaceChildren(){this.error=true},classList:{add(){}},setAttribute(){}};
+ const context={current,inventoryStorageError:error,$:id=>({overview,welcome,dashboard,'home-inventory-loading':loader}[id]),node:()=>({})};
+ vm.runInNewContext(finishSource+'\nfinishInventoryStartup()',context);
+ return [overview.boot,welcome.classList.hidden,dashboard.classList.hidden,loader.hidden,!!loader.error];
+}
+assert.deepEqual(startupState({items:[]},''),[false,true,false,true,false]);
+assert.deepEqual(startupState(null,''),[false,false,true,true,false]);
+assert.deepEqual(startupState(null,'storage error'),[false,true,true,false,true]);
+console.log('Startup distinguishes saved inventory, first visit and recovery errors.');

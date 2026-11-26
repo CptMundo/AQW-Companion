@@ -25,3 +25,9 @@
 #badge-hunter .badge-hunter-heading h3{flex:1;overflow-wrap:anywhere}
 #badge-hunter .badge-hunter-card ul{padding-left:20px;margin:6px 0;font-size:13px;line-height:1.5}
 #badge-hunter-more{display:block;margin:16px auto 0}#badge-hunter-more[hidden]{display:none}
+
+#badge-hunter .badge-sync-summary{display:flex;align-items:flex-start;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;margin:8px 0}
+#badge-hunter .badge-advanced-tools{margin-left:auto;max-width:100%;min-width:0}
+#badge-hunter .badge-advanced-tools[open]{flex:1 1 100%;margin:0;padding:10px;border:1px solid var(--line);border-radius:9px}
+#badge-hunter .badge-advanced-tools summary{cursor:pointer;color:var(--cyan);font-size:12px;font-weight:600}
+#badge-hunter .badge-advanced-tools .toolbar{margin-top:9px;flex-wrap:wrap}
