@@ -1,4 +1,4 @@
-# AQW Companion — Alpha 0.9.9.24
+# AQW Companion — Beta 0.13.0
 
 Created by **CptMundo**. Unofficial AdventureQuest Worlds fan project, not affiliated with Artix Entertainment.
 
@@ -70,3 +70,7 @@ These modules load after the extracted legacy CSS; recipe/ultra JS is linked bef
 - Cleaner cards: icon-only × remove buttons and no repetitive starter/check-against-Wiki/not-detected banners. Saved custom steps are protected.
 - Source-backed subset: https://aqwwiki.wikidot.com/sin-of-the-abyss, https://aqwwiki.wikidot.com/forge-metal, https://aqwwiki.wikidot.com/light-merge. Details and limitations: `docs/WISHLIST_RECIPE_AND_FINDS.md`.
 - Most community recipes are **not independently verified**; the structural audit doesn't establish current truth. Never label the whole item database source-reviewed.
+
+## Release versioning
+
+The website and browser extension share one release version. The extension manifest is the canonical numeric version; the site header/footer, popup, README, guide and downloadable ZIP must match it. Use `0.13.1`, `0.13.2` etc. for maintenance releases, `0.14.0` for the next significant feature release, and `1.0.0` for the first stable release. The browser manifest keeps the numeric version separate from the human-readable Beta label. Local storage schema versions and stylesheet/script cache revisions remain independent.
