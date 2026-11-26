@@ -5,11 +5,13 @@
  const title=document.getElementById('page-title'),content=document.getElementById('page-content');
  if(!title||!content||document.getElementById('aqwc-item-status'))return;
  const raw=String(content.textContent||'');
- if(!/\bSellback\s*:/i.test(raw)||!/\bDescription\s*:/i.test(raw))return;
+ const standard=/\bSellback\s*:/i.test(raw)&&/\bDescription\s*:/i.test(raw);
+ const itemFields=['Location','Price','Rarity','Description','Sellback','Base Damage','Type'].filter(k=>new RegExp('\\b'+k+'\\s*:', 'i').test(raw));
+ if(!standard&&itemFields.length<2)return;
  const body=String(content.innerText||raw);
  // Preserve original item text before the redesign collapses the native Notes.
  globalThis.AQWCOriginalItemText=raw;
- if(/\busually refers to\s*:/i.test(body)||!/\bSellback\s*:/i.test(body)||!/\bDescription\s*:/i.test(body))return;
+ if(/\busually refers to\s*:/i.test(body))return;
  const name=String(title.innerText||title.textContent||'').trim();if(!name||name.length>350)return;
  const crumb=document.getElementById('breadcrumbs')||document.querySelector?.('.breadcrumbs, #breadcrumb, .breadcrumb');
  const labelKey=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
@@ -23,6 +25,7 @@
  // Never fall back on an explicitly non-item breadcrumb such as Shops.
  if(links.length&&start<0)return;
  let category=start>=0?links.slice(start+1).map(x=>categoryOf(x.slug,x.label)).filter(Boolean).at(-1):null;
+ if(!standard&&(!category||start<0))return;
  // Some Wiki themes/variants lack the standard breadcrumb selector. Require both
  // item-detail fields above, then use an explicit Type field or specific item tag.
  if(!category){
@@ -47,7 +50,7 @@
  line.setAttribute?.('role','status');const heading=document.createElement('div');heading.className='aqwc-item-heading';heading.append(itemTitle,line);card.append(heading,note);shadow.append(card);
  const show=(text,detail,color)=>{line.textContent=text;line.style.color=globalThis.AQWCTheme?.value(color,'color')||color;note.textContent=detail;note.hidden=!detail};
  const badge=document.getElementById('aqwc-foundation-badge');const mountStatus=()=>{if(ui)ui.mount(host,content,title);else (badge||title).insertAdjacentElement('afterend',host)};
- if(!category){ui?.styleItem?.(content);return}
+ if(!category){show('Item type unavailable','Original Wiki details remain accessible.','#ffdb93');ui?.styleItem?.(content,host);return}
  // Decorate actual large item illustrations only; preserve the Wiki image/link,
  // original dimensions and credit. No additional image requests.
  for(const img of content.querySelectorAll?.('img')||[]){
@@ -81,12 +84,12 @@
  let farmHint=null,refreshFarmHint=()=>{},isOwned=false;
  let farming,aligned=false;try{const api=globalThis.AQWCWikiMaterials;farming=api?.render(card,content,location.origin,hint=>{farmHint=hint;refreshFarmHint()});if(farming)aligned=!!ui?.mountFarm?.(farming,content,shadow);if(stackable&&api){const slug=location.pathname.replace(/^\/|\/$/g,'');api.renderSources(card,api.mergeSources(api.parseSources(content,location.origin),api.reviewedSources(slug)),location.origin,slug,{partial:!!api.reviewedSources(slug)})}}catch{console.warn('AQW Companion: material progress unavailable on this page.')}
  if(!actionable){
-  // Keep the farming tool, but never reserve a branded status card without a usable Wishlist action.
-  if(aligned){host.parentElement?.classList.add('aqwc-no-wishlist');host.remove()}
-  else if(farming){card.replaceChildren(farming);host.id='aqwc-farm-only';content.prepend(host)}
-  ui?.styleItem?.(content);return;
+  // Keep a consistent assistant surface but never guess variant ownership or enable an ambiguous Wishlist action.
+  show('Variant / unsupported item','Wishlist and ownership are not verified for this item variant. Check the original Wiki details.','#ffdb93');
+  if(ui?.styleItem)ui.styleItem(content,host);
+  return;
  }
- if(!aligned)mountStatus();ui?.styleItem?.(content);
+ if(ui?.styleItem)ui.styleItem(content,host);else if(!aligned)mountStatus();
  const stock=document.createElement('section');stock.className='aqwc-section aqwc-stock';stock.hidden=true;
  const stockHeading=document.createElement('strong');stockHeading.textContent='Your collection';
  const stockGrid=document.createElement('div');stockGrid.className='aqwc-stock-grid';
