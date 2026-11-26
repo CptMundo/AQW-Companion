@@ -616,3 +616,13 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.equal(badgeHunter.availability({kind:'unknown'},'2026-11-26'),'Availability unconfirmed');
  console.log('All seven badge index categories, exact source IDs, artwork URLs, filters and seasonal boundaries verified.');
 }
+
+{
+ const all=require('../js/badge-catalog.js');
+ assert.equal(all.filter(b=>b.requirements.length>0).length,784);
+ assert.equal(all.filter(b=>!b.requirements.length).length,8);
+ assert.equal(all.filter(b=>b.placeholder===true).length,2);
+ assert.ok(all.every(b=>Array.isArray(b.tags)&&Array.isArray(b.requirements)&&Array.isArray(b.requirementLinks)));
+ assert.ok(all.find(b=>b.id==='cp-424').requirementLinks.some(l=>l.label.includes('Legion Fealty 4')));
+ console.log('Individual badge source requirements: 784/792; eight explicitly incomplete.');
+}
