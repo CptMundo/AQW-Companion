@@ -590,7 +590,7 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  const badgeCatalog=require('../js/badge-catalog.js'),badgeHunter=require('../js/badge-hunter.js');
  assert.equal(badgeCatalog.length,792);
  assert.equal(new Set(badgeCatalog.map(b=>b.id)).size,badgeCatalog.length);
- const categories={};for(const b of badgeCatalog){categories[b.category]=(categories[b.category]||0)+1;assert.match(b.id,/^cp-\d+$/);assert.equal(b.source,'https://aqwwiki.wikidot.com/charpage:'+b.id.slice(3));assert.match(b.image,/^https:\/\/(?:game\.aq\.com|www\.aq\.com|aq\.com|i\.imgur\.com)\//);assert.ok(['quest','seasonal','legacy','unknown'].includes(b.kind));if(b.join)assert.match(b.join,/^\/join [a-z0-9-]+$/);}
+ const categories={};for(const b of badgeCatalog){categories[b.category]=(categories[b.category]||0)+1;assert.match(b.id,/^cp-\d+$/);assert.equal(b.source,'https://aqwwiki.wikidot.com/charpage:'+b.id.slice(3));assert.match(b.image,/^https:\/\/(?:game\.aq\.com|www\.aq\.com|aq\.com|i\.imgur\.com)\//);assert.ok(['quest','seasonal','legacy','unknown','event'].includes(b.kind));if(b.join)assert.match(b.join,/^\/join [a-z0-9-]+$/);}
  assert.deepEqual(categories,{'Epic Hero':33,Legendary:60,Battle:87,Support:189,Exclusive:216,'Artix Entertainment':37,HeroMart:170});
  assert.equal(badgeCatalog.filter(b=>b.name==='Champion of Chaos').length,2);
  const harvest=badgeCatalog.find(b=>b.id==='cp-332');
@@ -600,8 +600,9 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.equal(badgeHunter.availability(harvest,'2027-11-01'),'Window ended');
  assert.equal(badgeHunter.availability(badgeCatalog.find(b=>b.id==='cp-57'),'2026-09-19'),'Return unconfirmed');
  const owned=badgeHunter.update({},'cp-332','owned',badgeCatalog);
- assert.equal(badgeHunter.opportunities(badgeCatalog,owned,'2026-11-26').length,0);
- assert.equal(badgeHunter.opportunities(badgeCatalog,{},'2026-11-26').length,1);
+ assert.equal(badgeHunter.opportunities(badgeCatalog,owned,'2026-11-26').length,1);
+ assert.equal(badgeHunter.opportunities(badgeCatalog,{},'2026-11-26').length,2);
+ assert.equal(badgeHunter.availability(badgeCatalog.find(b=>b.id==='cp-787'),'2026-12-12'),'Window ended');
  assert.deepEqual(badgeHunter.clean({'cp-424':'tracked',unknown:'owned','cp-426':'bad'},badgeCatalog),{'cp-424':'tracked'});
  assert.deepEqual(badgeHunter.update({'cp-424':'owned'},'cp-424','unmarked',badgeCatalog),{});
  assert.ok(badgeHunter.filterBadges(badgeCatalog,{},'Fealty','all','all').some(b=>b.id==='cp-424'));

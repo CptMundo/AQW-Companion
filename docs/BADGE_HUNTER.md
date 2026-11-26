@@ -7,3 +7,5 @@ The index-only snapshot is intentionally separate from individual detail coverag
 To reproduce: install beautifulsoup4 and run `python scripts/inspect_badge_sources.py`. Optional `--details` retrieves individual public badge pages with two workers and throttling, stops network retrieval on HTTP 429, and records source errors. Do not publish raw generated data without reviewing requirements and artwork attribution. No scheduled job or automatic write.
 
 Five further Epic Hero routes were checked against individual Wiki badge, NPC quest and map pages (Verus DoomKnight, Awe Ascension, Head of the Legion Beast, Eclipse Ascension, Hollowborn Paladin). The remaining source links are not represented as complete in-site walkthroughs.
+
+Official limited-time opportunity: 2026 Black Friday Collection, November 20 through announced December 11 departure, 10,000 AC. Unlike recurring seasonal badges, this is the specific 2026 event. Northern Wanderer has a December schedule reference only; no active window assigned without a current confirmation.

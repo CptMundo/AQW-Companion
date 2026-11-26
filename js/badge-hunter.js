@@ -3,10 +3,7 @@
 const KEY='aqwc-badge-hunter-v1',validStates=['tracked','owned'];
 function serverDay(now=new Date()){return new Date(now.getTime()-5*3600000).toISOString().slice(0,10)}
 function availability(b,day=serverDay()){
- if(b.kind==='legacy')return 'Rare / historical';
- if(b.kind==='unknown')return 'Availability unconfirmed';
- if(b.kind!=='seasonal')return 'Requirements documented';
- if(!b.window)return 'Return unconfirmed';
+ if(!b.window){if(b.kind==='legacy')return 'Rare / historical';if(b.kind==='unknown')return 'Availability unconfirmed';if(b.kind==='seasonal'||b.kind==='event')return 'Return unconfirmed';return 'Requirements documented'}
  return day<b.window.start?'Announced':day<=b.window.end?'Within announced dates':'Window ended';
 }
 function clean(value,catalog){
@@ -17,7 +14,7 @@ function update(value,id,state,catalog){
  const next=clean(value,catalog);if(!catalog.some(b=>b.id===id)||!['unmarked',...validStates].includes(state))return next;
  if(state==='unmarked')delete next[id];else next[id]=state;return next;
 }
-function opportunities(catalog,state,day=serverDay()){return catalog.filter(b=>b.kind==='seasonal'&&availability(b,day)==='Within announced dates'&&state[b.id]!=='owned')}
+function opportunities(catalog,state,day=serverDay()){return catalog.filter(b=>['seasonal','event'].includes(b.kind)&&availability(b,day)==='Within announced dates'&&state[b.id]!=='owned')}
 function filterBadges(catalog,state,query='',category='all',status='all',day=serverDay()){
  const q=query.trim().toLowerCase();return catalog.filter(b=>(category==='all'||b.category===category)&&(status==='all'||(status==='seasonal'?b.kind==='seasonal':status==='active'?availability(b,day)==='Within announced dates':(state[b.id]||'unmarked')===status))&&(!q||[b.name,b.requirement,b.category,b.join,b.guide,...(b.requirements||[]),...(b.tags||[]),...(b.requirementLinks||[]).map(x=>x.label)].filter(Boolean).join(' ').toLowerCase().includes(q)));
 }
