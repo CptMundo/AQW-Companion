@@ -160,8 +160,8 @@
     for(const img of details.querySelectorAll('img'))if(isBadge(img)&&!seen.has(img.src)){const clone=doc.createElement('img');clone.src=img.src;clone.alt=img.alt||img.title||'Wiki item tag';clone.title=img.title||clone.alt;const anchor=img.closest('a[href]');let node=clone;if(anchor){try{const url=new URL(anchor.href,location.origin);if(url.origin===location.origin){node=doc.createElement('a');node.href=url.href;node.append(clone)}}catch{}}tagRow.append(node);seen.add(img.src)}
     const fieldPattern=/(?:^|\b)(?:Locations?|Price|Sellback|Description|Rarity|Base Damage|Merge the following|Required to|Notes)\s*:/i;
     const gallerySelector='.yui-navset,.tabview,.tab-view';
-    const credible=img=>{
-      if(isBadge(img)||img.closest('table,.wiki-content-table,.collapsible-block,.page-rate-widget-box'))return false;
+    const credible=(img,allowCollapsible=false)=>{
+      if(isBadge(img)||img.closest('table,.wiki-content-table,.page-rate-widget-box')||!allowCollapsible&&img.closest('.collapsible-block'))return false;
       const src=String(img.getAttribute('src')||'');if(!src||/\/image-tags\/|(?:^|\/)(?:button|icon|arrow|spacer)[-_.]/i.test(src))return false;
       const w=img.naturalWidth||Number(img.getAttribute('width')),h=img.naturalHeight||Number(img.getAttribute('height'));
       // A not-yet-loaded standalone image is allowed; a known tiny icon is not.
@@ -169,16 +169,19 @@
     };
     function moveArtwork(){
       for(const gallery of [...details.querySelectorAll(gallerySelector)]){
-        if(gallery.closest('table,.collapsible-block')||gallery.parentElement?.closest(gallerySelector)||fieldPattern.test(gallery.textContent)||![...gallery.querySelectorAll('img')].some(credible))continue;
+        if(gallery.closest('table,.collapsible-block')||gallery.parentElement?.closest(gallerySelector)||fieldPattern.test(gallery.textContent)||![...gallery.querySelectorAll('img')].some(img=>credible(img,true)))continue;
         const prev=gallery.previousElementSibling,next=gallery.nextElementSibling;
         if(prev&&/^Animated GIF$/i.test(prev.textContent.trim())&&!prev.querySelector('ul,ol,table'))media.append(prev);
         media.append(gallery);if(next&&/^Thanks to\b/i.test(next.textContent.trim()))media.append(next);
+      }
+      for(const widget of [...details.querySelectorAll('.collapsible-block')]){
+        if(widget.closest(gallerySelector)||widget.parentElement?.closest('.collapsible-block,table')||fieldPattern.test(widget.textContent)||!/^\s*(?:[+−-]\s*)?(?:Normal|Animated|Male|Female|Preview|Image|Artwork)\b/i.test(widget.textContent)||![...widget.querySelectorAll('img')].some(img=>credible(img,true)))continue;media.append(widget);
       }
       for(const img of [...details.querySelectorAll('img')]){
         if(!credible(img)||img.closest(gallerySelector))continue;
         let node=img,valid=true;
         while(node.parentElement&&node.parentElement!==details){const p=node.parentElement;if(!['A','P','SPAN','DIV','CENTER','FIGURE'].includes(p.tagName)||fieldPattern.test(p.textContent)||p.querySelector('button,input,select,iframe,video,ul,ol,table')||p.textContent.trim()&&!/^(?:Thanks to|Normal|Animated GIF|Animated|Male|Female)\b/i.test(p.textContent.trim())){valid=false;break}node=p}
-        if(!valid||node.parentElement!==details||![...node.querySelectorAll('img'),...(node.tagName==='IMG'?[node]:[])].every(credible))continue;
+        if(!valid||node.parentElement!==details||![...node.querySelectorAll('img'),...(node.tagName==='IMG'?[node]:[])].every(img=>credible(img)))continue;
         const next=node.nextElementSibling;media.append(node);if(next&&/^Thanks to\b/i.test(next.textContent.trim()))media.append(next);
       }
       const has=!!media.querySelector('img');placeholder.hidden=has;workspace.classList.toggle('aqwc-has-art',has);
