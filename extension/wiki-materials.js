@@ -171,7 +171,23 @@
   function ready(command){if(!command){copy.remove();return}copy.textContent='/join '+command;copy.title='Copy /join '+command;copy.disabled=false;copy.addEventListener('click',async e=>{if(!e.isTrusted)return;try{await navigator.clipboard.writeText('/join '+command);copy.textContent='Copied /join '+command}catch{copy.textContent='/join '+command+' (copy manually)'}})}
   if(known){line.append(copy);ready(known)}else{copy.disabled=true;copy.textContent='Verifying map…';line.append(copy);resolvedMap(origin,x.slug).then(ready)}
  }
+ // Reviewed primary acquisition route. The Wiki axe page lists the unlocked
+ // shop and an exchange recipe, but the shop's unlock quest is the original farm.
+ function reviewedRoutes(parsed,slug){
+  if(slug!=='blinding-light-of-destiny-axe')return parsed;
+  const primary=[
+   ['Bright Aura','bright-aura',125],['Brilliant Aura','brilliant-aura',75],
+   ['Blinding Aura','blinding-aura',1],['Spirit Orb (Misc)','spirit-orb-misc',500],
+   ['Loyal Spirit Orb','loyal-spirit-orb',250],['Ultimate Weapon Kit','ultimate-weapon-kit',1]
+  ].map(([name,slug,target])=>({name,slug,target}));
+  return {...parsed,groups:[primary,...parsed.groups.filter(g=>g.length===1&&g[0].slug==='dual-blinding-light-of-destiny')]};
+ }
  function recipeLabel(group,index,rootSlug){
+  if(rootSlug==='blinding-light-of-destiny-axe'){
+   if(group.length===6&&group[0].slug==='bright-aura')return 'Original quest';
+   if(group.length===1&&group[0].slug==='dual-blinding-light-of-destiny')return 'Exchange dual weapon';
+  }
+
   if(rootSlug==='necrotic-sword-of-doom'||rootSlug==='necrotic-sword-of-doom-sword'){
    if(group.length===1&&group[0].slug==='dual-necrotic-swords-of-doom')return 'Exchange weapon';
    if(group.length===5)return 'Craft weapon';
@@ -354,7 +370,8 @@
   row.append(block);return true;
  }
  function render(card,content,origin){
-  const {groups,incomplete}=parse(content,origin);
+  const rootSlug=location.pathname.replace(/^\/|\/$/g,'');
+  const {groups,incomplete}=reviewedRoutes(parse(content,origin),rootSlug);
   if(!groups.length&&!incomplete)return;
   const panel=document.createElement('details');panel.open=true;panel.className='aqwc-section aqwc-farming';panel.style.cssText='min-width:0;max-width:100%;';
   const heading=document.createElement('summary');heading.textContent='Farming Progress';panel.append(heading);card.append(panel);
@@ -364,7 +381,7 @@
   if(!groups.length)return panel;
   const tree=document.createElement('div'),statusLine=note('Checking synced inventory…');statusLine.setAttribute('role','status');panel.append(tree,statusLine);
   const states=new Map(),cache=new Map(),names=new Set(groups.flat().map(x=>x.name));let matches=new Map(),busy=true,requests=0,activeOption=0;
-  const rootSlug=location.pathname.replace(/^\/|\/$/g,'');
+  if(rootSlug==='blinding-light-of-destiny-axe')names.add('Get Your Blinding Light of Destiny');
   async function lookup(){
    const list=[...names];if(list.length>80)throw Error('Recipe material limit reached');
    const r=await chrome.runtime.sendMessage({type:'wiki-material-lookup',names:list});
@@ -402,6 +419,15 @@
    tree.replaceChildren();
    if(groups.length>1){const bar=document.createElement('div');bar.className='aqwc-recipe-tabs';groups.forEach((g,j)=>{const tab=button(recipeLabel(g,j,rootSlug));tab.setAttribute('aria-pressed',String(j===activeOption));tab.addEventListener('click',e=>{if(e.isTrusted&&!busy){activeOption=j;draw()}});bar.append(tab)});tree.append(bar)}
    groups.forEach((group,i)=>{if(i!==activeOption)return;
+    if(rootSlug==='blinding-light-of-destiny-axe'&&i===0){
+     const guide=document.createElement('div');guide.className='aqwc-source-guide';
+     const a=document.createElement('a');a.href=origin+'/artix-s-quests';a.textContent='The Blinding Light of Destiny — Artix quests';
+     const shop=document.createElement('a');shop.href=origin+'/blinding-light-of-destiny-shop';shop.textContent='Book of Lore reward shop';
+     guide.append(a,note('Necropolis · Complete one Finding Fragments quest first. Turn in the six materials to receive Get Your Blinding Light of Destiny, then claim the axe in the reward shop.'),shop);
+     joinControl(guide,{name:'Necropolis',slug:'necropolis',join:'necropolis'},origin);
+     if(matches.get('Get Your Blinding Light of Destiny')?.state==='owned')guide.append(note('Unlock item found in synced inventory. You can claim the axe from the reward shop; no need to repeat this farm.'));
+     tree.append(guide);
+    }
     const p=plan(group,states,matches,rootSlug,i);
     if(!busy&&group.some(n=>!cache.has(n.slug)&&!Object.hasOwn(compactHints,n.slug)&&!reviewedSources(n.slug))&&requests<20){const load=button('Load material sources');load.className='aqwc-preview-load';load.addEventListener('click',e=>{if(e.isTrusted)loadPreviews(group)});tree.append(load)}
     if(!busy){const ready=p.root.filter(n=>n.missing===0).length,total=p.root.length,pct=total?Math.round(ready/total*100):0;const overview=document.createElement('div'),count=document.createElement('span'),percent=document.createElement('span');overview.className='aqwc-farm-overview';count.textContent=ready+' / '+total+' materials ready';percent.textContent=pct+'% ready';overview.append(count,percent);tree.append(overview);const track=document.createElement('div'),fill=document.createElement('div');track.className='aqwc-farm-track';fill.style.width=pct+'%';track.setAttribute('aria-label',ready+' of '+total+' direct ingredients ready');track.append(fill);tree.append(track)}
@@ -444,5 +470,5 @@
   }
   draw();lookup().catch(()=>{statusLine.textContent='Inventory unavailable. Sync in Companion and refresh this page.'}).finally(()=>{busy=false;draw()});return panel;
  }
- globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources,mapCommand,joinControl,recipeLabel,sourceLink,compactData,acquisitionKind,parseAcquisitionLines,acquisitionGroups,monsterPreview,monsterImage,monsterImages,itemImages,itemPreview,previewCacheRequest});
+ globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources,mapCommand,joinControl,recipeLabel,reviewedRoutes,sourceLink,compactData,acquisitionKind,parseAcquisitionLines,acquisitionGroups,monsterPreview,monsterImage,monsterImages,itemImages,itemPreview,previewCacheRequest});
 })();

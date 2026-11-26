@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AQW Companion",
-  "version": "0.12.49",
+  "version": "0.12.51",
   "description": "Customize AQWorlds Wiki and connect your local inventory, Wishlist and daily/weekly quest tracker.",
   "action": {
     "default_title": "AQW Companion",
@@ -85,7 +85,8 @@
       "resources": [
         "image_2026-11-24_232002011.png",
         "prometheus-helm.svg",
-        "category-icons.png"
+        "category-icons.png",
+        "boost-index.json"
       ],
       "matches": [
         "https://aqwwiki.wikidot.com/*"
