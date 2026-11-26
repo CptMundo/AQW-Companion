@@ -295,6 +295,73 @@ function assistantGoals(data,query,snapshot){
  }
  return {synced:true,at:data.at,rows:rows.sort((a,b)=>b.progress-a.progress).slice(0,8)};
 }
+
+const HUB_NOTES='aqwc-hub-notes-v1';
+const hubKey=s=>nameKey(s).replace(/ \((sword|axe|bow|dagger|gauntlet|gun|handgun|mace|polearm|rifle|staff|wand|armor|class|helm|cape|pet|misc|item)\)$/,'');
+const hubSlug=s=>typeof s==='string'&&/^[a-z0-9][a-z0-9-]{0,199}$/.test(s);
+const hubName=s=>typeof s==='string'&&s.trim()&&s.length<=350&&!/[\u0000-\u001f\u007f]/.test(s);
+const hubQty=x=>Number.isSafeInteger(x)&&x>0&&x<=1000000000;
+function hubStock(snapshot,name){const v=matchWikiMaterial(snapshot,name);return v.state==='owned'?v.total:v.state==='not-found'?0:null}
+function hubRecipes(rows,query,snapshot,goals){
+ const key=hubKey(query.name),currentStock=hubStock(snapshot,query.name);
+ const result=[];
+ for(const r of rows){
+  if(!hubName(r.name)||!Array.isArray(r.ingredients)||!r.ingredients.length||r.ingredients.some(x=>!Array.isArray(x)||!hubName(x[0])||!hubQty(x[1])))continue;
+  const totals=new Map();for(const [name,target] of r.ingredients){const k=hubKey(name),x=totals.get(k)||{name,target:0};x.target+=target;totals.set(k,x)}
+  if(!totals.has(key))continue;
+  const materials=[...totals.values()].map(m=>({...m,stock:hubStock(snapshot,m.name)})).map(m=>({...m,missing:m.stock===null?null:Math.max(0,m.target-m.stock)}));
+  const known=materials.every(m=>m.stock!==null),ready=materials.filter(m=>m.missing===0).length;
+  const owned=matchWikiMaterial(snapshot,r.name).state;
+  const goal=goals?.goals?.find(g=>hubKey(g.name)===hubKey(r.name));
+  result.push({name:r.name,source:r.source,type:r.type,owned,tracked:!!goal,ready,total:materials.length,materials:materials.filter(m=>m.missing!==0).slice(0,5),stockReady:known&&ready===materials.length,required:totals.get(key).target,currentStock});
+ }
+ return result.sort((a,b)=>(a.owned==='owned')-(b.owned==='owned')||Number(b.tracked)-Number(a.tracked)||Number(b.stockReady)-Number(a.stockReady)||b.ready/b.total-a.ready/a.total||a.name.localeCompare(b.name));
+}
+function hubLoadouts(rows,snapshot){
+ if(!snapshot?.syncedAt)return null;
+ const owned=[];
+ for(const slot of assistantCategories){
+  const pool=rows.filter(r=>r.category===slot&&hubName(r.name)&&hubSlug(r.slug)),counts=new Map(),matcher=buildListMatcher(snapshot,slot);
+  for(const r of pool)counts.set(hubKey(r.name),(counts.get(hubKey(r.name))||0)+1);
+  for(const r of pool)if(counts.get(hubKey(r.name))===1&&matcher(r.name).state==='owned')owned.push(r);
+ }
+ const value=(r,k)=>{const v=r?.boost?.[k];return Number.isFinite(v)&&v>0&&v<=1000?v:0};
+ const racial=(r,k)=>Math.max(value(r,k),['chaos','dragon','elemental','human','undead'].includes(k)?value(r,'tagged'):0);
+ const brief=r=>({name:r.name,slug:r.slug,category:r.category});
+ const result={};
+ for(const k of ['all','chaos','dragon','elemental','human','undead','drakath','orc','cp','gold','rep','xp']){
+  let best=0,gear=[];
+  const damage=!['cp','gold','rep','xp'].includes(k);
+  if(damage&&k!=='all'){
+   const topBySlot=(metric)=>assistantCategories.map(slot=>owned.filter(r=>r.category===slot).sort((a,b)=>metric(b)-metric(a))[0]).filter(Boolean);
+   for(const a of [null,...topBySlot(r=>value(r,'all'))])for(const b of [null,...topBySlot(r=>racial(r,k))]){
+    if(a&&b&&a.category===b.category&&a.slug!==b.slug)continue;
+    const combo=[...new Set([a,b].filter(Boolean))],all=Math.max(0,...combo.map(r=>value(r,'all'))),race=Math.max(0,...combo.map(r=>racial(r,k)));
+    const pct=((1+all/100)*(1+race/100)-1)*100;
+    if(pct>best){best=pct;gear=combo.map(brief)}
+   }
+   // An item can itself carry both types; the per-slot maxima alone may miss it.
+   for(const a of owned){const pct=((1+value(a,'all')/100)*(1+racial(a,k)/100)-1)*100;if(pct>best){best=pct;gear=[brief(a)]}}
+  }else for(const a of owned)if(value(a,k)>best){best=value(a,k);gear=[brief(a)]}
+  if(gear.length)result[k]={percent:Math.round(best*100)/100,gear};
+ }
+ return result;
+}
+function hubSpending(goals,ingredients,snapshot,current){
+ if(!Array.isArray(ingredients)||ingredients.length>80)return [];
+ const spend=new Map();for(const m of ingredients)if(hubName(m?.name)&&hubQty(m.target))spend.set(hubKey(m.name),(spend.get(hubKey(m.name))||0)+m.target);
+ const result=[];
+ for(const g of goals?.goals||[]){if(g.progress===100||hubKey(g.name)===hubKey(current)||!Array.isArray(g.materials))continue;
+  for(const m of g.materials){const qty=spend.get(hubKey(m.name));if(!qty)continue;const stock=hubStock(snapshot,m.name);if(stock===null)continue;
+   const after=Math.max(0,stock-qty),before=Math.max(0,m.target-stock),missing=Math.max(0,m.target-after);
+   if(missing>before)result.push({goal:g.name,material:m.name,extra:missing-before,after,missing});
+  }
+ }
+ return result.slice(0,12);
+}
+let hubRecipeCache;
+async function loadHubRecipes(){if(!hubRecipeCache)hubRecipeCache=fetch(chrome.runtime.getURL('hub-recipes.json')).then(r=>{if(!r.ok)throw Error();return r.json()}).then(d=>Array.isArray(d.rows)&&d.rows.length<=1000?d.rows:[]).catch(()=>{hubRecipeCache=null;return []});return hubRecipeCache}
+
 let assistantCatalog;
 async function loadAssistantCatalog(){if(!assistantCatalog)assistantCatalog=fetch(chrome.runtime.getURL('boost-index.json')).then(r=>{if(!r.ok)throw Error('Catalog unavailable');return r.json()}).then(d=>Array.isArray(d.rows)&&d.rows.length<=10000?d.rows:[]).catch(()=>{assistantCatalog=null;return []});return assistantCatalog}
 
@@ -365,12 +432,24 @@ async function handle(message,sender){
   return {ok:true,matches:names.map(n=>matchWikiMaterial(snapshot,n)),syncedAt:snapshot?.syncedAt||null};
  }
 
+ if(['hub-note-read','hub-note-save'].includes(message?.type)&&wikiSender(sender)){
+  const slug=new URL(sender.url).pathname.replace(/^\/|\/$/g,'');
+  if(!hubSlug(slug)||message.slug!==slug)return {ok:false};
+  await restrictStorage();const raw=(await chrome.storage.local.get(HUB_NOTES))[HUB_NOTES],notes=raw&&typeof raw==='object'&&!Array.isArray(raw)?raw:{};
+  if(message.type==='hub-note-read')return {ok:true,note:Object.hasOwn(notes,slug)?notes[slug]:{text:'',priority:'normal'}};
+  if(typeof message.text!=='string'||message.text.length>1500||!['normal','high','low'].includes(message.priority))return {ok:false,error:'Invalid note.'};
+  if(!Object.hasOwn(notes,slug)&&Object.keys(notes).length>=500)return {ok:false,error:'Note limit reached.'};
+  const next={...notes};if(!message.text.trim()&&message.priority==='normal')delete next[slug];else Object.defineProperty(next,slug,{value:{text:message.text,priority:message.priority},enumerable:true,configurable:true,writable:true});
+  await chrome.storage.local.set({[HUB_NOTES]:next});return {ok:true};
+ }
  if(message?.type==='wiki-item-assistant'&&wikiSender(sender)){
   const q=message.query,slug=new URL(sender.url).pathname.replace(/^\/|\/$/g,'');
   if(!q||typeof q.name!=='string'||!q.name.trim()||q.name.length>350||typeof q.category!=='string'||!Object.hasOwn(wikiTypes,q.category)||q.slug!==slug||! /^[a-z0-9][a-z0-9-]{0,199}$/.test(slug))return {ok:false};
   await restrictStorage();const data=await chrome.storage.local.get([KEY,GOAL_STATUS]);
   const snapshot=data[KEY],canonical=['misc-items','use-items'].includes(q.category)?q.name.replace(/\s+\((?:misc|item)\)$/i,''):q.name;
-  return {ok:true,comparison:assistantBoosts(await loadAssistantCatalog(),slug,snapshot),goals:assistantGoals(data[GOAL_STATUS],{name:q.name,category:q.category,canonical},snapshot)};
+  const [catalog,recipes]=await Promise.all([loadAssistantCatalog(),loadHubRecipes()]);const goals=data[GOAL_STATUS];
+  const related=(Array.isArray(message.related)?message.related:[]).slice(0,24).filter(x=>hubName(x?.name)&&hubSlug(x.slug)&&['related','unlock'].includes(x.kind)).map(x=>({name:x.name,slug:x.slug,kind:x.kind,state:matchWikiMaterial(snapshot,x.name).state}));
+  return {ok:true,comparison:assistantBoosts(catalog,slug,snapshot),goals:assistantGoals(goals,{name:q.name,category:q.category,canonical},snapshot),hub:{recipes:hubRecipes(recipes,q,snapshot,goals).slice(0,15),recipeCount:recipes.length,related,loadouts:hubLoadouts(catalog,snapshot),spending:hubSpending(goals,message.ingredients,snapshot,q.name),goalsSynced:!!goals?.at}};
  }
  if(message?.type==='wiki-item-lookup'&&wikiSender(sender)){
   await restrictStorage();const stored=(await chrome.storage.local.get(KEY))[KEY];return {ok:true,...matchWikiItem(stored,message.query)};
