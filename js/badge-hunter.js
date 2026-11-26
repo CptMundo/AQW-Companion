@@ -54,7 +54,7 @@ function render(){
   const heading=el('div',null,'badge-hunter-heading'),art=el('div',null,'badge-hunter-art');
   const fallback=el('span','Artwork unavailable','muted tiny');fallback.hidden=!!b.image;art.append(fallback);
   if(b.image){const img=el('img');img.src=b.image;img.alt=b.name+' badge';img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';img.addEventListener('error',()=>{img.remove();fallback.hidden=false});art.prepend(img)}
-  heading.append(art,el('h3',b.name),el('span',state[b.id]==='owned'?'✓':'','badge-hunter-symbol'));card.append(heading,el('div',b.category+(b.paid?' · Paid pack':''),'muted tiny'));
+  heading.append(art,el('h3',b.name),el('span',state[b.id]==='owned'?'✓':'','badge-hunter-symbol'));card.append(heading,el('div',b.category+(b.paid?' · Paid pack':'')+' · #'+b.id.slice(3),'muted tiny'));
   if(b.tags?.length)card.append(el('div',b.tags.filter(t=>!t.startsWith('cp-')).join(' · '),'muted tiny'));
   const avail=el('span',availability(b,day),'badge-hunter-tag');if(availability(b,day)==='Within announced dates')avail.classList.add('badge-season-active');card.append(avail,el('p',b.requirement||((b.requirements||[]).length?'See the requirements below.':'Open the source for the unlock conditions.')));
   if(b.window)card.append(el('p','Official dates: '+b.window.start+' to '+b.window.end+' (AQW server day); confirm in game.','muted tiny'));

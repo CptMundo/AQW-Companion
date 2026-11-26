@@ -5,3 +5,5 @@ Snapshot: 26 November 2026. Source: [AQW Wiki Character Page Badges](https://aqw
 The index-only snapshot is intentionally separate from individual detail coverage. The existing curated acquisition summaries are mapped only to a unique matching badge. For others the source link is available and requirements/availability are marked unconfirmed, rather than inferred from the name or category. Seasonal alerts require an explicit dated official announcement; Harvest Hunter uses the official November 2026 window.
 
 To reproduce: install beautifulsoup4 and run `python scripts/inspect_badge_sources.py`. Optional `--details` retrieves individual public badge pages with two workers and throttling, stops network retrieval on HTTP 429, and records source errors. Do not publish raw generated data without reviewing requirements and artwork attribution. No scheduled job or automatic write.
+
+Five further Epic Hero routes were checked against individual Wiki badge, NPC quest and map pages (Verus DoomKnight, Awe Ascension, Head of the Legion Beast, Eclipse Ascension, Hollowborn Paladin). The remaining source links are not represented as complete in-site walkthroughs.
