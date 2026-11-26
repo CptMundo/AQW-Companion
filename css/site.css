@@ -1124,3 +1124,28 @@ body{background:#0a1420!important}
 .home-quantity-diff.loss{color:#ff9a91}
 .home-quantity-more{display:block;margin:7px 0 0 auto}
 @media(max-width:420px){.home-quantity-row{gap:5px;padding:6px;font-size:11px}}
+
+/* Calendar event hub — theme-aware seasonal alerts, no standalone Home banner. */
+#overview .homeseason{--calendar-accent:#91d6ff;--calendar-accent-bg:color-mix(in srgb,var(--calendar-accent) 11%,var(--panel));min-width:0;box-sizing:border-box}
+html[data-aqwc-background="stars"] #overview .homeseason{--calendar-accent:#d2bfff}
+html[data-aqwc-background="dark"] #overview .homeseason{--calendar-accent:#d8c6a1}
+html[data-aqwc-background="light"] #overview .homeseason{--calendar-accent:#7954aa}
+html[data-aqwc-background="cas"] #overview .homeseason{--calendar-accent:#ec76f9}
+#overview .home-main-grid>.homeseason,#overview #home-calendar-guest>.homeseason{border-top:3px solid var(--calendar-accent)!important;height:auto!important;align-self:start}
+#overview #home-calendar-guest:empty{display:none}
+#overview #home-calendar-guest:not(:empty){margin:16px 0}
+#overview #badge-hunter-home{box-sizing:border-box;padding:12px 14px;margin:12px 0 10px;border:1px solid color-mix(in srgb,var(--calendar-accent) 65%,var(--line));border-left:3px solid var(--calendar-accent);border-radius:10px;background:var(--calendar-accent-bg);color:var(--txt)}
+#overview #badge-hunter-home .homehead{gap:8px;margin:0;align-items:center}
+#overview .calendar-badge-title{color:var(--calendar-accent);font-size:13px;line-height:1.35;margin:0;font-weight:700}
+#overview #badge-hunter-home-open{border-color:color-mix(in srgb,var(--calendar-accent) 60%,var(--line));color:var(--calendar-accent);background:var(--panel);font-size:11px;white-space:normal}
+#overview #badge-hunter-home-text{display:grid;gap:5px;margin:9px 0 6px;min-width:0}
+#overview .calendar-badge-entry{display:flex;align-items:baseline;justify-content:space-between;gap:5px 12px;flex-wrap:wrap;font-size:12px;line-height:1.4}
+#overview .calendar-badge-entry strong{color:var(--txt);font-weight:600;overflow-wrap:anywhere}
+#overview .calendar-badge-entry time{color:var(--calendar-accent);font-size:11px;white-space:nowrap;font-variant-numeric:tabular-nums}
+#overview #badge-hunter-home>p:last-child{font-size:10px;margin:0;line-height:1.4}
+#overview #homeseasoncontent .aqw-cal-day{min-height:35px!important}
+#overview #homeseasoncontent .aqw-calendar-detail{min-height:100%!important;max-height:350px!important}
+#overview #homeseasoncontent .aqw-calendar-feed-status{display:block;color:var(--muted);overflow-wrap:anywhere;font-size:11px}
+#overview #homeseasoncontent .aqw-cal-legend{margin:0}
+@media(max-width:1100px){#overview #homeseasoncontent .aqw-calendar-detail{min-height:0!important}}
+@media(max-width:600px){#overview #homeseasoncontent .aqw-cal-day{min-height:32px!important}#overview #badge-hunter-home{padding:10px}}
