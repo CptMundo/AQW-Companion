@@ -118,7 +118,7 @@ if(location.protocol==='chrome-extension:'||location.protocol==='moz-extension:'
    btn.disabled=busy;btn.textContent=s&&running.includes(s.phase)&&busy?'Syncing…':kind==='inventory'?'↻ Full Sync':kind==='public'?'↻ Public Sync':'↻ Sync Badges';
    if(!s)continue;
    const stale=running.includes(s.phase)&&Date.now()-s.at>=300000;
-   status.textContent=stale?'Sync interrupted. Retry from the source page.':s.text;status.dataset.state=stale?'error':s.phase;
+   const compact=kind==='badges'&&!stale&&s.phase==='done'&&Number.isSafeInteger(s.read);status.textContent=stale?'Sync interrupted. Retry from the source page.':compact?'✓ '+s.read+' badges':s.text;status.title=compact?s.text:'';if(compact)status.setAttribute('aria-label',s.text);else status.removeAttribute('aria-label');status.dataset.state=stale?'error':s.phase;
    bar.hidden=stale||s.phase==='error';
    if(s.phase==='done'){bar.max=1;bar.value=1}
    else if(s.phase==='reading'&&s.total>0){bar.max=s.total;bar.value=s.read}
