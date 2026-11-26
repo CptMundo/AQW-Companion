@@ -17,18 +17,27 @@ async function main(){
   const context=await browser.newContext({viewport:{width:1360,height:880},deviceScaleFactor:1});
   // No logged-in sessions or analytics. External image requests omitted; fallback artwork stays visible.
   await context.route('**/*',r=>r.request().url().startsWith(origin+'/')?r.continue():r.abort());
-  const page=await context.newPage();await page.goto(origin+'/',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>typeof importFile==='function'&&!document.querySelector('#overview').hasAttribute('data-inventory-booting'),null,{timeout:30000});
-  await page.evaluate(async()=>{
-   const snapshot={exportedAt:'2026-01-01T12:00:00Z',items:[{ID:'demo1',Name:'Void Aura',Type:'Misc',Count:180,Bank:0},{ID:'demo2',Name:'Diamond of Nulgath',Type:'Misc',Count:500,Bank:0},{ID:'demo3',Name:'Gem of Nulgath',Type:'Misc',Count:75,Bank:1},{ID:'demo4',Name:'Legion Revenant',Type:'Class',Count:1,Bank:0},{ID:'demo5',Name:'ArchPaladin',Type:'Class',Count:1,Bank:0},{ID:'demo6',Name:'Blood Gem of the Archfiend',Type:'Misc',Count:12,Bank:0}]};
-   await importFile(new File([JSON.stringify(snapshot)],'Demo_Inventory.json',{type:'application/json'}));await refresh();
-   for(const [name,type] of [['Sin of the Abyss','Weapon'],['Void Highlord','Class'],['Legion Revenant','Class']])addProjectByName(name,type,true);
-   const tasks=taskCatalog.filter(t=>routineIsRecurring(t));const daily=tasks.filter(t=>t.freq==='daily').slice(0,4),weekly=tasks.filter(t=>t.freq==='weekly').slice(0,3);for(const t of [...daily,...weekly])pinTask(t);if(daily.length)toggleTask(daily[0],true);
-   const api=window.AQWCAccountProgress;if(api){const stamp='2026-01-01T12:00:00Z';api.save({section:'summary',capturedAt:stamp,created:'2021-01-01',months:12,purchased:20000,bonus:5000,total:25000});api.save({section:'sagas',capturedAt:stamp,rows:[{name:'Prologue',state:'colored'},{name:'Shadowfall',state:'colored'},{name:'Chiral Valley',state:'unknown'}]});api.save({section:'membership',capturedAt:stamp,rows:[{name:'1 Month',state:'colored',evidence:'threshold'},{name:'12 Months',state:'colored',evidence:'threshold'},{name:'2 Years',state:'gray',evidence:'threshold'}]})}
-   renderAll();activateTab('overview');
-  });
-  await shot(page,'home');
-  for(const [tab,name] of [['unlocks','wishlist'],['planner','quests'],['ultras','ultras'],['builds','builds'],['story','story'],['badge-hunter','badges'],['discover','explore'],['inventory','inventory'],['account-stats','stats']]){
-   await page.evaluate(tab=>activateTab(tab),tab);await page.locator('#'+tab+'.active').waitFor({state:'visible',timeout:15000});await page.waitForTimeout(200);await shot(page,name);
+  const page=await context.newPage();
+  page.on('pageerror',e=>console.error('Guide page:',e.message));
+  await page.goto(origin+'/',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>document.querySelector('#overview')&&!document.querySelector('#overview').hasAttribute('data-inventory-booting'),null,{timeout:45000});
+  // The real app keeps its functions private in an IIFE. Drive its public JSON
+  // input and navigation controls rather than reaching into private internals.
+  const items=[{ID:'demo1',Name:'Void Aura',Type:'Misc',Count:180,Bank:0},{ID:'demo2',Name:'Diamond of Nulgath',Type:'Misc',Count:500,Bank:0},{ID:'demo3',Name:'Gem of Nulgath',Type:'Misc',Count:75,Bank:1},{ID:'demo4',Name:'Legion Revenant',Type:'Class',Count:1,Bank:0},{ID:'demo5',Name:'ArchPaladin',Type:'Class',Count:1,Bank:0},{ID:'demo6',Name:'Blood Gem of the Archfiend',Type:'Misc',Count:12,Bank:0}];
+  const stamp='2026-01-01T12:00:00Z';
+  const material=(item,target)=>({label:item+' ×'+target,kind:'material',item,target,status:'unknown'});
+  const backup={format:'AQW Companion backup v0.9.3',snapshots:[{fileName:'Demo earlier.json',exportedAt:'2025-12-31T12:00:00Z',items:items.map(i=>({...i,Count:i.ID==='demo1'?100:i.Count}))},{fileName:'Demo_Inventory.json',exportedAt:stamp,items}],unlocks:[{name:'Sin of the Abyss',type:'Weapon',steps:[material('Blood Gem of the Archfiend',50),material('Diamond of Nulgath',500),material('Gem of Nulgath',150)]},{name:'Necrotic Sword of Doom',type:'Weapon',steps:[material('Void Aura',800)]},{name:'Legion Revenant',type:'Class',steps:[{label:'Own Legion Revenant',kind:'owned',item:'Legion Revenant',status:'unknown'}]}]};
+  await page.locator('#file').setInputFiles({name:'Demo_Backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});
+  await page.locator('#dashboard').waitFor({state:'visible',timeout:45000});
+  await page.evaluate(stamp=>{const api=window.AQWCAccountProgress;if(!api)throw Error('Account progress module not loaded');api.save({section:'summary',capturedAt:stamp,created:'2021-01-01',months:12,purchased:20000,bonus:5000,total:25000});api.save({section:'sagas',capturedAt:stamp,rows:[{name:'Prologue',state:'colored'},{name:'Shadowfall',state:'colored'},{name:'Chiral Valley',state:'unknown'}]});api.save({section:'membership',capturedAt:stamp,rows:[{name:'1 Month',state:'colored',evidence:'threshold'},{name:'12 Months',state:'colored',evidence:'threshold'},{name:'2 Years',state:'gray',evidence:'threshold'}]})},stamp);
+  const go=async(group,tab)=>{await page.locator('.primarynav [data-group="'+group+'"]').click();if(tab&&tab!=='overview'){const button=page.locator('.subnav [data-tab="'+tab+'"]');if(!await page.locator('#'+tab+'.active').count())await button.click();await page.locator('#'+tab+'.active').waitFor({state:'visible',timeout:15000})}};
+  await go('planner','planner-discover');
+  for(let i=0;i<5;i++){const pin=page.locator('#planner-suggestions .planner-pin-action.is-unpinned').first();await pin.click({timeout:15000})}
+  await go('planner','planner');
+  await page.locator('#planner-my-tasks .planner-complete-action').first().click({timeout:15000});
+  await go('home','overview');await shot(page,'home');
+  for(const [group,tab,name] of [['projects','unlocks','wishlist'],['planner','planner','quests'],['ultras','ultras','ultras'],['builds','builds','builds'],['story','story','story'],['badges','badge-hunter','badges'],['explore','discover','explore'],['inventory','inventory','inventory'],['inventory','account-stats','stats']]){
+   await go(group,tab);await page.waitForTimeout(200);await shot(page,name);
   }
   const popup=await context.newPage();await popup.setViewportSize({width:440,height:760});
   await popup.addInitScript(()=>{
