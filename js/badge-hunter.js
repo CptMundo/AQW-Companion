@@ -48,7 +48,7 @@ function button(label,cb,cls='smallbutton'){const b=el('button',label,cls);b.typ
 function save(id,value){try{const raw=JSON.parse(root.localStorage.getItem(KEY)||'{}');const next=update(raw,id,value,catalog);root.localStorage.setItem(KEY,JSON.stringify(next));manual=next;storageOK=true;render();const sel=$('badge-hunter-list').querySelector('[data-badge-id="'+id+'"] select');if(sel)sel.focus()}catch{$('badge-hunter-message').textContent='Could not save badge progress. Existing saved progress was not changed.'}}
 function renderAlert(){
  const alert=$('badge-hunter-home'),list=opportunities(catalog,state);if(!alert)return;
- alert.classList.toggle('hidden',!list.length);$('badge-hunter-home-text').textContent=list.map(b=>b.name+' · '+b.window.end).join(' • ');
+ alert.classList.toggle('hidden',!list.length);const content=$('badge-hunter-home-text');content.replaceChildren();for(const b of list){const row=el('span',undefined,'calendar-badge-entry');const name=el('strong',b.name);const end=el('time',b.window.end);end.dateTime=b.window.end;row.append(name,end);content.append(row)}
 }
 function render(){
  read();const list=$('badge-hunter-list'),day=serverDay();

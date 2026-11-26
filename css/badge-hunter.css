@@ -16,7 +16,7 @@
 #badge-hunter .badge-hunter-card details p{margin:8px 0}
 #badge-hunter .badge-hunter-card summary{cursor:pointer;color:#83d8f5}
 #badge-hunter .badge-hunter-links{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0;font-size:12px}
-#badge-hunter-home{margin:12px 0;border-color:#9f77cc;background:#282337}
+#badge-hunter-home{margin:14px 0 12px}
 #badge-hunter-home .homehead{flex-wrap:wrap}
 @media(max-width:600px){#badge-hunter .badge-hunter-metric{padding:8px}#badge-hunter .badge-hunter-metric strong{font-size:19px}}
 
