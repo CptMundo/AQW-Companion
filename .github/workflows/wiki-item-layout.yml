@@ -15,3 +15,4 @@ jobs:
       - run: npm install --no-save --no-package-lock playwright@1.51.1
       - run: npx playwright install --with-deps chromium
       - run: node tests/wiki-item-layout.browser.cjs
+      - run: node tests/wiki-item-layout-live.cjs
