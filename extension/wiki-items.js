@@ -178,7 +178,7 @@
   if(result.state==='unsupported'){show('Item type not recognized','This item category is not yet supported.','#ffdb93');return}
   const date=result.syncedAt?new Date(result.syncedAt).toLocaleString():'';
   const freshness=date?'Synced: '+date:'';
-  sync.setAttribute?.('data-synced',String(!!result.syncedAt));syncTitle.textContent=result.syncedAt?'Inventory synced':'Inventory not synced';syncTime.textContent=freshness||'Import & Sync in Companion';
+  sync.setAttribute?.('data-synced',String(!!result.syncedAt));syncTitle.textContent=result.state?.startsWith('public-')?'Public inventory synced':result.syncedAt?'Inventory synced':'Inventory not synced';syncTime.textContent=freshness||'Import & Sync in Companion';
   if(result.state==='owned'||result.state==='not-found'){
    const owned=result.state==='owned';stock.textContent=owned?'Inventory: '+result.inventory+' · Bank: '+result.bank+' · Total: '+result.total:'';stock.hidden=!owned;
   }
@@ -186,6 +186,8 @@
   if(result.state==='owned'){
    show(stackable?'✓ Owned · '+result.total.toLocaleString()+' total':'✓ Owned',stackable?'Combined synced stock':'','#90edb5');
   }else if(result.state==='not-found')show(stackable?'0 total':'Not owned','','#ffc2a8');
+  else if(result.state==='public-owned')show('✓ In public inventory','Character Page · Bank not available.','#90edb5');
+  else if(result.state==='public-unknown')show('Ownership unknown','Character Page only · Bank not available.','#ffdb93');
   else if(result.state==='ambiguous')show('Possible match','Check the item variant in Companion.','#ffdb93');
   else if(result.state==='unsynced')show('Inventory not synced','Open AQW Companion and select Sync inventory to extension.','#b6dfff');
   else failed();

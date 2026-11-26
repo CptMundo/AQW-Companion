@@ -16,6 +16,14 @@ function cleanSnapshot(value){
  if(new TextEncoder().encode(JSON.stringify(data)).length>MAX_BYTES)throw Error('Snapshot exceeds local storage limit.');
  return data;
 }
+
+function cleanPublicSnapshot(value){
+ if(!value||value.source!=='character-page'||typeof value.character!=='string'||!value.character.trim()||value.character.length>80||/[\u0000-\u001f\u007f]/.test(value.character)||!Number.isFinite(Date.parse(value.capturedAt))||!Array.isArray(value.items)||!Number.isSafeInteger(value.reportedTotal)||value.reportedTotal!==value.items.length||value.items.length<1||value.items.length>10000)throw Error('Invalid public inventory.');
+ const types=new Set(['Class','Armor','Helm','Cape','Sword','Axe','Gauntlet','Dagger','HandGun','Rifle','Gun','Whip','Bow','Mace','Polearm','Staff','Wand','Pet','Item','Quest Item','Resource','Necklace','Misc','Ground','House','Wall Item','Floor Item']);
+ const items=value.items.map(r=>{if(!r||typeof r.name!=='string'||!r.name.trim()||r.name.length>350||!types.has(r.type)||r.quantity!==null&&(!Number.isSafeInteger(r.quantity)||r.quantity<1)||r.rank!==null&&(!Number.isInteger(r.rank)||r.rank<1||r.rank>10))throw Error('Invalid public item.');return {name:r.name,type:r.type,quantity:r.quantity,rank:r.rank}});
+ return {source:'character-page',character:value.character,capturedAt:value.capturedAt,reportedTotal:items.length,items};
+}
+
 async function restrictStorage(){if(chrome.storage.local.setAccessLevel)await chrome.storage.local.setAccessLevel({accessLevel:'TRUSTED_CONTEXTS'});}
 
 function wikiSender(sender){
@@ -452,7 +460,10 @@ async function handle(message,sender){
   return {ok:true,comparison:assistantBoosts(catalog,slug,snapshot),goals:assistantGoals(goals,{name:q.name,category:q.category,canonical},snapshot),hub:{recipes:hubRecipes(recipes,q,snapshot,goals).slice(0,15),recipeCount:recipes.length,related,loadouts:hubLoadouts(catalog,snapshot),spending:hubSpending(goals,message.ingredients,snapshot,q.name),goalsSynced:!!goals?.at}};
  }
  if(message?.type==='wiki-item-lookup'&&wikiSender(sender)){
-  await restrictStorage();const stored=(await chrome.storage.local.get(KEY))[KEY];return {ok:true,...matchWikiItem(stored,message.query)};
+  await restrictStorage();const stored=(await chrome.storage.local.get(KEY))[KEY];if(stored)return {ok:true,...matchWikiItem(stored,message.query)};
+  const pub=(await chrome.storage.local.get('aqwc-public-inventory-v1'))['aqwc-public-inventory-v1'];
+  if(pub){const q=message.query,types=Object.hasOwn(wikiTypes,q?.category)?wikiTypes[q.category]:[];const rows=pub.items.filter(r=>types.includes(nameKey(r.type))&&nameKey(r.name)===nameKey(q?.name));return {ok:true,state:rows.length===1?'public-owned':'public-unknown',character:pub.character,syncedAt:pub.capturedAt};}
+  return {ok:true,...matchWikiItem(stored,message.query)};
  }
  if(message?.type==='sync-inventory'&&mainSender(sender)){
   const data=cleanSnapshot(message.snapshot);
