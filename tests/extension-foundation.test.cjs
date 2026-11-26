@@ -861,11 +861,12 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
 
 (async()=>{
  const stored={},sent=[];let restricted=false;
- const chrome={runtime:{id:'id',getURL:x=>'chrome-extension://test/'+x,onMessage:{addListener(){}}},storage:{local:{async setAccessLevel(v){restricted=v.accessLevel==='TRUSTED_CONTEXTS'},async set(v){Object.assign(stored,v)},async get(k){return {[k]:stored[k]}}}},tabs:{async query(){return [{id:1,url:'https://aqwwiki.wikidot.com/void-aura'},{id:2,url:'https://example.org/'},{id:3},{id:4,url:'https://aqwwiki.wikidot.com/classes'}]},async sendMessage(id,msg,opts){sent.push({id,msg,opts});if(id===3)throw Error('No receiving end');return {ok:true}}}};
+ const chrome={runtime:{id:'id',getURL:x=>'chrome-extension://test/'+x,onMessage:{addListener(){}}},storage:{local:{async setAccessLevel(v){restricted=v.accessLevel==='TRUSTED_CONTEXTS'},async set(v){Object.assign(stored,v)},async get(k){return {[k]:stored[k]}}}},tabs:{async query(){return [{id:1,url:'https://aqwwiki.wikidot.com/void-aura'},{id:2,url:'https://example.org/'},{id:3},{id:4,url:'https://aqwwiki.wikidot.com/classes'},{id:5,url:'https://cptmundo.github.io/AQW-Companion/'}]},async sendMessage(id,msg,opts){sent.push({id,msg,opts});if(id===3)throw Error('No receiving end');return {ok:true}}}};
  const api=vm.runInNewContext(read('extension/worker.js')+'\n({handle,notifyTabs})',{chrome,URL,TextEncoder});
  const result=await api.handle({type:'wiki-appearance-save',appearance:{background:'light'}},{url:'chrome-extension://test/popup.html'});
- assert.equal(restricted,true);assert.equal(result.delivered,2);assert.deepEqual(sent.map(x=>x.id),[1,3,4]);assert.ok(sent.every(x=>x.msg.type==='aqwc-theme-changed'&&Object.keys(x.msg).length===1&&x.opts.frameId===0));
+ assert.equal(restricted,true);assert.equal(result.delivered,3);assert.deepEqual(sent.map(x=>x.id),[1,3,4,5]);assert.ok(sent.every(x=>x.msg.type==='aqwc-theme-changed'&&Object.keys(x.msg).length===1&&x.opts.frameId===0));
  assert.equal((await api.handle({type:'wiki-appearance-read'},{url:'https://aqwwiki.wikidot.com/classes',frameId:0})).appearance.background,'light');
+ const main={url:'https://cptmundo.github.io/AQW-Companion/',frameId:0};assert.equal((await api.handle({type:'wiki-appearance-save',appearance:{background:'stars'}},main)).appearance.background,'stars');assert.equal((await api.handle({type:'wiki-appearance-read'},{url:'https://aqwwiki.wikidot.com/classes',frameId:0})).appearance.background,'stars');assert.equal((await api.handle({type:'wiki-appearance-save',appearance:{background:'dark'}},{...main,frameId:1})).ok,false);
  console.log('Theme notification dispatch: all eligible tabs, absent receivers, trusted storage restriction, readback passed.');
 })().catch(e=>{console.error(e);process.exitCode=1});
 
