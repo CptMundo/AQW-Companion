@@ -1,0 +1,24 @@
+name: Generate public boost index
+on:
+  pull_request:
+    paths:
+      - scripts/build-boost-index.py
+      - .github/workflows/boost-index.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install beautifulsoup4==4.13.4
+      - run: python scripts/build-boost-index.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: public-boost-index
+          path: data/boost-index.json
