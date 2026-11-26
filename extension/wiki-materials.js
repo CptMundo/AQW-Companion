@@ -470,5 +470,5 @@
   }
   draw();lookup().catch(()=>{statusLine.textContent='Inventory unavailable. Sync in Companion and refresh this page.'}).finally(()=>{busy=false;draw()});return panel;
  }
- globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources,mapCommand,joinControl,recipeLabel,sourceLink,compactData,acquisitionKind,parseAcquisitionLines,acquisitionGroups,monsterPreview,monsterImage,monsterImages,itemImages,itemPreview,previewCacheRequest});
+ globalThis.AQWCWikiMaterials=Object.freeze({parse,parseRow,plan,render,parseSources,reviewedSources,mergeSources,renderSources,mapCommand,joinControl,recipeLabel,reviewedRoutes,sourceLink,compactData,acquisitionKind,parseAcquisitionLines,acquisitionGroups,monsterPreview,monsterImage,monsterImages,itemImages,itemPreview,previewCacheRequest});
 })();
