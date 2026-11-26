@@ -22,19 +22,23 @@ function matchCapture(snapshot,catalog){
  if(!snapshot||typeof snapshot.character!=='string'||!snapshot.character.trim()||snapshot.character.length>80||/[\u0000-\u001f\u007f]/.test(snapshot.character)||typeof snapshot.capturedAt!=='string'||!Number.isFinite(Date.parse(snapshot.capturedAt))||!Array.isArray(snapshot.badges)||!snapshot.badges.length||snapshot.badges.length>2000)throw Error('Invalid capture');
  const byFile=new Map(),norm=s=>String(s||'').normalize('NFKC').trim().toLowerCase().replace(/\s+/g,' ');
  for(const b of catalog){if(b.placeholder||!b.image)continue;const file=b.image.split(/[?#]/)[0].split('/').pop().toLowerCase();if(!byFile.has(file))byFile.set(file,[]);byFile.get(file).push(b)}
- const ids=new Set(),ambiguous=new Set(),unknown=new Set();
+ const ids=new Set(),ambiguous=new Set(),unknown=new Set(),storyGroups=new Set();
  for(const row of snapshot.badges){
  if(typeof row?.file!=='string'||! /^[a-z0-9_.%()-]{1,220}\.(?:png|jpe?g|gif|webp)$/i.test(row.file)||typeof row.label!=='string'||row.label.length>200)throw Error('Invalid badge image reference');
  const file=row.file.toLowerCase(),matches=byFile.get(file)||[];
  if(matches.length===1)ids.add(matches[0].id);
- else if(matches.length>1){const named=matches.filter(b=>norm(b.name)===norm(row.label));if(named.length===1)ids.add(named[0].id);else ambiguous.add(file)}
+ else if(matches.length>1){const named=matches.filter(b=>norm(b.name)===norm(row.label));if(named.length===1)ids.add(named[0].id);else {ambiguous.add(file);if(matches.length===2&&matches.every(b=>['cp-29','cp-30'].includes(b.id))&&file==='chaos-champion.jpg'&&(!row.label||norm(row.label)==='champion of chaos'))storyGroups.add('champion-of-chaos')}}
  else unknown.add(file);
  }
- return {character:snapshot.character.trim(),capturedAt:snapshot.capturedAt,ids:[...ids],ambiguous:ambiguous.size,unknown:unknown.size};
+ return {character:snapshot.character.trim(),capturedAt:snapshot.capturedAt,ids:[...ids],storyGroups:[...storyGroups],ambiguous:ambiguous.size,unknown:unknown.size};
 }
 
 // Reviewed terminal story quests only. No name matching, paid badges or inferred access gates.
+const CHAOS_CHAPTERS=Object.freeze(['escherion','vath','kitsune','wolfwing','kimberly','ledgermayne','tibicenas','khasaanda','iadoa','lionfang','xiang','alteon','finale'].map(id=>'chaos:'+id));
 const STORY_BADGES=Object.freeze({
+ 'cp-29':{chapter:'chaos:finale',source:'https://aqwwiki.wikidot.com/charpage:29',category:'Epic Hero'},
+ 'cp-30':{chapter:'chaos:finale',source:'https://aqwwiki.wikidot.com/charpage:30',category:'Epic Hero'},
+ 'cp-436':{chapters:CHAOS_CHAPTERS,source:'https://www.aq.com/gamedesignnotes/12thanniversaryclass-full-8061',category:'Epic Hero',prerequisite:true},
  'cp-60':{chapter:'chaos:tutorial',source:'https://aqwwiki.wikidot.com/charpage:60'},
  'cp-74':{chapter:'chaos:tutorial',source:'https://aqwwiki.wikidot.com/battle-badges'},
  'cp-66':{chapter:'chaos:xiang',source:'https://aqwwiki.wikidot.com/story:xing-xang'},
@@ -45,7 +49,8 @@ const STORY_BADGES=Object.freeze({
 function storyEvidence(capture,catalog){
  const out={};if(!capture||typeof capture.character!=='string'||!capture.character.trim()||!Array.isArray(capture.ids)||!Number.isFinite(Date.parse(capture.capturedAt)))return out;
  const byId=new Map(catalog.map(b=>[b.id,b]));
- for(const id of capture.ids){if(typeof id!=='string'||!Object.hasOwn(STORY_BADGES,id))continue;const b=byId.get(id),rule=STORY_BADGES[id];if(!b||b.paid||b.category!=='Battle')continue;(out[rule.chapter]??=[]).push({id,name:b.name,image:b.image,source:rule.source,character:capture.character});}
+ for(const id of new Set(capture.ids)){if(typeof id!=='string'||!Object.hasOwn(STORY_BADGES,id))continue;const b=byId.get(id),rule=STORY_BADGES[id];if(!b||b.paid||b.category!==(rule.category||'Battle'))continue;for(const chapter of rule.chapters||[rule.chapter])(out[chapter]??=[]).push({id,name:b.name,image:b.image,source:rule.source,character:capture.character,prerequisite:!!rule.prerequisite});}
+ if(Array.isArray(capture.storyGroups)&&capture.storyGroups.includes('champion-of-chaos')&&!capture.ids.some(id=>id==='cp-29'||id==='cp-30')){const a=byId.get('cp-29'),b=byId.get('cp-30');if(a?.category==='Epic Hero'&&b?.category==='Epic Hero'&&!a.paid&&!b.paid)(out['chaos:finale']??=[]).push({id:'champion-of-chaos',name:'Champion of Chaos (variant unknown)',image:a.image,source:'https://www.aq.com/lore/guides/quests',character:capture.character,prerequisite:false});}
  return out;
 }
 const api={KEY,serverDay,availability,clean,update,opportunities,filterBadges,matchCapture,storyEvidence};
@@ -115,7 +120,7 @@ function applyCapture(snapshot,ask=false){
  if(capture&&capture.character.toLowerCase()!==next.character.toLowerCase())throw Error('Different character. Clear Character Page matches before switching.');
  const count=next.ids.length;
  if(ask&&!confirm('Import '+count+' matched badges for '+next.character+'? '+next.ambiguous+' ambiguous and '+next.unknown+' unrecognized image references will not be marked owned. Your manual states are preserved.'))return {ok:false,saved:false,error:'Import cancelled'};
- if(capture?.character.toLowerCase()===next.character.toLowerCase())next.ids=[...new Set([...capture.ids,...next.ids])];
+ if(capture?.character.toLowerCase()===next.character.toLowerCase()){next.ids=[...new Set([...capture.ids,...next.ids])];next.storyGroups=[...new Set([...(Array.isArray(capture.storyGroups)?capture.storyGroups:[]),...next.storyGroups])].filter(x=>x==='champion-of-chaos');}
  root.localStorage.setItem(CAPTURE_KEY,JSON.stringify(next));
  try{render();root.dispatchEvent(new Event('aqwc-story-badges-changed'))}catch(err){return {ok:false,saved:true,error:'Badge data saved, but redraw failed: '+String(err?.message||err)}}
  return {ok:true,saved:true,count,ambiguous:next.ambiguous,unknown:next.unknown};
