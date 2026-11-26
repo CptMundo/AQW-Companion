@@ -286,7 +286,7 @@ function assistantBoosts(rows,slug,snapshot){
 function assistantGoals(data,query,snapshot){
  if(!data||!Array.isArray(data.goals))return {synced:false,rows:[]};
  const key=nameKey(query.name);const target=nameKey(query.canonical||query.name);
- const material=query.category?matchWikiItem(snapshot,query):matchWikiMaterial(snapshot,query.name);const rows=[];
+ const material=query.category&&!(query.category==='misc-items'&&/ \(misc\)$/i.test(query.name))?matchWikiItem(snapshot,query):matchWikiMaterial(snapshot,query.name);const rows=[];
  for(const g of data.goals){if(g.progress===100||!Array.isArray(g.materials))continue;
  const matched=g.materials.filter(m=>nameKey(m.name)===key||nameKey(m.name)===target);
  if(matched.length!==1)continue;const qty=matched[0].target;
@@ -369,7 +369,7 @@ async function handle(message,sender){
   const q=message.query,slug=new URL(sender.url).pathname.replace(/^\/|\/$/g,'');
   if(!q||typeof q.name!=='string'||!q.name.trim()||q.name.length>350||typeof q.category!=='string'||!Object.hasOwn(wikiTypes,q.category)||q.slug!==slug||! /^[a-z0-9][a-z0-9-]{0,199}$/.test(slug))return {ok:false};
   await restrictStorage();const data=await chrome.storage.local.get([KEY,GOAL_STATUS]);
-  const snapshot=data[KEY],canonical=q.name.replace(/\s+\((?:misc|item)\)$/i,'');
+  const snapshot=data[KEY],canonical=['misc-items','use-items'].includes(q.category)?q.name.replace(/\s+\((?:misc|item)\)$/i,''):q.name;
   return {ok:true,comparison:assistantBoosts(await loadAssistantCatalog(),slug,snapshot),goals:assistantGoals(data[GOAL_STATUS],{name:q.name,category:q.category,canonical},snapshot)};
  }
  if(message?.type==='wiki-item-lookup'&&wikiSender(sender)){
