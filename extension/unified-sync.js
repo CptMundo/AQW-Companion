@@ -115,7 +115,7 @@ if(location.protocol==='chrome-extension:'||location.protocol==='moz-extension:'
   const busy=localBusy||Object.values(all).some(s=>running.includes(s.phase)&&Date.now()-s.at<300000);
   for(const [kind,btn] of Object.entries(controls)){
    const s=all[kind],bar=document.getElementById('one-click-'+kind+'-progress'),status=document.getElementById('one-click-'+kind+'-status');
-   btn.disabled=busy;btn.textContent=s&&running.includes(s.phase)&&busy?'Syncing…':kind==='inventory'?'↻ Sync Inventory & Bank':kind==='public'?'↻ Sync Public Inventory':'↻ Sync Badges';
+   btn.disabled=busy;btn.textContent=s&&running.includes(s.phase)&&busy?'Syncing…':kind==='inventory'?'↻ Inventory & Bank':kind==='public'?'↻ Public Inventory':'↻ Badges';
    if(!s)continue;
    const stale=running.includes(s.phase)&&Date.now()-s.at>=300000;
    status.textContent=stale?'Sync interrupted. Retry from the source page.':s.text;status.dataset.state=stale?'error':s.phase;
