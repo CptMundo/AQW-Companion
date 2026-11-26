@@ -57,7 +57,7 @@ if(typeof document==='undefined'){
  // Only after a user-triggered inventory sync is committed. The separate tab is ours to close.
  async function syncAccountProgress(source,target){
   const includeLoyalty=(await chrome.storage.local.get(PROGRESS_PREF))[PROGRESS_PREF]===true;
-  const wanted=includeLoyalty?['sagas','playtime','summary','membership','ac']:['sagas','playtime'];
+  const wanted=includeLoyalty?['summary','sagas','playtime','membership','ac']:['sagas','playtime'];let summary=null;
   const completed=[],failed=[];let tabId=null;
   const safe=url=>{try{const u=new URL(url);return u.origin==='https://account.aq.com'&&!u.username&&!u.password&&/progress|badge|achievement/i.test(u.pathname)&&!/logout|logoff|delete|purchase|payment|reset|password|settings/i.test(u.pathname)}catch{return false}};
   const inspect=async (id,expected=null)=>{
@@ -95,7 +95,7 @@ if(typeof document==='undefined'){
      let snapshot;
      for(let attempt=0;attempt<8;attempt++){
       try{
-       const v=await chrome.scripting.executeScript({target:{tabId},func:captureAccountProgress});
+       const v=await chrome.scripting.executeScript({target:{tabId},func:captureAccountProgress,args:[summary]});
        snapshot=v?.[0]?.result;
        const expected={sagas:15,playtime:20,membership:20,ac:16}[section];
        if(snapshot?.section===section&&(!expected||snapshot.rows?.length===expected))break;
@@ -104,6 +104,7 @@ if(typeof document==='undefined'){
       await sleep(400);
      }
      if(!snapshot)throw Error('Incomplete progress capture.');
+     if(section==='summary')summary=snapshot;
      const id=crypto.randomUUID(),reply=await chrome.tabs.sendMessage(target.id,{type:'one-click-apply',id,kind:'progress',snapshot},{frameId:0});
      if(!reply?.ok||!reply.saved||reply.id!==id)throw Error('Progress not confirmed by Companion.');
      completed.push(section);
