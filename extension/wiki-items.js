@@ -88,8 +88,13 @@
  if(!aligned)mountStatus();ui?.styleItem?.(content);
  const marker=Array.from(content.querySelectorAll?.('strong,b')||[]).find(el=>/^Location\s*:\s*$/i.test(String(el.textContent||'').trim()));
  if(marker){const section=document.createElement('section');section.className='aqwc-section';const heading=document.createElement('strong');heading.textContent='Source / Location';section.append(heading);let n=marker.nextSibling,count=0;while(n&&count++<10&&n.nodeName!=='BR'&&n.nodeName!=='STRONG'&&n.nodeName!=='B'){if(n.nodeType===3){const value=String(n.textContent||'').trim();if(value){const span=document.createElement('span');span.textContent=' '+value+' ';section.append(span)}}else if(n.nodeName==='A'){try{const u=new URL(n.getAttribute('href'),location.href);if(u.origin===location.origin){const a=document.createElement('a');a.href=u.href;a.textContent=n.textContent;const row=document.createElement('div');row.className='aqwc-source-line';row.append(a);const source=globalThis.AQWCWikiMaterials?.sourceLink(n,location.origin);if(source&&!/\b(shop|merge shop)\b/i.test(source.name))globalThis.AQWCWikiMaterials?.joinControl(row,source,location.origin);section.append(row)}}catch{}}n=n.nextSibling}if(section.children.length>1)card.append(section)}
+ const stock=document.createElement('section');stock.className='aqwc-section aqwc-stock';stock.hidden=true;
+ const stockHeading=document.createElement('strong');stockHeading.textContent='Your collection';
+ const stockGrid=document.createElement('div');stockGrid.className='aqwc-stock-grid';
+ const counts={};for(const label of ['Inventory','Bank','Total']){const cell=document.createElement('div'),caption=document.createElement('small'),value=document.createElement('strong');caption.textContent=label;value.textContent='—';counts[label]=value;cell.append(caption,value);stockGrid.append(cell)}stock.append(stockHeading,stockGrid);card.append(stock);
+ const stockStyle=document.createElement('style');stockStyle.textContent='.aqwc-stock[hidden]{display:none!important}.aqwc-stock-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px}.aqwc-stock-grid>div{min-width:0;padding:6px;border:1px solid var(--aqwc-theme-line,#38566d);border-radius:7px;background:var(--aqwc-theme-panel,#162332)}.aqwc-stock-grid small{display:block;color:var(--aqwc-theme-muted,#b6cddd);font-size:10px}.aqwc-stock-grid strong{font-size:15px;color:var(--aqwc-theme-cyan,#a9ddff);overflow-wrap:anywhere}';shadow.append(stockStyle);
  const sync=document.createElement('div');sync.className='aqwc-sync';const dot=document.createElement('span');dot.className='aqwc-sync-dot';const syncCopy=document.createElement('div'),syncTitle=document.createElement('strong'),syncTime=document.createElement('small');syncTitle.textContent='Inventory snapshot';syncTime.textContent='Checking…';syncCopy.append(syncTitle,syncTime);sync.append(dot,syncCopy);card.append(sync);
- const foot=document.createElement('div');foot.className='aqwc-footer';const open=document.createElement('a');open.href='https://cptmundo.github.io/AQW-Companion/';open.target='_blank';open.rel='noopener noreferrer';open.textContent='Open Companion ↗';const local=document.createElement('span');local.textContent='Local data · Read only';foot.append(open,local);card.append(foot);
+ const foot=document.createElement('div');foot.className='aqwc-footer';const open=document.createElement('a');open.href='https://cptmundo.github.io/AQW-Companion/';open.target='_blank';open.rel='noopener noreferrer';open.textContent='Open Companion ↗';const local=document.createElement('span');local.textContent='Local snapshot · not live';foot.append(open,local);card.append(foot);
  show('Checking synced inventory…','','#b6dfff');
  const failed=()=>{syncTime.textContent='Unavailable · check extension';show('Inventory lookup unavailable','Reload AQW Companion extension and refresh this Wiki page. Check the extension popup.','#ffc2a8')};
  try{chrome.runtime.sendMessage({type:'wiki-item-lookup',query:{name,category}},result=>{
@@ -98,6 +103,9 @@
   const date=result.syncedAt?new Date(result.syncedAt).toLocaleString():'';
   const freshness=date?'Synced: '+date:'';
   sync.setAttribute?.('data-synced',String(!!result.syncedAt));syncTitle.textContent=result.syncedAt?'Inventory synced':'Inventory not synced';syncTime.textContent=freshness||'Import & Sync in Companion';
+  if(result.state==='owned'||result.state==='not-found'){
+   const owned=result.state==='owned';for(const [label,key] of [['Inventory','inventory'],['Bank','bank'],['Total','total']])counts[label].textContent=owned&&Number.isFinite(result[key])?result[key].toLocaleString():owned?'—':'0';stock.hidden=false;
+  }
   if(result.state==='owned'){
    show(stackable?'✓ Owned · '+result.total.toLocaleString()+' total':'✓ Owned',stackable?'Combined synced stock':'','#90edb5');
   }else if(result.state==='not-found')show(stackable?'0 total':'Not owned','','#ffc2a8');
