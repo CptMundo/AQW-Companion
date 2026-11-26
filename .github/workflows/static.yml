@@ -27,10 +27,22 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Capture public guide from demo data
+        run: |
+          npm install --no-save --no-package-lock playwright@1.51.1
+          npx playwright install --with-deps chromium
+          node scripts/capture_guide.cjs
+      - name: Build public manual extension ZIP
+        run: python3 scripts/build_public_extension.py
+      - name: Remove temporary browser dependencies
+        run: rm -rf node_modules
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

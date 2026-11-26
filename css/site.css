@@ -1302,3 +1302,28 @@ html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-i
 #account-progress-summary .account-progress-badge .account-progress-badge-symbol{display:grid;place-items:center;width:54px;height:54px;font-size:25px}
 #account-progress-summary .account-progress-badge.account-progress-locked img{filter:grayscale(1)}
 #account-progress-summary .account-progress-positive strong{color:var(--aqwc-success-text)!important}
+
+/* Onboarding: no modal backdrop; all controls remain available. */
+#aqwc-getting-started[hidden],#aqwc-tour[hidden]{display:none!important}
+#aqwc-getting-started{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:15px;margin:0 0 12px}
+.aqwc-start-icon{font-size:28px;flex:none}
+#aqwc-getting-started>div:nth-child(2){flex:1;min-width:180px}
+#aqwc-getting-started h2{font-size:17px;margin:0 0 3px}
+#aqwc-getting-started p{margin:0;font-size:12px;color:var(--muted)}
+.aqwc-start-link{border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-weight:700;color:var(--cyan);text-decoration:none}
+#aqwc-tour{position:fixed;right:16px;bottom:16px;z-index:800;width:min(360px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--txt);box-shadow:0 12px 36px rgba(0,0,0,.3);padding:14px;display:grid;gap:10px;font-size:13px}
+#aqwc-tour .aqwc-tour-top,#aqwc-tour .aqwc-tour-actions{display:flex;justify-content:space-between;align-items:center;gap:8px}
+#aqwc-tour .aqwc-tour-top>span{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--cyan)}
+#aqwc-tour-count{margin-left:6px;color:var(--muted)}
+#aqwc-tour progress{width:100%;height:5px;accent-color:var(--cyan)}
+#aqwc-tour .aqwc-tour-content{display:flex;gap:10px;align-items:flex-start}
+#aqwc-tour-icon{font-size:23px;flex:none}
+#aqwc-tour h3{font-size:16px;margin:0 0 4px;color:var(--txt);line-height:1.3}
+#aqwc-tour p{font-size:13px;line-height:1.5;margin:0;color:var(--muted)}
+#aqwc-tour button{padding:6px 10px;min-height:30px;border-radius:7px;cursor:pointer;font-size:12px}
+#aqwc-tour-close{font-size:19px!important;padding:0 8px!important}
+#aqwc-tour-next{background:var(--aqwc-theme-selected,var(--panel2));border-color:var(--aqwc-theme-selectedBorder,var(--cyan));font-weight:700}
+#aqwc-tour .aqwc-tour-actions>div{display:flex;gap:5px}
+#aqwc-tour .aqwc-tour-guide{font-size:12px;color:var(--cyan);width:fit-content}
+.primarynav .aqwc-tour-target{outline:2px solid var(--cyan);outline-offset:2px}
+@media(max-width:480px){#aqwc-tour{right:8px;bottom:8px;width:calc(100vw - 16px);max-height:calc(100dvh - 16px)}#aqwc-getting-started .aqwc-start-link{width:100%;text-align:center}}
