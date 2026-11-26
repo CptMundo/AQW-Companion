@@ -36,6 +36,7 @@ function matchCapture(snapshot,catalog){
 // Reviewed terminal story quests only. No name matching, paid badges or inferred access gates.
 const CHAOS_CHAPTERS=Object.freeze(['escherion','vath','kitsune','wolfwing','kimberly','ledgermayne','tibicenas','khasaanda','iadoa','lionfang','xiang','alteon','finale'].map(id=>'chaos:'+id));
 const STORY_BADGES=Object.freeze({
+ "cp-471":{"chapter":"shadows:forestreach","source":"https://aqwwiki.wikidot.com/drakath-s-quests","prerequisite":true,"reason":"Chaos PuppetMaster is awarded for Undying Rage after Heart of the Power; Down Below questline requires Tame the Queen, the final quest of Transformation in the Queen's Past chapter."},
  "cp-490":{"chapter":"chaos:finale","source":"https://aqwwiki.wikidot.com/champion-drakath-location","category":"Epic Hero","prerequisite":true,"reason":"The Chaos Avenger Class quest is at Champion Drakath, a locked location requiring The Final Showdown!."},
  "cp-597":{"chapter":"shadows:ruinedcrown","source":"https://aqwwiki.wikidot.com/ultra-speaker","category":"Epic Hero","prerequisite":true,"reason":"Radiant Goddess of War Badge is earned from Vohu at Ultra Speaker, a locked location requiring Your Hero."},
  "cp-31":{"chapter":"chaos:finale","source":"https://aqwwiki.wikidot.com/confrontation-s-quests","category":"Epic Hero","prerequisite":true,"reason":"Both Drakath's Armor badge quest routes require The Final Showdown!."},
