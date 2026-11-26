@@ -1232,3 +1232,58 @@ html[data-theme=light] #story .story-chapter-card.state-done{background:#e1f4e8!
 #story .story-gate-actions .ultra-copy-join,#story .story-gate-actions a{margin:0!important;font-size:11px}
 #story #storyaccess .story-gate-row select{min-width:0!important;width:auto!important;max-width:190px!important;min-height:30px;padding:5px 8px;font-size:12px}
 @media(max-width:550px){#story .story-gate-heading{flex-wrap:wrap}#story .story-gate-identity{flex-basis:100%}#story #storyaccess .story-gate-row{justify-content:flex-start}}
+
+/* Wishlist item artwork: retain the full checklist layout, including completion cards. */
+#unlocks .wishlist-item-identity{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+#unlocks .wishlist-item-identity>div{min-width:0;overflow-wrap:anywhere}
+#unlocks #unlocklist .unlockcard>.unlockhead .wishlist-item-identity h3{text-align:left!important;margin:0!important}
+#unlocks .wishlist-item-art{display:grid;place-items:center;flex:none;width:88px;height:82px;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:var(--panel);text-decoration:none}
+#unlocks .wishlist-item-art img{width:100%;height:100%;object-fit:contain;padding:3px;display:block}
+#unlocks .wishlist-item-art [hidden]{display:none!important}
+#unlocks .wishlist-art-fallback{display:grid;place-items:center;width:100%;height:100%}
+#unlocks .wishlist-item-art:focus-visible{outline:2px solid var(--accent,#59b7e8);outline-offset:2px}
+@media(max-width:480px){#unlocks .wishlist-item-art{width:64px;height:64px}#unlocks .wishlist-item-identity{gap:8px}}
+
+#unlocks .wishlist-item-art img.wishlist-art-loading{opacity:0;position:absolute;inset:0}
+#unlocks .wishlist-art-fallback .itemtypeicon{width:42px;height:42px;object-fit:contain}
+#unlocks .wishlist-item-art:not(a){cursor:default}
+/* Semantic success tokens deliberately use RGB values: the theme recolorer cannot erase them. */
+:root{--aqwc-success-bg:rgb(21,55,47);--aqwc-success-border:rgb(76,157,115);--aqwc-success-text:rgb(157,242,199);--aqwc-success-strong:rgb(113,227,166);--aqwc-success-ink:rgb(9,48,31)}
+html[data-aqwc-background="light"]{--aqwc-success-bg:rgb(219,244,229);--aqwc-success-border:rgb(54,133,88);--aqwc-success-text:rgb(19,89,49);--aqwc-success-strong:rgb(37,119,69);--aqwc-success-ink:rgb(255,255,255)}
+html[data-aqwc-background="dark"]{--aqwc-success-bg:rgb(28,53,41);--aqwc-success-border:rgb(69,145,101);--aqwc-success-text:rgb(168,239,194);--aqwc-success-strong:rgb(117,227,164);--aqwc-success-ink:rgb(10,45,26)}
+html[data-aqwc-background="stars"]{--aqwc-success-bg:rgb(24,53,54);--aqwc-success-border:rgb(69,159,142);--aqwc-success-text:rgb(165,242,216);--aqwc-success-strong:rgb(107,226,186);--aqwc-success-ink:rgb(9,46,35)}
+html[data-aqwc-background="cas"]{--aqwc-success-bg:rgb(32,57,43);--aqwc-success-border:rgb(76,160,113);--aqwc-success-text:rgb(169,241,190);--aqwc-success-strong:rgb(116,224,153);--aqwc-success-ink:rgb(9,46,27)}
+html[data-aqwc-background] #planner.view.active #planner-my-tasks .planner-quest-card.done,html[data-aqwc-background] #planner-discover .planner-quest-card.done,html[data-aqwc-background] #planner .task-card.done,html[data-aqwc-background] #unlocks #unlocklist .unlockcard.wishlist-completed-card,html[data-aqwc-background] #unlocks #unlocklist .unlockcard .unlockstep.wishlist-step-complete,html[data-aqwc-background] #badge-hunter .badge-hunter-card.badge-owned,html[data-aqwc-background] #story #storydetail .story-chapter-card.state-done{background:var(--aqwc-success-bg)!important;border-color:var(--aqwc-success-border)!important;box-shadow:inset 0 0 0 1px var(--aqwc-success-border)!important}
+html[data-aqwc-background] #planner .task-card.done :is(.planner-reward-preview,.planner-rewards,.planner-quest-rewards),html[data-aqwc-background] #planner .planner-section-progress,html[data-aqwc-background] #badge-hunter .badge-owned .badge-hunter-symbol,html[data-aqwc-background] #story .state-done .story-chip-done,html[data-aqwc-background] #unlocks .wishlist-completed-card :is(.wishlist-celebration-title,.wishlist-celebration-label,.wishlist-celebration-progress),html[data-aqwc-background] #unlocks .wishlist-step-complete .status.done{color:var(--aqwc-success-text)!important}
+html[data-aqwc-background] #unlocks #unlocklist .unlockcard .status.done,html[data-aqwc-background] #unlocks #unlocklist .unlockcard .stepselect.state-done,html[data-aqwc-background] #story .story-chip-done{background:var(--aqwc-success-bg)!important;border-color:var(--aqwc-success-border)!important;color:var(--aqwc-success-text)!important}
+html[data-aqwc-background] #planner .planner-art-complete,html[data-aqwc-background] #unlocks #unlocklist .wishlist-completion-remove{background:var(--aqwc-success-strong)!important;border-color:var(--aqwc-success-border)!important;color:var(--aqwc-success-ink)!important}
+html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-fill{background:var(--aqwc-success-strong)!important}
+html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-info{color:var(--aqwc-success-text)!important}
+#account-progress-summary .account-progress-dashboard{margin-bottom:14px;padding:18px;display:grid;gap:12px}
+#account-progress-summary .account-progress-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+#account-progress-summary .account-progress-heading h3,#account-progress-summary .account-progress-heading p{margin:0 0 5px}
+#account-progress-summary .account-progress-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+#account-progress-summary :is(.account-progress-metric,.account-progress-section){border:1px solid var(--line);border-radius:10px;background:var(--panel2);padding:12px;min-width:0}
+#account-progress-summary .account-progress-metric{display:flex;flex-direction:column;gap:5px}
+#account-progress-summary .account-progress-metric strong{font-size:clamp(16px,1.8vw,23px);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+#account-progress-summary .account-progress-icon{font-size:20px;flex:none}
+#account-progress-summary .account-progress-sections{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
+#account-progress-summary .account-progress-section{display:grid;gap:9px}
+#account-progress-summary .account-progress-section-head{display:flex;align-items:center;gap:10px}
+#account-progress-summary .account-progress-section h4{font-size:15px;margin:0 0 2px}
+#account-progress-summary .account-progress-chips,#account-progress-summary .account-progress-actions{display:flex;gap:6px;flex-wrap:wrap}
+#account-progress-summary .account-progress-chip{border:1px solid var(--line);border-radius:20px;padding:4px 8px;font-size:11px;width:fit-content}
+#account-progress-summary .account-progress-distribution{display:flex;height:7px;border-radius:6px;overflow:hidden;background:var(--line)}
+#account-progress-summary .account-progress-segment.positive{background:var(--aqwc-success-strong)}
+#account-progress-summary .account-progress-segment.gray{background:rgb(111,121,136)}
+#account-progress-summary .account-progress-segment.unknown{background:rgb(187,139,61)}
+#account-progress-summary .account-progress-details summary{cursor:pointer;font-size:12px;color:var(--cyan)}
+#account-progress-summary .account-progress-badges{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:6px;margin-top:8px}
+#account-progress-summary .account-progress-badge{display:grid;grid-template-columns:20px minmax(0,1fr);gap:2px 6px;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:12px}
+#account-progress-summary .account-progress-badge small{grid-column:2;color:inherit;font-size:10px}
+#account-progress-summary .account-progress-badge-symbol{grid-row:span 2;align-self:center;font-size:17px;font-weight:800}
+#account-progress-summary .account-progress-positive{background:var(--aqwc-success-bg)!important;color:var(--aqwc-success-text)!important;border-color:var(--aqwc-success-border)!important}
+#account-progress-summary .account-progress-review{border-style:dashed}
+#account-progress-summary .account-progress-note{font-size:12px;margin:0;padding:9px 11px;border-left:3px solid rgb(187,139,61);background:var(--panel2);border-radius:5px;color:var(--txt)}
+@media(max-width:850px){#account-progress-summary .account-progress-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:580px){#account-progress-summary .account-progress-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}#account-progress-summary .account-progress-sections{grid-template-columns:minmax(0,1fr)}#account-progress-summary .account-progress-dashboard{padding:12px}}
