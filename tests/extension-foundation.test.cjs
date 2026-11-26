@@ -679,7 +679,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
  marker.textContent='Rarity:';const ul={textContent:'Merge the following: Blade x1'};content.querySelectorAll=s=>s==='strong,b'?[marker]:[ul];assert.equal(priceAnchor(content).node,ul);assert.equal(priceAnchor(content).where,'beforebegin');
  content.querySelectorAll=()=>[];assert.equal(priceAnchor(content).node,content);
  assert.ok(read('extension/wiki-materials.js').includes("'mermaid-sushi':'mermaidsushi'"));
- assert.ok(read('extension/wiki-items.js').includes('joinControl(row,source,location.origin)'));
+ assert.ok(read('extension/wiki-items.js').includes('joinControl(b,map,location.origin)'));
  assert.ok(read('extension/wiki-theme.js').includes('aqwc-faithful-wordmark'));
  const svg=read('extension/prometheus-helm.svg'),data=svg.match(/data:image\/webp;base64,([A-Za-z0-9+/=]+)/);assert.ok(data);const bytes=Buffer.from(data[1],'base64');assert.equal(bytes.length,3516);assert.equal(bytes.toString('ascii',0,4),'RIFF');assert.equal(bytes.toString('ascii',8,12),'WEBP');assert.equal(bytes.readUInt32LE(4)+8,bytes.length);
 }
