@@ -224,7 +224,7 @@ function cleanGoalStatus(v){
  if(v.goals.some(x=>!name(x?.name)||!Number.isFinite(x.progress)||x.progress<0||x.progress>100)||v.pins.some(x=>!name(x?.name)||typeof x.source!=='string'||! /^[a-z0-9][a-z0-9-]{0,199}$/.test(x.source)||typeof x.completed!=='boolean'))return null;
  const r=v.routines;const validPeriod=(x,p)=>typeof x==='string'&&new RegExp('^'+p+':\\d{4}-\\d{2}-\\d{2}$').test(x);
  const routines=r&&validPeriod(r.dailyPeriod,'d')&&validPeriod(r.weeklyPeriod,'w')&&Array.isArray(r.entries)&&r.entries.length<=250&&r.entries.every(x=>name(x?.name)&&['daily','weekly'].includes(x.freq)&&['done','todo','alternative'].includes(x.state))?{dailyPeriod:r.dailyPeriod,weeklyPeriod:r.weeklyPeriod,canEdit:r.canEdit===true,entries:r.entries.map(x=>({...(routineId(x.id)?{id:x.id}:{}),name:x.name,freq:x.freq,state:x.state,...(typeof x.join==='string'&&x.join.length<=100&&/^\/join [a-z0-9_-]+$(?![\s\S])/i.test(x.join)?{join:x.join}:{})}))}:null;
- return {routines,goals:v.goals.map(x=>({name:x.name,progress:x.progress})),pins:v.pins.map(x=>({name:x.name,source:x.source,completed:x.completed})),complete:v.complete===true,at:Date.now()};
+ return {routines,goals:v.goals.map(x=>({name:x.name,progress:x.progress,...(Array.isArray(x.materials)?{materials:x.materials.slice(0,80).filter(m=>name(m?.name)&&Number.isSafeInteger(m.target)&&m.target>0&&m.target<=1000000000).map(m=>({name:m.name,target:m.target}))}:{})})),pins:v.pins.map(x=>({name:x.name,source:x.source,completed:x.completed})),complete:v.complete===true,at:Date.now()};
 }
 function goalStatus(data,query,source){
  if(!data||!Array.isArray(data.goals)||!Array.isArray(data.pins))return {state:'unknown'};
@@ -270,6 +270,34 @@ function routineRequest(message,sender){return trackerSerial(async()=>{
  await chrome.storage.local.set({[ROUTINE_QUEUE]:all.filter(e=>!applied.some(x=>x.id===e.id)),[ROUTINE_NOTICE]:rejected?notices[rejected.status]:null,...(data?{[GOAL_STATUS]:{...data,routines:checked}}:{})});
  return {ok:true};
 })}
+
+const assistantCategories=['armors','capes-back-items','helmets-hoods','pets','weapons'];
+const assistantKeys=['all','tagged','chaos','dragon','elemental','human','undead','drakath','orc','cp','gold','rep','xp'];
+function assistantBoosts(rows,slug,snapshot){
+ const current=rows.find(r=>r.slug===slug);if(!current||!assistantCategories.includes(current.category))return null;
+ const keys=assistantKeys.filter(k=>Number.isFinite(current.boost?.[k])&&current.boost[k]>0&&current.boost[k]<=1000);
+ const best={};const matcher=buildListMatcher(snapshot,current.category);
+ const counts=new Map();const base=r=>nameKey(r.name).replace(/ \((sword|axe|bow|dagger|gauntlet|gun|handgun|mace|polearm|rifle|staff|wand|armor|helm|cape|pet)\)$/,'');
+ const candidates=rows.filter(r=>r.category===current.category&&typeof r.name==='string'&&/^[a-z0-9][a-z0-9-]{0,199}$/.test(r.slug));
+ for(const r of candidates)counts.set(base(r),(counts.get(base(r))||0)+1);
+ if(snapshot)for(const r of candidates){if(counts.get(base(r))>1||matcher(r.name).state!=='owned')continue;for(const k of keys){const v=r.boost?.[k];if(Number.isFinite(v)&&v>0&&v<=1000&&(!best[k]||v>best[k].value))best[k]={name:r.name,slug:r.slug,value:v}}}
+ return {category:current.category,boost:Object.fromEntries(keys.map(k=>[k,current.boost[k]])),best,synced:!!snapshot?.syncedAt};
+}
+function assistantGoals(data,query,snapshot){
+ if(!data||!Array.isArray(data.goals))return {synced:false,rows:[]};
+ const key=nameKey(query.name);const target=nameKey(query.canonical||query.name);
+ const material=query.category&&!(query.category==='misc-items'&&/ \(misc\)$/i.test(query.name))?matchWikiItem(snapshot,query):matchWikiMaterial(snapshot,query.name);const rows=[];
+ for(const g of data.goals){if(g.progress===100||!Array.isArray(g.materials))continue;
+ const matched=g.materials.filter(m=>nameKey(m.name)===key||nameKey(m.name)===target);
+ if(matched.length!==1)continue;const qty=matched[0].target;
+ const stock=material.state==='owned'?material.total:material.state==='not-found'?0:null;
+ rows.push({name:g.name,progress:g.progress,target:qty,missing:Number.isFinite(stock)?Math.max(0,qty-stock):null});
+ }
+ return {synced:true,at:data.at,rows:rows.sort((a,b)=>b.progress-a.progress).slice(0,8)};
+}
+let assistantCatalog;
+async function loadAssistantCatalog(){if(!assistantCatalog)assistantCatalog=fetch(chrome.runtime.getURL('boost-index.json')).then(r=>{if(!r.ok)throw Error('Catalog unavailable');return r.json()}).then(d=>Array.isArray(d.rows)&&d.rows.length<=10000?d.rows:[]).catch(()=>{assistantCatalog=null;return []});return assistantCatalog}
+
 async function handle(message,sender){
  if(message?.type?.startsWith('one-click-')&&globalThis.AQWCOneClick)return AQWCOneClick.handle(message,sender);
  // Badge captures are staged in trusted extension storage; content scripts cannot read it directly.
@@ -337,6 +365,13 @@ async function handle(message,sender){
   return {ok:true,matches:names.map(n=>matchWikiMaterial(snapshot,n)),syncedAt:snapshot?.syncedAt||null};
  }
 
+ if(message?.type==='wiki-item-assistant'&&wikiSender(sender)){
+  const q=message.query,slug=new URL(sender.url).pathname.replace(/^\/|\/$/g,'');
+  if(!q||typeof q.name!=='string'||!q.name.trim()||q.name.length>350||typeof q.category!=='string'||!Object.hasOwn(wikiTypes,q.category)||q.slug!==slug||! /^[a-z0-9][a-z0-9-]{0,199}$/.test(slug))return {ok:false};
+  await restrictStorage();const data=await chrome.storage.local.get([KEY,GOAL_STATUS]);
+  const snapshot=data[KEY],canonical=['misc-items','use-items'].includes(q.category)?q.name.replace(/\s+\((?:misc|item)\)$/i,''):q.name;
+  return {ok:true,comparison:assistantBoosts(await loadAssistantCatalog(),slug,snapshot),goals:assistantGoals(data[GOAL_STATUS],{name:q.name,category:q.category,canonical},snapshot)};
+ }
  if(message?.type==='wiki-item-lookup'&&wikiSender(sender)){
   await restrictStorage();const stored=(await chrome.storage.local.get(KEY))[KEY];return {ok:true,...matchWikiItem(stored,message.query)};
  }

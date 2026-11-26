@@ -416,7 +416,7 @@
   if(all){const link=document.createElement('a');link.href=origin+'/'+slug;link.textContent='Material Wiki ↗';link.className='aqwc-source-page';block.append(link);if(recipe?.incomplete||!recipe?.sources){const note=document.createElement('small');note.textContent='Source summary may be incomplete';block.append(note)}}
   row.append(block);return true;
  }
- function render(card,content,origin){
+ function render(card,content,origin,onNextStep){
   const rootSlug=location.pathname.replace(/^\/|\/$/g,'');
   const {groups,incomplete}=reviewedRoutes(parse(content,origin),rootSlug);
   if(!groups.length&&!incomplete)return;
@@ -476,6 +476,11 @@
      tree.append(guide);
     }
     const p=plan(group,states,matches,rootSlug,i);
+    if(!busy&&typeof onNextStep==='function'){
+     const next=p.root.find(n=>Number.isFinite(n.missing)&&n.missing>0&&Number.isFinite(n.stock)&&matches.get(n.name)?.state!=='ambiguous'&&matches.get(n.name)?.state!=='unsynced');
+     const unlock=rootSlug==='blinding-light-of-destiny-axe'&&matches.get('Get Your Blinding Light of Destiny')?.state==='owned';
+     onNextStep(next&&!unlock?{name:next.name,slug:next.slug,missing:next.missing,source:compactData(next.slug,cache.get(next.slug)).sources||null}:null);
+    }
     if(!busy&&group.some(n=>!cache.has(n.slug)&&!Object.hasOwn(compactHints,n.slug)&&!reviewedSources(n.slug))&&requests<20){const load=button('Load material sources');load.className='aqwc-preview-load';load.addEventListener('click',e=>{if(e.isTrusted)loadPreviews(group)});tree.append(load)}
     if(!busy){const ready=p.root.filter(n=>n.missing===0).length,total=p.root.length,pct=total?Math.round(ready/total*100):0;const overview=document.createElement('div'),count=document.createElement('span'),percent=document.createElement('span');overview.className='aqwc-farm-overview';count.textContent=ready+' / '+total+' materials ready';percent.textContent=pct+'% ready';overview.append(count,percent);tree.append(overview);const track=document.createElement('div'),fill=document.createElement('div');track.className='aqwc-farm-track';fill.style.width=pct+'%';track.setAttribute('aria-label',ready+' of '+total+' direct ingredients ready');track.append(fill);tree.append(track)}
     const columns=document.createElement('div');columns.className='aqwc-column-labels';for(const label of ['Material','Acquisition / map','Progress']){const cell=document.createElement('span');cell.textContent=label;columns.append(cell)}tree.append(columns);
