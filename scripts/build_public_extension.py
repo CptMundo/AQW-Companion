@@ -8,7 +8,7 @@ OUT=ROOT/'downloads'
 version=json.loads((EXT/'manifest.json').read_text())['version']
 assert re.fullmatch(r'\d+\.\d+\.\d+(?:\.\d+)?',version)
 guide=EXT/'quick-start.html'
-guide.write_text(guide.read_text().replace('__GUIDE_VERSION__',version),encoding='utf-8')
+guide.write_text(re.sub(r'Manual preview build · v\d+\.\d+\.\d+(?:\.\d+)?', 'Manual preview build · v'+version, guide.read_text(encoding='utf-8')),encoding='utf-8')
 shots=['popup-home','popup-settings','home','wishlist','quests','ultras','builds','story','badges','explore','inventory','stats','wiki']
 for name in shots:
     p=EXT/'guide-images'/('guide-'+name+'.png')
