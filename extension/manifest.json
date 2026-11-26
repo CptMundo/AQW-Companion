@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AQW Companion",
-  "version": "0.12.55",
+  "version": "0.12.56",
   "description": "Customize AQWorlds Wiki and connect your local inventory, Wishlist and daily/weekly quest tracker.",
   "action": {
     "default_title": "AQW Companion",
@@ -54,7 +54,8 @@
         "wiki-items.js",
         "wiki-quest-shop.js",
         "wiki-directory.js",
-        "wiki-boosts.js"
+        "wiki-boosts.js",
+        "wiki-navigation.js"
       ],
       "run_at": "document_end",
       "all_frames": false
