@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AQW Companion",
-  "version": "0.12.58",
+  "version": "0.12.59",
   "description": "Customize AQWorlds Wiki and connect your local inventory, Wishlist and daily/weekly quest tracker.",
   "action": {
     "default_title": "AQW Companion",
