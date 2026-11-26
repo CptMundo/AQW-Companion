@@ -49,12 +49,41 @@ async function captureAccountInventory(onProgress,jobId){
   // A shorter bulk response is not imported, even if it contains valid records.
  }
  report('reading',0,total);
- for(let offset=0;offset<total;offset+=100){
-  const page=await readPage(offset,100,true);
-  if(page.reported!==total)throw Error('Inventory total changed during capture. Try again.');
-  if(page.rows.length!==Math.min(100,total-offset))throw Error('Incomplete inventory page at offset '+offset+'. No inventory was changed.');
-  append(page.rows,offset);
-  if(offset+100<total)await new Promise(resolve=>setTimeout(resolve,150));
+ // Keep network concurrency bounded at two requests and retain ordered validation.
+ // This reduces the number of sequential round trips when the server caps bulk reads.
+ for(let base=0;base<total;base+=200){
+  const offsets=[base,...(base+100<total?[base+100]:[])];
+  const pages=await Promise.all(offsets.map(offset=>readPage(offset,100,true)));
+  for(let i=0;i<pages.length;i++){
+   const page=pages[i],offset=offsets[i];
+   if(page.reported!==total)throw Error('Inventory total changed during capture. Try again.');
+   if(page.rows.length!==Math.min(100,total-offset))throw Error('Incomplete inventory page at offset '+offset+'. No inventory was changed.');
+   append(page.rows,offset);
+  }
+  if(base+200<total)await new Promise(resolve=>setTimeout(resolve,150));
  }
  return result();
+}
+
+// Read the rendered public Character Page inventory; never call private inventory endpoints.
+function capturePublicInventory(doc=document,href=location.href){
+ const u=new URL(href),character=(u.searchParams.get('id')||'').trim();
+ if(u.origin!=='https://account.aq.com'||!/^\/(?:AQW\/)?CharPage\/?$/i.test(u.pathname)||!character||character.length>80||/[\u0000-\u001f\u007f]/.test(character))throw Error('Open your official public Character Page.');
+ const root=doc.getElementById('inventoryRendered'),count=doc.getElementById('countInventory')?.textContent.trim().match(/^\((\d+)\)$/);
+ if(!root||!count||+count[1]<1||+count[1]>10000)throw Error('Wait for the public inventory to load.');
+ const types=new Set(['Class','Armor','Helm','Cape','Sword','Axe','Gauntlet','Dagger','HandGun','Rifle','Gun','Whip','Bow','Mace','Polearm','Staff','Wand','Pet','Item','Quest Item','Resource','Necklace','Misc','Ground','House','Wall Item','Floor Item']);
+ const items=[];
+ for(const a of root.querySelectorAll('a.item')){
+  const body=a.closest('.card-body'),type=body?.previousElementSibling?.textContent.trim(),span=a.querySelector('span.item');
+  if(!types.has(type)||!span)throw Error('Unrecognized public inventory row.');
+  const small=span.querySelector('small'),stack=['Resource','Item','Quest Item'].includes(type);
+  let name=span.textContent.trim(),quantity=null,rank=null;
+  if(small){const m=small.textContent.trim().match(/^x(\d+)$/);if(!stack||!m||!name.endsWith(small.textContent.trim()))throw Error('Unrecognized public quantity.');quantity=Number(m[1]);name=name.slice(0,-small.textContent.trim().length).trim();}
+  else if(stack)quantity=1;
+  if(type==='Class'){const m=name.match(/ \(Rank (\d+)\)$/);if(m){rank=Number(m[1]);name=name.slice(0,-m[0].length)}}
+  if(!name||name.length>350||quantity!==null&&(!Number.isSafeInteger(quantity)||quantity<1)||rank!==null&&(rank<1||rank>10))throw Error('Invalid public inventory record.');
+  items.push({name,type,quantity,rank});
+ }
+ if(items.length!==+count[1])throw Error('Public inventory is incomplete. Refresh the page and try again.');
+ return {character,capturedAt:new Date().toISOString(),source:'character-page',reportedTotal:items.length,items};
 }

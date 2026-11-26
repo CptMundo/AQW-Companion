@@ -9,9 +9,9 @@ const svg='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.or
 const pic=(id)=>'<img id="'+id+'" src="'+svg+'" width="300" height="240" alt="Equipment art">';
 const basic='<p><strong>Location:</strong> <a href="/museum">Museum</a><br><strong>Price:</strong> 300 AC<br><strong>Sellback:</strong> 75 AC<br><strong>Rarity:</strong> Awesome Rarity<br><strong>Description:</strong> A test item.</p>';
 const recipe='<ul><li>Merge the following:<ul><li><a href="/void-aura">Void Aura</a> x10</li></ul></li></ul>';
-const event='<p><img src="/local--files/image-tags/staffbirthday.png" width="160" height="160" alt="Staff Birthday"><img src="/local--files/image-tags/acsmall.png" width="45" height="26" alt="AC"></p>';
+const event='<p><img src="/local--files/image-tags/staffbirthday.png" width="160" height="160" alt="Staff Birthday"><img src="/local--files/image-tags/acsmall.png" width="45" height="26" alt="AC"><img src="/local--files/image-tags/legend.png" width="120" height="30" alt="Legend"></p>';
 const gallery='<div class="yui-navset" id="native-gallery"><ul><li><a href="#male">Male</a></li><li><a href="#female">Female</a></li></ul><div id="male"><div class="collapsible-block">Normal'+pic('male-art')+'</div></div><div id="female" hidden><div class="collapsible-block">Animated'+pic('female-art')+'</div></div></div>';
-const variants='<div class="yui-navset" id="native-variants"><ul><li><a href="#one">First</a></li><li><a href="#two">Second</a></li></ul><div id="one">'+basic+recipe+'</div><div id="two">'+basic.replace('300 AC','400 AC')+recipe+'</div></div>';
+const variants='<div class="yui-navset" id="native-variants"><ul><li><a href="#one">First</a></li><li><a href="#two">Second</a></li></ul><div id="one">'+basic+recipe+'</div><div id="two">'+basic.replace('300 AC','400 AC')+'<img src="/local--files/image-tags/rare.png" alt="Rare">'+recipe+'</div></div>';
 const scenarios=[
  ['shop-cape',basic+'<p>'+pic('art')+'</p><p>Thanks to Test.</p>',false,true],
  ['quest-armor',event+basic.replace('300 AC',"N/A (Reward from the <a href='/quests'>Example</a> quest)")+gallery,false,true],
@@ -32,11 +32,15 @@ async function run(){
  try{
   const page=await browser.newPage();
   let errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.route('**/*',r=>r.request().isNavigationRequest()?r.fulfill({body:'<!doctype html><html><head></head><body></body></html>',contentType:'text/html'}):r.abort());
+  await page.route('**/*',r=>{
+    if(r.request().isNavigationRequest())return r.fulfill({body:'<!doctype html><html><head></head><body></body></html>',contentType:'text/html'});
+    if(r.request().url().includes('/image-tags/')){const url=r.request().url();const [w,h]=url.includes('staffbirthday')?[160,160]:url.includes('acsmall')?[45,26]:[120,30];return r.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'"><rect width="'+w+'" height="'+h+'" fill="#be8a56"/></svg>'})}
+    return r.abort();
+  });
   for(const [name,body,farm,art] of scenarios)for(const width of [1440,1100,700]){
    await page.setViewportSize({width,height:900});await page.goto(origin+'/'+name);
    await page.setContent('<div id="page-title">Test '+name+'</div><div id="page-content">'+body+'</div>');
-   await page.evaluate(()=>{globalThis.chrome={runtime:{getManifest:()=>({version:'test'})}};window.nativeNodes=[...document.querySelector('#page-content').childNodes];window.originalGallery=document.querySelector('#native-gallery');window.originalVariant=document.querySelector('#native-variants');window.originalText=document.querySelector('#page-content').textContent;});
+   await page.evaluate(()=>{globalThis.chrome={runtime:{getManifest:()=>({version:'test'}),getURL:()=>'/boost-index.json'}};window.nativeNodes=[...document.querySelector('#page-content').childNodes];window.originalGallery=document.querySelector('#native-gallery');window.originalVariant=document.querySelector('#native-variants');window.originalText=document.querySelector('#page-content').textContent;});
    await page.addScriptTag({path:path.join(root,'companion-theme.js')});
    await page.addScriptTag({path:path.join(root,'bridge.js')});
    await page.addScriptTag({path:path.join(root,'wiki-materials.js')});
@@ -50,9 +54,24 @@ async function run(){
     const galleryOK=!window.originalGallery||art.contains(window.originalGallery);
     const variantOK=!window.originalVariant||details.contains(window.originalVariant);
     const r={shells:c.querySelectorAll('.aqwc-unified-item').length,info:left.contains(info),details:left.contains(details),status:right.contains(status),farm:farm?left.contains(q('#aqwc-inline-farm')):!q('#aqwc-inline-farm'),art:right.contains(art),artVisible:!q('.aqwc-art-placeholder').hidden,media:art.querySelectorAll('.aqwc-art-media img').length,original,galleryOK,variantOK,gap,overflow:document.documentElement.scrollWidth>innerWidth+2,columns:getComputedStyle(q('.aqwc-unified-item')).gridTemplateAreas};
-    details.open=true;r.detailsOpen=details.open;return r;
+    r.sharedTagsVisibleInDetails=[...details.querySelectorAll('img')].filter(img=>['AC','Legend','Staff Birthday'].includes(img.alt)&&!img.hidden&&!img.closest('[hidden]')).length;r.variantRarePreserved=!window.originalVariant||!!window.originalVariant.querySelector('img[alt="Rare"]:not([hidden])');r.detailsInitiallyClosed=!details.open;r.rareInSummary=!!info.querySelector('img[alt="Rare"]');r.nativeLogoCount=info.querySelectorAll('.aqwc-tag-logo').length;details.open=true;r.detailsOpen=details.open;details.open=false;return r;
    },{farm});
-   for(const key of ['info','details','status','farm','art','original','galleryOK','variantOK','detailsOpen'])assert.ok(result[key],name+' '+width+' '+key+' '+JSON.stringify(result));
+   // Real boost renderer must put its host inside the shared tag row.
+   await page.evaluate(()=>{globalThis.AQWCOriginalItemText='Sellback: 0 AC Description: Example. Notes: When equipped, this item provides a 5% bonus to Gold when battling monsters or turning in quests.'});
+   await page.addScriptTag({path:path.join(root,'wiki-boosts.js')});
+   assert.ok(await page.locator('.aqwc-item-info .aqwc-item-tags > #aqwc-item-boosts').count(),name+' boosts alongside native tags');
+   for(const key of ['info','details','status','farm','art','original','galleryOK','variantOK','detailsOpen','detailsInitiallyClosed'])assert.ok(result[key],name+' '+width+' '+key+' '+JSON.stringify(result));
+   assert.equal(result.rareInSummary,false,name+' variant-only rare tag');assert.equal(result.sharedTagsVisibleInDetails,0,name+' duplicate shared tags');assert.ok(result.variantRarePreserved,name+' variant-specific tag preserved');
+   if(['quest-armor','rare-dagger','variant-hat'].includes(name))assert.equal(result.nativeLogoCount,2,name+' shared native logos');
+   const badgeLayout=await page.evaluate(async()=>{
+    const info=document.querySelector('.aqwc-item-info'),event=info.querySelector('.aqwc-item-events'),tags=info.querySelector('.aqwc-item-tags'),boost=tags.querySelector('#aqwc-item-boosts'),logos=[...tags.querySelectorAll('.aqwc-tag-logo')];
+    await Promise.all([...info.querySelectorAll('img')].map(img=>img.decode().catch(()=>{})));
+    const rect=n=>n.getBoundingClientRect();return {event:!!event,order:!event||rect(event).bottom<=rect(tags).top+1,eventHeight:event?rect(event.querySelector('img')).height:0,logos:logos.map(n=>n.querySelector('img')?.alt||n.alt),boostAfter:!logos.length||!!(logos.at(-1).compareDocumentPosition(boost)&Node.DOCUMENT_POSITION_FOLLOWING),sameLine:!logos.length||Math.abs((rect(logos.at(-1)).top+rect(logos.at(-1)).bottom)/2-(rect(boost).top+rect(boost).bottom)/2)<3};
+   });
+   const hasEvent=['quest-armor','rare-dagger','variant-hat'].includes(name);
+   assert.equal(badgeLayout.event,hasEvent,name+' event row');
+   assert.ok(badgeLayout.order&&badgeLayout.boostAfter,name+' tag order');
+   if(hasEvent){assert.deepEqual(badgeLayout.logos,['AC','Legend']);assert.ok(badgeLayout.eventHeight>=135&&badgeLayout.eventHeight<=151,name+' event size '+badgeLayout.eventHeight);assert.ok(badgeLayout.sameLine,name+' boosts must align with logos')}
    assert.equal(result.shells,1,name+' duplicate shell');
    assert.equal(result.artVisible,!art,name+' art visibility');
    if(farm)assert.ok(Math.abs(result.gap-16)<=1,name+' stack gap '+result.gap);
@@ -60,6 +79,42 @@ async function run(){
    assert.equal(result.columns,width>1050?'"left right"':'"left" "right"',name+' responsive columns');
    console.log('PASS',name,width);count++;
   }
+  // Full item entry-point fixture with a synced snapshot and contextual response.
+  await page.setViewportSize({width:1440,height:900});await page.goto(origin+'/example-sword');
+  await page.setContent('<div id="page-title">Example Sword</div><div id="breadcrumbs"><a href="/items">Items</a> <a href="/swords">Swords</a></div><div id="page-content">'+basic+'<p>'+pic('art')+'</p><ul><li>Also see:<ul><li><a href="/related-sword">Related Sword</a></li></ul></li></ul></div>');
+  await page.evaluate(()=>{
+   // Inspect the real closed shadow UI in tests without altering production mode.
+   const attach=Element.prototype.attachShadow;Element.prototype.attachShadow=function(options){return attach.call(this,{...options,mode:'open'})};
+   window.savedNote=null;window.requests=[];window.testOwned=true;
+   const payload={ok:true,comparison:{synced:true,boost:{all:51},best:{all:{name:'Example Sword',slug:'example-sword',value:51}}},goals:{rows:[]},hub:{recipeCount:42,recipes:[{name:'New sword',source:'https://aqwwiki.wikidot.com/example-shop',owned:'not-found',ready:1,total:2,required:1,materials:[{name:'Void Aura',missing:20}]}],related:[{name:'Related Sword',slug:'related-sword',kind:'related',state:'not-found'}],loadouts:{all:{percent:51,gear:[{name:'Example Sword',slug:'example-sword',category:'weapons'}]},undead:{percent:126.5,gear:[{name:'Example Sword',slug:'example-sword',category:'weapons'},{name:'Example Armor',slug:'example-armor',category:'armors'}]}},spending:[],goalsSynced:true}};
+   globalThis.chrome={runtime:{getManifest:()=>({version:'test'}),sendMessage(m,cb){window.requests.push(m);let r=m.type==='wiki-item-assistant'?payload:m.type==='wiki-item-lookup'?{ok:true,state:window.testOwned?'owned':'not-found',inventory:window.testOwned?1:0,bank:0,total:window.testOwned?1:0,syncedAt:1}:m.type==='hub-note-read'?{ok:true,note:{text:'Saved note',priority:'normal'}}:m.type==='hub-note-save'?(window.savedNote=m,{ok:true}):m.type==='goal-status-read'?{ok:true,state:'absent',at:1}:{ok:false};if(cb){cb(r);return}return Promise.resolve(r)}}};
+  });
+  for(const name of ['companion-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js'])await page.addScriptTag({path:path.join(root,name)});
+  const host=page.locator('#aqwc-item-status');await host.getByText('Used in recipes (1)').waitFor();
+  assert.ok(await host.getByText('New sword',{exact:true}).isVisible());
+  assert.ok(await host.getByText('1/2 ingredients ready',{exact:true}).isVisible());
+  assert.equal(await host.locator('.aqwc-insights').evaluate(n=>getComputedStyle(n).borderLeftWidth),'0px');
+  assert.ok(await host.locator('.aqwc-hub-name').first().isVisible());
+  assert.equal(await host.getByText('Boost upgrade check',{exact:true}).count(),0);
+  assert.ok(await host.getByText('Inventory: 1 · Bank: 0 · Total: 1',{exact:true}).isVisible());
+  await host.getByText('Best owned boost combination',{exact:true}).click();
+  await host.getByLabel('Choose boost or monster type').selectOption('undead');assert.ok(await host.getByText('+126.5% Undeadkind',{exact:true}).isVisible());
+  await host.getByText('My notes & priority',{exact:true}).click();await host.getByLabel('Personal item notes').fill('Test reminder');await host.getByLabel('Priority',{exact:true}).selectOption('high');await host.getByText('Save note',{exact:true}).click();
+  assert.ok(await host.getByText('Saved locally.',{exact:true}).isVisible());assert.equal(await page.evaluate(()=>savedNote.text),'Test reminder');
+  assert.ok(await page.evaluate(()=>requests.some(r=>r.type==='wiki-item-assistant'&&r.related.some(x=>x.slug==='related-sword'))));
+  await page.setViewportSize({width:1440,height:900});await page.goto(origin+'/example-sword');
+  await page.setContent('<div id="page-title">Example Sword</div><div id="breadcrumbs"><a href="/items">Items</a> <a href="/swords">Swords</a></div><div id="page-content">'+basic+'<p>'+pic('art')+'</p><ul><li>Also see:<ul><li><a href="/related-sword">Related Sword</a></li></ul></li></ul></div>');
+  await page.evaluate(()=>{
+   // Inspect the real closed shadow UI in tests without altering production mode.
+   const attach=Element.prototype.attachShadow;Element.prototype.attachShadow=function(options){return attach.call(this,{...options,mode:'open'})};
+   window.savedNote=null;window.requests=[];window.testOwned=false;
+   const payload={ok:true,comparison:{synced:true,boost:{all:5},best:{all:{name:'Better Sword',slug:'better-sword',value:51}}},goals:{rows:[]},hub:{recipeCount:42,recipes:[{name:'New sword',source:'https://aqwwiki.wikidot.com/example-shop',owned:'not-found',ready:1,total:2,required:1,materials:[{name:'Void Aura',missing:20}]}],related:[{name:'Related Sword',slug:'related-sword',kind:'related',state:'not-found'}],loadouts:{all:{percent:51,gear:[{name:'Example Sword',slug:'example-sword',category:'weapons'}]},undead:{percent:126.5,gear:[{name:'Example Sword',slug:'example-sword',category:'weapons'},{name:'Example Armor',slug:'example-armor',category:'armors'}]}},spending:[],goalsSynced:true}};
+   globalThis.chrome={runtime:{getManifest:()=>({version:'test'}),sendMessage(m,cb){window.requests.push(m);let r=m.type==='wiki-item-assistant'?payload:m.type==='wiki-item-lookup'?{ok:true,state:window.testOwned?'owned':'not-found',inventory:window.testOwned?1:0,bank:0,total:window.testOwned?1:0,syncedAt:1}:m.type==='hub-note-read'?{ok:true,note:{text:'Saved note',priority:'normal'}}:m.type==='hub-note-save'?(window.savedNote=m,{ok:true}):m.type==='goal-status-read'?{ok:true,state:'absent',at:1}:{ok:false};if(cb){cb(r);return}return Promise.resolve(r)}}};
+  });
+  for(const name of ['companion-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js'])await page.addScriptTag({path:path.join(root,name)});
+  const unowned=page.locator('#aqwc-item-status');await unowned.getByText('No boost upgrade over your owned gear',{exact:true}).waitFor();
+  assert.ok(await unowned.locator('.aqwc-hub-compare').getByText('+5%',{exact:true}).isVisible());assert.ok(await unowned.locator('.aqwc-hub-compare').getByText('+51%',{exact:true}).isVisible());assert.ok(await unowned.getByText('Better Sword',{exact:true}).isVisible());assert.ok(await unowned.getByText('Same equipment slot · 46 percentage points lower.',{exact:true}).isVisible());
+  console.log('SMART_HUB_BROWSER_PASSED');
   assert.deepEqual(errors,[]);
   console.log('BROWSER_MATRIX_PASSED',count);
  }finally{await browser.close()}

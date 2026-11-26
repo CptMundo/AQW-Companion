@@ -10,7 +10,7 @@
  function updateInventoryState(count){const empty=count===null;if(firstSync)firstSync.hidden=!empty;}
  function send(type){clear.disabled=true;chrome.runtime.sendMessage({type},result=>{
   clear.disabled=false;if(chrome.runtime.lastError||!result?.ok){status.textContent='Could not access local inventory.';return}
-  updateInventoryState(result.count);status.setAttribute('data-synced',String(result.count!==null));status.textContent=result.count===null?'No inventory synced · optional setup':'Inventory synced · '+result.count.toLocaleString()+' records · '+new Date(result.syncedAt).toLocaleString();
+  updateInventoryState(result.count);status.setAttribute('data-synced',String(result.count!==null));status.textContent=result.count===null?'No inventory synced · optional setup':(result.source==='public'?'Active: Character Page · Bank unknown · ':'Active: full inventory · ')+result.count.toLocaleString()+' records · '+new Date(result.syncedAt).toLocaleString();
  })}
  clear.addEventListener('click',()=>{if(confirm('Clear the extension copy? Your Companion inventory will not change.'))send('clear-inventory')});
  const bg=document.getElementById('appearance-background'),save=document.getElementById('appearance-save'),feedback=document.getElementById('appearance-status');
@@ -30,5 +30,6 @@
   chrome.storage?.onChanged?.addListener((changes,area)=>{if(area==='local'&&changes['aqwc-wiki-appearance-v1'])load()});
   load();
  }
+ chrome.storage?.onChanged?.addListener((changes,area)=>{if(area==='local'&&(changes['aqwc-inventory-v1']||changes['aqwc-public-inventory-v1']))send('inventory-summary')});
  send('inventory-summary');
 })();

@@ -33,7 +33,22 @@ function matchCapture(snapshot,catalog){
  return {character:snapshot.character.trim(),capturedAt:snapshot.capturedAt,ids:[...ids],ambiguous:ambiguous.size,unknown:unknown.size};
 }
 
-const api={KEY,serverDay,availability,clean,update,opportunities,filterBadges,matchCapture};
+// Reviewed terminal story quests only. No name matching, paid badges or inferred access gates.
+const STORY_BADGES=Object.freeze({
+ 'cp-60':{chapter:'chaos:tutorial',source:'https://aqwwiki.wikidot.com/charpage:60'},
+ 'cp-74':{chapter:'chaos:tutorial',source:'https://aqwwiki.wikidot.com/battle-badges'},
+ 'cp-66':{chapter:'chaos:xiang',source:'https://aqwwiki.wikidot.com/story:xing-xang'},
+ 'cp-576':{chapter:'shadows:ruinedcrown',source:'https://www.aq.com/gamedesignnotes/aqw-24feb23-shadowflamefinalevi-9105'},
+ 'cp-577':{chapter:'other:darkon',source:'https://aqwwiki.wikidot.com/story:darkon-s-elegy-of-madness'},
+ 'cp-72':{chapter:'other:ravenloss',source:'https://aqwwiki.wikidot.com/story:ravenloss'}
+});
+function storyEvidence(capture,catalog){
+ const out={};if(!capture||typeof capture.character!=='string'||!capture.character.trim()||!Array.isArray(capture.ids)||!Number.isFinite(Date.parse(capture.capturedAt)))return out;
+ const byId=new Map(catalog.map(b=>[b.id,b]));
+ for(const id of capture.ids){if(typeof id!=='string'||!Object.hasOwn(STORY_BADGES,id))continue;const b=byId.get(id),rule=STORY_BADGES[id];if(!b||b.paid||b.category!=='Battle')continue;(out[rule.chapter]??=[]).push({id,name:b.name,image:b.image,source:rule.source,character:capture.character});}
+ return out;
+}
+const api={KEY,serverDay,availability,clean,update,opportunities,filterBadges,matchCapture,storyEvidence};
 if(typeof module==='object'&&module.exports){module.exports=api;return}
 root.AQWCBadgeHunter=api;
 const d=root.document, catalog=root.AQWCBadgeCatalog||[];
@@ -102,7 +117,7 @@ function applyCapture(snapshot,ask=false){
  if(ask&&!confirm('Import '+count+' matched badges for '+next.character+'? '+next.ambiguous+' ambiguous and '+next.unknown+' unrecognized image references will not be marked owned. Your manual states are preserved.'))return {ok:false,saved:false,error:'Import cancelled'};
  if(capture?.character.toLowerCase()===next.character.toLowerCase())next.ids=[...new Set([...capture.ids,...next.ids])];
  root.localStorage.setItem(CAPTURE_KEY,JSON.stringify(next));
- try{render()}catch(err){return {ok:false,saved:true,error:'Badge data saved, but redraw failed: '+String(err?.message||err)}}
+ try{render();root.dispatchEvent(new Event('aqwc-story-badges-changed'))}catch(err){return {ok:false,saved:true,error:'Badge data saved, but redraw failed: '+String(err?.message||err)}}
  return {ok:true,saved:true,count,ambiguous:next.ambiguous,unknown:next.unknown};
 }
 api.applyCapture=applyCapture;
@@ -121,7 +136,7 @@ root.addEventListener('message',e=>{
   applyCapture(e.data.snapshot,true);
  }catch(err){$('badge-hunter-message').textContent=String(err?.message||err)}
 });
-$('badge-character-clear').addEventListener('click',e=>{if(e.isTrusted&&confirm('Clear imported Character Page matches? Manual badge progress will remain.')){try{root.localStorage.removeItem(CAPTURE_KEY);render()}catch{$('badge-hunter-message').textContent='Could not clear capture.'}}});
+$('badge-character-clear').addEventListener('click',e=>{if(e.isTrusted&&confirm('Clear imported Character Page matches? Manual badge progress will remain.')){try{root.localStorage.removeItem(CAPTURE_KEY);render();root.dispatchEvent(new Event('aqwc-story-badges-changed'))}catch{$('badge-hunter-message').textContent='Could not clear capture.'}}});
 root.addEventListener('storage',e=>{if(e.key===CAPTURE_KEY)render()});
 function openFromHash(){if(location.hash==='#aqwc-badge-hunter')d.querySelector('[data-group="badges"]')?.click()}
 root.addEventListener('hashchange',openFromHash);

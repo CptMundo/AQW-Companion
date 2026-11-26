@@ -5,10 +5,10 @@
  const title=document.getElementById('page-title'),content=document.getElementById('page-content');
  if(!title||!content||document.getElementById('aqwc-item-status'))return;
  const raw=String(content.textContent||'');
- const standard=/\bSellback\s*:/i.test(raw)&&/\bDescription\s*:/i.test(raw);
- const itemFields=['Location','Price','Rarity','Description','Sellback','Base Damage','Type'].filter(k=>new RegExp('\\b'+k+'\\s*:', 'i').test(raw));
+ const body=String(content.innerText||raw),fields=raw+'\n'+body;
+ const standard=/\bSellback\s*:/i.test(fields)&&/\bDescription\s*:/i.test(fields);
+ const itemFields=['Location','Price','Rarity','Description','Sellback','Base Damage','Type'].filter(k=>new RegExp('\\b'+k+'\\s*:', 'i').test(fields));
  if(!standard&&itemFields.length<2)return;
- const body=String(content.innerText||raw);
  // Preserve original item text before the redesign collapses the native Notes.
  globalThis.AQWCOriginalItemText=raw;
  if(/\busually refers to\s*:/i.test(body))return;
@@ -43,7 +43,7 @@
  host.style.cssText='display:block;margin:8px 0;max-width:100%';
  const shadow=host.attachShadow({mode:'closed'});
  const card=document.createElement('div');card.style.cssText=(globalThis.AQWCTheme?.recolor('display:inline-block;max-width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid #38566d;border-radius:8px;background:#142b3e;color:#e5f5ff;font:600 13px/1.5 system-ui,sans-serif;')||'display:inline-block;max-width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid #38566d;border-radius:8px;background:#142b3e;color:#e5f5ff;font:600 13px/1.5 system-ui,sans-serif;');
- const ui=globalThis.AQWCWikiUI;ui?.decorate(shadow,card,'Personal item assistant');
+ const ui=globalThis.AQWCWikiUI;ui?.decorate(shadow,card,'Smart item hub');
  if(ui)card.style.cssText='';
  const itemTitle=document.createElement('h2');itemTitle.className='aqwc-title';itemTitle.textContent=name;
  const line=document.createElement('div'),note=document.createElement('small');line.className='aqwc-state';note.className='aqwc-meta';note.style.cssText=(globalThis.AQWCTheme?.recolor('display:block;color:#b6cddd;font-weight:400;margin-top:6px')||'display:block;color:#b6cddd;font-weight:400;margin-top:6px');
@@ -81,8 +81,16 @@
   if(href){const view=document.createElement('a');view.href=href;view.target='_blank';view.rel='noopener noreferrer';view.textContent='View in Wishlist ↗';view.style.cssText=(globalThis.AQWCTheme?.recolor('display:inline-block;margin-top:5px;color:#a9ddff;font:600 11px system-ui')||'display:inline-block;margin-top:5px;color:#a9ddff;font:600 11px system-ui');actions.append(view)}
   card.append(actions);
  }
- let farmHint=null,refreshFarmHint=()=>{},isOwned=false;
- let farming,aligned=false;try{const api=globalThis.AQWCWikiMaterials;farming=api?.render(card,content,location.origin,hint=>{farmHint=hint;refreshFarmHint()});if(farming)aligned=!!ui?.mountFarm?.(farming,content,shadow);if(stackable&&api){const slug=location.pathname.replace(/^\/|\/$/g,'');api.renderSources(card,api.mergeSources(api.parseSources(content,location.origin),api.reviewedSources(slug)),location.origin,slug,{partial:!!api.reviewedSources(slug)})}}catch{console.warn('AQW Companion: material progress unavailable on this page.')}
+ const related=[];const relatedSeen=new Set();
+ // Only explicit native Wiki relationship statements, never fuzzy name guesses.
+ for(const li of content.querySelectorAll?.('li,p')||[]){
+  const lead=[...li.childNodes].filter(n=>n.nodeType===3||['STRONG','B','EM'].includes(n.tagName)).map(n=>n.textContent).join(' ').trim();
+  const kind=/\b(?:used to (?:merge|unlock|access)|required (?:to|for)|unlocks?)\b/i.test(lead)?'unlock':/\b(?:also see|see also|related items)\b/i.test(lead)?'related':null;
+  if(!kind)continue;
+  for(const a of li.querySelectorAll('a[href]'))try{const u=new URL(a.href,location.href),slug=u.pathname.replace(/^\/|\/$/g,''),label=a.textContent.trim();if(u.origin!==location.origin||u.hash||! /^[a-z0-9][a-z0-9-]{0,199}$/.test(slug)||slug===item.slug||!label||label.length>350||relatedSeen.has(slug))continue;related.push({name:label,slug,kind});relatedSeen.add(slug)}catch{}
+ }
+ let farmHint=null,farmPlan=null,refreshFarmHint=()=>{},isOwned=false,ownershipKnown=false;
+ let farming,aligned=false;try{const api=globalThis.AQWCWikiMaterials;farming=api?.render(card,content,location.origin,(hint,plan)=>{farmHint=hint;farmPlan=plan;refreshFarmHint()});if(farming)aligned=!!ui?.mountFarm?.(farming,content,shadow);if(stackable&&api){const slug=location.pathname.replace(/^\/|\/$/g,'');api.renderSources(card,api.mergeSources(api.parseSources(content,location.origin),api.reviewedSources(slug)),location.origin,slug,{partial:!!api.reviewedSources(slug)})}}catch{console.warn('AQW Companion: material progress unavailable on this page.')}
  if(!actionable){
   // Keep a consistent assistant surface but never guess variant ownership or enable an ambiguous Wishlist action.
   show('Variant / unsupported item','Wishlist and ownership are not verified for this item variant. Check the original Wiki details.','#ffdb93');
@@ -90,49 +98,78 @@
   return;
  }
  if(ui?.styleItem)ui.styleItem(content,host);else if(!aligned)mountStatus();
- const stock=document.createElement('section');stock.className='aqwc-section aqwc-stock';stock.hidden=true;
- const stockHeading=document.createElement('strong');stockHeading.textContent='Your collection';
- const stockGrid=document.createElement('div');stockGrid.className='aqwc-stock-grid';
- const counts={};for(const label of ['Inventory','Bank','Total']){const cell=document.createElement('div'),caption=document.createElement('small'),value=document.createElement('strong');caption.textContent=label;value.textContent='—';counts[label]=value;cell.append(caption,value);stockGrid.append(cell)}stock.append(stockHeading,stockGrid);card.append(stock);
- const stockStyle=document.createElement('style');stockStyle.textContent='.aqwc-stock[hidden]{display:none!important}.aqwc-stock-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px}.aqwc-stock-grid>div{min-width:0;padding:6px;border:1px solid var(--aqwc-theme-line,#38566d);border-radius:7px;background:var(--aqwc-theme-panel,#162332)}.aqwc-stock-grid small{display:block;color:var(--aqwc-theme-muted,#b6cddd);font-size:10px}.aqwc-stock-grid strong{font-size:15px;color:var(--aqwc-theme-cyan,#a9ddff);overflow-wrap:anywhere}';shadow.append(stockStyle);
 
+ const stock=document.createElement('small');stock.className='aqwc-meta';stock.hidden=true;card.append(stock);
  const assistant=document.createElement('section');assistant.className='aqwc-section aqwc-insights';assistant.hidden=true;
  const labels={all:'All monsters',tagged:'All tagged',chaos:'Chaoskind',dragon:'Dragonkind',elemental:'Elementalkind',human:'Humankind',undead:'Undeadkind',drakath:'Drakathkind',orc:'Orckind',cp:'Class Points',gold:'Gold',rep:'Reputation',xp:'Experience'};
  const make=(tag,text,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;return n};
- const insight=(title)=>{const section=make('div','','aqwc-insight');section.append(make('strong',title));assistant.append(section);return section};
  const wikiLink=(label,slug)=>{const a=make('a',label);a.href=location.origin+'/'+slug;return a};
- const styles=make('style');styles.textContent='.aqwc-insights[hidden]{display:none!important}.aqwc-insight+.aqwc-insight{border-top:1px solid var(--aqwc-theme-line,#38566d);margin-top:10px;padding-top:10px}.aqwc-insight>strong{display:block;margin-bottom:6px}.aqwc-insight small{display:block;font-size:11px;font-weight:400;line-height:1.45;color:var(--aqwc-theme-muted,#b6cddd);margin-top:5px}.aqwc-insight-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 8px;padding:6px 0;border-bottom:1px solid var(--aqwc-theme-line,#38566d)}.aqwc-insight-row>a{grid-column:1/-1;font-size:11px}.aqwc-insight-value{color:var(--aqwc-theme-cyan,#a9ddff);font-weight:700;text-align:right}.aqwc-insight a{color:var(--aqwc-theme-cyan,#a9ddff)}.aqwc-stock-grid{gap:4px!important}';shadow.append(styles);card.append(assistant);
- refreshFarmHint=()=>{
-  assistant.querySelector?.('.aqwc-next-step')?.remove();
-  if(farmHint&&!isOwned&&/^[a-z0-9][a-z0-9-]{0,199}$/.test(farmHint.slug)){
-   const b=insight('Next missing ingredient');b.classList.add('aqwc-next-step');b.append(wikiLink(farmHint.name+' · '+farmHint.missing+' missing',farmHint.slug));
-   const src=farmHint.source;for(const x of [...(src?.quests||[]),...(src?.drops||[])].slice(0,2)){if(/^[a-z0-9][a-z0-9-]{0,199}$/.test(x.slug))b.append(make('small','Listed source: '),wikiLink(x.name,x.slug))}
-   const map=src?.locations?.find(x=>x.join&&/^[a-z0-9-]+$/i.test(x.join));
-   if(map)globalThis.AQWCWikiMaterials?.joinControl(b,map,location.origin);
-   b.append(make('small','Current recipe · direct ingredient, not an optimized farming order.'));
-  }
-  assistant.hidden=!assistant.children.length;
- };
- async function loadInsights(){try{
-  const r=await chrome.runtime.sendMessage({type:'wiki-item-assistant',query:item});if(!r?.ok)return;
-  assistant.replaceChildren();
-  const c=r.comparison;
-  if(c?.synced&&Object.keys(c.boost||{}).length){
-   const b=insight('Is it worth farming?');let upgrades=0,unknown=0;
-   for(const [k,v] of Object.entries(c.boost)){
-    if(['chaos','dragon','elemental','human','undead'].includes(k)&&c.boost.tagged===v&&c.best[k]?.value===c.best.tagged?.value)continue;
-    const row=make('div','','aqwc-insight-row'),best=c.best[k];if(!best)unknown++;else if(v>best.value)upgrades++;
-    row.append(make('span',labels[k]||k),make('span','+'+v+'% / '+(best?'+'+best.value+'%':'—'),'aqwc-insight-value'));
-    if(best)row.append(wikiLink('Best owned: '+best.name,best.slug));b.append(row);
+ const styles=make('style');styles.textContent='.aqwc-insights[hidden]{display:none!important}.aqwc-insight+.aqwc-insight{border-top:1px solid var(--aqwc-theme-line,#38566d);margin-top:10px;padding-top:10px}.aqwc-insight>strong{display:block;margin-bottom:6px}.aqwc-insight small{display:block;font-size:11px;font-weight:400;line-height:1.45;color:var(--aqwc-theme-muted,#b6cddd);margin-top:5px}.aqwc-insight-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 8px;padding:6px 0;border-bottom:1px solid var(--aqwc-theme-line,#38566d)}.aqwc-insight-row>a{grid-column:1/-1;font-size:11px}.aqwc-insight-value{color:var(--aqwc-theme-cyan,#a9ddff);font-weight:700;text-align:right}.aqwc-insight a{color:var(--aqwc-theme-cyan,#a9ddff)}';shadow.append(styles);card.append(assistant);
+
+ const hubStyle=make('style');hubStyle.textContent="/* Smart Hub: one surface, readable rows and restrained accents. */\n.aqwc-card .aqwc-insights{background:transparent!important;border:0!important;border-top:1px solid var(--aqwc-theme-line,#38566d)!important;border-radius:0;padding:14px 0 0;margin:14px 0 0;display:grid;gap:8px}\n.aqwc-insights[hidden],.aqwc-hub-panel[hidden]{display:none!important}\n.aqwc-hub-head{font-size:15px;font-weight:750;line-height:1.35;color:var(--aqwc-theme-txt,#e5f5ff);margin:0 0 3px}\n.aqwc-hub-panel{min-width:0;margin:0;padding:0;border:1px solid var(--aqwc-theme-line,#38566d);border-radius:10px;background:var(--aqwc-theme-panel2,#1b3041);overflow:hidden}\n.aqwc-hub-panel>summary{display:flex;align-items:center;justify-content:space-between;gap:9px;cursor:pointer;list-style:none;padding:11px 12px;font-size:13px;font-weight:700;line-height:1.45;color:var(--aqwc-theme-txt,#e5f5ff)}\n.aqwc-hub-panel>summary::-webkit-details-marker{display:none}\n.aqwc-hub-panel>summary::after{content:\"\";width:7px;height:7px;flex:none;border-right:1.7px solid currentColor;border-bottom:1.7px solid currentColor;transform:rotate(45deg);margin:0 3px 3px 0;opacity:.75}\n.aqwc-hub-panel[open]>summary::after{transform:rotate(225deg);margin-bottom:-3px}\n.aqwc-hub-panel>summary:hover{background:var(--aqwc-theme-hover,#263d50)}\n.aqwc-hub-panel>summary:focus-visible,.aqwc-hub-panel :is(select,textarea,button,a):focus-visible{outline:2px solid var(--aqwc-theme-focus,#87e4ff);outline-offset:-3px}\n.aqwc-hub-panel>div{padding:0 12px 12px;margin:0;min-width:0}\n.aqwc-hub-panel:not([open])>div{display:none}\n.aqwc-hub-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px 7px;padding:9px 0;border-bottom:1px solid var(--aqwc-theme-line,#38566d);min-width:0}\n.aqwc-hub-row>.aqwc-hub-name{flex:1 1 140px;min-width:0;font-size:13px;font-weight:650;line-height:1.45;overflow-wrap:anywhere;margin:0}\n.aqwc-card .aqwc-hub-row>a.aqwc-hub-name{color:var(--aqwc-theme-cyan,#91dfff)!important;text-decoration:none}\n.aqwc-card .aqwc-hub-row>a.aqwc-hub-name:hover{text-decoration:underline}\n.aqwc-hub-row>small{flex:1 0 100%;margin:0}\n.aqwc-hub-panel small,.aqwc-hub-status{display:block;font-size:11.5px;font-weight:400;line-height:1.55;color:var(--aqwc-theme-muted,#b6cddd);overflow-wrap:anywhere}\n.aqwc-hub-panel>div>small{margin:8px 0 0}\n.aqwc-hub-tag{flex:none;display:inline-flex;align-items:center;border:1px solid var(--aqwc-theme-line,#38566d);border-radius:5px;padding:2px 6px;font-size:10.5px;font-weight:650;line-height:1.4;color:var(--aqwc-theme-txt,#e5f5ff);background:var(--aqwc-theme-panel,#142b3e);max-width:100%}\n.aqwc-hub-tag[data-tone=\"ready\"]{color:var(--aqwc-hub-positive,#75e0ac);border-color:currentColor}\n:host-context(html[data-aqwc-background=\"light\"]){--aqwc-hub-positive:#176a46;color-scheme:light}\n.aqwc-hub-panel select,.aqwc-hub-panel textarea{display:block;width:100%;box-sizing:border-box;background:var(--aqwc-theme-input,#162332);color:var(--aqwc-theme-txt,#e5f5ff);border:1px solid var(--aqwc-theme-line,#38566d);border-radius:7px;padding:9px;font:500 12px/1.45 system-ui;margin:3px 0 9px}\n.aqwc-hub-panel textarea{resize:vertical;min-height:76px}\n.aqwc-hub-panel button,.aqwc-hub-action{font:650 12px system-ui;color:var(--aqwc-theme-cyan,#a9ddff);background:var(--aqwc-theme-panel,#162332);border:1px solid var(--aqwc-theme-line,#38566d);border-radius:7px;padding:8px 10px;cursor:pointer}\n.aqwc-hub-panel button:disabled{opacity:.6;cursor:not-allowed}\n.aqwc-hub-boost-result{margin:0 0 4px}\n.aqwc-card .aqwc-hub-boost-result>strong{display:block;font-size:22px;line-height:1.25;letter-spacing:-.025em;color:var(--aqwc-theme-txt,#e5f5ff);padding:9px 10px;margin:0 0 3px;background:var(--aqwc-theme-panel,#142b3e);border-radius:7px;font-variant-numeric:tabular-nums}\n.aqwc-hub-boost-result>small{margin-top:8px}\n.aqwc-card .aqwc-hub-boost-result>a{display:inline-block;font-size:11.5px;font-weight:600;margin-top:5px;color:var(--aqwc-theme-cyan,#91dfff)!important}\n.aqwc-card>.aqwc-hub-panel{margin-top:10px;background:transparent}\n.aqwc-card:has(.aqwc-hub-head)>.aqwc-sync strong{color:var(--aqwc-theme-txt,#e5f5ff)}\n.aqwc-card:has(.aqwc-hub-head)>.aqwc-sync small,.aqwc-card:has(.aqwc-hub-head)>.aqwc-footer{color:var(--aqwc-theme-muted,#b6cddd)}\n";hubStyle.textContent+="\n.aqwc-hub-decision{display:grid;gap:6px;padding:12px;border:1px solid var(--aqwc-theme-line,#38566d);border-radius:10px;background:var(--aqwc-theme-panel2,#1b3041);min-width:0}\n.aqwc-hub-decision .aqwc-decision-label{font-size:10px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--aqwc-theme-muted,#b6cddd)}\n.aqwc-card .aqwc-hub-decision>strong{font-size:15px;line-height:1.35;margin:0;color:var(--aqwc-theme-txt,#e5f5ff)}\n.aqwc-hub-decision>small{font-size:11.5px;font-weight:400;line-height:1.55;color:var(--aqwc-theme-muted,#b6cddd)}\n.aqwc-hub-compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}\n.aqwc-hub-compare>div{padding:9px;background:var(--aqwc-theme-panel,#142b3e);border-radius:7px;min-width:0}\n.aqwc-hub-compare small{display:block;font-size:11px;font-weight:400;color:var(--aqwc-theme-muted,#b6cddd)}\n.aqwc-card .aqwc-hub-compare strong{font-size:21px;line-height:1.3;margin:3px 0;color:var(--aqwc-theme-txt,#e5f5ff)}\n.aqwc-card .aqwc-hub-compare a,.aqwc-card .aqwc-hub-decision>a{font-size:12px;overflow-wrap:anywhere;color:var(--aqwc-theme-cyan,#91dfff)!important}\n.aqwc-hub-quickrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;font-weight:500}\n.aqwc-hub-quickrow>span{flex:1;min-width:120px}\n";shadow.append(hubStyle);
+ const panel=(title,open=false)=>{const d=make('details','','aqwc-hub-panel'),summary=make('summary',title),body=make('div');d.open=open;d.append(summary,body);assistant.append(d);return body};
+ const row=(parent,title,detail,href)=>{const r=make('div','','aqwc-hub-row');if(href){const a=make('a',title,'aqwc-hub-name');a.href=href;r.append(a)}else r.append(make('strong',title,'aqwc-hub-name'));if(detail)r.append(make('small',detail));parent.append(r);return r};
+ const tag=(r,label,ready=false)=>{const t=make('span',label,'aqwc-hub-tag');if(ready)t.setAttribute('data-tone','ready');r.insertBefore(t,r.children[1]||null);return t};
+ const status=(state)=>state==='owned'?'Owned':state==='not-found'?'Not in snapshot':'Ownership unverified';
+ const safeSource=s=>typeof s==='string'&&/^https:\/\/aqwwiki\.wikidot\.com\/[a-z0-9][a-z0-9-]*$/.test(s)?s:null;
+ const localHref=slug=>location.origin+'/'+slug;
+ let latest=null,requestId=0,refreshTimer=null,activePlanKey='';
+ const prefs={loadout:'all'};
+ const notesPanel=make('details','','aqwc-hub-panel');notesPanel.append(make('summary','My notes & priority'));
+ const notesBody=make('div'),notesText=make('textarea'),notesPriority=make('select'),save=make('button','Save note'),notice=make('small','Private to this browser extension.');notesText.maxLength=1500;notesText.placeholder='Farming notes, reminders…';notesText.setAttribute('aria-label','Personal item notes');notesPriority.setAttribute('aria-label','Priority');for(const [v,t] of [['normal','Normal priority'],['high','High priority'],['low','Low priority']]){const o=make('option',t);o.value=v;notesPriority.append(o)}save.type='button';save.disabled=true;notesBody.append(notesText,notesPriority,save,notice);notesPanel.append(notesBody);card.append(notesPanel);
+ chrome.runtime.sendMessage({type:'hub-note-read',slug:item.slug}).then(r=>{if(!r?.ok){notice.textContent='Notes unavailable.';return}notesText.value=r.note?.text||'';notesPriority.value=r.note?.priority||'normal';save.disabled=false}).catch(()=>{notice.textContent='Notes unavailable.'});
+ save.addEventListener('click',async e=>{if(!e.isTrusted)return;save.disabled=true;try{const r=await chrome.runtime.sendMessage({type:'hub-note-save',slug:item.slug,text:notesText.value,priority:notesPriority.value});notice.textContent=r?.ok?'Saved locally.':r?.error||'Could not save.'}catch{notice.textContent='Could not save.'}finally{save.disabled=false}});
+ function renderHub(){
+  const previous=new Map([...assistant.querySelectorAll('details')].map(d=>[d.querySelector('summary').textContent,d.open]));
+  assistant.replaceChildren();const h=latest?.hub,c=latest?.comparison;
+  const headline=make('div',isOwned?'What your item unlocks':'Plan your next move','aqwc-hub-head');assistant.append(headline);
+  // A decision-first summary: only conclusions supported by this snapshot and reviewed catalog.
+  const quick=(label,title,detail)=>{const d=make('div','','aqwc-hub-decision');d.append(make('span',label,'aqwc-decision-label'),make('strong',title));if(detail)d.append(make('small',detail));assistant.append(d);return d};
+  if(ownershipKnown&&!isOwned&&c?.synced){
+   const entries=Object.entries(c.boost||{}).filter(([k,v])=>Number.isFinite(v)&&v>0&&!(k!=='tagged'&&['chaos','dragon','elemental','human','undead'].includes(k)&&c.boost.tagged===v&&c.best[k]?.value===c.best.tagged?.value));
+   const comparable=entries.filter(([k])=>Number.isFinite(c.best[k]?.value));
+   if(entries.length){
+    const better=comparable.filter(([k,v])=>v>c.best[k].value),worse=comparable.filter(([k,v])=>v<c.best[k].value);
+    const allKnown=comparable.length===entries.length;
+    const title=better.length?'Potential boost upgrade':allKnown?'No boost upgrade over your owned gear':'Boost upgrade not fully verified';
+    const d=quick('Equipment advice',title,better.length?'This item improves at least one indexed same-slot boost.':allKnown?'Skip it for boost progression alone; cosmetics and collection may still be worthwhile.':'Some owned alternatives could not be verified.');
+    const choice=better[0]||worse[0]||comparable[0]||entries[0], [k,v]=choice,best=c.best[k];
+    const comparison=make('div','','aqwc-hub-compare'),mine=make('div'),owned=make('div');mine.append(make('small','This item · '+(labels[k]||k)),make('strong','+'+v+'%'));owned.append(make('small','Best indexed owned'),make('strong',best?'+'+best.value+'%':'Unknown'));if(best)owned.append(wikiLink(best.name,best.slug));comparison.append(mine,owned);d.append(comparison);
+    if(best)d.append(make('small','Same equipment slot · '+(v===best.value?'equal boost':Math.abs(v-best.value)+' percentage points '+(v>best.value?'higher':'lower')+'.')));
    }
-   b.append(make('small',upgrades?upgrades+' confirmed improvement(s) over matched items.':unknown?'Some owned alternatives could not be confirmed.':'No higher listed boost than your matched same-slot equipment.'));
-   b.append(make('small','Item / best owned · same equipment slot · indexed boosts only; not a full loadout or stacking calculation.'));
   }
-  if(r.goals?.rows?.length){const b=insight('Needed for your Wishlist');for(const g of r.goals.rows){const row=make('div','','aqwc-insight-row');row.append(make('span',g.name),make('span',g.missing===null?'Need '+g.target:g.missing?g.missing+' missing':'Stock ready','aqwc-insight-value'));b.append(row)}b.append(make('small','Known tracked requirements only. Stock is not reserved across projects.'))}
-  refreshFarmHint();
- }catch{}}
+  if(farmPlan&&!isOwned&&ownershipKnown){
+   const missing=farmPlan.ingredients.find(m=>Number.isFinite(m.missing)&&m.missing>0),known=farmPlan.ingredients.every(m=>Number.isFinite(m.missing));
+   if(missing){const d=quick('Next farming step',missing.missing+' × '+missing.name+' missing','One direct requirement from the selected recipe.');d.append(wikiLink('Open material ↗',missing.slug));const map=missing.source?.locations?.find(x=>x.join&&/^[a-z0-9-]+$/i.test(x.join));if(map)globalThis.AQWCWikiMaterials?.joinControl(d,map,location.origin)}
+   else if(known&&!farmPlan.incomplete&&farmPlan.ingredients.length&&!farmPlan.unlock)quick('Farming progress','All direct materials ready','Check the shop, quest and other access requirements.');
+  }
+  if(latest?.goals?.rows?.length){const g=latest.goals.rows[0],d=quick('Your Wishlist',latest.goals.rows.length+' tracked goal'+(latest.goals.rows.length===1?'':'s')+' use this item',g.name+' · '+(g.missing===null?'stock unverified':g.missing?g.missing+' missing':'stock ready'));}
+  if(h?.recipes?.length){const pending=h.recipes.filter(r=>r.owned==='not-found'),ready=pending.filter(r=>r.stockReady),tracked=pending.filter(r=>r.tracked);if(ready.length)quick('Crafting opportunity',ready.length+' recipe'+(ready.length===1?' has':'s have')+' stock ready',ready[0].name+' · access not verified');else if(tracked.length)quick('Wishlist opportunity',tracked.length+' tracked recipe'+(tracked.length===1?' uses':'s use')+' this item',tracked[0].name);else if(ownershipKnown&&isOwned&&h.recipes.every(r=>r.owned==='owned'))quick('Recipe progress','All listed recipe results already owned','Based on the reviewed recipe subset.');}
+  if(farmPlan&&!isOwned&&ownershipKnown){
+   const p=panel('Farming plan · '+farmPlan.label,true),known=farmPlan.ingredients.every(m=>Number.isFinite(m.missing)),ready=farmPlan.ingredients.filter(m=>m.missing===0).length;
+   p.append(make('strong',farmPlan.unlock?'Unlock item found — check reward shop':ready+'/'+farmPlan.ingredients.length+' direct ingredients ready'));
+   if(!farmPlan.unlock&&known&&ready===farmPlan.ingredients.length&&!farmPlan.incomplete)p.append(make('small','Stock ready. Shop, quest, level and other unlock requirements are not verified.'));
+   if(farmPlan.incomplete||!known)p.append(make('small','Some requirements or stock are unknown.'));
+   for(const m of farmPlan.ingredients.filter(x=>x.missing!==0).slice(0,5)){const r=row(p,m.name,m.missing===null?'Stock unverified':m.missing+' missing',localHref(m.slug));for(const src of (m.source?.quests||[]).slice(0,1))if(/^[a-z0-9][a-z0-9-]{0,199}$/.test(src.slug)){const a=wikiLink('Quest: '+src.name+' ↗',src.slug);r.append(a)}const map=m.source?.locations?.find(x=>x.join&&/^[a-z0-9-]+$/i.test(x.join));if(map)globalThis.AQWCWikiMaterials?.joinControl(r,map,location.origin)}
+   if(farmPlan.ingredients.filter(m=>m.missing!==0).length>5)p.append(make('small','More ingredients in Farming Progress.'));
+   const copy=make('button','Copy farming checklist');copy.type='button';p.append(copy);copy.addEventListener('click',async e=>{if(!e.isTrusted)return;const text=[name+' — '+farmPlan.label,...farmPlan.ingredients.map(m=>m.name+': '+(m.missing===null?'check stock':m.missing+' missing')+' / '+m.target+(m.source?.locations?.find(x=>x.join)?' · /join '+m.source.locations.find(x=>x.join).join:''))].join('\n');try{await navigator.clipboard.writeText(text);copy.textContent='Copied ✓'}catch{copy.textContent='Copy unavailable'}});
+   p.append(make('small','Track the item with Add to Wishlist above. Open a quest link to pin it in Quest Tracker.'));
+  }
+  if(h?.recipes?.length){const p=panel('Used in recipes ('+h.recipes.length+')',true);for(const r of h.recipes){const label=r.owned==='owned'?'Owned':r.stockReady?'Ingredients ready':r.ready+'/'+r.total+' ingredients ready';const el=row(p,r.name,'Uses '+r.required+' × this item'+(r.tracked?' · In Wishlist':''),safeSource(r.source));tag(el,label,r.owned==='owned'||r.stockReady);if(r.owned!=='owned'&&!r.stockReady&&r.materials?.length)el.append(make('small',r.materials.map(m=>m.name+': '+(m.missing===null?'?':m.missing+' missing')).join(' · ')))}p.append(make('small','Based on '+h.recipeCount+' reviewed recipes. Links may open the merge shop. Ready stock does not confirm access.'))}
+  if(h?.related?.length){const p=panel('Related items & unlocks ('+h.related.length+')',false);for(const r of h.related)row(p,r.name,r.kind==='unlock'?'Wiki unlock · check requirements':'Related item · '+status(r.state),localHref(r.slug));p.append(make('small','Wiki links only · not a complete evolution tree.'))}
+  if(latest?.goals?.rows?.length){const p=panel('Needed for your Wishlist',true);for(const g of latest.goals.rows)row(p,g.name,g.progress+'% tracked · '+(g.missing===null?'Need '+g.target:g.missing?g.missing+' missing':'Stock ready'));p.append(make('small','Known tracked requirements. Stock is not reserved across projects.'))}
+  if(h?.spending?.length&&!isOwned&&ownershipKnown){const p=panel('Before you spend these materials',true);for(const r of h.spending)row(p,r.goal,r.material+' · '+r.extra+' extra to farm after this recipe');p.append(make('small','Hypothetical consumption of all direct ingredients; quests may only check ownership. No inventory changes.'))}
+  if(c?.synced&&Object.keys(c.boost||{}).length&&!isOwned&&ownershipKnown){const p=panel('Boost upgrade check');for(const [k,v] of Object.entries(c.boost)){if(['chaos','dragon','elemental','human','undead'].includes(k)&&c.boost.tagged===v&&c.best[k]?.value===c.best.tagged?.value)continue;const best=c.best[k];row(p,labels[k]||k,'This item +'+v+'% · '+(best?'owned +'+best.value+'% ('+best.name+')':'owned alternative unknown'),best?localHref(best.slug):null)}p.append(make('small','Same-slot indexed boosts only.'))}
+  if(h?.loadouts&&Object.keys(h.loadouts).length&&(!stackable&&['swords','axes','bows','daggers','gauntlets','guns','handguns','maces','polearms','rifles','staffs','wands','weapons','armors','capes-back-items','capes','helmets-hoods','helmets','pets','battle-pets'].includes(category))){const p=panel('Best owned boost combination',!h.recipes?.length&&!h.related?.length),selector=make('select'),output=make('div','','aqwc-hub-boost-result');selector.setAttribute('aria-label','Choose boost or monster type');for(const k of Object.keys(h.loadouts)){const option=make('option',labels[k]||k);option.value=k;selector.append(option)}selector.value=Object.hasOwn(h.loadouts,prefs.loadout)?prefs.loadout:Object.keys(h.loadouts)[0];const draw=()=>{prefs.loadout=selector.value;output.replaceChildren();const r=h.loadouts[selector.value];output.append(make('strong','+'+r.percent+'% '+(labels[selector.value]||selector.value)));for(const gear of r.gear)row(output,gear.name,gear.category.replace(/-/g,' '),localHref(gear.slug));output.append(make('small','Indexed owned gear only. Retrieve bank items to equip them. Excludes class stats, enhancements and timed boosts.'));const ref=make('a','Official boost rules ↗');ref.href='https://www.aq.com/Lore/Guides/AQWBoosts';ref.target='_blank';ref.rel='noopener noreferrer';output.append(ref)};selector.addEventListener('change',draw);p.append(selector,output);draw()}
+  if(!h?.goalsSynced)assistant.append(make('small','Open Companion to refresh Wishlist context.','aqwc-hub-status'));
+  if(!assistant.querySelector('.aqwc-hub-decision'))assistant.append(make('small',latest?'No personalized next step verified in the current snapshot. Related links and tools are available below where applicable.':'Checking your account context…','aqwc-hub-status'));
+  for(const d of assistant.querySelectorAll('details')){const t=d.querySelector('summary').textContent;if(previous.has(t))d.open=previous.get(t)}
+  assistant.hidden=false;
+ }
+ async function loadInsights(){const id=++requestId;try{const r=await chrome.runtime.sendMessage({type:'wiki-item-assistant',query:item,related,ingredients:(farmPlan?.ingredients||[]).map(m=>({name:m.name,target:m.target}))});if(id!==requestId||!r?.ok)return;latest=r;renderHub()}catch{}}
+ refreshFarmHint=()=>{renderHub();const key=JSON.stringify(farmPlan?.ingredients?.map(m=>[m.name,m.target])||[]);if(key!==activePlanKey){activePlanKey=key;clearTimeout(refreshTimer);refreshTimer=setTimeout(loadInsights,100)}};
  loadInsights();window.addEventListener('focus',loadInsights);
- const sync=document.createElement('div');sync.className='aqwc-sync';const dot=document.createElement('span');dot.className='aqwc-sync-dot';const syncCopy=document.createElement('div'),syncTitle=document.createElement('strong'),syncTime=document.createElement('small');syncTitle.textContent='Inventory snapshot';syncTime.textContent='Checking…';syncCopy.append(syncTitle,syncTime);sync.append(dot,syncCopy);card.append(sync);
+ const sync=document.createElement('div');sync.className='aqwc-sync';sync.style.cssText='padding:5px 0;border:0;background:transparent;';const dot=document.createElement('span');dot.className='aqwc-sync-dot';const syncCopy=document.createElement('div'),syncTitle=document.createElement('strong'),syncTime=document.createElement('small');syncTitle.textContent='Inventory snapshot';syncTime.textContent='Checking…';syncCopy.append(syncTitle,syncTime);sync.append(dot,syncCopy);card.append(sync);
  const foot=document.createElement('div');foot.className='aqwc-footer';const open=document.createElement('a');open.href='https://cptmundo.github.io/AQW-Companion/';open.target='_blank';open.rel='noopener noreferrer';open.textContent='Open Companion ↗';const local=document.createElement('span');local.textContent='Local snapshot · not live';foot.append(open,local);card.append(foot);
  show('Checking synced inventory…','','#b6dfff');
  const failed=()=>{syncTime.textContent='Unavailable · check extension';show('Inventory lookup unavailable','Reload AQW Companion extension and refresh this Wiki page. Check the extension popup.','#ffc2a8')};
@@ -141,14 +178,16 @@
   if(result.state==='unsupported'){show('Item type not recognized','This item category is not yet supported.','#ffdb93');return}
   const date=result.syncedAt?new Date(result.syncedAt).toLocaleString():'';
   const freshness=date?'Synced: '+date:'';
-  sync.setAttribute?.('data-synced',String(!!result.syncedAt));syncTitle.textContent=result.syncedAt?'Inventory synced':'Inventory not synced';syncTime.textContent=freshness||'Import & Sync in Companion';
+  sync.setAttribute?.('data-synced',String(!!result.syncedAt));syncTitle.textContent=result.state?.startsWith('public-')?'Public inventory synced':result.syncedAt?'Inventory synced':'Inventory not synced';syncTime.textContent=freshness||'Import & Sync in Companion';
   if(result.state==='owned'||result.state==='not-found'){
-   const owned=result.state==='owned';for(const [label,key] of [['Inventory','inventory'],['Bank','bank'],['Total','total']])counts[label].textContent=owned&&Number.isFinite(result[key])?result[key].toLocaleString():owned?'—':'0';stock.hidden=!owned;
+   const owned=result.state==='owned';stock.textContent=owned?'Inventory: '+result.inventory+' · Bank: '+result.bank+' · Total: '+result.total:'';stock.hidden=!owned;
   }
-  isOwned=result.state==='owned';refreshFarmHint();
+  isOwned=result.state==='owned';ownershipKnown=['owned','not-found'].includes(result.state);refreshFarmHint();
   if(result.state==='owned'){
    show(stackable?'✓ Owned · '+result.total.toLocaleString()+' total':'✓ Owned',stackable?'Combined synced stock':'','#90edb5');
   }else if(result.state==='not-found')show(stackable?'0 total':'Not owned','','#ffc2a8');
+  else if(result.state==='public-owned')show('✓ In public inventory','Character Page · Bank not available.','#90edb5');
+  else if(result.state==='public-unknown')show('Ownership unknown','Character Page only · Bank not available.','#ffdb93');
   else if(result.state==='ambiguous')show('Possible match','Check the item variant in Companion.','#ffdb93');
   else if(result.state==='unsynced')show('Inventory not synced','Open AQW Companion and select Sync inventory to extension.','#b6dfff');
   else failed();
