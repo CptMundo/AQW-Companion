@@ -55,11 +55,11 @@ function matchWikiItem(snapshot,query){
 
 function matchWikiMaterial(snapshot,name){
  if(!snapshot||!Array.isArray(snapshot.items))return {state:'unsynced'};
- const key=nameKey(name),suffix=key.match(/^(.*) \((sword|axe|bow|dagger|gauntlet|gun|handgun|mace|polearm|rifle|staff|wand|armor|class|helm|cape|pet|item)\)$/);
+ const key=nameKey(name),suffix=key.match(/^(.*) \((sword|axe|bow|dagger|gauntlet|gun|handgun|mace|polearm|rifle|staff|wand|armor|class|helm|cape|pet|item|misc)\)$/);
  const rows=snapshot.items.filter(row=>row.Count>0);
  let found=rows.filter(row=>nameKey(row.Name)===key);
  if(suffix){
-  const categories={axe:'axes',staff:'staffs',class:'classes',armor:'armors',helm:'helmets',item:'misc-items'};
+  const categories={axe:'axes',staff:'staffs',class:'classes',armor:'armors',helm:'helmets',item:'misc-items',misc:'misc-items'};
   const category=categories[suffix[2]]||suffix[2]+'s';
   const allowed=Object.hasOwn(wikiTypes,category)?wikiTypes[category]:[suffix[2]];
   const exact=found.filter(row=>allowed.includes(nameKey(row.Type)));
