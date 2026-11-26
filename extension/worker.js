@@ -316,6 +316,13 @@ async function handle(message,sender){
   }
   return {ok:true,automatic:(await chrome.storage.local.get('aqwc-list-automatic'))['aqwc-list-automatic']!==false};
  }
+ if(message?.type==='wiki-boost-lookup'&&wikiSender(sender)){
+  const categories=['armors','capes-back-items','helmets-hoods','pets','weapons'];
+  const category=message.category,names=message.names;
+  if(!categories.includes(category)||!Array.isArray(names)||!names.length||names.length>80||names.some(n=>typeof n!=='string'||!n.trim()||n.length>350||/[\u0000-\u001f\u007f]/.test(n))||new Set(names).size!==names.length)return {ok:false,error:'Invalid boost list request.'};
+  await restrictStorage();const snapshot=(await chrome.storage.local.get(KEY))[KEY];
+  const match=buildListMatcher(snapshot,category);return {ok:true,matches:names.map(n=>{const m=match(n);return {state:m.state,bank:!!m.bank,inventory:!!m.inventory}}),syncedAt:snapshot?.syncedAt||null,exportedAt:snapshot?.exportedAt||null};
+ }
  if(message?.type==='wiki-list-lookup'){
   const category=wikiListCategory(sender),names=message.names;
   if(!category||message.category!==category||!Array.isArray(names)||!names.length||names.length>80||names.some(n=>typeof n!=='string'||!n.trim()||n.length>350||/[\u0000-\u001f\u007f]/.test(n))||new Set(names).size!==names.length)return {ok:false,error:'Invalid item list request.'};
