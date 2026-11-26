@@ -1,5 +1,5 @@
 'use strict';
-if(typeof importScripts==='function')importScripts('account-capture.js','badge-capture.js','unified-sync.js');
+if(typeof importScripts==='function')importScripts('account-capture.js','badge-capture.js','progress-capture.js','unified-sync.js');
 const KEY='aqwc-inventory-v1', MAX_ROWS=20000, MAX_BYTES=6000000;
 const SITE='https://cptmundo.github.io';
 function mainSender(sender){
