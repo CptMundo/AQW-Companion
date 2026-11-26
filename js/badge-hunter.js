@@ -144,7 +144,262 @@ function storyEvidence(capture,catalog){
  if(Array.isArray(capture.storyGroups)&&capture.storyGroups.includes('champion-of-chaos')&&!capture.ids.some(id=>id==='cp-29'||id==='cp-30')){const a=byId.get('cp-29'),b=byId.get('cp-30');if(a?.category==='Epic Hero'&&b?.category==='Epic Hero'&&!a.paid&&!b.paid)(out['chaos:finale']??=[]).push({id:'champion-of-chaos',name:'Champion of Chaos (variant unknown)',image:a.image,source:'https://www.aq.com/lore/guides/quests',character:capture.character,prerequisite:false});}
  return out;
 }
-const api={KEY,serverDay,availability,clean,update,opportunities,filterBadges,matchCapture,storyEvidence,storyHints,storyRules:STORY_BADGES,storyHintRules:STORY_HINTS};
+
+// Positive-only inventory evidence. Never treat an absent item or a boss drop as a failed quest.
+// Artix excludes Book of Lore achievement rewards and miscellaneous items from IoDA:
+// https://www.aq.com/lore/guides/prizeredemption
+const STORY_ITEM_RULES=Object.freeze([
+ {
+  "name": "Ascended Avatar's Blade",
+  "type": "Sword",
+  "chapter": "chaos:prologue",
+  "source": "https://aqwwiki.wikidot.com/ascended-avatar-s-blade",
+  "reason": "Exclusive Prologue Complete reward; Robina's quests and the castle cutscenes are required.",
+  "verified": true
+ },
+ {
+  "name": "Phoenix Hunter Quiver",
+  "type": "Cape",
+  "chapter": "chaos:escherion",
+  "source": "https://aqwwiki.wikidot.com/phoenix-hunter-quiver",
+  "reason": "Exclusive Chiral Valley Champion Book of Lore reward.",
+  "verified": true
+ },
+ {
+  "name": "Volcanic Fire Spear",
+  "type": "Polearm",
+  "chapter": "chaos:vath",
+  "source": "https://aqwwiki.wikidot.com/volcanic-fire-spear",
+  "reason": "Exclusive Dwarfhold Champion reward.",
+  "verified": true
+ },
+ {
+  "name": "Amethyst Mace",
+  "type": "Mace",
+  "chapter": "chaos:kitsune",
+  "source": "https://aqwwiki.wikidot.com/yokai-champion",
+  "reason": "Shop requires completed Yokai Island saga.",
+  "verified": true
+ },
+ {
+  "name": "Sapphire Mace",
+  "type": "Mace",
+  "chapter": "chaos:wolfwing",
+  "source": "https://aqwwiki.wikidot.com/darkovia-champion",
+  "reason": "Shop requires completed Darkovia saga.",
+  "verified": true
+ },
+ {
+  "name": "Rocker Locks",
+  "type": "Helm",
+  "chapter": "chaos:kimberly",
+  "source": "https://aqwwiki.wikidot.com/rocker-locks",
+  "reason": "Exclusive Mythsong Champion reward.",
+  "verified": true
+ },
+ {
+  "name": "Invoker Staff",
+  "type": "Staff",
+  "chapter": "chaos:ledgermayne",
+  "source": "https://aqwwiki.wikidot.com/invoker-staff",
+  "reason": "Exclusive Arcangrove Champion reward.",
+  "verified": true
+ },
+ {
+  "name": "Elite Phoenix Locks",
+  "type": "Helm",
+  "chapter": "chaos:khasaanda",
+  "source": "https://aqwwiki.wikidot.com/elite-phoenix-locks",
+  "reason": "Exclusive Bloodtusk Champion reward.",
+  "verified": true
+ },
+ {
+  "name": "Ruler Of The Deep",
+  "type": "Armor",
+  "chapter": "chaos:iadoa",
+  "source": "https://aqwwiki.wikidot.com/ruler-of-the-deep",
+  "reason": "TheSpan Champion shop requires completed Span saga.",
+  "verified": true
+ },
+ {
+  "name": "Dark Summoner",
+  "type": "Armor",
+  "chapter": "chaos:lionfang",
+  "source": "https://aqwwiki.wikidot.com/dark-summoner",
+  "reason": "Exclusive ThunderForge Champion reward.",
+  "verified": true
+ },
+ {
+  "name": "PaladinSlayer Daimyo",
+  "type": "Pet",
+  "chapter": "chaos:xiang",
+  "source": "https://aqwwiki.wikidot.com/paladinslayer-daimyo",
+  "reason": "Exclusive Mirror Realm Champion reward.",
+  "verified": true
+ },
+ {
+  "name": "Lore's Champion Seal",
+  "type": "Item",
+  "chapter": "chaos:finale",
+  "source": "https://aqwwiki.wikidot.com/lore-s-champion-seal",
+  "reason": "DoomSkull Champion shop requires Mount DoomSkull completion; not proof of earlier chapters.",
+  "verified": true
+ },
+ {
+  "name": "Peanut",
+  "type": "Item",
+  "chapter": "other:j6",
+  "source": "https://aqwwiki.wikidot.com/peanut",
+  "reason": "Awarded after choosing to save J6 at the ending, or from the J6 House shop unlocked by the completed quest chain. Miscellaneous items are excluded from IoDA.",
+  "verified": true
+ },
+ {
+  "name": "Arcana Invoker",
+  "type": "Class",
+  "chapter": "other:darkon",
+  "source": "https://aqwwiki.wikidot.com/arcana-invoker",
+  "reason": "Class shop follows The World and the class quest chain; item acquisition provenance not independently verified.",
+  "verified": false
+ },
+ {
+  "name": "Chaos Avenger",
+  "type": "Class",
+  "chapter": "chaos:finale",
+  "source": "https://aqwwiki.wikidot.com/chaos-avenger",
+  "reason": "Normal class acquisition requires access to Champion Drakath. Item alone does not certify the quest route.",
+  "verified": false
+ },
+ {
+  "name": "King's Echo",
+  "type": "Class",
+  "chapter": "ruin:thunder",
+  "source": "https://aqwwiki.wikidot.com/alteon-s-gear",
+  "reason": "Normal class shop requires Echo of the King; item acquisition provenance not independently verified.",
+  "verified": false
+ },
+ {
+  "name": "Radiant Goddess of War",
+  "type": "Armor",
+  "chapter": "shadows:ruinedcrown",
+  "source": "https://aqwwiki.wikidot.com/radiant-goddess-of-war",
+  "reason": "Normal farm uses Ultra Speaker; possession alone does not establish the acquisition route.",
+  "verified": false
+ },
+ {
+  "name": "Chaorrupted Sorcerer's Staff",
+  "type": "Staff",
+  "chapter": "shadows:forestreach",
+  "source": "https://aqwwiki.wikidot.com/deep-tunnel-merge",
+  "reason": "Normal merge shop requires Tame the Queen; alternate acquisition not fully excluded.",
+  "verified": false
+ },
+ {
+  "name": "J6's Sword",
+  "type": "Sword",
+  "chapter": "other:j6",
+  "source": "https://aqwwiki.wikidot.com/bounty-hunter-shop",
+  "reason": "Requires Mission 5, which precedes saga completion.",
+  "verified": false
+ },
+ {
+  "name": "J6's Hammer",
+  "type": "Mace",
+  "chapter": "other:j6",
+  "source": "https://aqwwiki.wikidot.com/j6-s-hammer",
+  "reason": "Requires Mission 1, not the finale.",
+  "verified": false
+ }
+]);
+const STORY_BOOK_RULES=Object.freeze([
+ {
+  "name": "Tutorial",
+  "chapter": "chaos:tutorial",
+  "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+ },
+ {
+  "name": "Swordhaven Savior",
+  "chapter": "chaos:prologue",
+  "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+ },
+ {
+  "name": "Chiral Valley Champion",
+  "chapter": "chaos:escherion",
+  "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+ },
+ {
+  "name": "Dwarfhold Champion",
+  "chapter": "chaos:vath",
+  "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+ },
+ {
+  "name": "Yokai Champion",
+  "chapter": "chaos:kitsune",
+  "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+ },
+ {
+  "name": "Darkovia Champion",
+  "chapter": "chaos:wolfwing",
+  "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+ },
+ {
+  "name": "Mythsong Champion",
+  "chapter": "chaos:kimberly",
+  "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+ },
+ {
+  "name": "Arcangrove Champion",
+  "chapter": "chaos:ledgermayne",
+  "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+ },
+ {
+  "name": "Sandsea Champion",
+  "chapter": "chaos:tibicenas",
+  "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+ },
+ {
+  "name": "Bloodtusk Champion",
+  "chapter": "chaos:khasaanda",
+  "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+ },
+ {
+  "name": "The Span Champion",
+  "chapter": "chaos:iadoa",
+  "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+ },
+ {
+  "name": "Thunderforge Champion",
+  "chapter": "chaos:lionfang",
+  "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+ },
+ {
+  "name": "Mirror Realm Champion",
+  "chapter": "chaos:xiang",
+  "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+ },
+ {
+  "name": "Swordhaven Champion",
+  "chapter": "chaos:alteon",
+  "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+ },
+ {
+  "name": "Chaos Realm",
+  "chapter": "chaos:finale",
+  "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+ }
+]);
+function storyItemKey(x){return typeof x==='string'?x.normalize('NFKC').replace(/[‘’]/g,"'").trim().toLowerCase():''}
+function storyInventoryEvidence(rows,source='full',allowVerified=false){
+ const verified={},hints={};if(!Array.isArray(rows)||!['full','public'].includes(source))return {verified,hints};
+ const index=new Map();
+ for(const item of rows){if(!item||typeof item!=='object')continue;const name=storyItemKey(source==='full'?item.Name:item.name),type=storyItemKey(source==='full'?item.Type:item.type);const quantity=source==='full'?item.Count:item.quantity;if(!name||!type||(source==='public'&&quantity===null?false:!Number.isSafeInteger(Number(quantity))||Number(quantity)<1))continue;
+  const key=name+'|'+type;const locations=index.get(key)||new Set();locations.add(source==='public'?'Public inventory':Number(item.Bank)===1?'Bank':'Inventory');index.set(key,locations);
+ }
+ for(const r of STORY_ITEM_RULES){const types=r.type==='Item'?['item','misc','quest item','resource']:r.type==='Cape'?['cape','back']:r.type==='House'?['house']: [storyItemKey(r.type)];const locations=new Set();for(const type of types)for(const loc of index.get(storyItemKey(r.name)+'|'+type)||[])locations.add(loc);if(!locations.size)continue;
+ const result={name:r.name,source:r.source,reason:r.reason,locations:[...locations],kind:'inventory',verified:r.verified,prerequisite:true};const target=r.verified&&allowVerified?verified:hints;(target[r.chapter]??=[]).push(result);}
+ return {verified,hints};
+}
+function storyBookSelection(names){if(!Array.isArray(names))return [];const selected=new Set(names.map(storyItemKey));return [...new Set(STORY_BOOK_RULES.filter(r=>selected.has(storyItemKey(r.name))).map(r=>r.chapter))]}
+const api={KEY,serverDay,availability,clean,update,opportunities,filterBadges,matchCapture,storyEvidence,storyHints,storyRules:STORY_BADGES,storyHintRules:STORY_HINTS,storyInventoryEvidence,storyItemRules:STORY_ITEM_RULES,storyBookRules:STORY_BOOK_RULES,storyBookSelection};
 if(typeof module==='object'&&module.exports){module.exports=api;return}
 root.AQWCBadgeHunter=api;
 const d=root.document, catalog=root.AQWCBadgeCatalog||[];

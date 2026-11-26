@@ -895,6 +895,262 @@
     {
       "url": "https://aqwwiki.wikidot.com/drakath-s-quests",
       "finding": "Down Below requires Tame the Queen; Undying Rage awards Chaos PuppetMaster after the Anka finale."
+    },
+    {
+      "url": "https://www.aq.com/lore/guides/prizeredemption",
+      "finding": "Book of Lore rewards and miscellaneous items excluded from IoDA; farmed items may have separate IoDA versions."
+    },
+    {
+      "url": "https://www.aq.com/gamedesignnotes/achievementtracker-4289",
+      "finding": "Sagas Completed achievements track main storyline completion."
     }
-  ]
+  ],
+  "inventoryEvidence": {
+    "policy": "Use exact name and item type, positive ownership only. Book of Lore reward and miscellaneous item exclusions documented by Artix. Verified public snapshot must match any imported badge character; anonymous full snapshots require user confirmation per active snapshot and badge character. No manual progress overwritten. Item absence is not negative evidence.",
+    "iodaSource": "https://www.aq.com/lore/guides/prizeredemption",
+    "rules": [
+      {
+        "name": "Ascended Avatar's Blade",
+        "type": "Sword",
+        "chapter": "chaos:prologue",
+        "source": "https://aqwwiki.wikidot.com/ascended-avatar-s-blade",
+        "reason": "Exclusive Prologue Complete reward; Robina's quests and the castle cutscenes are required.",
+        "verified": true
+      },
+      {
+        "name": "Phoenix Hunter Quiver",
+        "type": "Cape",
+        "chapter": "chaos:escherion",
+        "source": "https://aqwwiki.wikidot.com/phoenix-hunter-quiver",
+        "reason": "Exclusive Chiral Valley Champion Book of Lore reward.",
+        "verified": true
+      },
+      {
+        "name": "Volcanic Fire Spear",
+        "type": "Polearm",
+        "chapter": "chaos:vath",
+        "source": "https://aqwwiki.wikidot.com/volcanic-fire-spear",
+        "reason": "Exclusive Dwarfhold Champion reward.",
+        "verified": true
+      },
+      {
+        "name": "Amethyst Mace",
+        "type": "Mace",
+        "chapter": "chaos:kitsune",
+        "source": "https://aqwwiki.wikidot.com/yokai-champion",
+        "reason": "Shop requires completed Yokai Island saga.",
+        "verified": true
+      },
+      {
+        "name": "Sapphire Mace",
+        "type": "Mace",
+        "chapter": "chaos:wolfwing",
+        "source": "https://aqwwiki.wikidot.com/darkovia-champion",
+        "reason": "Shop requires completed Darkovia saga.",
+        "verified": true
+      },
+      {
+        "name": "Rocker Locks",
+        "type": "Helm",
+        "chapter": "chaos:kimberly",
+        "source": "https://aqwwiki.wikidot.com/rocker-locks",
+        "reason": "Exclusive Mythsong Champion reward.",
+        "verified": true
+      },
+      {
+        "name": "Invoker Staff",
+        "type": "Staff",
+        "chapter": "chaos:ledgermayne",
+        "source": "https://aqwwiki.wikidot.com/invoker-staff",
+        "reason": "Exclusive Arcangrove Champion reward.",
+        "verified": true
+      },
+      {
+        "name": "Elite Phoenix Locks",
+        "type": "Helm",
+        "chapter": "chaos:khasaanda",
+        "source": "https://aqwwiki.wikidot.com/elite-phoenix-locks",
+        "reason": "Exclusive Bloodtusk Champion reward.",
+        "verified": true
+      },
+      {
+        "name": "Ruler Of The Deep",
+        "type": "Armor",
+        "chapter": "chaos:iadoa",
+        "source": "https://aqwwiki.wikidot.com/ruler-of-the-deep",
+        "reason": "TheSpan Champion shop requires completed Span saga.",
+        "verified": true
+      },
+      {
+        "name": "Dark Summoner",
+        "type": "Armor",
+        "chapter": "chaos:lionfang",
+        "source": "https://aqwwiki.wikidot.com/dark-summoner",
+        "reason": "Exclusive ThunderForge Champion reward.",
+        "verified": true
+      },
+      {
+        "name": "PaladinSlayer Daimyo",
+        "type": "Pet",
+        "chapter": "chaos:xiang",
+        "source": "https://aqwwiki.wikidot.com/paladinslayer-daimyo",
+        "reason": "Exclusive Mirror Realm Champion reward.",
+        "verified": true
+      },
+      {
+        "name": "Lore's Champion Seal",
+        "type": "Item",
+        "chapter": "chaos:finale",
+        "source": "https://aqwwiki.wikidot.com/lore-s-champion-seal",
+        "reason": "DoomSkull Champion shop requires Mount DoomSkull completion; not proof of earlier chapters.",
+        "verified": true
+      },
+      {
+        "name": "Peanut",
+        "type": "Item",
+        "chapter": "other:j6",
+        "source": "https://aqwwiki.wikidot.com/peanut",
+        "reason": "Awarded after choosing to save J6 at the ending, or from the J6 House shop unlocked by the completed quest chain. Miscellaneous items are excluded from IoDA.",
+        "verified": true
+      },
+      {
+        "name": "Arcana Invoker",
+        "type": "Class",
+        "chapter": "other:darkon",
+        "source": "https://aqwwiki.wikidot.com/arcana-invoker",
+        "reason": "Class shop follows The World and the class quest chain; item acquisition provenance not independently verified.",
+        "verified": false
+      },
+      {
+        "name": "Chaos Avenger",
+        "type": "Class",
+        "chapter": "chaos:finale",
+        "source": "https://aqwwiki.wikidot.com/chaos-avenger",
+        "reason": "Normal class acquisition requires access to Champion Drakath. Item alone does not certify the quest route.",
+        "verified": false
+      },
+      {
+        "name": "King's Echo",
+        "type": "Class",
+        "chapter": "ruin:thunder",
+        "source": "https://aqwwiki.wikidot.com/alteon-s-gear",
+        "reason": "Normal class shop requires Echo of the King; item acquisition provenance not independently verified.",
+        "verified": false
+      },
+      {
+        "name": "Radiant Goddess of War",
+        "type": "Armor",
+        "chapter": "shadows:ruinedcrown",
+        "source": "https://aqwwiki.wikidot.com/radiant-goddess-of-war",
+        "reason": "Normal farm uses Ultra Speaker; possession alone does not establish the acquisition route.",
+        "verified": false
+      },
+      {
+        "name": "Chaorrupted Sorcerer's Staff",
+        "type": "Staff",
+        "chapter": "shadows:forestreach",
+        "source": "https://aqwwiki.wikidot.com/deep-tunnel-merge",
+        "reason": "Normal merge shop requires Tame the Queen; alternate acquisition not fully excluded.",
+        "verified": false
+      },
+      {
+        "name": "J6's Sword",
+        "type": "Sword",
+        "chapter": "other:j6",
+        "source": "https://aqwwiki.wikidot.com/bounty-hunter-shop",
+        "reason": "Requires Mission 5, which precedes saga completion.",
+        "verified": false
+      },
+      {
+        "name": "J6's Hammer",
+        "type": "Mace",
+        "chapter": "other:j6",
+        "source": "https://aqwwiki.wikidot.com/j6-s-hammer",
+        "reason": "Requires Mission 1, not the finale.",
+        "verified": false
+      }
+    ]
+  },
+  "bookOfLoreReview": {
+    "rules": [
+      {
+        "name": "Tutorial",
+        "chapter": "chaos:tutorial",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Swordhaven Savior",
+        "chapter": "chaos:prologue",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Chiral Valley Champion",
+        "chapter": "chaos:escherion",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Dwarfhold Champion",
+        "chapter": "chaos:vath",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Yokai Champion",
+        "chapter": "chaos:kitsune",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Darkovia Champion",
+        "chapter": "chaos:wolfwing",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Mythsong Champion",
+        "chapter": "chaos:kimberly",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Arcangrove Champion",
+        "chapter": "chaos:ledgermayne",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Sandsea Champion",
+        "chapter": "chaos:tibicenas",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Bloodtusk Champion",
+        "chapter": "chaos:khasaanda",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "The Span Champion",
+        "chapter": "chaos:iadoa",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Thunderforge Champion",
+        "chapter": "chaos:lionfang",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Mirror Realm Champion",
+        "chapter": "chaos:xiang",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Swordhaven Champion",
+        "chapter": "chaos:alteon",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      },
+      {
+        "name": "Chaos Realm",
+        "chapter": "chaos:finale",
+        "source": "https://aqwwiki.wikidot.com/book-of-lore-badges"
+      }
+    ],
+    "source": "https://www.aq.com/gamedesignnotes/achievementtracker-4289",
+    "accountManager": "https://account.aq.com/",
+    "status": "Manual batch review implemented. Artix confirms Account Manager Badge Tracker, but authenticated rendered HTML not yet available for verified automatic capture."
+  }
 }
