@@ -36,22 +36,27 @@ function matchCapture(snapshot,catalog){
 // Reviewed terminal story quests only. No name matching, paid badges or inferred access gates.
 const CHAOS_CHAPTERS=Object.freeze(['escherion','vath','kitsune','wolfwing','kimberly','ledgermayne','tibicenas','khasaanda','iadoa','lionfang','xiang','alteon','finale'].map(id=>'chaos:'+id));
 const STORY_BADGES=Object.freeze({
+ "cp-490":{"chapter":"chaos:finale","source":"https://aqwwiki.wikidot.com/champion-drakath-location","category":"Epic Hero","prerequisite":true,"reason":"The Chaos Avenger Class quest is at Champion Drakath, a locked location requiring The Final Showdown!."},
+ "cp-597":{"chapter":"shadows:ruinedcrown","source":"https://aqwwiki.wikidot.com/ultra-speaker","category":"Epic Hero","prerequisite":true,"reason":"Radiant Goddess of War Badge is earned from Vohu at Ultra Speaker, a locked location requiring Your Hero."},
  "cp-31":{"chapter":"chaos:finale","source":"https://aqwwiki.wikidot.com/confrontation-s-quests","category":"Epic Hero","prerequisite":true,"reason":"Both Drakath's Armor badge quest routes require The Final Showdown!."},
  "cp-61":{"chapter":"chaos:iadoa","source":"https://aqwwiki.wikidot.com/warlic-s-quests","prerequisite":true,"reason":"Defeat Ultra Iadoa requires the Chaos Lord Iadoa story quest."},
- "cp-635":{"chapter":"other:darkon","source":"https://aqwwiki.wikidot.com/arcana-particle-npc","category":"Epic Hero","prerequisite":true,"reason":"Arcana Invoker requires the completed Elegy of Madness saga."},
+ "cp-635":{"chapter":"other:darkon","source":"https://aqwwiki.wikidot.com/arcana-particle-s-quests","category":"Epic Hero","prerequisite":true,"reason":"Arcana Invoker requires the completed Elegy of Madness saga."},
  "cp-591":{"chapter":"ruin:sea","source":"https://aqwwiki.wikidot.com/tara-s-quests","prerequisite":true,"reason":"The badge quest explicitly requires Dead Sea, the main Voice in the Sea boss story quest."},
  "cp-712":{"chapter":"ruin:thunder","source":"https://aqwwiki.wikidot.com/queen-victoria-alteon-s-quests","category":"Epic Hero","prerequisite":true,"reason":"Echo of the King requires Tell-Tale Heart, which requires The Storm Queen."},
  'cp-29':{chapter:'chaos:finale',source:'https://aqwwiki.wikidot.com/charpage:29',category:'Epic Hero'},
  'cp-30':{chapter:'chaos:finale',source:'https://aqwwiki.wikidot.com/charpage:30',category:'Epic Hero'},
  'cp-436':{chapters:CHAOS_CHAPTERS,source:'https://www.aq.com/gamedesignnotes/12thanniversaryclass-full-8061',category:'Epic Hero',prerequisite:true},
  'cp-60':{chapter:'chaos:tutorial',source:'https://aqwwiki.wikidot.com/charpage:60'},
- 'cp-74':{chapter:'chaos:tutorial',source:'https://aqwwiki.wikidot.com/battle-badges'},
  'cp-66':{chapter:'chaos:xiang',source:'https://aqwwiki.wikidot.com/story:xing-xang'},
  'cp-576':{chapter:'shadows:ruinedcrown',source:'https://www.aq.com/gamedesignnotes/aqw-24feb23-shadowflamefinalevi-9105',extra:[{chapter:'shadows:fireplanewar',source:'https://aqwwiki.wikidot.com/shadows-of-chaos:alliance-of-crowns',prerequisite:true,reason:'The finale begins with a mandatory Avatar of Fire completion gate.'}]},
  'cp-577':{chapter:'other:darkon',source:'https://aqwwiki.wikidot.com/story:darkon-s-elegy-of-madness'},
  'cp-72':{chapter:'other:ravenloss',source:'https://aqwwiki.wikidot.com/story:ravenloss'}
 });
 const STORY_HINTS=Object.freeze({
+"cp-74":{"chapter":"chaos:tutorial","source":"https://aqwwiki.wikidot.com/breakstone","reason":"Legacy Breakstone rescue proves an introductory quest, not necessarily current tutorial completion."},
+"cp-51":{"chapter":"other:doomwood","source":"https://aqwwiki.wikidot.com/story:doomwood","reason":"Stone Paladin's quest is an intermediate DoomWood milestone."},
+"cp-59":{"chapter":"other:doomwood","source":"https://aqwwiki.wikidot.com/doomwood:part1","reason":"Charging Up! awards Story ARC before the final confrontation."},
+"cp-468":{"chapter":"throne:vaden","category":"Epic Hero","source":"https://aqwwiki.wikidot.com/trissa-s-quests","reason":"Awe-scention requires Vaden's Helm via an earlier quest. Boss tokens do not establish Vaden's Defeat turn-in."},
  "cp-436": {
   "chapters": [
    "dragons:gluttony",
