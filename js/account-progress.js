@@ -14,7 +14,7 @@ function clean(v){
   return {...out,created:v.created,months:v.months,purchased:v.purchased,bonus:v.bonus,total:v.total};
  }
  if(!Array.isArray(v.rows)||!v.rows.length||v.rows.length>names[v.section].length)throw Error('Invalid badge list.');
- const seen=new Set();out.rows=v.rows.map(r=>{if(!r||!names[v.section].includes(r.name)||!['colored','gray','unknown'].includes(r.state)||seen.has(r.name))throw Error('Invalid or duplicate progress badge.');seen.add(r.name);return {name:r.name,state:r.state}});return out;
+ const seen=new Set();out.rows=v.rows.map(r=>{if(!r||!names[v.section].includes(r.name)||!['colored','gray','unknown'].includes(r.state)||seen.has(r.name))throw Error('Invalid or duplicate progress badge.');seen.add(r.name);const out={name:r.name,state:r.state};if(r.evidence==='threshold'&&v.section!=='sagas')out.evidence='threshold';if(typeof r.art==='string'){try{const u=new URL(r.art);if(['https://account.aq.com','https://game.aq.com','https://www.aq.com'].includes(u.origin)&&!u.search&&!u.hash&&/badge|progress|achievement/i.test(u.pathname)&&/^\/[a-z0-9/_-]+\.(?:png|jpe?g|gif|webp)$/i.test(u.pathname))out.art=u.href}catch{}}return out});return out;
 }
 function load(){try{const raw=JSON.parse(localStorage.getItem(KEY)||'{}'),out={};for(const k of ['summary',...Object.keys(names)])if(raw[k]?.section===k)try{out[k]=clean(raw[k])}catch{}return out}catch{return {}}}
 function save(v){const next=clean(v),all=load();all[next.section]=next;localStorage.setItem(KEY,JSON.stringify(all));return next}

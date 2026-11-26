@@ -1287,3 +1287,18 @@ html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-i
 #account-progress-summary .account-progress-note{font-size:12px;margin:0;padding:9px 11px;border-left:3px solid rgb(187,139,61);background:var(--panel2);border-radius:5px;color:var(--txt)}
 @media(max-width:850px){#account-progress-summary .account-progress-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:580px){#account-progress-summary .account-progress-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}#account-progress-summary .account-progress-sections{grid-template-columns:minmax(0,1fr)}#account-progress-summary .account-progress-dashboard{padding:12px}}
+
+/* Full-width goal artwork with title first; keep the checklist intact. */
+#unlocks #unlocklist .unlockhead .wishlist-item-identity{display:flex;flex-direction:column;align-items:stretch;gap:9px;width:100%}
+#unlocks #unlocklist .unlockhead .wishlist-item-identity>div:first-child{padding-right:30px}
+#unlocks #unlocklist .unlockhead .wishlist-item-art{width:100%;height:clamp(125px,13vw,180px);flex:none}
+#unlocks #unlocklist .unlockhead{position:relative;display:block}
+#unlocks #unlocklist .unlockhead .wishlist-dismiss{position:absolute;right:0;top:0;z-index:2}
+#unlocks #unlocklist .wishlist-item-art img{object-fit:contain;padding:6px}
+#unlocks #unlocklist .wishlist-art-fallback .itemtypeicon{width:64px;height:64px}
+#account-progress-summary .account-progress-badge{grid-template-columns:1fr;justify-items:center;text-align:center;align-content:start;min-height:105px}
+#account-progress-summary .account-progress-badge :is(small,.account-progress-badge-symbol){grid-column:1;grid-row:auto}
+#account-progress-summary .account-progress-badge img{width:54px;height:54px;object-fit:contain;display:block}
+#account-progress-summary .account-progress-badge .account-progress-badge-symbol{display:grid;place-items:center;width:54px;height:54px;font-size:25px}
+#account-progress-summary .account-progress-badge.account-progress-locked img{filter:grayscale(1)}
+#account-progress-summary .account-progress-positive strong{color:var(--aqwc-success-text)!important}

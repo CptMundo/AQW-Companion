@@ -14,10 +14,11 @@ def get(url):
 def main():
  old=json.loads(OUT.read_text(encoding='utf-8').strip().removesuffix(chr(92)+'n')) if OUT.exists() else {'events':[]}
  today=datetime.datetime.now(datetime.timezone.utc).date().isoformat()
- events=[e for e in old.get('events',[]) if e.get('source')=='curated' or e.get('source')=='official-calendar']
+ events=list(old.get('events',[]))
  status='Official news fetch failed; retaining previously verified entries'
  try:
   page=get(URL)
+  # Keep confirmed announcements even if a subsequent news fetch is empty.
   # The public AQWorlds news page is not the full Artix calendar. Import only
   # headlines with explicit dates and label them as NEWS, never as boosts.
   for m in re.finditer(r"""<a\b[^>]*href=["\x27]([^"\x27]+)["\x27][^>]*>(.*?)</a>""",page,re.I|re.S):

@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-11-26T19:05:44+00:00",
-  "status": "Official AQWorlds news page checked; calendar boosts require explicit confirmation",
+  "updatedAt": "2026-11-26T22:27:00+00:00",
+  "status": "Official dated boost pages and Design Notes reviewed; resource boost entries from community chronicle are labeled; not live status",
   "sources": [
     "https://www.artix.com/calendar/",
     "https://www.artix.com/games/aqworlds/",
@@ -14,6 +14,15 @@
       "desc": "November seasonal set; availability subject to in-game confirmation.",
       "url": "https://game4.aq.com/gamedesignnotes/tag/seasonal-set",
       "category": "seasonal",
+      "source": "curated"
+    },
+    {
+      "date": "2026-11-06",
+      "endDate": "2027-01-04",
+      "name": "50% Holiday AC bonus",
+      "desc": "Official login page lists the promotion ending Jan 4, 2027.",
+      "url": "https://www.aq.com/gamedesignnotes/aqw-holidayacbonus-6nov26-9374",
+      "category": "event",
       "source": "curated"
     },
     {
@@ -46,6 +55,15 @@
       "desc": "Battle Sleep Paralysis at /join gothicdream.",
       "url": "https://www.aq.com/gamedesignnotes/aqw-cursedharvest26-13nov26-10514",
       "category": "drop",
+      "source": "curated"
+    },
+    {
+      "date": "2026-11-19",
+      "endDate": "2026-11-26",
+      "name": "Double Void Aura quantity",
+      "desc": "Community release log records the resource boost through Nov 26; exact end time not verified.",
+      "url": "https://aqwwiki.wikidot.com/november-2026",
+      "category": "boost",
       "source": "curated"
     },
     {
@@ -89,10 +107,86 @@
       "source": "curated"
     },
     {
+      "date": "2026-11-25",
+      "name": "Chilly gifting signup",
+      "desc": "Complete the Gifting Participation quest in Battleon before joining the gifting event.",
+      "url": "https://www.aq.com/gamedesignnotes/",
+      "category": "event",
+      "source": "curated"
+    },
+    {
+      "date": "2026-11-25",
+      "endDate": "2026-11-28",
+      "name": "Double ALL Boost (Nov 25)",
+      "desc": "72-hour double XP, Gold, Rep and Class Points. Official calendar announcement; exact in-game end time not asserted.",
+      "url": "https://www.artix.com/calendar/double-all-boost-112526/",
+      "category": "boost",
+      "source": "official-calendar"
+    },
+    {
+      "date": "2026-11-25",
+      "name": "Harvest Feast midweek rewards",
+      "desc": "Energy Blade of Feasting quest in /join battleontown and new Harvest-themed drops.",
+      "url": "https://www.aq.com/gamedesignnotes/aqw-harvestfest-25nov26-10533",
+      "category": "release",
+      "source": "curated"
+    },
+    {
+      "date": "2026-11-26",
+      "endDate": "2026-12-03",
+      "name": "Double Unidentified 34 & 35 quantity",
+      "desc": "Community release log records this boost through Dec 3; exact end time not verified.",
+      "url": "https://aqwwiki.wikidot.com/november-2026",
+      "category": "boost",
+      "source": "curated"
+    },
+    {
+      "date": "2026-11-27",
+      "endDate": "2026-11-30",
+      "name": "Double ALL Boost (Nov 27)",
+      "desc": "Another announced 72-hour boost to XP, Gold, Rep and Class Points; date range includes the announced end day.",
+      "url": "https://www.artix.com/calendar/double-all-boost-112726/",
+      "category": "boost",
+      "source": "official-calendar"
+    },
+    {
+      "date": "2026-11-27",
+      "name": "EbilCorp boss & Black Friday rares",
+      "desc": "Announced Friday boss release and additional Black Friday items.",
+      "url": "https://www.aq.com/gamedesignnotes/aqw-harvestfest-25nov26-10533",
+      "category": "release",
+      "source": "curated"
+    },
+    {
+      "date": "2026-11-30",
+      "name": "Quibble's third shipment",
+      "desc": "Announced Black Friday rare gear shipment.",
+      "url": "https://game5.aq.com/gamedesignnotes/aqw-holidayacbonus-6nov26-9374",
+      "category": "release",
+      "source": "curated"
+    },
+    {
+      "date": "2026-12-04",
+      "endDate": "2027-01-08",
+      "name": "Frostval AC gifting event",
+      "desc": "Official announcement: gifting runs Dec 4 through Jan 8; sign up in game.",
+      "url": "https://www.aq.com/gamedesignnotes/",
+      "category": "seasonal",
+      "source": "curated"
+    },
+    {
       "date": "2026-12-11",
       "name": "Black Friday 2026 Collection leaves",
       "desc": "Official announced departure date for the collection.",
       "url": "https://www.aq.com/gamedesignnotes/aqw-cursedharvest26-20nov26-10529",
+      "category": "event",
+      "source": "curated"
+    },
+    {
+      "date": "2027-01-11",
+      "name": "Frostval leaderboard prizes",
+      "desc": "Announced award date for gifting leaderboard prizes.",
+      "url": "https://www.aq.com/gamedesignnotes/",
       "category": "event",
       "source": "curated"
     }

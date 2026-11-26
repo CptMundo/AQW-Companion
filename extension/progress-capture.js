@@ -1,5 +1,5 @@
 /* Read only the visible, explicitly opened official Progress Badges page. No cookies, requests, forms or raw page content are exported. */
-function captureAccountProgress(){
+function captureAccountProgress(summary=null){
  if(location.origin!=='https://account.aq.com')throw Error('Open AQW Account Manager → Badge Tracker first.');
  const normalize=s=>String(s||'').replace(/\s+/g,' ').trim();
  const lines=document.body.innerText.split(/\n/).map(normalize).filter(Boolean);
@@ -20,28 +20,52 @@ function captureAccountProgress(){
  }
  const names={sagas:['Prologue','Shadowfall','Chiral Valley','Dwarfhold','Yokai','Darkovia','Mythsong','Arcangrove','Sandsea','Bloodtusk','The Span','Thunderforge','Swordhaven','Mirror Realm','Chaos Realm'],playtime:['1 Week','1 Month','3 Months','6 Months','12 Months','15 Months',...Array.from({length:14},(_,i)=>(i+2)+' Years')],membership:['1 Month','2 Months','3 Months','6 Months','9 Months','12 Months','15 Months',...Array.from({length:13},(_,i)=>(i+2)+' Years')],ac:['500 ACs','2,000 ACs','12,000 ACs','25,000 ACs','50,000 ACs','100,000 ACs','200,000 ACs','300,000 ACs','400,000 ACs','500,000 ACs','600,000 ACs','750,000 ACs','1 Million ACs','1.1 Million ACs','1.2 Million ACs','1.25 Million ACs']}[section];
  const rows=[];
- for(const img of document.images){
-  if(!img.complete||!img.naturalWidth||!img.getClientRects().length)continue;
-  let card=img.parentElement,name='';
-  for(let i=0;card&&i<5;i++,card=card.parentElement){
-   if(card.querySelectorAll('img').length!==1)break;
-   const label=normalize(card.innerText);
-   if(names.includes(label)){name=label;break}
-  }
-  if(!name||rows.some(r=>r.name===name))continue;
+ const allowedArt=src=>{try{const u=new URL(src,location.origin);return ['https://account.aq.com','https://game.aq.com','https://www.aq.com'].includes(u.origin)&&!u.search&&!u.hash&&/badge|progress|achievement/i.test(u.pathname)&&/^\/[a-z0-9/_-]+\.(?:png|jpe?g|gif|webp)$/i.test(u.pathname)?u.href:null}catch{return null}};
+ const evidence=(img,card)=>{
   let state='unknown';
   try{
-   let filtered=false;for(let el=img;el;el=el.parentElement){if(getComputedStyle(el).filter!=='none'){filtered=true;break}}
-   if(!filtered){
-    const canvas=document.createElement('canvas');canvas.width=32;canvas.height=32;const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,32,32);const pixels=ctx.getImageData(0,0,32,32).data;
-    let count=0,colored=0;for(let i=0;i<pixels.length;i+=4){if(pixels[i+3]<200)continue;count++;if(Math.max(pixels[i],pixels[i+1],pixels[i+2])-Math.min(pixels[i],pixels[i+1],pixels[i+2])>40)colored++}
-    if(count>300&&colored/count>0.2)state='colored';else if(count>300&&colored/count<0.02)state='gray';
+   const statuses=new Set();let otherFilter=false;
+   for(let el=img;el;el=el.parentElement){
+    const filter=getComputedStyle(el).filter||'none';
+    const gray=filter.match(/grayscale\(\s*(1(?:\.0+)?|100%)\s*\)/i);if(gray)statuses.add('gray');else if(filter!=='none'&&filter!=='grayscale(0)')otherFilter=true;
+    if(el===img||el===card){for(const token of String(el.getAttribute('class')||'').toLowerCase().split(/\s+/)){if(['locked','unearned','not-earned','not-unlocked','badge-locked','disabled-badge','grayscale','greyed-out','grayed-out'].includes(token))statuses.add('gray');if(['unlocked','earned','badge-unlocked','badge-earned','achievement-earned'].includes(token))statuses.add('colored')}for(const attr of ['data-earned','data-unlocked']){const val=el.getAttribute(attr);if(val==='true'||val==='1')statuses.add('colored');if(val==='false'||val==='0')statuses.add('gray')}}
    }
-  }catch{} // Cross-origin images or unsupported DOM stay unknown; never assume completion.
-  rows.push({name,state});
+   if(statuses.size>1)return 'unknown';
+   if(statuses.size===1)return [...statuses][0];
+   if(otherFilter)return 'unknown';
+   const canvas=document.createElement('canvas');canvas.width=32;canvas.height=32;const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,32,32);const pixels=ctx.getImageData(0,0,32,32).data;
+   let count=0,colored=0;for(let i=0;i<pixels.length;i+=4){if(pixels[i+3]<200)continue;count++;if(Math.max(pixels[i],pixels[i+1],pixels[i+2])-Math.min(pixels[i],pixels[i+1],pixels[i+2])>40)colored++}
+   if(count>300&&colored/count>0.2)state='colored';else if(count>300&&colored/count<0.02)state='gray';
+  }catch{}
+  return state;
+ };
+ // Match a badge image only to a unique exact allowlisted label inside its own card.
+ for(const img of document.images){
+  if(!img.getClientRects().length)continue;
+  let card=img.parentElement,name='';
+  for(let i=0;card&&i<7;i++,card=card.parentElement){
+   if(card.querySelectorAll('img').length!==1)break;
+   const labels=[...new Set(String(card.innerText||'').split(/\n/).map(normalize).filter(x=>names.includes(x)))];
+   if(labels.length===1){name=labels[0];break}
+   const full=normalize(card.innerText);if(names.includes(full)){name=full;break}
+  }
+  if(!name||rows.some(r=>r.name===name))continue;
+  const art=allowedArt(img.currentSrc||img.src),state=img.complete&&img.naturalWidth?evidence(img,card):'unknown';
+  rows.push({name,state,...(art?{art}:{})});
  }
- // Preserve named candidates even if image association or pixel access is unavailable.
  for(const name of names)if(!rows.some(r=>r.name===name)&&lines.includes(name))rows.push({name,state:'unknown'});
+ // Exact milestones from the official summary captured in this same signed-in run.
+ // Threshold eligibility is distinct from observing a claimed badge. Never infer saga status.
+ if(summary?.section==='summary'&&Number.isSafeInteger(summary.months)&&summary.months>=0&&Number.isSafeInteger(summary.total)&&summary.total>=0&&/^\d{4}-\d{2}-\d{2}$/.test(summary.created||'')&&Math.abs(Date.parse(capturedAt)-Date.parse(summary.capturedAt))<300000){
+  for(const r of rows){
+   if(r.state!=='unknown'||section==='sagas')continue;
+   let reached=null;
+   if(section==='membership'){const m=r.name.match(/^(\d+) (Month|Year)s?$/);if(m)reached=summary.months>=Number(m[1])*(m[2]==='Year'?12:1)}
+   else if(section==='ac'){const m=r.name.match(/^([\d,.]+)( Million)? ACs$/);if(m)reached=summary.total>=Number(m[1].replace(/,/g,''))*(m[2]?1000000:1)}
+   else if(section==='playtime'){const m=r.name.match(/^(\d+) (Week|Month|Year)s?$/);if(m){const created=new Date(summary.created+'T00:00:00Z'),threshold=new Date(created);if(m[2]==='Week')threshold.setUTCDate(threshold.getUTCDate()+7*Number(m[1]));else {const month=threshold.getUTCMonth()+Number(m[1])*(m[2]==='Year'?12:1),day=threshold.getUTCDate();threshold.setUTCDate(1);threshold.setUTCMonth(month);const last=new Date(Date.UTC(threshold.getUTCFullYear(),threshold.getUTCMonth()+1,0)).getUTCDate();threshold.setUTCDate(Math.min(day,last))}if(Number.isFinite(+threshold))reached=Date.parse(capturedAt)>=+threshold}}
+   if(reached!==null){r.state=reached?'colored':'gray';r.evidence='threshold'}
+  }
+ }
  if(!rows.length)throw Error('No recognizable badges. Open the fully loaded progress page.');
  return {section,capturedAt,rows};
 }
