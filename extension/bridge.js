@@ -150,9 +150,12 @@
     // must stay with that variant, not imply that every version is Rare.
     const eventRow=doc.createElement('div');eventRow.className='aqwc-item-events';
     const seen=new Set();
+    const duplicated=new Set();
     for(const img of details.querySelectorAll('img')){
       const kind=tagKind(img);
-      if(!kind||img.closest('.yui-navset,.tabview,.tab-view,.collapsible-block,table,ul,ol')||seen.has(img.src))continue;
+      if(!kind||img.closest('.yui-navset,.tabview,.tab-view,.collapsible-block,table,ul,ol'))continue;
+      duplicated.add(img);
+      if(seen.has(img.src))continue;
       const clone=doc.createElement('img');clone.src=img.src;clone.alt=img.alt||img.title||'Wiki item tag';clone.title=img.title||clone.alt;
       const anchor=img.closest('a[href]');let node=clone;
       if(anchor){try{const url=new URL(anchor.href,location.origin);if(url.origin===location.origin){node=doc.createElement('a');node.href=url.href;node.append(clone)}}catch{}}
@@ -169,6 +172,10 @@
     };
     tagRow.append(...[...tagRow.children].sort((a,b)=>logoRank(a)-logoRank(b)));
     if(eventRow.children.length)tagRow.before(eventRow);
+    // Shared tags are already visible in Item Information. Keep the original nodes connected,
+    // including variant-specific tags and mixed text/link containers.
+    for(const img of duplicated)img.hidden=true;
+    for(const img of duplicated){let n=img.parentElement;while(n&&n!==details&&['A','P','SPAN','DIV','CENTER'].includes(n.tagName)&&!n.textContent.trim()&&!n.querySelector('button,input,select,iframe,video,ul,ol,table')&&[...n.querySelectorAll('img')].every(x=>duplicated.has(x))){n.hidden=true;n=n.parentElement;}}
     const fieldPattern=/(?:^|\b)(?:Locations?|Price|Sellback|Description|Rarity|Base Damage|Merge the following|Required to|Notes)\s*:/i;
     const gallerySelector='.yui-navset,.tabview,.tab-view';
     const credible=(img,allowCollapsible=false)=>{

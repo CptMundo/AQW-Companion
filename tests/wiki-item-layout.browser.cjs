@@ -54,14 +54,14 @@ async function run(){
     const galleryOK=!window.originalGallery||art.contains(window.originalGallery);
     const variantOK=!window.originalVariant||details.contains(window.originalVariant);
     const r={shells:c.querySelectorAll('.aqwc-unified-item').length,info:left.contains(info),details:left.contains(details),status:right.contains(status),farm:farm?left.contains(q('#aqwc-inline-farm')):!q('#aqwc-inline-farm'),art:right.contains(art),artVisible:!q('.aqwc-art-placeholder').hidden,media:art.querySelectorAll('.aqwc-art-media img').length,original,galleryOK,variantOK,gap,overflow:document.documentElement.scrollWidth>innerWidth+2,columns:getComputedStyle(q('.aqwc-unified-item')).gridTemplateAreas};
-    r.detailsInitiallyClosed=!details.open;r.rareInSummary=!!info.querySelector('img[alt="Rare"]');r.nativeLogoCount=info.querySelectorAll('.aqwc-tag-logo').length;details.open=true;r.detailsOpen=details.open;details.open=false;return r;
+    r.sharedTagsVisibleInDetails=[...details.querySelectorAll('img')].filter(img=>['AC','Legend','Staff Birthday'].includes(img.alt)&&!img.hidden&&!img.closest('[hidden]')).length;r.variantRarePreserved=!window.originalVariant||!!window.originalVariant.querySelector('img[alt="Rare"]:not([hidden])');r.detailsInitiallyClosed=!details.open;r.rareInSummary=!!info.querySelector('img[alt="Rare"]');r.nativeLogoCount=info.querySelectorAll('.aqwc-tag-logo').length;details.open=true;r.detailsOpen=details.open;details.open=false;return r;
    },{farm});
    // Real boost renderer must put its host inside the shared tag row.
    await page.evaluate(()=>{globalThis.AQWCOriginalItemText='Sellback: 0 AC Description: Example. Notes: When equipped, this item provides a 5% bonus to Gold when battling monsters or turning in quests.'});
    await page.addScriptTag({path:path.join(root,'wiki-boosts.js')});
    assert.ok(await page.locator('.aqwc-item-info .aqwc-item-tags > #aqwc-item-boosts').count(),name+' boosts alongside native tags');
    for(const key of ['info','details','status','farm','art','original','galleryOK','variantOK','detailsOpen','detailsInitiallyClosed'])assert.ok(result[key],name+' '+width+' '+key+' '+JSON.stringify(result));
-   assert.equal(result.rareInSummary,false,name+' variant-only rare tag');
+   assert.equal(result.rareInSummary,false,name+' variant-only rare tag');assert.equal(result.sharedTagsVisibleInDetails,0,name+' duplicate shared tags');assert.ok(result.variantRarePreserved,name+' variant-specific tag preserved');
    if(['quest-armor','rare-dagger','variant-hat'].includes(name))assert.equal(result.nativeLogoCount,2,name+' shared native logos');
    const badgeLayout=await page.evaluate(async()=>{
     const info=document.querySelector('.aqwc-item-info'),event=info.querySelector('.aqwc-item-events'),tags=info.querySelector('.aqwc-item-tags'),boost=tags.querySelector('#aqwc-item-boosts'),logos=[...tags.querySelectorAll('.aqwc-tag-logo')];
