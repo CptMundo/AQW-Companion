@@ -38,10 +38,10 @@ async function main(){
    const r=await page.evaluate(()=>{
     const c=document.getElementById('page-content'),q=s=>c.querySelector(s),left=q('.aqwc-item-left'),right=q('.aqwc-item-right'),info=q('.aqwc-item-info'),farm=q('#aqwc-inline-farm'),art=q('.aqwc-item-artwork');
     const shell=q('.aqwc-unified-item');
-    return {shell:!!shell,left:!!left&&left.contains(info),right:!!right&&right.contains(art)&&right.contains(q('#aqwc-item-status')),details:!!left&&left.contains(q('.aqwc-native-details')),farm:!farm||left?.contains(farm),gap:!farm||Math.abs(farm.getBoundingClientRect().top-info.getBoundingClientRect().bottom-16)<=1,original:window.nativeNodes.every(n=>n.isConnected),tabs:window.nativeTabs.every(n=>n.isConnected),artwork:art?.querySelectorAll('.aqwc-art-media img').length||0};
+    return {shell:!!shell,left:!!left&&left.contains(info),right:!!right&&right.contains(art)&&right.contains(q('#aqwc-item-status')),details:!!left&&left.contains(q('.aqwc-native-details')),farm:!farm||left?.contains(farm),gap:!farm||Math.abs(farm.getBoundingClientRect().top-info.getBoundingClientRect().bottom-16)<=1,original:window.nativeNodes.every(n=>n.isConnected),tabs:window.nativeTabs.every(n=>n.isConnected),detailsClosed:!q('.aqwc-native-details')?.open,artwork:art?.querySelectorAll('.aqwc-art-media img').length||0};
    });
    if(row.slug==='archpaladin'){assert.equal(r.shell,false,'Disambiguation must not be treated as an item');assert.ok(r.original);console.log('LIVE_NEGATIVE_PASS',row.slug);continue}
-   for(const key of ['shell','left','right','details','farm','gap','original','tabs'])assert.ok(r[key],row.slug+' '+key+' '+JSON.stringify(r));
+   for(const key of ['shell','left','right','details','farm','gap','original','tabs','detailsClosed'])assert.ok(r[key],row.slug+' '+key+' '+JSON.stringify(r));
    if(reported.includes(row.slug))assert.ok(r.artwork>0,row.slug+' reported artwork missing');
    console.log('LIVE_PASS',row.slug,JSON.stringify(r));passed++;
   }catch(e){failures.push(row.slug+': '+e.message)}
