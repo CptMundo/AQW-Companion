@@ -21,7 +21,7 @@ function ownership(r,inventory,loaded,duplicate=false,index=null){
  if(b.families.has(family(name))||c.variant)return 'ambiguous';
  return 'not-found'
 }
-function artworkUrl(src){try{const u=new URL(src);return u.protocol==='https:'&&!u.username&&!u.password&&(!u.port||u.port==='443')&&['aqwwiki.wikidot.com','aqwwiki.wdfiles.com','i.imgur.com','static.wikidot.com'].includes(u.hostname)&&/\.(?:png|jpe?g|webp)$/i.test(u.pathname)?u.href:null}catch{return null}}
+function artworkUrl(src){try{const u=new URL(src);return u.protocol==='https:'&&!u.username&&!u.password&&(!u.port||u.port==='443')&&['aqwwiki.wikidot.com','aqwwiki.wdfiles.com','i.imgur.com','static.wikidot.com'].includes(u.hostname)&&!/\/image-tags\//i.test(u.pathname)&&/\.(?:png|jpe?g|webp)$/i.test(u.pathname)?u.href:null}catch{return null}}
 globalThis.AQWCBoostFinderHelpers=Object.freeze({candidate,ownership,typed,artworkUrl});
 if(typeof document==='undefined'||!core)return;
 let state=null,add=null,data=null,loading=null,root=null,page=0,selected=new Set(),controls=null,artwork={};
@@ -53,7 +53,7 @@ function validRows(rows){return rows.filter(r=>r&&typeof r.name==='string'&&r.na
 async function load(){
  if(data||loading)return loading;
  controls.status.textContent='Loading local boost index…';
- loading=(async()=>{try{const r=await fetch('extension/boost-index.json',{credentials:'same-origin'});if(!r.ok)throw Error('Catalog unavailable');const d=await r.json();if(!Array.isArray(d.rows)||d.rows.length>10000)throw Error('Invalid catalog');data={rows:validRows(d.rows),updatedAt:String(d.updatedAt||'')};fetch('data/boost-artwork.json',{credentials:'same-origin'}).then(r=>r.ok?r.json():null).then(x=>{if(x?.images&&typeof x.images==='object'){artwork=x.images;draw()}}).catch(()=>{});if(!data.rows.length)throw Error('Empty catalog');draw()}catch(err){data=null;controls.status.textContent='Could not load the boost catalog. Reopen Boost Finder to retry.'}finally{loading=null}})();return loading
+ loading=(async()=>{try{const r=await fetch('extension/boost-index.json',{credentials:'same-origin'});if(!r.ok)throw Error('Catalog unavailable');const d=await r.json();if(!Array.isArray(d.rows)||d.rows.length>10000)throw Error('Invalid catalog');data={rows:validRows(d.rows),updatedAt:String(d.updatedAt||'')};fetch('data/boost-artwork.json?v=2',{credentials:'same-origin',cache:'no-cache'}).then(r=>r.ok?r.json():null).then(x=>{if(x?.images&&typeof x.images==='object'){artwork=x.images;draw()}}).catch(()=>{});if(!data.rows.length)throw Error('Empty catalog');draw()}catch(err){data=null;controls.status.textContent='Could not load the boost catalog. Reopen Boost Finder to retry.'}finally{loading=null}})();return loading
 }
 function draw(){
  if(!controls)return;
