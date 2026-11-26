@@ -25,7 +25,7 @@ if(typeof document==='undefined'){
    if(!saved?.character)throw Error('Open your public Character Page once, then click the desired Sync button.');
    url='https://account.aq.com/CharPage?id='+encodeURIComponent(saved.character);
   }
-  if(!allowed){await chrome.tabs.create({url,active:true});throw Error('Source opened. Sign in if needed, then click Sync here. Enable optional Account Manager access in Settings for automatic opening.')}
+  if(!allowed){await chrome.tabs.create({url,active:true});throw Error(kind==='inventory'?'Source opened. Sign in if needed, then click Sync here.':'Character Page opened. Click Sync here after the inventory loads. No login needed.')}
   const found=await chrome.tabs.query({url:'https://account.aq.com/*'});
   tab=found.find(t=>sourceKind(t.url)===expected&&(kind==='inventory'||new URL(t.url).searchParams.get('id')===new URL(url).searchParams.get('id')));
   return tab||await chrome.tabs.create({url,active:false});
