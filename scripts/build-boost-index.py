@@ -82,7 +82,7 @@ def main():
         if any(rows.get(key,{}).get("boost",{}).get(k)!=v for k,v in boosts.items()):raise ValueError("Spot check failed: "+key)
     if len(rows)<300 or len(counts)<12:raise ValueError("Incomplete boost index; do not publish")
     data={"source":SOURCE,"license":"CC BY-SA 3.0","updatedAt":datetime.date.today().isoformat(),"rows":sorted(rows.values(),key=lambda r:r["slug"])}
-    out=Path("data/boost-index.json");out.parent.mkdir(exist_ok=True);out.write_text(json.dumps(data,ensure_ascii=False,separators=(",",":"))+"\n",encoding="utf-8")
+    out=Path("extension/boost-index.json");out.parent.mkdir(exist_ok=True);out.write_text(json.dumps(data,ensure_ascii=False,separators=(",",":"))+"\n",encoding="utf-8")
     # Public source data only; chunked for a read-only retrieval of this generated artifact.
     raw=out.read_text(encoding="utf-8").strip()
     for i in range(0,len(raw),6000):print("BOOST_INDEX_CHUNK "+raw[i:i+6000])
