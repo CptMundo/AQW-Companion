@@ -1167,7 +1167,7 @@ html[data-aqwc-background="cas"] #overview .homeseason{--calendar-accent:#ec76f9
 #story .story-status-filters button,#story .story-view-toggle button{font-size:12px;padding:7px 11px;border:1px solid var(--line);border-radius:7px}
 #story button[aria-pressed=true]{outline:1px solid var(--cyan);outline-offset:-1px}
 #story .story-overview{min-width:220px;flex:0 1 310px;font-size:12px}
-#story .story-cover-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px!important}
+#story #storylist.story-cover-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
 #story .story-cover-card{position:relative;overflow:hidden;isolation:isolate;min-width:0;min-height:174px;padding:0!important;text-align:left;display:flex;align-items:stretch;color:#f1f7ff!important;cursor:pointer;box-shadow:none!important;background:#102136!important}
 #story .story-cover-card[aria-pressed=true]{border-color:#75d8ff!important;box-shadow:0 0 0 1px #75d8ff,0 0 14px #47baff33!important}
 #story .story-cover-card:hover{border-color:#8adeff!important}
@@ -1191,8 +1191,8 @@ html[data-aqwc-background="cas"] #overview .homeseason{--calendar-accent:#ec76f9
 #story .story-detail-metrics{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
 #story .story-detail-metrics>div:last-child{flex:1 1 160px;max-width:320px}
 #story .story-chapter-toolbar{display:flex;justify-content:space-between;align-items:center;padding:12px 16px 8px;gap:8px}
-#story .story-chapter-grid{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px!important;padding:0 16px 16px}
-#story .story-chapter-grid[data-view=list]{grid-template-columns:1fr!important}
+#story #storydetail .story-chapter-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important;padding:0 16px 16px;min-width:0}
+#story #storydetail .story-chapter-grid[data-view=list]{grid-template-columns:1fr!important}
 #story .story-chapter-card{padding:0!important;overflow:hidden;display:flex;flex-direction:column;min-width:0;gap:0!important;border-radius:9px!important;border:1px solid var(--line)!important;background:var(--panel2)!important}
 #story .story-chapter-card.state-done{border-color:#429b79!important;background:linear-gradient(150deg,#173a33,var(--panel2))!important}
 #story .story-art{position:relative;overflow:hidden;height:106px;min-height:0;flex:none;background:radial-gradient(ellipse at 75% 15%,#48618a80,transparent 55%),linear-gradient(140deg,#19243e,#0b1d2a)}
@@ -1216,6 +1216,7 @@ html[data-aqwc-background="cas"] #overview .homeseason{--calendar-accent:#ec76f9
 #story .story-chapter-grid[data-view=list] .story-art{width:min(35%,200px);height:auto;min-height:100px}
 #story .story-gate-panel{margin:12px 0}
 html[data-theme=light] #story .story-chapter-card.state-done{background:#e1f4e8!important}
-@media(max-width:1100px){#story .story-chapter-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
-@media(max-width:850px){#story .story-cover-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#story .story-chapter-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:550px){#story .story-cover-grid{grid-template-columns:1fr}#story .story-chapter-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:0 8px 8px}#story .story-chip{font-size:9px}#story .story-banner-copy h2{font-size:20px}}
+@media(max-width:850px){#story #storylist.story-cover-grid,#story #storydetail .story-chapter-grid[data-view=grid]{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:550px){#story #storylist.story-cover-grid,#story #storydetail .story-chapter-grid[data-view=grid]{grid-template-columns:1fr!important}#story #storydetail .story-chapter-grid{padding:0 8px 8px}#story .story-chip{font-size:9px}#story .story-banner-copy h2{font-size:20px}}
+
+#story #storydetail .story-chapter-grid[data-view=grid] .story-art{height:auto;aspect-ratio:16/7;min-height:100px}
