@@ -21,4 +21,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: public-boost-index
-          path: data/boost-index.json
+          path: extension/boost-index.json
