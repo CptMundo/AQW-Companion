@@ -90,8 +90,11 @@ async function run(){
    globalThis.chrome={runtime:{getManifest:()=>({version:'test'}),sendMessage(m,cb){window.requests.push(m);let r=m.type==='wiki-item-assistant'?payload:m.type==='wiki-item-lookup'?{ok:true,state:'owned',inventory:1,bank:0,total:1,syncedAt:1}:m.type==='hub-note-read'?{ok:true,note:{text:'Saved note',priority:'normal'}}:m.type==='hub-note-save'?(window.savedNote=m,{ok:true}):m.type==='goal-status-read'?{ok:true,state:'absent',at:1}:{ok:false};if(cb){cb(r);return}return Promise.resolve(r)}}};
   });
   for(const name of ['companion-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js'])await page.addScriptTag({path:path.join(root,name)});
-  const host=page.locator('#aqwc-item-status');await host.getByText('Used in / Unlock opportunities (1)').waitFor();
+  const host=page.locator('#aqwc-item-status');await host.getByText('Used in recipes (1)').waitFor();
   assert.ok(await host.getByText('New sword',{exact:true}).isVisible());
+  assert.ok(await host.getByText('1/2 ingredients ready',{exact:true}).isVisible());
+  assert.equal(await host.locator('.aqwc-insights').evaluate(n=>getComputedStyle(n).borderLeftWidth),'0px');
+  assert.ok(await host.locator('.aqwc-hub-name').first().isVisible());
   assert.equal(await host.getByText('Boost upgrade check',{exact:true}).count(),0);
   assert.ok(await host.getByText('Inventory: 1 · Bank: 0 · Total: 1',{exact:true}).isVisible());
   await host.getByText('Best owned boost combination',{exact:true}).click();
