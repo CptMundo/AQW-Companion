@@ -464,7 +464,7 @@ console.log('Import & Sync primary action, advanced tools and confirmed sync fee
 {
  const bridge=read('extension/bridge.js'),popup=read('extension/popup.html');
  assert.ok(bridge.includes('AQW Wiki Companion'));assert.ok(bridge.includes('data:image/png;base64,'));
- assert.ok(bridge.includes('width-590'));assert.ok(popup.includes('Inventory export &amp; sync'));
+ assert.ok(bridge.includes('width-590'));assert.ok(popup.includes('Sync in 3 steps')&&popup.includes('id="capture-account"'));
  assert.ok(read('extension/wiki-items.js').includes('Inventory snapshot'));
  assert.ok(!read('extension/wiki-items.js').includes('aqwc-facts'));
  assert.ok(popup.includes('id="capture-account"'));assert.ok(popup.includes('id="enable-account-button"'));
