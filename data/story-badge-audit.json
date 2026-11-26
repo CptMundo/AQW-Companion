@@ -410,10 +410,16 @@
     {
       "id": "shadows:forestreach",
       "name": "Shadows of Chaos",
-      "status": "manual",
-      "rules": [],
-      "hints": [],
-      "reviewConclusion": "No independently verified public badge terminal gate found in this review; retain manual status."
+      "status": "automatic",
+      "rules": [
+        {
+          "badge": "cp-471",
+          "source": "https://aqwwiki.wikidot.com/drakath-s-quests",
+          "prerequisite": true,
+          "reason": "Chaos PuppetMaster is awarded for Undying Rage after Heart of the Power; Down Below questline requires Tame the Queen, the final quest of Transformation in the Queen's Past chapter."
+        }
+      ],
+      "hints": []
     },
     {
       "id": "shadows:fireplanewar",
@@ -877,6 +883,18 @@
     {
       "url": "https://aqwwiki.wikidot.com/vaden-helm-token",
       "finding": "Vaden tokens are boss drops"
+    },
+    {
+      "url": "https://www.aq.com/lore/guides/shadowsofwarsaga",
+      "finding": "Official guide groups Forest Reach, Deep Forest and Transformation under Queen's Past."
+    },
+    {
+      "url": "https://aqwwiki.wikidot.com/shadows-of-chaos:queen-s-past",
+      "finding": "Tame the Queen ends Transformation's story chain."
+    },
+    {
+      "url": "https://aqwwiki.wikidot.com/drakath-s-quests",
+      "finding": "Down Below requires Tame the Queen; Undying Rage awards Chaos PuppetMaster after the Anka finale."
     }
   ]
 }
