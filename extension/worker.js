@@ -1,4 +1,5 @@
 'use strict';
+if(typeof importScripts==='function')importScripts('account-capture.js','badge-capture.js','unified-sync.js');
 const KEY='aqwc-inventory-v1', MAX_ROWS=20000, MAX_BYTES=6000000;
 const SITE='https://cptmundo.github.io';
 function mainSender(sender){
@@ -269,6 +270,7 @@ function routineRequest(message,sender){return trackerSerial(async()=>{
  return {ok:true};
 })}
 async function handle(message,sender){
+ if(message?.type?.startsWith('one-click-')&&globalThis.AQWCOneClick)return AQWCOneClick.handle(message,sender);
  // Badge captures are staged in trusted extension storage; content scripts cannot read it directly.
  if(message?.type==='badge-stage-read'){
   if(!mainSender(sender))return {ok:false,error:'Invalid badge capture request.'};
