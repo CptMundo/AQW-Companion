@@ -1220,3 +1220,15 @@ html[data-theme=light] #story .story-chapter-card.state-done{background:#e1f4e8!
 @media(max-width:550px){#story #storylist.story-cover-grid,#story #storydetail .story-chapter-grid[data-view=grid]{grid-template-columns:1fr!important}#story #storydetail .story-chapter-grid{padding:0 8px 8px}#story .story-chip{font-size:9px}#story .story-banner-copy h2{font-size:20px}}
 
 #story #storydetail .story-chapter-grid[data-view=grid] .story-art{height:auto;aspect-ratio:16/7;min-height:100px}
+
+/* Compact verified access checks: one horizontal row per gate. */
+#story .story-gate-panel{padding:0!important;margin:10px 0 14px!important;border:0!important;box-shadow:none!important;background:transparent!important}
+#story .story-gate-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 6px}
+#story .story-gate-heading h3{font-size:12px!important;margin:0!important}
+#story #storyaccess .story-gate-row{display:flex;flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 12px;padding:7px 10px!important;margin:0 0 5px!important;border-radius:8px!important;box-shadow:none!important}
+#story .story-gate-identity,#story .story-gate-actions{display:flex;align-items:center;flex-wrap:wrap;gap:5px 10px;min-width:0}
+#story .story-gate-identity{flex:1 1 210px}
+#story .story-gate-identity strong{font-size:13px}
+#story .story-gate-actions .ultra-copy-join,#story .story-gate-actions a{margin:0!important;font-size:11px}
+#story #storyaccess .story-gate-row select{min-width:0!important;width:auto!important;max-width:190px!important;min-height:30px;padding:5px 8px;font-size:12px}
+@media(max-width:550px){#story .story-gate-heading{flex-wrap:wrap}#story .story-gate-identity{flex-basis:100%}#story #storyaccess .story-gate-row{justify-content:flex-start}}
