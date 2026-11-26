@@ -626,3 +626,12 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.ok(all.find(b=>b.id==='cp-424').requirementLinks.some(l=>l.label.includes('Legion Fealty 4')));
  console.log('Individual badge source requirements: 784/792; eight explicitly incomplete.');
 }
+
+{
+ const bh=require('../js/badge-hunter.js'),all=require('../js/badge-catalog.js');
+ const snapshot={character:'Example',capturedAt:'2026-11-26T09:00:00Z',badges:[{file:'charbadge-legionrevenant.jpg',label:'Legion Revenant'},{file:'chaos-champion.jpg',label:'Champion of Chaos'},{file:'unknown.jpg',label:''}]};
+ const r=bh.matchCapture(snapshot,all);
+ assert.ok(r.ids.includes('cp-424'));assert.ok(!r.ids.includes('cp-29')&&!r.ids.includes('cp-30'));assert.equal(r.ambiguous,1);assert.equal(r.unknown,1);
+ assert.throws(()=>bh.matchCapture({...snapshot,badges:[]},all),/Invalid capture/);
+ assert.ok(html.includes('id="badge-character-import"'));
+}

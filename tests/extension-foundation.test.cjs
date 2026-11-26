@@ -96,7 +96,7 @@ console.log('Extension foundation: scope, handshake, wiki badge, timeout and nav
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').inserted,undefined);
  assert.equal(runWiki(null,'Sellback: 0 AC\nDescription: Unknown').request,undefined);
  assert.equal(runWiki(['items','houses'],'Sellback: 0 AC; Description: House',result,'Astral Beach Tent (AC)').inserted,undefined);
- assert.equal(manifest.version,'0.12.44');assert.equal(manifest.name,'AQW Companion');assert.equal(manifest.action.default_title,'AQW Companion');assert.ok(read('extension/popup.html').includes('<h1>AQW Companion</h1>'));assert.ok(!read('extension/popup.html').includes('AQW Wiki Companion'));assert.ok(!read('extension/quick-start.html').includes('AQW Wiki Companion'));assert.equal(manifest.content_scripts.length,4);assert.equal(manifest.content_scripts[2].run_at,'document_end');assert.equal(manifest.content_scripts[3].run_at,'document_start');assert.deepEqual(manifest.content_scripts[3].js,['wiki-first-paint.js']);assert.deepEqual(manifest.content_scripts[3].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['companion-theme.js','wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js','wiki-directory.js']);
+ assert.equal(manifest.version,'0.12.45');assert.equal(manifest.name,'AQW Companion');assert.equal(manifest.action.default_title,'AQW Companion');assert.ok(read('extension/popup.html').includes('<h1>AQW Companion</h1>'));assert.ok(!read('extension/popup.html').includes('AQW Wiki Companion'));assert.ok(!read('extension/quick-start.html').includes('AQW Wiki Companion'));assert.equal(manifest.content_scripts.length,4);assert.equal(manifest.content_scripts[2].run_at,'document_end');assert.equal(manifest.content_scripts[3].run_at,'document_start');assert.deepEqual(manifest.content_scripts[3].js,['wiki-first-paint.js']);assert.deepEqual(manifest.content_scripts[3].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].matches,['https://aqwwiki.wikidot.com/*']);assert.deepEqual(manifest.content_scripts[2].js,['companion-theme.js','wiki-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-list-ownership.js','wiki-items.js','wiki-quest-shop.js','wiki-directory.js']);
  console.log('Wiki item lookup: quantities, category scope, variant ambiguity, sender checks and DOM injection passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
 
@@ -193,7 +193,7 @@ console.log('Wiki Wishlist: scoped links, category suffixes, variant guard and e
  assert.equal((await api.handle({type:'account-stage-commit',id:pending.id},main)).ok,true);
  assert.equal(stored['aqwc-inventory-v1'].items.length,101);assert.equal(stored['aqwc-account-stage-v1'],undefined);
  const html=read('index.html');assert.ok(html.includes('const saved=await importFile(file);'));assert.ok(html.includes("type:'imported',nonce,id:stageId"));assert.ok(html.includes("if(!confirm('Import '"));assert.ok(read('extension/account-bridge.js').includes('if(e.isTrusted)gesture=Date.now()'));
- assert.equal(manifest.host_permissions,undefined);assert.deepEqual(manifest.content_scripts[1].js,['sync.js','account-bridge.js','mini-tracker.js','wishlist-queue.js']);
+ assert.equal(manifest.host_permissions,undefined);assert.deepEqual(manifest.content_scripts[1].js,['sync.js','account-bridge.js','mini-tracker.js','wishlist-queue.js','badge-bridge.js']);
  console.log('Account import: pagination, completeness, scope, allowlisted fields, staging and commit checked.');
 })().catch(e=>{console.error(e);process.exitCode=1});
 
@@ -926,3 +926,14 @@ assert.ok(!read("extension/popup.html").includes("appearance-reset"));assert.ok(
 })().catch(e=>{console.error(e);process.exitCode=1});
 
 assert.ok(read("extension/popup.html").includes('id="account-progress"'));assert.ok(read("extension/account-popup.js").includes("progress.removeAttribute('value')"));console.log("Export progress: pending, real row counts, acknowledged success and failure checked.");
+
+{
+ const capture=require('../extension/badge-capture.js');
+ const img=(src,alt)=>({getAttribute:k=>k==='src'?src:k==='alt'?alt:null,currentSrc:src});
+ const doc={querySelectorAll:()=>[img('https://game.aq.com/game/gamefiles/badges/charbadge-legionrevenant.jpg','Legion Revenant'),img('https://game.aq.com/game/gamefiles/badges/charbadge-legionrevenant.jpg','Legion Revenant'),img('https://evil.example/badges/fake.jpg','Fake'),img('https://game.aq.com/other/avatar.jpg','Avatar')]};
+ const value=capture(doc,'https://account.aq.com/CharPage?id=Example');
+ assert.equal(value.character,'Example');assert.equal(value.badges.length,1);
+ assert.throws(()=>capture(doc,'https://account.aq.com/AQW/Inventory'),/Character Page/);
+ assert.throws(()=>capture({querySelectorAll:()=>[]},'https://account.aq.com/CharPage?id=Example'),/No recognized/);
+ assert.ok(read('extension/badge-bridge.js').includes("e.origin!==ORIGIN"));
+}
