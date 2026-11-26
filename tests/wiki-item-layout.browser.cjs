@@ -32,7 +32,11 @@ async function run(){
  try{
   const page=await browser.newPage();
   let errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.route('**/*',r=>r.request().isNavigationRequest()?r.fulfill({body:'<!doctype html><html><head></head><body></body></html>',contentType:'text/html'}):r.abort());
+  await page.route('**/*',r=>{
+    if(r.request().isNavigationRequest())return r.fulfill({body:'<!doctype html><html><head></head><body></body></html>',contentType:'text/html'});
+    if(r.request().url().includes('/image-tags/')){const url=r.request().url();const [w,h]=url.includes('staffbirthday')?[160,160]:url.includes('acsmall')?[45,26]:[120,30];return r.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'"><rect width="'+w+'" height="'+h+'" fill="#be8a56"/></svg>'})}
+    return r.abort();
+  });
   for(const [name,body,farm,art] of scenarios)for(const width of [1440,1100,700]){
    await page.setViewportSize({width,height:900});await page.goto(origin+'/'+name);
    await page.setContent('<div id="page-title">Test '+name+'</div><div id="page-content">'+body+'</div>');
@@ -59,6 +63,15 @@ async function run(){
    for(const key of ['info','details','status','farm','art','original','galleryOK','variantOK','detailsOpen','detailsInitiallyClosed'])assert.ok(result[key],name+' '+width+' '+key+' '+JSON.stringify(result));
    assert.equal(result.rareInSummary,false,name+' variant-only rare tag');
    if(['quest-armor','rare-dagger','variant-hat'].includes(name))assert.equal(result.nativeLogoCount,2,name+' shared native logos');
+   const badgeLayout=await page.evaluate(async()=>{
+    const info=document.querySelector('.aqwc-item-info'),event=info.querySelector('.aqwc-item-events'),tags=info.querySelector('.aqwc-item-tags'),boost=tags.querySelector('#aqwc-item-boosts'),logos=[...tags.querySelectorAll('.aqwc-tag-logo')];
+    await Promise.all([...info.querySelectorAll('img')].map(img=>img.decode().catch(()=>{})));
+    const rect=n=>n.getBoundingClientRect();return {event:!!event,order:!event||rect(event).bottom<=rect(tags).top+1,eventHeight:event?rect(event.querySelector('img')).height:0,logos:logos.map(n=>n.querySelector('img')?.alt||n.alt),boostAfter:!logos.length||!!(logos.at(-1).compareDocumentPosition(boost)&Node.DOCUMENT_POSITION_FOLLOWING),sameLine:!logos.length||Math.abs((rect(logos.at(-1)).top+rect(logos.at(-1)).bottom)/2-(rect(boost).top+rect(boost).bottom)/2)<3};
+   });
+   const hasEvent=['quest-armor','rare-dagger','variant-hat'].includes(name);
+   assert.equal(badgeLayout.event,hasEvent,name+' event row');
+   assert.ok(badgeLayout.order&&badgeLayout.boostAfter,name+' tag order');
+   if(hasEvent){assert.deepEqual(badgeLayout.logos,['AC','Legend']);assert.ok(badgeLayout.eventHeight>=135&&badgeLayout.eventHeight<=151,name+' event size '+badgeLayout.eventHeight);assert.ok(badgeLayout.sameLine,name+' boosts must align with logos')}
    assert.equal(result.shells,1,name+' duplicate shell');
    assert.equal(result.artVisible,!art,name+' art visibility');
    if(farm)assert.ok(Math.abs(result.gap-16)<=1,name+' stack gap '+result.gap);
