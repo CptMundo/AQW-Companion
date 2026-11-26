@@ -29,7 +29,7 @@ def fetch(url):
 def safe_link(raw):
     u=urlsplit(urljoin(base,raw or ''))
     if u.scheme not in ('https','http') or u.username or u.password:return ''
-    if u.hostname not in ('aqwwiki.wikidot.com','www.aq.com','game.aq.com','aq.com','aqwwiki.wdfiles.com','heromart.com','www.heromart.com','www.artix.com','artix.com','account.aq.com'):return ''
+    if u.hostname not in ('aqwwiki.wikidot.com','www.aq.com','game.aq.com','aq.com','aqwwiki.wdfiles.com','heromart.com','www.heromart.com','www.artix.com','artix.com','account.aq.com','i.imgur.com','imgur.com','cdn.artix.com','static.artix.com'):return ''
     return urlunsplit(('https',u.netloc,u.path,u.query,u.fragment))
 def txt(n):return ' '.join(n.stripped_strings)
 records={}
@@ -45,7 +45,7 @@ for slug,category in pages.items():
         img=a.select_one('img[src]');name=a.parent.select_one('strong')
         if not img or not name:raise RuntimeError('Missing name/image: '+source)
         image=safe_link(img.get('src'))
-        if not image:raise RuntimeError('Unsupported image host: '+str(img.get('src')))
+        if not image: print('IMAGE_UNSUPPORTED',source,str(img.get('src')),flush=True)
         id='cp-'+m.group(1)
         if id in records: raise RuntimeError('Duplicate badge ID '+id)
         records[id]={'id':id,'name':txt(name),'category':category,'source':source,'image':image,'categorySource':base+slug,'kind':'unknown','tags':[]}
