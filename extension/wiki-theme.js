@@ -35,7 +35,10 @@ function normalizeAppearance(value){
    sidebarButton.addEventListener('click',e=>{if(!e.isTrusted)return;sidebarTouched=true;sidebarExpanded=!sidebarExpanded;updateSidebar(true);try{chrome.storage?.local?.set({[SIDEBAR_KEY]:sidebarExpanded},()=>{void chrome.runtime.lastError})}catch{}});
    title.insertAdjacentElement('beforebegin',sidebarButton);
   }
-  sidebarButton.setAttribute('aria-expanded',String(sidebarExpanded));sidebarButton.textContent=sidebarExpanded?'◀ Hide Wiki sidebar':'☰ Show Wiki sidebar';
+  const nav=document.getElementById('aqwc-nav-shell');if(nav&&sidebarButton.parentElement!==nav)nav.prepend(sidebarButton);
+  sidebarButton.setAttribute('aria-expanded',String(sidebarExpanded));
+  const label=sidebarExpanded?'Hide Wiki sidebar':'Show Wiki sidebar';
+  sidebarButton.setAttribute('aria-label',label);sidebarButton.title=label;sidebarButton.textContent=nav?'☰':label;
  }
  let loginHome=null;
  function positionLogin(active){
