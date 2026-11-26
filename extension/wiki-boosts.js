@@ -18,7 +18,8 @@ function notes(text){
   const d=s.match(/(\d+(?:\.\d+)?)\s*%\s*(?:more|extra|increased)?\s*damage\s+(?:to|against)\s+(.+)/i);
   if(d){const t=norm(d[2]),v=Number(d[1]);if(/\ball monsters\b/.test(t))set('all',v);else if(/\ball tagged\b/.test(t)){set('tagged',v);for(const k of tagged)set(k,v)}else for(const k of [...tagged,'drakath','orc'])if(new RegExp('\\b'+k+'(?:kind|s|kin)?\\b').test(t))set(k,v)}
   const p=s.match(/(?:gives?|grants?|gain|earn|receive|increases?)\s+(\d+(?:\.\d+)?)\s*%\s*(?:more|extra|increased|bonus)?\s*([a-z, &]+?)(?:\s+when equipped|\s+while equipped|$)/i);
-  if(p){const t=norm(p[2]),v=Number(p[1]);if(/\b(?:class points|cp)\b/.test(t))set('cp',v);if(/\bgold\b/.test(t))set('gold',v);if(/\b(?:rep|reputation)\b/.test(t))set('rep',v);if(/\b(?:xp|exp|experience)\b/.test(t))set('xp',v)}
+  const q=p||s.match(/\bprovides?\s+(?:a\s+)?(\d+(?:\.\d+)?)\s*%\s*bonus\s+to\s+(gold|class points|cp|reputation|rep|experience|exp|xp)\b/i);
+  if(q){const t=norm(q[2]),v=Number(q[1]);if(/\b(?:class points|cp)\b/.test(t))set('cp',v);if(/\bgold\b/.test(t))set('gold',v);if(/\b(?:rep|reputation)\b/.test(t))set('rep',v);if(/\b(?:xp|exp|experience)\b/.test(t))set('xp',v)}
  }return out;
 }
 function parseRows(rows,ks,category){
