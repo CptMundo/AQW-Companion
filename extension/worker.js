@@ -213,7 +213,7 @@ async function notifyTabs(type,origin){
 
 function normalizeAppearance(value){
  const v=value&&typeof value==='object'?value:{};
- return {background:['companion','dark','light','cas'].includes(v.background)?v.background:'companion',banner:'prometheus',panel:'integrated'};
+ return {background:['companion','dark','light','cas','stars'].includes(v.background)?v.background:'companion',banner:'prometheus',panel:'integrated'};
 }
 
 const GOAL_STATUS='aqwc-goal-status-v1';
@@ -296,11 +296,11 @@ async function handle(message,sender){
  if(message?.type==='wiki-appearance-read'||message?.type==='wiki-appearance-save'){
   let wiki=false;try{wiki=sender.frameId===0&&new URL(sender.url).origin==='https://aqwwiki.wikidot.com'}catch{}
   const popup=popupSender(sender);
-  if(!popup&&!(wiki&&message.type==='wiki-appearance-read'))return {ok:false,error:'Invalid appearance request.'};
+  if(!popup&&!mainSender(sender)&&!(wiki&&message.type==='wiki-appearance-read'))return {ok:false,error:'Invalid appearance request.'};
   await restrictStorage();
   if(message.type==='wiki-appearance-save'){
    const appearance=normalizeAppearance(message.appearance);
-   await chrome.storage.local.set({[APPEARANCE_KEY]:appearance});const notification=await notifyTabs('aqwc-theme-changed','https://aqwwiki.wikidot.com/');return {ok:true,appearance,...notification};
+   await chrome.storage.local.set({[APPEARANCE_KEY]:appearance});const notification=await notifyTabs('aqwc-theme-changed','https://aqwwiki.wikidot.com/');await notifyTabs('aqwc-theme-changed',SITE+'/AQW-Companion/');return {ok:true,appearance,...notification};
   }
   const stored=await chrome.storage.local.get(APPEARANCE_KEY);return {ok:true,appearance:normalizeAppearance(stored[APPEARANCE_KEY]??{background:'companion',banner:'prometheus'})};
  }
