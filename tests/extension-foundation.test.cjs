@@ -26,7 +26,7 @@ button.click();assert.equal(status.dataset.state,'checking');assert.equal(posted
 pageWindow.message({source:pageWindow,origin,data:{...posted.msg,type:'pong',nonce:'bad',version:'0.1.0'}});assert.equal(status.dataset.state,'checking');
 pageWindow.message({source:pageWindow,origin,data:{...posted.msg,type:'pong',version:'0.1.0'}});assert.equal(status.dataset.state,'connected');
 button.click();nextTimer();assert.equal(status.dataset.state,'missing');
-assert.ok(read('index.html').includes('href="extension-connect.html"'));
+assert.ok(read('extension/quick-start.html').includes('https://cptmundo.github.io/AQW-Companion/extension-connect.html'));
 console.log('Extension foundation: scope, handshake, wiki badge, timeout and navigation passed.');
 
 (async()=>{
