@@ -4,7 +4,7 @@ const assert=require('node:assert/strict'),path=require('node:path'),fs=require(
 const root=path.join(__dirname,'../extension'),origin='https://aqwwiki.wikidot.com';
 const catalog=JSON.parse(fs.readFileSync(path.join(root,'boost-index.json'),'utf8')).rows;
 const reported=['fire-orb-cape-1','empowered-blademaster','supercharged-cybervoid-dagger-5','bearded-galactic-naval-top-hat-legend'];
-const selected=new Set([...reported,'cape-of-awe','necrotic-sword-of-doom-sword','blinding-light-of-destiny-axe','blade-of-the-burning-sun','void-aura','spirit-orb-misc','archpaladin','stonecrusher-merge','nulgath-challenge-pet']);
+const selected=new Set([...reported,'cape-of-awe','necrotic-sword-of-doom-sword','blinding-light-of-destiny-axe','blade-of-the-burning-sun','void-aura','spirit-orb-misc','archpaladin','archpaladin-0-ac','archpaladin-ac','stonecrusher-merge','nulgath-challenge-pet']);
 for(const category of ['armors','weapons','capes-back-items','helmets-hoods','pets']){
  const rs=catalog.filter(x=>x.category===category).sort((a,b)=>a.slug.localeCompare(b.slug));
  for(const i of [0,Math.floor(rs.length/3),Math.floor(rs.length*2/3),rs.length-1])if(rs[i])selected.add(rs[i].slug);
@@ -40,6 +40,7 @@ async function main(){
     const shell=q('.aqwc-unified-item');
     return {shell:!!shell,left:!!left&&left.contains(info),right:!!right&&right.contains(art)&&right.contains(q('#aqwc-item-status')),details:!!left&&left.contains(q('.aqwc-native-details')),farm:!farm||left?.contains(farm),gap:!farm||Math.abs(farm.getBoundingClientRect().top-info.getBoundingClientRect().bottom-16)<=1,original:window.nativeNodes.every(n=>n.isConnected),tabs:window.nativeTabs.every(n=>n.isConnected),artwork:art?.querySelectorAll('.aqwc-art-media img').length||0};
    });
+   if(row.slug==='archpaladin'){assert.equal(r.shell,false,'Disambiguation must not be treated as an item');assert.ok(r.original);console.log('LIVE_NEGATIVE_PASS',row.slug);continue}
    for(const key of ['shell','left','right','details','farm','gap','original','tabs'])assert.ok(r[key],row.slug+' '+key+' '+JSON.stringify(r));
    if(reported.includes(row.slug))assert.ok(r.artwork>0,row.slug+' reported artwork missing');
    console.log('LIVE_PASS',row.slug,JSON.stringify(r));passed++;
@@ -50,5 +51,6 @@ async function main(){
  assert.equal(failures.length,0,failures.join('\n'));
  // Treat a blocked external service as incomplete evidence, not a pass.
  assert.ok(passed>=30,'Fewer than 30 real pages were verifiable');
+ assert.ok(reported.every(slug=>!unavailable.some(x=>x.startsWith(slug+':'))),'A reported regression could not be fetched');
 }
 main().catch(e=>{console.error(e);process.exitCode=1});
