@@ -1719,6 +1719,226 @@ const starterBuilds={
 // Add vetted 2026 meta/recent classes without rewriting existing 15×3 builds.
 };
 Object.assign(starterBuilds,window.AQWCMetaBuilds?.builds||{});
+// Source-transcribed activity loadouts. Legacy entries without evidence remain hidden.
+const documentedClassRows={
+ "Void Highlord": {
+  "solo": [
+   "Lucky",
+   "Dauntless",
+   "Anima",
+   "Lament",
+   "May 2026 benchmark",
+   "Vainglory is a separate alternative; compare sustain."
+  ],
+  "farm": [
+   "Lucky",
+   "Dauntless",
+   "Forge",
+   "Lament",
+   "Low HP Farm",
+   "High HP Farm: Lucky / Ravenous / Vim / Vainglory."
+  ]
+ },
+ "Legion Revenant": {
+  "farm": [
+   "Lucky",
+   "Valiance",
+   "Pneuma",
+   "Lament",
+   "Farming",
+   "Vainglory with potions; Acheron / Pneuma / Penitence is a separate high-risk example."
+  ]
+ },
+ "Chaos Avenger": {
+  "solo": [
+   "Lucky",
+   "Valiance",
+   "Forge",
+   "Penitence",
+   "Defensive Solo",
+   "Solo Forge: Lucky / Valiance / Anima / Avarice; lower defense."
+  ]
+ },
+ "ArchMage": {
+  "farm": [
+   "Wizard",
+   "Elysium",
+   "Pneuma",
+   "Vainglory",
+   "High HP Mobs",
+   "Low HP Mobs: Wizard / Valiance / Pneuma / Vainglory. Match Astral/Corporeal rotation."
+  ]
+ },
+ "Arcana Invoker": {
+  "farm": [
+   "Lucky",
+   "Valiance",
+   "Forge",
+   "Vainglory",
+   "Farming",
+   "2025 template uses Wizard/Pneuma; do not mix. Check 2026 damage-type changes."
+  ]
+ },
+ "Dragon of Time": {
+  "solo": [
+   "Wizard",
+   "Elysium",
+   "Pneuma",
+   "Vainglory",
+   "Full DPS (general; not a dedicated solo test)",
+   "Budget: Wizard / Valiance / Pneuma / Vainglory. Nightmare Carnax uses Hearty instead."
+  ]
+ },
+ "Shaman": {
+  "solo": [
+   "Lucky",
+   "Ravenous",
+   "Examen",
+   "Vainglory",
+   "Best Solo",
+   "Budget: Lucky / Ravenous / Examen / Avarice. Avoid Elemental Embrace/Grasp on Flibbi."
+  ]
+ },
+ "Blaze Binder": {
+  "farm": [
+   "Wizard",
+   "Elysium",
+   "Pneuma",
+   "Vainglory",
+   "Full Forge",
+   "Early Forge: Wizard / Awe Blast / Pneuma / Wizard."
+  ]
+ },
+ "Verus DoomKnight": {
+  "solo": [
+   "Lucky",
+   "Dauntless",
+   "Anima",
+   "Lament",
+   "Solo DPS",
+   "Budget: Lucky / Valiance / Forge / Vainglory."
+  ]
+ },
+ "Yami no Ronin": {
+  "solo": [
+   "Lucky",
+   "Valiance",
+   "Vim",
+   "Vainglory",
+   "Solo DPS",
+   "Dauntless / Anima is the separate Ultra DPS column."
+  ]
+ },
+ "King's Echo": {
+  "solo": [
+   "Lucky",
+   "Ravenous",
+   "Examen",
+   "Vainglory",
+   "Solo / Group",
+   "Mid: Lucky / Valiance / Examen / Lament."
+  ]
+ },
+ "LightCaster": {
+  "solo": [
+   "Lucky",
+   "Praxis",
+   "Forge",
+   "Lament",
+   "Budget DPS (general; not a dedicated solo test)",
+   "Ultra DPS: Lucky / Ravenous / Forge / Lament; use encounter guidance."
+  ]
+ },
+ "Chrono ShadowHunter": {
+  "solo": [
+   "Lucky",
+   "Valiance",
+   "Examen",
+   "Vainglory",
+   "Solo Full Forge",
+   "No Valiance: Lucky / Awe Blast / Examen / Vainglory."
+  ]
+ },
+ "Phantasm Chronomancer": {
+  "solo": [
+   "Lucky",
+   "Ravenous",
+   "Examen",
+   "Vainglory",
+   "Best Solo",
+   "Best DPS: Lucky / Ravenous / Forge / Vainglory; separate example."
+  ]
+ },
+ "Kathool Adept": {
+  "farm": [
+   "Wizard",
+   "Valiance",
+   "Pneuma",
+   "Lament",
+   "October 2026 community farming example",
+   "Other combinations require testing."
+  ]
+ },
+ "Hollowborn Vindicator": {
+  "solo": [
+   "Lucky",
+   "Dauntless",
+   "Forge",
+   "Penitence",
+   "Solo DPS",
+   "Tank: Lucky / Ravenous / Forge / Penitence."
+  ]
+ },
+ "Necrotic Chronomancer": {
+  "farm": [
+   "Lucky",
+   "Ravenous",
+   "Forge",
+   "Vainglory",
+   "High DPS Farming",
+   "HP Sustain Farming: Lucky / Dauntless / Vim / Vainglory."
+  ]
+ },
+ "ArchFiend": {
+  "farm": [
+   "Lucky",
+   "Dauntless",
+   "Forge",
+   "Vainglory",
+   "Farming / Dage",
+   "Bootiest uses Anima instead; compare HP loss."
+  ]
+ },
+ "Dark Lord": {
+  "solo": [
+   "Wizard",
+   "Elysium",
+   "Pneuma",
+   "Lament",
+   "Full Pots Solo",
+   "Source assumes consumables; do not infer an unpotted benchmark."
+  ],
+  "farm": [
+   "Wizard",
+   "Elysium",
+   "Pneuma",
+   "Avarice",
+   "Full Forge",
+   "Bootiest uses Vainglory or Penitence; separate templates."
+  ]
+ },
+ "Guardian": {
+  "solo": [
+   "Lucky",
+   "Ravenous",
+   "Vim",
+   "Lament",
+   "Full DPS (general; not a dedicated solo test)",
+   "Early DPS: Lucky / Spiral Carve / Vim / Lament."
+  ]
+ }
+};
+for(const [cls,modes] of Object.entries(documentedClassRows))for(const [role,[base,weapon,helm,cape,label,alternative]] of Object.entries(modes)){const build=starterBuilds[cls]?.[role];if(!build)continue;Object.assign(build,{base,weapon,helm,cape,evidence:label,alternative,note:(cls==='Kathool Adept'||(cls==='Void Highlord'&&role==='solo')?'Community reference — ':'Simplified Classes Guide — ')+label+'. Source example, not a universal best-in-slot.'})}
 
 // Encounter-specific recommendations, separate from general class builds.
 // Community strategies are examples, not mandatory or universal BiS.
@@ -3214,12 +3434,15 @@ const alchemyEffects={
  'Sage Tonic':'Intelligence +20% for 15 min. Improves magic-based damage.',
  'Might Tonic':'Strength +20% for 15 min. Useful for strength-scaling physical damage.',
  'Body Tonic':'Endurance +20% for 15 min. Defensive alternative when extra HP matters.',
+ 'Battle Elixir':'Physical damage +20% for 15 min.',
+ 'Destruction Elixir':'Critical damage +30% for 15 min.',
+ 'Divine Elixir':'Healing potential +35% for 15 min.',
  'Potent Battle Elixir':'Physical Damage +25% for 15 min.',
  'Potent Malevolence Elixir':'Magic damage +25% for 15 min.',
  'Potent Honor Potion':'All damage +75%; mana costs +25% for 35 sec. Cooldown: 60 sec.',
  'Felicitous Philtre':'Luck +50% for 45 sec. Crit-oriented alternative to Honor.'
 };
-const alchemySources=Object.freeze({'Fate Tonic':'fate-tonic','Sage Tonic':'sage-tonic','Might Tonic':'might-tonic','Body Tonic':'body-tonic','Potent Battle Elixir':'potent-battle-elixir-non-ac','Potent Malevolence Elixir':'potent-malevolence-elixir','Potent Honor Potion':'potent-honor-potion','Felicitous Philtre':'felicitous-philtre'});
+const alchemySources=Object.freeze({'Battle Elixir':'battle-elixir','Destruction Elixir':'destruction-elixir','Divine Elixir':'divine-elixir','Fate Tonic':'fate-tonic','Sage Tonic':'sage-tonic','Might Tonic':'might-tonic','Body Tonic':'body-tonic','Potent Battle Elixir':'potent-battle-elixir-non-ac','Potent Malevolence Elixir':'potent-malevolence-elixir','Potent Honor Potion':'potent-honor-potion','Felicitous Philtre':'felicitous-philtre'});
 // Item effects checked against individual Wiki entries 2026-11-27; class combinations are unverified.
 // Individual encounter requirements and consumable availability can still vary.
 const classAlchemy={
@@ -3240,9 +3463,121 @@ const classAlchemy={
  'LightCaster':['Sage Tonic','Potent Malevolence Elixir','Potent Honor Potion']
 };
 Object.assign(classAlchemy,window.AQWCMetaBuilds?.alchemy||{});
+// Exact source gear match required; never infer potions from a class name alone.
+const reviewedAlchemyExamples={
+ "Void Highlord|farm": [
+  "Lucky",
+  "Dauntless",
+  "Forge",
+  "Lament",
+  "Fate Tonic",
+  "Battle Elixir",
+  "Felicitous Philtre"
+ ],
+ "King's Echo|solo": [
+  "Lucky",
+  "Ravenous",
+  "Examen",
+  "Vainglory",
+  "Fate Tonic",
+  "Battle Elixir",
+  "Felicitous Philtre"
+ ],
+ "Verus DoomKnight|solo": [
+  "Lucky",
+  "Dauntless",
+  "Anima",
+  "Lament",
+  "Fate Tonic",
+  "Battle Elixir",
+  "Felicitous Philtre"
+ ],
+ "Yami no Ronin|solo": [
+  "Lucky",
+  "Valiance",
+  "Vim",
+  "Vainglory",
+  "Fate Tonic",
+  "Battle Elixir",
+  "Potent Honor Potion"
+ ],
+ "Chaos Avenger|solo": [
+  "Lucky",
+  "Valiance",
+  "Forge",
+  "Penitence",
+  "Might Tonic",
+  "Divine Elixir",
+  "Potent Honor Potion"
+ ],
+ "ArchMage|farm": [
+  "Wizard",
+  "Elysium",
+  "Pneuma",
+  "Vainglory",
+  "Sage Tonic",
+  "Destruction Elixir",
+  "Felicitous Philtre"
+ ],
+ "Chrono ShadowHunter|solo": [
+  "Lucky",
+  "Valiance",
+  "Examen",
+  "Vainglory",
+  "Fate Tonic",
+  "Battle Elixir",
+  "Felicitous Philtre"
+ ],
+ "Hollowborn Vindicator|solo": [
+  "Lucky",
+  "Dauntless",
+  "Forge",
+  "Penitence",
+  "Fate Tonic",
+  "Battle Elixir",
+  "Felicitous Philtre"
+ ],
+ "Necrotic Chronomancer|farm": [
+  "Lucky",
+  "Ravenous",
+  "Forge",
+  "Vainglory",
+  "Fate Tonic",
+  "Battle Elixir",
+  "Felicitous Philtre"
+ ],
+ "ArchFiend|farm": [
+  "Lucky",
+  "Dauntless",
+  "Forge",
+  "Vainglory",
+  "Fate Tonic",
+  "Battle Elixir",
+  "Felicitous Philtre"
+ ],
+ "Guardian|solo": [
+  "Lucky",
+  "Ravenous",
+  "Vim",
+  "Lament",
+  "Fate Tonic",
+  "Battle Elixir",
+  "Felicitous Philtre"
+ ],
+ "LightCaster|solo": [
+  "Lucky",
+  "Praxis",
+  "Forge",
+  "Lament",
+  "Fate Tonic",
+  "Battle Elixir",
+  "Felicitous Philtre"
+ ]
+};
 function suggestedConsumables(cls,role){
- // No class/activity consumable combination has yet passed the evidence gate.
- return []; // Do not present legacy class-specific combinations as confirmed recommendations.
+ const canonical=window.AQWCMetaBuilds?.metadata?.[cls]?.canonical||cls,build=starterBuilds[cls]?.[role],row=reviewedAlchemyExamples[canonical+'|'+role];
+ if(!row||!build?.evidence||[build.base,build.weapon,build.helm,build.cape].some((v,i)=>v!==row[i]))return [];
+ return row.slice(4).map((name,i)=>({kind:['Tonic','Elixir','Active'][i],name,effect:alchemyEffects[name],source:'https://aqwwiki.wikidot.com/'+alchemySources[name]})).filter(x=>x.effect);
 }
 const enhancementMiniDescriptions={
  Lucky:'Crit-focused base stats',Wizard:'Magic-focused base stats',Fighter:'Physical base stats',Healer:'HP and healing stats',
@@ -3263,6 +3598,7 @@ function renderClassBuild(){
  const build=starterBuilds[cls]?.[role],meta=window.AQWCMetaBuilds?.metadata?.[cls];
  const disputed=sameUltraClass(cls,'Great Thief')||(sameUltraClass(cls,'Arcana Invoker')&&role!=='farm');
  if(disputed){const panel=node('div',undefined,'build-empty');panel.append(node('strong',cls+' — loadout under review'),node('p','This preset was flagged by experienced players. It is withdrawn rather than replaced with another untested build.'));const url=sameUltraClass(cls,'Great Thief')?'https://aqwwiki.wikidot.com/great-thief':sameUltraClass(cls,'Void Highlord')?'https://aqwwiki.wikidot.com/void-highlord-class':'https://aqwwiki.wikidot.com/arcana-invoker';const link=node('a','Current class skills ↗');link.href=url;link.target='_blank';link.rel='noopener noreferrer';panel.append(link);const src=simplifiedClassSource(cls);if(src){const a=node('a','Community class guide ↗');a.href=src;a.target='_blank';a.rel='noopener noreferrer';panel.append(a)}root.append(panel);return}
+ if(build&&!build.evidence){const panel=node('div',undefined,'build-empty');panel.append(node('strong',cls+' — activity-specific preset not confirmed'),node('p','No complete matching source loadout established for this activity. A different activity is not automatically interchangeable.'));const src=simplifiedClassSource(cls)||meta?.guide;if(src){const a=node('a','Class reference ↗');a.href=src;a.target='_blank';a.rel='noopener noreferrer';panel.append(a)}root.append(panel);return}
  if(!build){
   const roleName={solo:'Solo / Boss',farm:'Farming',group:'Group / Ultras'}[role]||role;
   const alternatives=role==='farm'?'Kathool Adept, ArchMage or Arcana Invoker':
@@ -3278,7 +3614,7 @@ function renderClassBuild(){
   if(meta.canonical!==cls)identity.append(node('span','Same skills as '+meta.canonical,'build-meta-alias'));
   panel.append(identity);
  }
- panel.append(node('p','Community example — current patch / activity review pending. Not a verified best-in-slot loadout.','build-meta-note'));
+ panel.append(node('p','Community example — current patch / activity review pending. Not a verified best-in-slot loadout.','build-meta-note'));panel.append(node('p','Source configuration: '+build.evidence,'muted tiny'));
  const crossRef=node('a','Community enhancement reference (2025 templates) ↗','muted tiny');crossRef.href='https://docs.google.com/spreadsheets/d/1wupDvLuPnRC0fF0aNPc7rzrri7X1YcYy7S2s5Z6o_F4/edit';crossRef.target='_blank';crossRef.rel='noopener noreferrer';panel.append(crossRef);
  const sgRef=simplifiedClassSource(cls);if(sgRef){const a=node('a','Simplified Classes Guide · class-specific reference ↗','muted tiny');a.href=sgRef;a.target='_blank';a.rel='noopener noreferrer';panel.append(a)}
  if(build.note)panel.append(node('p',build.note,'build-meta-note'));
@@ -3373,8 +3709,9 @@ function renderClassBuild(){
  expl.append(node('p','Standard armor enhancements and fixed Forge patterns are separate. Trait effects do not establish that the combination is optimal.','muted tiny'));const traitRef=node('a','Official enhancement traits ↗');traitRef.href='https://www.aq.com/lore/guides/enhancementtraits';traitRef.target='_blank';traitRef.rel='noopener noreferrer';expl.append(traitRef);
  info.append(expl);
  const pots=node('section',undefined,'build-info-panel build-consumables-panel');
- pots.append(node('h4','Consumables · review pending'),node('p','No verified class/activity combination is available yet. Individual item effects are documented in the combat audit; consult the encounter guide before choosing consumables.','muted tiny'));
- for(const {kind,name,effect,source} of suggestedConsumables(cls,role)){
+ const potExamples=suggestedConsumables(cls,role);
+ pots.append(node('h4',potExamples.length?'Consumables · source example':'Consumables · review pending'),node('p',potExamples.length?'Source-listed combination for this exact gear; not an encounter-verified optimum. Use tonic/elixir outside combat; reserve the active slot for required encounter scrolls.':'No verified class/activity combination is available yet. Individual item effects are documented in the combat audit; consult the encounter guide before choosing consumables.','muted tiny'));
+ for(const {kind,name,effect,source} of potExamples){
   const line=node('div',undefined,'build-consumable-row');
   const heading=node('div',undefined,'build-effect-heading');
   const ref=node('a',name+' ↗','build-effect-combo');ref.href=source;ref.target='_blank';ref.rel='noopener noreferrer';heading.append(node('strong',kind),ref);
