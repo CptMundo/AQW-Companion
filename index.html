@@ -2326,6 +2326,8 @@ function appendUltraRecommendedTeam(root,b,profile){
  wrap.append(list);root.append(wrap);
 }
 
+// Preserve source gear for future expert review without publishing recommendations.
+const publicEncounterLoadouts=false;
 function appendUltraGearCells(gear,build,boss){
  if(!build){gear.append(node('span','No reviewed class-specific gear preset yet. Consult a current encounter guide.','muted tiny'));return}
  gear.append(node('p','Community example — not independently validated for the current patch. This is not automatically compatible with the strategy above.','muted tiny ultra-gear-evidence'));if(build.sourceTeam?.length)gear.append(node('p','Source lineup: '+build.sourceTeam.join(' · ')+'. Do not mix its gear and taunt plan with a different lineup.','muted tiny ultra-gear-evidence'));if(build.source){const ref=node('a','Original community guide ↗','ultra-gear-evidence');ref.href=build.source;ref.target='_blank';ref.rel='noopener noreferrer';gear.append(ref)}
@@ -2505,16 +2507,16 @@ function renderBossGuideDetail(entry){
  const layout=node('div',undefined,'boss-guide-layout'),rolePanel=node('section',undefined,'boss-guide-panel boss-guide-role-panel');
  const groups=ultraClassOptions(key,profile),names=groups.flatMap(g=>g.names);
  if(names.length){
-  const setup=node('section',undefined,'boss-guide-panel boss-guide-loadout'),heading=node('h3','Your Loadout');setup.append(heading);
+  const setup=node('section',undefined,'boss-guide-panel boss-guide-loadout'),heading=node('h3',publicEncounterLoadouts?'Your Loadout':'Your class');setup.append(heading);
   const select=node('select',undefined,'ultra-role-select');select.setAttribute('aria-label',key+' class');fillUltraClassSelect(select,key,profile);
   if(names.includes(selectedBossClasses.get(key)))select.value=selectedBossClasses.get(key);
   const rating=node('div',undefined,'ultra-selected-rating'),gear=node('div',undefined,'ultra-focus-gear');
-  const draw=()=>{selectedBossClasses.set(key,select.value);renderUltraSelectedRating(rating,key,select.value);gear.replaceChildren();const genericKey=Object.keys(starterBuilds).find(x=>sameUltraClass(x,select.value));const build=ultraSuggestedGear(key,select.value,profile,starterBuilds[genericKey]?.group);appendUltraGearCells(gear,build,key);heading.textContent=build?'Loadout · Community example':'Loadout · Review pending';gear.title='Not a verified best-in-slot recommendation';drawBossGuideRoleTips(rolePanel,profile,select.value);};
-  setup.append(select,rating,gear);select.onchange=draw;draw();layout.append(setup);
+  const draw=()=>{selectedBossClasses.set(key,select.value);renderUltraSelectedRating(rating,key,select.value);if(publicEncounterLoadouts){gear.replaceChildren();const genericKey=Object.keys(starterBuilds).find(x=>sameUltraClass(x,select.value));const build=ultraSuggestedGear(key,select.value,profile,starterBuilds[genericKey]?.group);appendUltraGearCells(gear,build,key);heading.textContent=build?'Loadout · Community example':'Loadout · Review pending';gear.title='Not a verified best-in-slot recommendation';}drawBossGuideRoleTips(rolePanel,profile,select.value);};
+  setup.append(select,rating);if(publicEncounterLoadouts)setup.append(gear);select.onchange=draw;draw();layout.append(setup);
  }
  const fight=node('section',undefined,'boss-guide-panel boss-guide-fight');fight.append(node('h3','Fight at a glance'));
  const list=node('div',undefined,'boss-guide-steps');for(const [i,tip] of (profile.tips||[]).entries()){const step=node('div',undefined,'boss-guide-step'),p=node('p');ultraExplainText(p,ultraBeginnerText(tip,''),key);step.append(node('span',String(i+1),'boss-guide-step-number'),p);list.append(step)}fight.append(list);
- if(profile.potions?.length){const consumables=node('div',undefined,'boss-guide-consumables');consumables.append(node('strong','Unverified community consumable examples'),node('p',profile.potions.join(' · ')));fight.append(consumables)}
+ if(publicEncounterLoadouts&&profile.potions?.length){const consumables=node('div',undefined,'boss-guide-consumables');consumables.append(node('strong','Unverified community consumable examples'),node('p',profile.potions.join(' · ')));fight.append(consumables)}
  layout.append(fight);root.append(layout);if(!names.length)drawBossGuideRoleTips(rolePanel,profile,'');root.append(rolePanel);
  const sources=node('div',undefined,'boss-guide-sources');sources.append(bossGuideWiki(entry.wiki,'Wiki location ↗'));const verifiedMechanics={'Emperor Angler':'https://aqwwiki.wikidot.com/emperor-angler','Reinforced Shelleton':'https://aqwwiki.wikidot.com/reinforced-shelleton','Fell Statue':'https://aqwwiki.wikidot.com/fell-statue','Rampaging Cyborg':'https://aqwwiki.wikidot.com/rampaging-cyborg','Cervus Malus':'https://aqwwiki.wikidot.com/cervus-malus','Key of Sholemoh':'https://aqwwiki.wikidot.com/key-of-sholemoh','Astral Empyrean':'https://aqw.app/monsters/astralshrine','Void Xyfrag':'https://aqw.app/monsters/voidxyfrag','Void NerfKitten':'https://aqwwiki.wikidot.com/sarah-the-nerfkitten','Mechabinky & Raxborg 2.0':'https://aqwwiki.wikidot.com/mechabinky-raxborg-2-0'};if(verifiedMechanics[key]){const a=node('a','Monster mechanics reference ↗');a.href=verifiedMechanics[key];a.target='_blank';a.rel='noopener noreferrer';sources.append(a)}const link=node('a','↗ Simplified Bosses Guide — '+profile.sheet);link.href=simplifiedGuideSource;link.target='_blank';link.rel='noopener noreferrer';sources.append(link);root.append(sources);
 }
@@ -2667,7 +2669,7 @@ function renderUltraDetail(b){
  appendUltraRecommendedTeam(root,b,profile);
  const compact=node('div',undefined,'ultra-guide-layout');
  const setup=node('section',undefined,'ultra-focus-card ultra-setup-card');
- setup.append(node('h3','⚔️ Your loadout'));
+ setup.append(node('h3',publicEncounterLoadouts?'⚔️ Your loadout':'👤 Your class'));
  const selectorRow=node('div',undefined,'ultra-focus-selector');
  const select=node('select',undefined,'ultra-role-select');
  fillUltraClassSelect(select,b.id,profile,[...b.team,...(b.alternate||[])]);
@@ -2675,7 +2677,7 @@ function renderUltraDetail(b){
  selectorRow.append(node('span','Class'),select);setup.append(selectorRow);
  const gear=node('div',undefined,'ultra-focus-gear');
  const rating=node('div',undefined,'ultra-selected-rating');
- setup.append(rating,gear);
+ setup.append(rating);if(publicEncounterLoadouts)setup.append(gear);
  const summary=node('section',undefined,'ultra-focus-card ultra-quickstart');
  summary.append(node('h3','🎯 Fight at a glance'));
  const focus=node('div',undefined,'ultra-focus-grid');
@@ -2710,7 +2712,7 @@ function renderUltraDetail(b){
   const encounter=encounterUltraBuild(b.id,cls,generic);
   const build=ultraSuggestedGear(b.id,cls,profile,generic,encounter);
   renderUltraSelectedRating(rating,b.id,cls);
-  gear.replaceChildren();
+  if(publicEncounterLoadouts){gear.replaceChildren();
   if(build){
    appendUltraGearCells(gear,build,b.id);
    if(cls==='Bard'){
@@ -2718,7 +2720,7 @@ function renderUltraDetail(b){
     source.href='https://www.aq.com/lore/classes/bard';source.target='_blank';source.rel='noopener noreferrer';gear.append(source);
    }
   }else gear.append(node('span','No reviewed class-specific gear preset yet. Consult a current encounter guide.','muted tiny'));
-  gear.title='Not a verified best-in-slot recommendation';setup.querySelector('h3').textContent=build?'⚔️ Loadout · Community example':'⚔️ Loadout · Review pending';
+  gear.title='Not a verified best-in-slot recommendation';setup.querySelector('h3').textContent=build?'⚔️ Loadout · Community example':'⚔️ Loadout · Review pending';}
   roleName.textContent=cls;
   mechanicsTitle.textContent=b.id==='drakath'?'👤 Role & encounter guidance':'👤 Encounter mechanics · community guide';
   sequence.replaceChildren();sequence.append(node('p',b.id==='drakath'?'Role guidance for the standard designated-taunter strategy; not a class rotation.':'Shared encounter mechanics, not a verified class-specific rotation. Confirm your assignment with the team.','muted tiny'));
