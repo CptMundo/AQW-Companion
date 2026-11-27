@@ -44,3 +44,51 @@ ArchPaladin solo helm changed from Vim to Forge as a safer community template (n
 - Elysium: official and wiki coefficients differ; omit disputed coefficient pending validation rather than silently pick one. https://www.aq.com/lore/guides/enhancementtraits ; https://aqwwiki.wikidot.com/forge-weapon-enhancements
 
 These are source-backed corrections and conservative examples, not live-game test results. Other boss strategies, role-specific timings, item effects and rotations still need individual validation. No merge authorized. No extension code modified by these additional passes.
+
+
+## Fourth pass — expanded source review (2026-11-27)
+
+Primary community workbooks opened directly (not just Reddit summaries):
+- Simplified Classes: https://docs.google.com/spreadsheets/d/1WMSUlDwKUSnpg6x0ueP_6pDwxMzMM3Mc5ox3oHqK6OU/edit — 23 matching canonical class sheets, plus the prior Bootiest comparison. Kathool Adept separately checked against its recent official notes.
+- Simplified Bosses: https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit — Intro and all 20 combat-content tabs, excluding asset/template/empty tabs. Source describes fast organized groups; do not treat these as universal strategies.
+- Speaker Charts: exact comparison of the event, role, and skill cells for 4 standard charts (20 steps each) and 2 detailed charts (31 and 30 steps); zero differences after normalizing blank cells and Heal capitalization. This confirms transcription, not in-game execution.
+
+### Class coverage and decisions
+All 24 canonical class names in scope, including the 3 aliases through inheritance. Distinguish official base stat guidance, community activity-specific examples, and evidence missing. Do not mix pieces of different templates and call the result verified.
+
+| Class | Decision / remaining validation |
+|---|---|
+| Void Highlord | Keep dated solo example; expose low-HP and high-HP farming examples separately; July 17 infinite-range patch matters. |
+| Legion Revenant | Retain example; independently confirm encounter support/Decay and heal timing. |
+| ArchPaladin | Keep conservative Forge helm example; role and rotation need encounter testing. |
+| StoneCrusher | Wizard general vs Fighter encounter templates differ; healing and group role must be tested. |
+| Lord of Order | Support example only; party mitigation/healing timing depends on encounter. |
+| Chaos Avenger | Solo example, not a universal tank/taunt build. |
+| ArchMage | Low-HP Valiance and high-HP Elysium examples; Astral/Corporeal rotation distinction. |
+| Arcana Invoker | Lucky/Valiance/Forge/Vainglory exact farming example, not a blanket change to official Wizard guidance; solo and disputed boss presets remain withheld. |
+| Dragon of Time | Wizard/Healer base alternatives depend on HP and skill effects; no universal choice. |
+| Shaman | Solo Ravenous/Examen vs Elysium/Pneuma farming. |
+| Blaze Binder | Existing farming example; no claim of optimal boss performance. |
+| Verus DoomKnight | Lament vs Vainglory varies between sources; no universal optimum. |
+| Yami no Ronin | Dodge solo example; dodge does not bypass all boss mechanics. |
+| King's Echo | Lucky/Ravenous/Examen/Vainglory source-specific solo example; official Wizard guidance retained as a distinct reference. |
+| LightCaster | Existing hybrid example; group heal assignments remain encounter-specific. |
+| Chrono ShadowHunter (ShadowSlayer) | Single-target, not general AoE; exact rotations need gameplay testing. |
+| Phantasm (Phantom) Chronomancer | Ravenous/Examen agreement; Lament vs Vainglory differs. |
+| Kathool Adept | Recent official balance updates and October farming example; absent from older workbooks. |
+| Hollowborn Vindicator | Wizard and skill mechanic correction; complete loadout not independently tested. |
+| Necrotic Chronomancer (Nechronomancer) | Bootiest Dauntless/Anima vs Simplified high-DPS Ravenous/Forge and sustain Dauntless/Vim; retain as examples. |
+| ArchFiend | Forge vs Anima farming disagreement explicitly identified. |
+| Dark Lord | Elysium/Pneuma/Avarice full Forge example; Bootiest alternatives separate. |
+| Great Thief | Contested exact loadouts remain withheld; source link provided. |
+| Guardian | Existing source-specific examples; no independently verified Ultra assignment. |
+
+### Further mechanic corrections
+- Forge: correct prior pass's erroneous Absolution relic attribution: Ascended Paladin and sword for Absolution; five Armor of Awe relics for Vainglory. More explicit Valiance, Elysium, Arcana, Dauntless, Avarice, Penitence, Lament, and helm quest requirements; Ravenous no unsupported Gluttonous Maw shortcut; Hearty links to helmet information. Health Vamp, Powerword Die, Lacerate and expanded traits. Elysium coefficient remains disputed. Sources: https://aqwwiki.wikidot.com/cysero-s-forge-s-quests and https://www.aq.com/lore/guides/enhancementtraits .
+- Kathool: Peer, untauntable Nightmare and Vigil; Tyndarius: orb charge and boss buff phases; Gramiel: threshold protection and lethal five-stack event; Speaker: zone debuff timings and LR's short Decay window; Dage: coordinate LR Decay coverage. Monster references: https://aqw.app/monsters/kathooldepths ; https://aqw.app/monsters/ultratyndarius ; https://aqw.app/monsters/ultragramiel ; https://aqw.app/monsters/ultraspeaker ; https://aqw.app/monsters/ultradage .
+- Solo Infernal Arena: Deadly Duo recovery/Decay, Cervus Malus inverted healing, Key of Sholemoh fixed damage, Azalith's Scythe dodge, Na'al Veni/Vidi/Vici sequence. Source: https://aqwwiki.wikidot.com/infernal-arena and linked individual monsters.
+- Grim Gaol: solo portal entry and reset; Shelleton crash chance updated to 15%, no unsupported numerical cap; Fell Statue stacking damage; Emperor Angler thresholds; second chest 75% maximum HP attack; Rick recovery; Rampaging Cyborg invulnerability while summons remain; Mechabinky inversion and removed Devour (August 2026 patch supersedes older wiki details). Source: https://aqwwiki.wikidot.com/the-gaol-of-eternal-torment-and-misery and linked individual monsters. Grimskull?, Grim Bomb and Empress Angler tips are community transcriptions; individual monster-page retrieval incomplete.
+- Kasuko's current-HP nuke and phases, Void NerfKitten stat-steal debuff; team examples no longer selected using unverified rating. Gear provenance distinguishes workbook vs other source.
+- Legacy catalog: 11 entries screened for identity and availability, not full strategies. Rare Chairman and member/seasonal access flags where established. Some location-page opens failed; do not claim that all map commands/access conditions are verified.
+- Still open: full independent mechanic validation for every Shrine/void/seasonal challenge and some solo rooms, current patch confirmation of each group composition, gear, rotation and potion combination, and live combat testing. All 52 cataloged encounter records were screened, not all attacks or viable team combinations independently confirmed. No release or merge authorized.
+
