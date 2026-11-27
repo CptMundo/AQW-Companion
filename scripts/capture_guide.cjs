@@ -77,6 +77,7 @@ async function main(){
   assert.equal(await page.locator('#ultradetail .ultra-personal-rotation').count(),0);
   assert.ok((await page.locator('#ultradetail .ultra-class-guide').innerText()).includes('no matching full timing chart'));
   await teamPick.selectOption('primary');
+  await classPick.selectOption('Lord of Order');
   assert.equal(await page.locator('#ultradetail .ultra-personal-rotation').count(),1);
   assert.ok(!(await page.locator('#ultradetail [aria-label="Speaker rotation"] option').allTextContents()).some(x=>/Glaceran|DPS taunt skill/.test(x)));
   await page.locator('#ultracards button').filter({hasText:'God of the Depths'}).click();

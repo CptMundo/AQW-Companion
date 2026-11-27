@@ -2834,7 +2834,7 @@ function renderUltraDetail(b){
  for(const v of variants)pick.append(new Option(v.label,v.id));
  pick.value=variants.some(v=>v.id===selectedUltraStrategies.get(b.id))?selectedUltraStrategies.get(b.id):variants[0].id;
  const teamInfo=node('p',undefined,'muted tiny'),chips=node('div',undefined,'ultra-recommended-classes guide-v2-class-buttons');
- team.append(pick,teamInfo,chips);root.append(team);
+ team.append(pick,teamInfo,chips,node('p','Community example — mechanics, team and rotation still need current-patch confirmation.','muted tiny'));root.append(team);
  const setup=node('section',undefined,'ultra-focus-card ultra-setup-card guide-v2-class');
  setup.append(node('h3','2 · Your class'));
  const select=node('select',undefined,'ultra-role-select');select.setAttribute('aria-label','Your class');
@@ -2857,6 +2857,10 @@ function renderUltraDetail(b){
    if(variant.partial)sequence.append(node('p','Partial strategy: confirm the missing or conflicting assignments with your group. No full class rotation is established.','muted tiny'));
   }else{
    sequence.append(node('p','Role and encounter guidance; not a verified skill rotation.','muted tiny'));
+   // Primary role notes belong to the primary roster, never to the workbook team.
+   // Speaker duties depend on the selected chart; do not hard-code a Zone here.
+   const roleNote=b.id==='speaker'?'Choose the matching timing chart below; follow only its assignments.':b.roles.find(([name])=>sameUltraClass(name,cls))?.[1];
+   if(roleNote)appendStrategyStep(sequence,'Your responsibility',roleNote,b.id);
    const playKey=Object.keys(ultraRolePlaybooks[b.id]||{}).find(x=>sameUltraClass(x,cls)),play=ultraRolePlaybooks[b.id]?.[playKey];
    const baseTips=[...new Set((play?.steps||[]).map(step=>String(step).trim()).filter(Boolean))];
    const rows=ultraUnifiedTips(b.id,cls,baseTips);

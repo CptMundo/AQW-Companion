@@ -39,8 +39,8 @@ assert.ok(html.includes("const rows=ultraUnifiedTips(b.id,cls,baseTips)"),"Rende
 assert.ok(html.includes("ultra-role-quote"));
 assert.ok(html.includes('src="js/ultra-quote-actions.js"'));
 assert.match(html,/href="css\/ultra-quote-actions\.css(?:\?v=\d+)?"/);
-assert.ok(html.includes("b.alternate||[]"),"Alternate classes must be selectable");
-assert.ok(html.includes("fillUltraClassSelect(select,b.id,profile,[...b.team,...(b.alternate||[])])"),"Include existing alternatives and workbook classes");
+assert.ok(html.includes("function ultraStrategyVariants"),"Keep complete roster variants separate");
+assert.ok(html.includes("fillStrategyClasses(select,v.names"),"Restrict individual guides to the selected roster");
 assert.ok(html.includes("appendPersonalSpeakerRotation(sequence,cls,exampleNames)"),"Keep the chosen Speaker rotation inside the personal guide");
 assert.ok(!html.includes("No complete class-specific rotation in the guide."));
 assert.ok(stylesheet.includes(".ultra-role-quote"));

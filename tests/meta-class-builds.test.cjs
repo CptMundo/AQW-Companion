@@ -70,7 +70,7 @@ assert.equal(addon.builds['Kathool Adept'].farm.cape,'Lament');
 assert.ok(html.includes("'Arcana Invoker':'Wizard'"));
 assert.ok(html.includes(`"King's Echo":'Wizard'`));
 assert.ok(html.includes('No verified class/activity combination is available yet.'));
-assert.ok(html.includes('Community encounter example — mechanics, team and rotation'));
+assert.ok(html.includes('Community example — mechanics, team and rotation still need current-patch confirmation.'));
 
 assert.equal(addon.builds['Dark Lord'].farm.weapon,'Elysium');
 assert.equal(addon.builds['Dark Lord'].farm.cape,'Avarice');

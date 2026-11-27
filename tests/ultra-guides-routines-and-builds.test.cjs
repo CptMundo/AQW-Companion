@@ -24,7 +24,7 @@ assert.ok(!html.includes("vigil=node('div',undefined,'ultra-focus-timing')"),"No
 assert.ok(html.includes("const rows=ultraUnifiedTips(b.id,cls,baseTips)"),"New unified class-specific role rows");
 assert.ok(html.includes("ultra-role-mini-title"));
 assert.ok(html.includes("bardSupport={weapon:'Awe Blast',helm:'Forge',cape:'Absolution'"),"Bard has documented support equipment");
-assert.ok(html.includes("https://www.aq.com/lore/classes/bard"));
+assert.ok(html.includes("function ultraStrategyVariants"),"Keep unsupported substitutions out of active strategies");
 assert.ok(ultraCSS.includes(".ultra-role-mini-title"));
 assert.ok(html.includes('id="build-search"'));
 assert.ok(html.includes("classNoFarming"));
@@ -123,7 +123,7 @@ assert.ok(!html.includes("appendSimplifiedProfile(root,simplifiedProfiles[b.id]"
 assert.ok(html.includes("renderBossGuides(root,$(\'bossguidesearch\').value.trim().toLowerCase(),$(\'bossguidecategory\').value)"));
 assert.ok(html.includes("community role"));
 
-const compact=vm.runInNewContext(reviewedCode+"\n({ultraClassOptions,ultraSelectedRating,ultraWorkbookBuild,ultraCompactTips,ultraActionTips,ultraBeginnerActions,ultraBeginnerText,ultraGlossary,ultraTermPattern,ultraTermInfo,ultraSuggestedGear,ultraRecommendedTeam,ultraUnifiedTips,ultraSpeakerRole,ultraSpeakerPersonal,simplifiedSpeakerPatterns,simplifiedProfiles,simplifiedRatings,simplifiedExtraEncounters,sameUltraClass,fillUltraClassSelect,renderUltraSelectedRating,appendUltraGearCells})",{
+const compact=vm.runInNewContext(reviewedCode+"\n({ultraClassOptions,ultraSelectedRating,ultraWorkbookBuild,ultraCompactTips,ultraActionTips,ultraBeginnerActions,ultraBeginnerText,ultraGlossary,ultraTermPattern,ultraTermInfo,ultraSuggestedGear,ultraRecommendedTeam,ultraUnifiedTips,ultraSpeakerRole,ultraSpeakerPersonal,simplifiedSpeakerPatterns,simplifiedProfiles,simplifiedRatings,simplifiedExtraEncounters,sameUltraClass,fillUltraClassSelect,renderUltraSelectedRating,appendUltraGearCells,ultraStrategyVariants,workbookPersonalGuide,workbookSharedGuide})",{
  node(tag,text,cls){return {tag,text,cls,children:[],append(...x){this.children.push(...x)},replaceChildren(...x){this.children=x}}},
  Option:function(label,value){this.label=label;this.value=value},
  ultraOwned:cls=>['Lord of Order','Void Highlord'].includes(cls)
@@ -162,9 +162,9 @@ assert.ok(rating.children.some(x=>x.text.includes("Healer")));
 compact.renderUltraSelectedRating(rating,"drakath","Bard");
 assert.ok(rating.children.some(x=>x.text==="Not owned"));
 assert.ok(!rating.children.some(x=>x.text.includes("Healer")),"Class change clears previous rating");
-assert.ok(html.includes("fillUltraClassSelect(select,b.id,profile,"));
+assert.ok(html.includes("fillStrategyClasses(select,v.names"));
 assert.ok(html.includes("function ultraSuggestedGear(key,cls,profile,generic=null,encounter=null)"));
-assert.ok(html.includes("renderUltraSelectedRating(rating,b.id,cls)"));
+assert.ok(html.includes("classInExampleTeam(exampleNames,cls)"));
 assert.ok(html.includes("const rows=ultraUnifiedTips(b.id,cls,baseTips)"));
 assert.ok(html.includes("if(b.id==='speaker')appendPersonalSpeakerRotation(sequence,cls,exampleNames)"));
 assert.ok(!html.includes("Community workbook — suggested strategy"));
@@ -245,7 +245,7 @@ assert.ok(compact.ultraGlossary["Noxious Decay"].text.includes("11 seconds"));
 assert.ok(compact.ultraGlossary["Righteous Seal"].text.includes("skill 4"));
 assert.ok(compact.ultraGlossary["Sacred Magic: Eden"].text.includes("skill 5"));
 assert.ok("Noxious Decay reverses HoTs".split(compact.ultraTermPattern).includes("Noxious Decay"));
-assert.ok(html.includes("ultraExplainText(description,part.quote?"));
+assert.ok(html.includes("ultraExplainText(desc,content,key)"));
 assert.ok(html.includes("img.referrerPolicy='no-referrer'"));
 assert.ok(ultraCSS.includes(".ultra-help-term:focus>.ultra-help-popup"));
 assert.ok(!html.includes("Workbook loadout · agree your party strategy."));
@@ -280,7 +280,7 @@ assert.ok(apDage.some(x=>x.includes("Scroll of Decay")&&x.includes("backup")));
 assert.ok(apDage.every(x=>!/\b(?:LDK|LR|Legion Revenant|Legion DoomKnight)\b/.test(x)));
 assert.equal(apDage.filter(x=>x.includes("Cower behind")).length,1);
 assert.equal(compact.ultraRecommendedTeam({team:["A","B","C","D"]},{team:[{cls:"E"}]}).join(","),"A,B,C,D");
-assert.ok(html.includes("appendUltraRecommendedTeam(root,b,profile)"));
+assert.ok(html.includes("const variants=ultraStrategyVariants(b,profile)"));
 assert.ok(ultraCSS.includes(".ultra-react-step"));
 assert.ok(ultraCSS.includes(".ultra-recommended-team"));
 console.log("Ultra team, all selectable class gear slots, scoped glossary, and AP reaction guidance passed.");
@@ -667,3 +667,9 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.equal(workbookApi.simplifiedSpeakerPatterns.length,6);
  assert.deepEqual(Array.from(workbookApi.simplifiedSpeakerPatterns,x=>x.roles.length),[20,20,20,20,31,30]);
 }
+
+// All 12 source rosters are independently selectable; no rating-derived substitutions.
+{const src=html.slice(html.indexOf('const ultraGuides=['),html.indexOf('const ultraRolePlaybooks'));const teams=vm.runInNewContext(src+'\n ultraGuides');let total=0;
+for(const b of teams){const p=compact.simplifiedProfiles[b.id],vs=compact.ultraStrategyVariants(b,p);total+=vs.length;assert.deepEqual(Array.from(vs[0].names),Array.from(b.team),b.id);
+ const w=vs.find(x=>x.id==='workbook');if(w){assert.deepEqual(Array.from(w.names),Array.from(p.team,x=>x.cls),b.id);for(const cls of w.names)assert.ok(compact.workbookPersonalGuide[b.id][cls],b.id+' '+cls);assert.ok(compact.workbookSharedGuide[b.id].length);}
+}assert.equal(teams.length,12);assert.equal(total,23);console.log('GUIDES_V2: 12 original rosters, 11 distinct source rosters, source-specific coverage for each alternate roster member.');}
