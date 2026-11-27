@@ -45,3 +45,21 @@ assert.ok(html.includes("appendPersonalSpeakerRotation(sequence,cls)"),"Keep the
 assert.ok(!html.includes("No complete class-specific rotation in the guide."));
 assert.ok(stylesheet.includes(".ultra-role-quote"));
 console.log("Ultra quote actions: verified role-dependent prompts across all declared classes.");
+
+const vm=require('node:vm');
+const gear=html.slice(html.indexOf('function ultraSuggestedGear('),html.indexOf('function ultraRecommendedTeam('));
+const api=vm.runInNewContext(gear+'\nultraSuggestedGear',{sameUltraClass:(a,b)=>a.toLowerCase()===b.toLowerCase(),ultraWorkbookBuild:(p,c)=>p?.team?.find(x=>x.cls===c),simplifiedGuideSource:'https://example.com'});
+assert.equal(api('drakath','Great Thief',{team:[]},{weapon:'Ravenous'}),null);
+assert.equal(api('drakath','Arcana Invoker',{team:[]},{weapon:'Valiance'}),null);
+assert.equal(api('drakath','Unknown',{team:[]},{weapon:'Valiance'}),null);
+assert.equal(api('drakath','Lord of Order',{team:[{cls:'Lord of Order',weapon:'Awe Blast'}]}).estimated,true);
+assert.equal(api('drakath','Lord of Order',{team:[{cls:'Lord of Order',weapon:'Awe Blast'}]}).helm,undefined);
+assert.ok(html.includes('Magic damage +25% for 15 min.'));
+assert.ok(html.includes('mana costs +25% for 35 sec.'));
+assert.ok(!html.includes('Spell Power +25% for 15 min.'));
+assert.ok(!html.includes('Mana Cost +15% for 35 sec.'));
+assert.ok(html.includes('Your default assignment is damage, not taunting.'));
+assert.ok(html.includes('loadout under review'));
+assert.ok(html.includes('Community example — not independently validated'));
+console.log('Information integrity guards passed.');
+

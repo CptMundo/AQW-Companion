@@ -26,7 +26,7 @@
 <link rel="stylesheet" href="css/stack-alerts.css?v=140">
 <link rel="stylesheet" href="css/ultra-quote-actions.css?v=121">
 <link rel="stylesheet" href="css/badge-hunter.css?v=4">
-</head><body><div class="wrap"><header class="top"><div class="brand"><div class="logo"><img src="assets/brand-logo.png" width="52" height="52" alt="AQW Companion Prometheus-inspired helmet logo"></div><div><h1>AQW Companion <span class="aqwc-stars-label" style="display:none">STARS</span> <span class="tag">BETA 0.13.0</span></h1><small>AdventureQuest Worlds Inventory & Farming · Created by CptMundo</small></div></div><div class="actions inventory-header-actions"><div class="inventory-tools" role="group" aria-label="Inventory tools"><a id="aqwc-get-extension" class="primary" href="extension/quick-start.html">🧩 Get extension</a><details class="inventory-advanced"><summary title="Advanced inventory options" aria-label="Advanced inventory options">⚙ <span>Options</span></summary><div class="inventory-advanced-menu"><div class="aqwc-theme-tools aqwc-options-theme"><label for="aqwc-site-theme" class="muted tiny">Theme</label><select id="aqwc-site-theme"><option value="companion">Companion</option><option value="dark">Dark Mode</option><option value="light">Light Mode</option><option value="cas">Cas B Neophyte</option><option value="stars">Stars</option></select></div><div class="aqwc-options-main"><a href="extension/quick-start.html">📘 Guide &amp; Download</a><button id="aqwc-tour-replay" type="button">✦ Quick tour</button></div><details id="aqwc-data-management" class="aqwc-data-management"><summary>📦 Data Management <span aria-hidden="true" class="aqwc-data-chevron">›</span></summary><div class="aqwc-data-actions"><button id="backup" title="Download backup">⬇ Download backup</button><label class="upload" title="Import JSON file">📂 Import JSON / Restore backup<input id="file" type="file" accept=".json,application/json" multiple></label><button id="aqwc-account-import" type="button" title="Import the Account Manager export and automatically sync the extension" disabled>📥 Import &amp; Sync</button><button id="aqwc-sync-inventory" type="button" disabled title="Send selected Companion snapshot to extension only">↻ Sync to extension</button><button id="clear" title="Clear local data">Clear local data…</button></div></details></div></details></div><div class="inventory-header-status"><span id="aqwc-sync-status" role="status" aria-live="polite" class="muted tiny">Extension not detected</span><span id="aqwc-account-status" role="status" aria-live="polite" class="muted tiny">Use Full Sync in the extension.</span></div></div></header><div id="aqwc-unified-progress-panel" class="notice" hidden style="margin:8px 0"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><strong id="aqwc-unified-progress-label" role="status" aria-live="polite">Sync in progress</strong><button id="aqwc-unified-progress-close" type="button" class="smallbutton" aria-label="Dismiss sync notification" title="Dismiss notification" style="flex:none;min-width:30px;padding:2px 8px;font-size:18px;line-height:1.2">×</button></div><progress id="aqwc-unified-progress" aria-label="Companion sync progress" max="1" style="display:block;width:100%;height:9px;accent-color:#59c3e8;margin-top:6px"></progress></div><div id="alert" class="alert"></div><details id="aqwc-public-panel" class="notice" hidden style="margin:8px 0"><summary id="aqwc-public-summary">Public Character Inventory</summary><p class="muted tiny">Separate public snapshot. Bank and unlisted items are unknown. Full account history and farming calculations remain unchanged.</p><input id="aqwc-public-search" type="search" placeholder="Search public inventory" aria-label="Search public inventory"><p id="aqwc-public-count" class="muted tiny"></p><p id="aqwc-public-active-source" class="muted tiny" role="status"></p><div id="aqwc-public-list" style="max-height:320px;overflow:auto"></div></details><div class="notice aqw-storage-diagnostics" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><strong id="inventory-storage-status" aria-live="polite">💾 Inventory: checking browser storage…</strong><button id="inventory-storage-diagnostic" class="smallbutton" type="button">📋 Copy storage diagnostic</button></div><div class="notice"><strong>🔒 Your game data stays in this browser.</strong> Inventory, Wishlist and progress are stored locally. Cookie-free visit statistics via Umami. <a href="privacy.html">Privacy details</a>. <a href="extension/quick-start.html">📘 Visual guide &amp; download ↗</a></div>
+</head><body><div class="wrap"><header class="top"><div class="brand"><div class="logo"><img src="assets/brand-logo.png" width="52" height="52" alt="AQW Companion Prometheus-inspired helmet logo"></div><div><h1>AQW Companion <span class="aqwc-stars-label" style="display:none">STARS</span> <span class="tag">BETA 0.13.1</span></h1><small>AdventureQuest Worlds Inventory & Farming · Created by CptMundo</small></div></div><div class="actions inventory-header-actions"><div class="inventory-tools" role="group" aria-label="Inventory tools"><a id="aqwc-get-extension" class="primary" href="extension/quick-start.html">🧩 Get extension</a><details class="inventory-advanced"><summary title="Advanced inventory options" aria-label="Advanced inventory options">⚙ <span>Options</span></summary><div class="inventory-advanced-menu"><div class="aqwc-theme-tools aqwc-options-theme"><label for="aqwc-site-theme" class="muted tiny">Theme</label><select id="aqwc-site-theme"><option value="companion">Companion</option><option value="dark">Dark Mode</option><option value="light">Light Mode</option><option value="cas">Cas B Neophyte</option><option value="stars">Stars</option></select></div><div class="aqwc-options-main"><a href="extension/quick-start.html">📘 Guide &amp; Download</a><button id="aqwc-tour-replay" type="button">✦ Quick tour</button></div><details id="aqwc-data-management" class="aqwc-data-management"><summary>📦 Data Management <span aria-hidden="true" class="aqwc-data-chevron">›</span></summary><div class="aqwc-data-actions"><button id="backup" title="Download backup">⬇ Download backup</button><label class="upload" title="Import JSON file">📂 Import JSON / Restore backup<input id="file" type="file" accept=".json,application/json" multiple></label><button id="aqwc-account-import" type="button" title="Import the Account Manager export and automatically sync the extension" disabled>📥 Import &amp; Sync</button><button id="aqwc-sync-inventory" type="button" disabled title="Send selected Companion snapshot to extension only">↻ Sync to extension</button><button id="clear" title="Clear local data">Clear local data…</button></div></details></div></details></div><div class="inventory-header-status"><span id="aqwc-sync-status" role="status" aria-live="polite" class="muted tiny">Extension not detected</span><span id="aqwc-account-status" role="status" aria-live="polite" class="muted tiny">Use Full Sync in the extension.</span></div></div></header><div id="aqwc-unified-progress-panel" class="notice" hidden style="margin:8px 0"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><strong id="aqwc-unified-progress-label" role="status" aria-live="polite">Sync in progress</strong><button id="aqwc-unified-progress-close" type="button" class="smallbutton" aria-label="Dismiss sync notification" title="Dismiss notification" style="flex:none;min-width:30px;padding:2px 8px;font-size:18px;line-height:1.2">×</button></div><progress id="aqwc-unified-progress" aria-label="Companion sync progress" max="1" style="display:block;width:100%;height:9px;accent-color:#59c3e8;margin-top:6px"></progress></div><div id="alert" class="alert"></div><details id="aqwc-public-panel" class="notice" hidden style="margin:8px 0"><summary id="aqwc-public-summary">Public Character Inventory</summary><p class="muted tiny">Separate public snapshot. Bank and unlisted items are unknown. Full account history and farming calculations remain unchanged.</p><input id="aqwc-public-search" type="search" placeholder="Search public inventory" aria-label="Search public inventory"><p id="aqwc-public-count" class="muted tiny"></p><p id="aqwc-public-active-source" class="muted tiny" role="status"></p><div id="aqwc-public-list" style="max-height:320px;overflow:auto"></div></details><div class="notice aqw-storage-diagnostics" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><strong id="inventory-storage-status" aria-live="polite">💾 Inventory: checking browser storage…</strong><button id="inventory-storage-diagnostic" class="smallbutton" type="button">📋 Copy storage diagnostic</button></div><div class="notice"><strong>🔒 Your game data stays in this browser.</strong> Inventory, Wishlist and progress are stored locally. Cookie-free visit statistics via Umami. <a href="privacy.html">Privacy details</a>. <a href="extension/quick-start.html">📘 Visual guide &amp; download ↗</a></div>
 <nav class="primarynav" aria-label="Main navigation"><button class="active" data-group="home">📊 Home</button><button data-group="projects">🎯 Wishlist</button><button data-group="planner">📅 Quest Tracker</button><button data-group="ultras">⚡ Ultras &amp; Bosses</button><button data-group="builds">🛡️ Class Builds</button><button data-group="story">📖 Story</button><button data-group="badges">🏆 Badge Hunter</button><button data-group="explore">✨ Explore</button><button data-group="inventory">📦 Inventory</button></nav>
 <nav class="tabs subnav" aria-label="Section navigation"><button data-tab="discover" data-parent="explore">Item Explorer</button><button data-tab="boost-finder" data-parent="explore">Boost Finder</button><button data-tab="database" data-parent="explore" style="display:none" aria-hidden="true" tabindex="-1">Community Database (advanced)</button><button data-tab="unlocks" data-parent="projects">Item Tracker</button><button data-tab="goals" data-parent="projects">Farming Goals</button><button data-tab="story" data-parent="story">Story &amp; Sagas</button><button data-tab="badge-hunter" data-parent="badges">Badge Library</button><button data-tab="account-stats" data-parent="inventory">Account Statistics</button><button data-tab="alerts" data-parent="inventory">Alerts</button><button data-tab="milestones" data-parent="inventory">Companion Milestones</button><button data-tab="inventory" data-parent="inventory">Inventory &amp; Bank</button><button data-tab="compare" data-parent="inventory">Compare Exports</button><button data-tab="history" data-parent="inventory">History</button><button data-tab="planner" data-parent="planner">📅 Daily / Weekly</button><button data-tab="planner-pinned" data-parent="planner">📌 Pinned Quests</button><button data-tab="planner-discover" data-parent="planner">📚 Quest Library</button><button data-tab="planner-history" data-parent="planner" hidden tabindex="-1">History</button><button data-tab="ultras" data-parent="ultras">⚡ Ultras</button><button data-tab="boss-guides" data-parent="ultras">⚔️ Boss Guides</button><button data-tab="builds" data-parent="builds">Class Builds</button><button data-tab="forge" data-parent="builds">Forge Tracker</button></nav>
 <section id="overview" class="view active" data-inventory-booting="true" aria-busy="true"><div id="home-inventory-loading" class="home-inventory-loading" role="status"><span class="inventory-loading-spinner" aria-hidden="true"></span><span>Loading your Companion…<small>Restoring your saved inventory and progress.</small></span></div><div id="welcome" class="placeholder hidden"><div class="emoji">📦</div><h2>Welcome to AQW Companion</h2><p>Import the file <code>CptMundo_Inventory_COMPLETO.json</code> (or another export in the same format) to explore your inventory and bank.</p><p>You can also import two exports to see what changed.</p></div><section id="aqwc-getting-started" class="card aqwc-getting-started" hidden aria-labelledby="aqwc-start-title"><div class="aqwc-start-icon" aria-hidden="true">🧭</div><div><h2 id="aqwc-start-title">Getting started</h2><p>Install the extension, sign in to AQWorlds and use Full Sync. Your first import unlocks a quick tour.</p></div><a class="aqwc-start-link" href="extension/quick-start.html">Install &amp; visual guide ↗</a></section><div id="home-calendar-guest"></div><div id="dashboard" class="hidden"><div class="homeinsights"><div class="card"><div class="homehead"><h3 class="sectiontitle">📅 Recent Daily & Weekly Activity</h3><button id="homeplanner" class="smallbutton">Open Planner ↗</button></div><div id="homeactivities" class="homeentries"></div></div><div class="card"><div class="homehead"><h3 class="sectiontitle">🎯 Nearly Finished Projects</h3><button id="homeprojects" class="smallbutton">Open Projects ↗</button></div><div id="homeprojectslist" class="homeentries"></div></div></div><div class="home-main-grid"><div class="card home-inventory-changes"><div class="homehead"><h3 class="sectiontitle">📦 Changes Since Your Last Import</h3><button id="homecompare" class="smallbutton">Full comparison ↗</button></div><div id="homeinventorydelta" class="home-delta"></div><div class="home-stack-card hidden" id="home-stack-card"><div class="homehead"><h3 class="stack-alert-use-title"><span class="home-warning-icon" aria-hidden="true">⚠</span> Stack Alerts</h3><button id="homestacks" class="smallbutton" type="button">View materials ↗</button></div><div id="home-stack-summary" class="muted tiny"></div></div></div><div class="card homeseason" id="home-calendar-card"><div class="homehead"><h3 class="sectiontitle">📅 Calendar</h3><button id="homeexplore" class="smallbutton">Browse Items ↗</button></div><div class="calendar-badge-alert hidden" id="badge-hunter-home"><div class="homehead"><h4 class="calendar-badge-title">🏆 Seasonal &amp; Limited-time Badges</h4><button id="badge-hunter-home-open" class="smallbutton" type="button">Open Badge Hunter ↗</button></div><p id="badge-hunter-home-text"></p><p class="muted tiny">Announced end dates · confirm availability in game.</p></div><div id="homeseasoncontent" class="home-season-content"><p class="muted tiny">Official AQW event highlights and source links. Not live availability.</p></div></div></div><div class="home-summary-grid"><div class="card"><h3 class="sectiontitle">Items Added · Last 12 Months</h3><div class="bars" id="yearbars"></div><div id="olderyears" class="older-years"></div><p class="muted" style="font-size:12px">Dates recorded in the export; not necessarily original item release dates.</p></div><div class="card"><h3 class="sectiontitle">Items by Category</h3><div id="toptypes"></div></div><div class="card"><h3 class="sectiontitle">Items by Rarity</h3><div id="toprarities"></div><p class="muted" style="font-size:11px;margin-top:9px">Only items matched against imported community rarity metadata. Unknown items are not treated as Common.</p></div></div><div class="stats"><div class="card"><div class="eyebrow">Total items</div><div id="s-total" class="value">—</div></div><div class="card"><div class="eyebrow">In bank</div><div id="s-bank" class="value">—</div></div><div class="card"><div class="eyebrow">Outside bank</div><div id="s-out" class="value">—</div></div><div class="card"><div class="eyebrow">Classes</div><div id="s-class" class="value">—</div></div></div><div class="card" style="margin-top:16px"><h3 class="sectiontitle">Snapshot details</h3><div id="snapshotinfo" class="muted"></div></div></div></section>
@@ -63,7 +63,7 @@
 <section id="ultras" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle">⚡ Ultra Boss Strategy Guides</h3><p class="muted tiny">Choose a boss and your class to see a suggested team, a role-specific plan, fight phases and common wipe causes. Strategies are community-sourced and may change. Guides are community references, not live combat instructions.</p></div><span class="pill">12 strategy guides · Community references</span></div><div class="toolbar"><input id="ultrasearch" type="search" placeholder="Search bosses, mechanics or classes…"><select id="ultrafilter"><option value="all">All guides</option><option value="ready">All suggested classes owned</option></select></div><div class="ultra-master-detail"><div id="ultracards" class="ultracards"></div><div id="ultradetail" class="ultradetail hidden"></div></div>
 </div></section><section id="boss-guides" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle">⚔️ Boss Guides</h3><p class="muted tiny">Browse group encounters, solo arenas, dungeons and seasonal bosses. Community strategies and suggested loadouts; not encounter-tested by Companion.</p></div><span id="bossguidecount" class="pill">Boss encounters</span></div><div class="toolbar boss-guide-toolbar"><input id="bossguidesearch" type="search" placeholder="Search bosses, maps or classes…" aria-label="Search boss guides"><select id="bossguidecategory" aria-label="Boss category"><option value="all">All categories</option><option>Void Bosses</option><option>Shrines</option><option>Solo arenas</option><option>Grim Challenge</option><option>Grim Gaol</option><option>Lavarock Shore</option><option>Seasonal challenges</option><option>Seasonal</option><option>Legacy / special</option></select></div><div class="boss-master-detail"><div id="ultracatalog" class="boss-guide-list" aria-label="Boss encounters"></div><div id="bossguidedetail" class="ultradetail boss-guide-detail" aria-live="polite"></div></div></div></section><section id="builds" class="view">
 
-<div class="card build-planner-card"><div class="unlocktop"><div><h3 class="sectiontitle">🛡️ Class Build Planner</h3><p class="muted tiny">Class enhancement loadouts for solo bosses and farming, with Forge effects and consumables.</p></div><span class="pill">Beta · Class builds · 2026 meta</span></div><div class="build-controls"><label>Search class<input id="build-search" type="search" placeholder="Search by class name…" autocomplete="off"></label><label>Class<select id="build-class"></select></label><label>Activity<select id="build-role"></select></label></div><div id="build-results" aria-live="polite"></div></div>
+<div class="card build-planner-card"><div class="unlocktop"><div><h3 class="sectiontitle">🛡️ Class Build Planner</h3><p class="muted tiny">Community build examples under review; individual enhancement and consumable effects have sources.</p></div><span class="pill">Beta · Class builds · 2026 meta</span></div><div class="build-controls"><label>Search class<input id="build-search" type="search" placeholder="Search by class name…" autocomplete="off"></label><label>Class<select id="build-class"></select></label><label>Activity<select id="build-role"></select></label></div><div id="build-results" aria-live="polite"></div></div>
 
 </section>
 <section id="forge" class="view">
@@ -85,7 +85,7 @@
 <div class="packrow"><button class="smallbutton" data-pack="essentials">+ Starter routines</button><button class="smallbutton" data-pack="legion">+ Legion</button><button class="smallbutton" data-pack="nulgath">+ Nulgath</button><button class="smallbutton" data-pack="shadowfall">+ Shadowfall / Doom</button><button class="smallbutton" data-pack="ultras">+ Ultra weeklies</button></div><p class="muted tiny">Recurring quests indexed from AQWWiki community data, the Daily Quest Board and curated Ultra guides. Some require unlocks, membership or seasonal availability. Data attribution: AQWikiTools / AQWorlds Wiki (CC BY-SA 3.0). <a href="https://aqwwiki.wikidot.com/daily-quest-board-s-quests" target="_blank" rel="noopener noreferrer">Daily Quest Board ↗</a> · <a href="https://aqwwiki.wikidot.com/sort-by-all-quests" target="_blank" rel="noopener noreferrer">All AQW quests ↗</a></p><h4 class="sectiontitle" style="margin-top:14px">Quest Library <small id="plannerresultcount" class="muted"></small></h4><div id="planner-suggestions" class="task-grid"></div><details class="task-route" id="planner-source-details"><summary>Quest library coverage &amp; source pages</summary><p id="planner-coverage" class="muted tiny"></p><div id="planner-source-pages"></div></details>
 <div class="new-task"><input id="customtask" maxlength="120" placeholder="Add your own task, e.g. Check Wheel of Doom"><select id="customfrequency"><option value="daily">Daily</option><option value="weekly">Weekly</option></select><input id="customjoin" placeholder="Optional /join" maxlength="80"><button id="addcustomtask" class="primary">+ Add task</button></div></div>
 </section><section id="planner-history" class="view"><div class="card"><div class="planner-my-toolbar"><h3 class="sectiontitle">Task History</h3><button id="plannerbackfromhistory" class="smallbutton" type="button">← Daily / Weekly</button></div><div id="planner-task-history"></div></div></section><section id="compare" class="view"><div class="card"><h3 class="sectiontitle">Compare two snapshots</h3><p class="muted" style="font-size:13px">Import both snapshots into the same browser. Comparison uses <b>ID</b> and quantity; moving items between inventory and bank does not count as a new item.</p><div class="comparecontrols"><label>Older <select id="oldselect"></select></label><label>Newer <select id="newselect"></select></label><button id="comparebtn" class="primary">Compare</button></div><div id="compareresult" class="muted">Import at least two snapshots to get started.</div></div></section>
-<section id="history" class="view"><div class="card"><h3 class="sectiontitle">Local import history</h3><div id="historylist"></div><p class="muted" style="font-size:12px">Each imported file is validated and saved in your browser's IndexedDB. The Backup button downloads a JSON file you can import later to restore your data. Clear data removes snapshots, farming goals and unlock projects.</p></div></section><div class="foot">Created by <strong>CptMundo</strong> for the AQWorlds community · Unofficial fan project · Not affiliated with Artix Entertainment · v0.13.0 Beta</div></div>
+<section id="history" class="view"><div class="card"><h3 class="sectiontitle">Local import history</h3><div id="historylist"></div><p class="muted" style="font-size:12px">Each imported file is validated and saved in your browser's IndexedDB. The Backup button downloads a JSON file you can import later to restore your data. Clear data removes snapshots, farming goals and unlock projects.</p></div></section><div class="foot">Created by <strong>CptMundo</strong> for the AQWorlds community · Unofficial fan project · Not affiliated with Artix Entertainment · v0.13.1 Beta</div></div>
 <div id="itemdetails" class="detailoverlay hidden" role="dialog" aria-modal="true" aria-label="Item acquisition details"><div class="detailpanel"><div class="detailhead"><div><small style="color:#7da5d1;font-weight:700">AQW COMPANION · ACQUISITION EXPLORER</small><h2 id="detailname"></h2></div><button type="button" class="smallbutton" id="closedetails" aria-label="Close details">✕ Close</button></div><div id="detailcontent"></div></div></div><aside id="aqwc-tour" class="aqwc-tour" role="region" aria-labelledby="aqwc-tour-title" hidden><div class="aqwc-tour-top"><span>QUICK TOUR <span id="aqwc-tour-count">1 / 6</span></span><button id="aqwc-tour-close" type="button" aria-label="Close quick tour">×</button></div><progress id="aqwc-tour-progress" aria-label="Tour progress" max="6" value="1"></progress><div class="aqwc-tour-content" aria-live="polite"><span id="aqwc-tour-icon" aria-hidden="true">📊</span><div><h3 id="aqwc-tour-title" tabindex="-1">Your adventure starts here</h3><p id="aqwc-tour-body"></p></div></div><div class="aqwc-tour-actions"><button id="aqwc-tour-skip" type="button">Skip tour</button><div><button id="aqwc-tour-back" type="button">Back</button><button id="aqwc-tour-next" type="button">Next →</button></div></div><a href="extension/quick-start.html" class="aqwc-tour-guide">Full visual guide ↗</a></aside><script src="js/meta-class-builds.js"></script>
 <script src="js/recipe-integrity.js"></script>
 <script src="extension/wishlist-link.js?v=126"></script>
@@ -1742,7 +1742,7 @@ const ultraEncounterBuilds={
  }
 };
 function encounterUltraBuild(id,cls,generic){
- if(id==='dage')return {weapon:'Health Vamp / Dauntless',helm:generic?.helm||'Choose defensive setup',cape:generic?.cape||'Choose defensive setup',note:'Use sustain through lifesteal instead of ordinary healing skills during Noxious Decay.',consumable:cls==='Chaos Avenger'?'Scroll of Enrage if loop-taunting':null};
+ if(id==='dage')return null; // Shared lifesteal guidance is not an encounter gear preset.
  return ultraEncounterBuilds[id]?.[cls]||null;
 }
 const ultraReviewedTactics={
@@ -1892,7 +1892,7 @@ function ultraClassOptions(key,profile,original=[]){
  add([...(profile?.classes||[]),...(profile?.premium||[])]);
  const groups=[];
  for(const owned of [true,false]){
-  const names=rows.filter(x=>x.owned===owned).sort((a,b)=>(b.score?.rating??-1)-(a.score?.rating??-1)||a.name.localeCompare(b.name)).map(x=>x.name);
+  const names=rows.filter(x=>x.owned===owned).sort((a,b)=>a.name.localeCompare(b.name)).map(x=>x.name);
   if(names.length)groups.push({label:owned?'✓ OWNED CLASSES':'NOT OWNED',owned,names});
  }
  return groups;
@@ -1901,7 +1901,7 @@ function fillUltraClassSelect(select,key,profile,original=[]){
  const groups=ultraClassOptions(key,profile,original);
  for(const group of groups){const optgroup=node('optgroup');optgroup.label=group.label;
   for(const name of group.names){const score=ultraSelectedRating(key,name);
-   const option=new Option((group.owned?'✓ ':'')+name+(score?' · '+score.rating+'/5':''),name);
+   const option=new Option((group.owned?'✓ ':'')+name,name);
    option.className=group.owned?'ultra-option-owned':'ultra-option-missing';optgroup.append(option)}
   select.append(optgroup);
  }
@@ -1912,7 +1912,7 @@ function renderUltraSelectedRating(target,key,cls){
  target.replaceChildren();
  target.append(node('span',ultraOwned(cls)?'✓ Owned':'Not owned',ultraOwned(cls)?'ultra-owned':'ultra-missing'));
  const score=ultraSelectedRating(key,cls);
- if(score)target.append(node('span',score.role,'muted tiny'));
+ if(score)target.append(node('span',score.role+' · community role','muted tiny'));
 }
 
 // Small, source-reviewed glossary. No dependency on later Class Builds globals.
@@ -2073,30 +2073,11 @@ function ultraBaseFor(cls){
  return 'Lucky';
 }
 function ultraSuggestedGear(key,cls,profile,generic=null,encounter=null){
- const exact=ultraWorkbookBuild(profile,cls);
- // Other source rows establish the class's usual base; never import a
- // reduced-HP helm or a risky cape from an unrelated encounter.
- const known=[...Object.values(simplifiedProfiles),...simplifiedExtraEncounters].map(p=>ultraWorkbookBuild(p,cls)).filter(Boolean);
- const base=exact?.base||encounter?.base||generic?.base||known[0]?.base||ultraBaseFor(cls);
- const role=ultraSelectedRating(key,cls)?.role;
- const support=role==='Support'||role==='Healer';
- const fallbackWeapons={'Chaos Shaper':'Mana Vamp','Sentinel':'Awe Blast','Shaman':'Mana Vamp','Master Ranger':'Spiral Carve','Dragon of Time':'Awe Blast','ArchFiend':'Health Vamp','Legion DoomKnight':'Health Vamp','LightCaster':'Awe Blast','Hollowborn Vindicator':'Valiance','Lich':'Valiance'};
- const fallbackName=Object.keys(fallbackWeapons).find(n=>sameUltraClass(n,cls));
- const fallback={weapon:fallbackWeapons[fallbackName]||(support?'Awe Blast':'Valiance'),helm:'Base Forge',cape:'Penitence',base};
- const usable=(v)=>typeof v==='string'&&v.trim()&&!/^choose/i.test(v);
- const preferred=exact||encounter||generic;
- const out={...fallback};
- for(const k of ['weapon','helm','cape','base'])if(usable(preferred?.[k]))out[k]=preferred[k];
- if(key==='dage'){
-  if(!/Health Vamp|Dauntless/i.test(out.weapon))out.weapon='Health Vamp';
-  if(!exact) {out.helm='Base Forge';out.cape='Penitence';}
-  if(sameUltraClass(cls,'Chaos Avenger'))out.consumable='Scroll of Enrage (if assigned)';
-  else out.consumable='Scroll of Decay (backup if needed)';
- }else if(key==='kathool')out.consumable='Vigil';
- else if(usable(preferred?.consumable))out.consumable=preferred.consumable;
- if(key==='darkon'||key==='Void Nightbane'||key==='Astral Empyrean')if(out.cape==='Vainglory')out.cape='Penitence';
- out.estimated=!exact&&!encounter;
- return out;
+ // Never infer encounter gear from a generic preset, another boss, or a rating.
+ if(sameUltraClass(cls,'Great Thief')||sameUltraClass(cls,'Arcana Invoker'))return null;
+ const exact=ultraWorkbookBuild(profile,cls)||encounter;if(!exact)return null;
+ const out={};for(const field of ['weapon','helm','cape','base','consumable'])if(typeof exact[field]==='string'&&exact[field].trim()&&!/^choose/i.test(exact[field]))out[field]=exact[field];
+ return Object.keys(out).length?{...out,estimated:true,source:profile?.sheet?simplifiedGuideSource:null}:null;
 }
 function ultraRecommendedTeam(b,profile){
  // Select one intact documented composition. Never assemble a new lineup
@@ -2110,7 +2091,7 @@ function appendUltraRecommendedTeam(root,b,profile){
  const names=ultraRecommendedTeam(b,profile);if(!names.length)return;
  const wrap=node('section',undefined,'ultra-recommended-team');
  const header=node('div',undefined,'ultra-recommended-heading');
- header.append(node('h3','Recommended team'),node('small',names.length+' players','muted tiny'));wrap.append(header);
+ header.append(node('h3','Community team example'),node('small',names.length+' players · review pending','muted tiny'));wrap.append(header);
  const list=node('div',undefined,'ultra-recommended-classes');
  for(const name of names){const owned=ultraOwned(name),chip=node('span',undefined,'ultra-team-chip'+(owned?' is-owned':''));
  chip.append(node('span',owned?'✓':'○','ultra-team-mark'),node('span',name));chip.title=owned?'Class owned':'Class not owned';list.append(chip)}
@@ -2118,7 +2099,8 @@ function appendUltraRecommendedTeam(root,b,profile){
 }
 
 function appendUltraGearCells(gear,build,boss){
- if(!build){gear.append(node('span','No reviewed class-specific gear preset; consult the encounter guide.','muted tiny'));return}
+ if(!build){gear.append(node('span','No reviewed class-specific gear preset yet. Consult a current encounter guide.','muted tiny'));return}
+ gear.append(node('p','Community example — not independently validated for the current patch.','muted tiny'));if(build.source){const ref=node('a','Original community guide ↗');ref.href=build.source;ref.target='_blank';ref.rel='noopener noreferrer';gear.append(ref)}
  for(const [label,value] of [['Weapon',build.weapon],['Helm',build.helm],['Cape',build.cape],['Base',build.base],['Consumable',build.consumable]].filter(([,v])=>v)){
   const cell=node('div',undefined,'ultra-focus-gear-cell'),name=node('strong');ultraExplainText(name,value,boss);cell.append(node('small',label),name);gear.append(cell);
  }
@@ -2272,7 +2254,7 @@ function bossGuideRoleTips(profile,cls,role){
  return rows;
 }
 function drawBossGuideRoleTips(root,profile,cls){
- root.replaceChildren();root.append(node('h3','Role-specific Tips'));
+ root.replaceChildren();root.append(node('h3','Encounter guidance · community example'));root.append(node('p','Not a verified class-specific rotation. Confirm mechanics and assignments with the source guide.','muted tiny'));
  if(!cls){root.append(node('p','No class-specific loadout is documented for this encounter.','muted tiny'));return}
  const role=ultraSelectedRating(profile.name,cls)?.role;
  const context=node('p','Playing as '+cls+(role?' · '+role:''),'boss-guide-role-context');root.append(context);
@@ -2299,7 +2281,7 @@ function renderBossGuideDetail(entry){
   const select=node('select',undefined,'ultra-role-select');select.setAttribute('aria-label',key+' class');fillUltraClassSelect(select,key,profile);
   if(names.includes(selectedBossClasses.get(key)))select.value=selectedBossClasses.get(key);
   const rating=node('div',undefined,'ultra-selected-rating'),gear=node('div',undefined,'ultra-focus-gear');
-  const draw=()=>{selectedBossClasses.set(key,select.value);renderUltraSelectedRating(rating,key,select.value);gear.replaceChildren();const genericKey=Object.keys(starterBuilds).find(x=>sameUltraClass(x,select.value));const build=ultraSuggestedGear(key,select.value,profile,starterBuilds[genericKey]?.group);appendUltraGearCells(gear,build,key);heading.textContent=build?.estimated?'Your Loadout · Suggested':'Your Loadout';gear.title=build?.estimated?'General class enhancements, not verified for this encounter.':'Encounter guide enhancements';drawBossGuideRoleTips(rolePanel,profile,select.value);};
+  const draw=()=>{selectedBossClasses.set(key,select.value);renderUltraSelectedRating(rating,key,select.value);gear.replaceChildren();const genericKey=Object.keys(starterBuilds).find(x=>sameUltraClass(x,select.value));const build=ultraSuggestedGear(key,select.value,profile,starterBuilds[genericKey]?.group);appendUltraGearCells(gear,build,key);heading.textContent=build?'Loadout · Community example':'Loadout · Review pending';gear.title='Not a verified best-in-slot recommendation';drawBossGuideRoleTips(rolePanel,profile,select.value);};
   setup.append(select,rating,gear);select.onchange=draw;draw();layout.append(setup);
  }
  const fight=node('section',undefined,'boss-guide-panel boss-guide-fight');fight.append(node('h3','Fight at a glance'));
@@ -2331,8 +2313,11 @@ function ultraUnifiedTips(key,cls,previous=[]){
  const tips=[];
  const add=(title,text,quote='')=>tips.push({title,text,quote});
  if(key==='drakath'){
-  add('Before pulling','Aim for around 3,000 buffed HP, or 3,500 if you are the assigned taunter. Equip seven Scrolls of Enrage if you will taunt every HP blast.');
-  add('HP blasts · 18M / 16M / 14M / 12M / 8M / 6M / 4M','If assigned to taunt, activate Scroll of Enrage BEFORE the next threshold. Otherwise hold burst until the taunter confirms readiness. Resume damage after the blast.');
+  const dps=/DPS/.test(role)&&!is('Chaos Avenger');
+  const blast='HP blasts · 18M / 16M / 14M / 12M / 8M / 6M / 4M';
+  if(dps){add('DPS assignment','Identify the designated taunter before pulling. Your default assignment is damage, not taunting.');add(blast,'Hold damage before a threshold until the designated taunter confirms readiness. Resume after the blast.');}
+  else if(is('Chaos Avenger')||is('ArchPaladin')||is('Lord of Order')||is('Legion Revenant')){add('Confirm assignment','Agree who handles the HP blasts. Equip Scroll of Enrage only if your team assigns you that job.');add(blast,'Assigned taunter: intercept before the threshold. Otherwise wait for the designated taunter’s call.');}
+  else{add('Confirm assignment','Ask which teammate handles the HP blasts; do not assume you are the taunter.');add(blast,'Respect the agreed damage stop and recovery windows.');}
   if(is('Lord of Order'))add('Support','Maintain buffs between blasts; heal after damage lands. Use Blessing of Order (5) for planned mitigation.');
   else if(is('ArchPaladin'))add('Mitigation','Maintain Commandment (2) and Righteous Seal (4); time Hymn of Light (3) after damage lands. Use Sacred Magic: Eden (5) only in the planned mitigation window.');
   else if(healer)add('Recovery','Keep recovery available for HP blasts; stagger direct heals with the other healer.');
@@ -2472,7 +2457,7 @@ function renderUltraDetail(b){
  summary.append(focus);
  compact.append(setup,summary);root.append(compact);
  const mechanics=node('section',undefined,'ultra-focus-card ultra-mechanics ultra-class-guide');
- mechanics.append(node('h3','👤 Role-specific Tips'));
+ const mechanicsTitle=node('h3','👤 Encounter mechanics');mechanics.append(mechanicsTitle);
  const roleContext=node('div',undefined,'ultra-role-context');
  const roleName=node('strong',undefined,'ultra-role-selected');
  roleContext.append(node('span','Playing as'),roleName);
@@ -2500,10 +2485,11 @@ function renderUltraDetail(b){
     const source=node('a','Bard enhancement reference ↗','ultra-gear-source');
     source.href='https://www.aq.com/lore/classes/bard';source.target='_blank';source.rel='noopener noreferrer';gear.append(source);
    }
-  }else gear.append(node('span','No reviewed class-specific gear preset; consult the encounter guide.','muted tiny'));
-  gear.title=build.estimated?'Suggested enhancements; not verified for this encounter.':'Encounter guide enhancements';
+  }else gear.append(node('span','No reviewed class-specific gear preset yet. Consult a current encounter guide.','muted tiny'));
+  gear.title='Not a verified best-in-slot recommendation';setup.querySelector('h3').textContent=build?'⚔️ Loadout · Community example':'⚔️ Loadout · Review pending';
   roleName.textContent=cls;
-  sequence.replaceChildren();
+  mechanicsTitle.textContent=b.id==='drakath'?'👤 Role & encounter guidance':'👤 Encounter mechanics · community guide';
+  sequence.replaceChildren();sequence.append(node('p',b.id==='drakath'?'Role guidance for the standard designated-taunter strategy; not a class rotation.':'Shared encounter mechanics, not a verified class-specific rotation. Confirm your assignment with the team.','muted tiny'));
   const baseTips=[...new Set((play?.steps||[]).map(step=>String(step).trim()).filter(Boolean))];
   const rows=ultraUnifiedTips(b.id,cls,baseTips).map((part,i)=>({...part,number:String(i+1).padStart(2,'0')}));
   for(const part of rows){
@@ -2518,6 +2504,7 @@ function renderUltraDetail(b){
    sequence.append(step);
   }
   if(b.id==='speaker')appendPersonalSpeakerRotation(sequence,cls);
+  const refs=b.id==='drakath'?[['Champion Drakath — mechanics and example teams','https://jix-aqw.github.io/guias/ultra-bosses/ultra-champion-drakath.html'],['Champion Drakath — Wiki','https://aqwwiki.wikidot.com/champion-drakath-monster']]:(ultraReviewedSources[b.id]||[]);for(const [label,url] of refs){const a=node('a',label+' ↗','muted tiny');a.href=url;a.target='_blank';a.rel='noopener noreferrer';sequence.append(a)}
  }
  select.onchange=updateRole;updateRole();
 }
@@ -3174,7 +3161,7 @@ function suggestedBaseEnhancement(cls,role,slot){
  return base;
 }
 const enhancementEffects={
- Lucky:'Raises Luck, improving critical chance and critical damage. Exact gains depend on enhancement level and class stats.',
+ Lucky:'Raises Luck; exact stat effects depend on class and enhancement level.',
  Wizard:'Adds Intellect and spell-oriented stats; the exact bonus depends on level.',
  Fighter:'Adds Strength and Endurance; the exact bonus depends on level.',
  Healer:'Adds health and healing-oriented stats; the exact bonus depends on level.',
@@ -3183,13 +3170,13 @@ const enhancementEffects={
  'Spiral Carve':'15% auto-attack proc: 200% hybrid damage; +25% Crit Chance for 10s.',
  'Mana Vamp':'80% auto-attack proc: 50% true hybrid damage and +10 mana.',
  Valiance:'Auto-attack proc (15s cooldown): +30% STR/DEX/INT/WIS/END and +15% Luck for 20s.',
- Dauntless:'Skill 2 proc (3s cooldown): 190–570% physical damage; +15% Crit Chance, +25% Haste, -50% mana cost for 12s; cannot receive heals for 6s.',
- Ravenous:'Skill 3 proc: +10% outgoing damage and +25% Crit Chance for 10s; reduces enemy damage and Crit Chance (stacking).',
- Praxis:'Skill 2 proc (4s cooldown): +10% damage per successive hit to the same target; also reduces enemy Dodge.',
+ Dauntless:'Skill 2 (3s cooldown): 190–570% physical damage, stronger at low HP; lifesteal, +15% Crit Chance, +25% Haste, -50% mana costs for 12s; self-Decay for 6s.',
+ Ravenous:'Skill 3: 75–338% hybrid damage depending on target HP; +10% outgoing damage and +25% crit chance for 10s. Consumed reduces target damage and crit chance by 10%, plus 1% per stack up to 30%.',
+ Praxis:'Skill 2 (4s cooldown): 70% hybrid damage, increasing by 10% per consecutive hit to the same target; -5% target Dodge for 8s. Spinning Dragon blocks the next hit when available.',
  Smite:'Skill 5 proc (15s cooldown): deals 500% hybrid damage.',
  "Arcana's Concerto":'50% auto-attack proc: +2% physical and magical damage taken per stack on the target, up to 11 stacks (+22%) for 22s.',
  'Arcana’s Concerto':'50% auto-attack proc: +2% physical and magical damage taken per stack on the target, up to 11 stacks (+22%) for 22s.',
- Elysium:'Skill 3 proc: 250–1125% magic damage (stronger at lower mana), restores 4 mana/s, plus +10% outgoing damage per stack (up to 3).',
+ Elysium:'Skill 3: 250–1125% magic damage, stronger at low mana, up to two targets; Elysian grants mana regeneration, HoT and outgoing damage. See official trait for stacking details.',
  Acheron:'Skill 3 proc: +30% damage and Hit Chance for 6s, but applies a stacking self-DoT.',
  Anima:'Offensive physical Forge helm: +10% Hit Chance; boosts Strength but reduces Endurance/HP (level-dependent).',
  Pneuma:'Offensive magical Forge helm: +10% Hit Chance; boosts Intellect but reduces Endurance/HP (level-dependent).',
@@ -3213,11 +3200,12 @@ const alchemyEffects={
  'Might Tonic':'Strength +20% for 15 min. Useful for strength-scaling physical damage.',
  'Body Tonic':'Endurance +20% for 15 min. Defensive alternative when extra HP matters.',
  'Potent Battle Elixir':'Physical Damage +25% for 15 min.',
- 'Potent Malevolence Elixir':'Spell Power +25% for 15 min.',
- 'Potent Honor Potion':'Damage +75% and Mana Cost +15% for 35 sec. Short burst window.',
+ 'Potent Malevolence Elixir':'Magic damage +25% for 15 min.',
+ 'Potent Honor Potion':'All damage +75%; mana costs +25% for 35 sec. Cooldown: 60 sec.',
  'Felicitous Philtre':'Luck +50% for 45 sec. Crit-oriented alternative to Honor.'
 };
-// Checked against AQWG Alchemy and the AQWG common-class consumables setups.
+const alchemySources=Object.freeze({'Fate Tonic':'fate-tonic','Sage Tonic':'sage-tonic','Might Tonic':'might-tonic','Body Tonic':'body-tonic','Potent Battle Elixir':'potent-battle-elixir-non-ac','Potent Malevolence Elixir':'potent-malevolence-elixir','Potent Honor Potion':'potent-honor-potion','Felicitous Philtre':'felicitous-philtre'});
+// Item effects checked against individual Wiki entries 2026-11-27; class combinations are unverified.
 // Individual encounter requirements and consumable availability can still vary.
 const classAlchemy={
  'Void Highlord':['Fate Tonic','Potent Battle Elixir','Potent Honor Potion'],
@@ -3238,10 +3226,10 @@ const classAlchemy={
 };
 Object.assign(classAlchemy,window.AQWCMetaBuilds?.alchemy||{});
 function suggestedConsumables(cls,role){
- const selected=classAlchemy[cls]||['Fate Tonic','Potent Battle Elixir','Felicitous Philtre'];
+ const selected=classAlchemy[cls];if(!selected)return [];
  // Reorder to match the actual Tonic, Elixir, Potion categories.
  return [['Tonic',selected[0]],['Elixir',selected[1]],['Potion',selected[2]]]
-  .map(([kind,name])=>({kind,name,effect:alchemyEffects[name]||'Refer to the item effect before use.'}));
+  .filter(([,name])=>alchemySources[name]&&alchemyEffects[name]).map(([kind,name])=>({kind,name,effect:alchemyEffects[name],source:'https://aqwwiki.wikidot.com/'+alchemySources[name]}));
 }
 const enhancementMiniDescriptions={
  Lucky:'Crit-focused base stats',Wizard:'Magic-focused base stats',Fighter:'Physical base stats',Healer:'HP and healing stats',
@@ -3249,7 +3237,7 @@ const enhancementMiniDescriptions={
  Praxis:'Stacking boss damage',Smite:'Skill 5 burst','Arcana’s Concerto':'Team damage debuff',
  "Arcana's Concerto":'Team damage debuff',Elysium:'Mana sustain and magic',Acheron:'High-risk magic damage',
  'Awe Blast':'Enemy defense debuff','Spiral Carve':'Extra critical chance','Mana Vamp':'Restore mana',
- Forge:'Balanced helm stats',Anima:'Physical offense',Pneuma:'Magic offense',Vim:'Dodge and mana savings',
+ Forge:'Balanced helm stats',Anima:'Physical offense',Pneuma:'Magic offense',Vim:'Dexterity; lower mana cost and HP',
  Examen:'Wisdom and mana savings',Hearty:'Higher survivability',
  Vainglory:'More damage, less healing',Avarice:'Haste with defense cost',
  Absolution:'Stronger healing',Penitence:'More damage resistance',Lament:'Critical chance boost'
@@ -3258,6 +3246,8 @@ function shortEnhancementEffect(name){return enhancementMiniDescriptions[name]||
 function renderClassBuild(){
  const cls=$('build-class')?.value,role=$('build-role')?.value,root=$('build-results');if(!root)return;root.replaceChildren();
  const build=starterBuilds[cls]?.[role],meta=window.AQWCMetaBuilds?.metadata?.[cls];
+ const disputed=sameUltraClass(cls,'Great Thief')||(sameUltraClass(cls,'Void Highlord')&&role==='solo')||(sameUltraClass(cls,'Arcana Invoker')&&role!=='farm');
+ if(disputed){const panel=node('div',undefined,'build-empty');panel.append(node('strong',cls+' — loadout under review'),node('p','This preset was flagged by experienced players. It is withdrawn rather than replaced with another untested build.'));const url=sameUltraClass(cls,'Great Thief')?'https://aqwwiki.wikidot.com/great-thief':sameUltraClass(cls,'Void Highlord')?'https://aqwwiki.wikidot.com/void-highlord-class':'https://aqwwiki.wikidot.com/arcana-invoker';const link=node('a','Current class skills ↗');link.href=url;link.target='_blank';link.rel='noopener noreferrer';panel.append(link);root.append(panel);return}
  if(!build){
   const roleName={solo:'Solo / Boss',farm:'Farming',group:'Group / Ultras'}[role]||role;
   const alternatives=role==='farm'?'Kathool Adept, ArchMage or Arcana Invoker':
@@ -3273,7 +3263,7 @@ function renderClassBuild(){
   if(meta.canonical!==cls)identity.append(node('span','Same skills as '+meta.canonical,'build-meta-alias'));
   panel.append(identity);
  }
- if(build.note)panel.append(node('p',build.note,'build-meta-note'));
+ panel.append(node('p','Legacy community example — current patch / activity review pending. Not a verified best-in-slot loadout.','build-meta-note'));
  const layout=node('div',undefined,'build-character-layout');
  const mannequin=node('div',undefined,'build-mannequin');
  mannequin.innerHTML='<img class="build-artix-image" src="assets/artix.png" alt="Artix, AQWorlds paladin" loading="lazy" onerror="this.style.display=\'none\';this.parentElement.classList.add(\'build-artix-missing\')"><span class="build-artix-fallback">Artix artwork pending — add assets/artix.png to this PR.</span>'
@@ -3361,14 +3351,14 @@ function renderClassBuild(){
   }
   expl.append(group);
  }
- expl.append(node('p','Percentages describe enhancement traits or procs, not guaranteed final character stats. Standard stats depend on level.','muted tiny'));
+ expl.append(node('p','Trait effects and loadout suitability are separate; the combinations are not yet validated.','muted tiny'));const traitRef=node('a','Official enhancement traits ↗');traitRef.href='https://www.aq.com/lore/guides/enhancementtraits';traitRef.target='_blank';traitRef.rel='noopener noreferrer';expl.append(traitRef);
  info.append(expl);
  const pots=node('section',undefined,'build-info-panel build-consumables-panel');
- pots.append(node('h4','Consumables'));
- for(const {kind,name,effect} of suggestedConsumables(cls,role)){
+ pots.append(node('h4','Consumables · example choices'),node('p','Individual effects verified against Wiki item pages. Class / activity suitability still under review.','muted tiny'));
+ for(const {kind,name,effect,source} of suggestedConsumables(cls,role)){
   const line=node('div',undefined,'build-consumable-row');
   const heading=node('div',undefined,'build-effect-heading');
-  heading.append(node('strong',kind),node('span',name,'build-effect-combo'));
+  const ref=node('a',name+' ↗','build-effect-combo');ref.href=source;ref.target='_blank';ref.rel='noopener noreferrer';heading.append(node('strong',kind),ref);
   line.append(heading,node('p',effect,'build-effect-description'));
   pots.append(line);
  }
@@ -3376,7 +3366,7 @@ function renderClassBuild(){
  layout.append(mannequin,info);panel.append(layout);
  if(build.alternative){
   const alt=node('p',undefined,'build-meta-alternatives');
-  alt.append(node('strong','Alternative: '),document.createTextNode(build.alternative));
+  alt.append(node('strong','Unreviewed alternative: '),document.createTextNode(build.alternative));
   panel.append(alt);
  }
  if(meta){
@@ -3387,7 +3377,7 @@ function renderClassBuild(){
    a.target='_blank';a.rel='noopener noreferrer';references.append(a);
   }
   panel.append(references);
-  panel.append(node('small','Community-informed setups · Review boss mechanics and balance patches before copying an Ultra build.','muted tiny'));
+  panel.append(node('small','Community examples pending activity-specific review. Check current balance patches and source guides before use.','muted tiny'));
  }
  root.append(panel)
 }
