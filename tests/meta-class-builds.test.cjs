@@ -12,7 +12,7 @@ assert.equal(addon.classes.length,12,"Nine distinct new classes + 3 identical-sk
 assert.deepEqual(Object.keys(addon.aliases).sort(),["Chrono ShadowSlayer","Nechronomancer","Phantom Chronomancer"].sort());
 const weapons=new Set(["Valiance","Ravenous","Dauntless","Praxis","Arcana's Concerto","Elysium"]);
 const helms=new Set(["Forge","Vim","Examen","Pneuma","Anima"]);
-const capes=new Set(["Vainglory","Lament","Penitence"]);
+const capes=new Set(["Vainglory","Lament","Penitence","Avarice"]);
 for(const name of mandatory){
  const meta=addon.get(name);
  assert.ok(meta,"Missing new class "+name);
@@ -71,3 +71,9 @@ assert.ok(html.includes("'Arcana Invoker':'Wizard'"));
 assert.ok(html.includes(`"King's Echo":'Wizard'`));
 assert.ok(html.includes('No verified class/activity combination is available yet.'));
 assert.ok(html.includes('Community encounter example — mechanics, team and rotation'));
+
+assert.equal(addon.builds['Dark Lord'].farm.weapon,'Elysium');
+assert.equal(addon.builds['Dark Lord'].farm.cape,'Avarice');
+assert.ok(html.includes("starterBuilds[cls]?.[role]?.base||baseClassEnhancement[cls]"),'Per-activity base overrides class default');
+assert.ok(html.includes('Simplified Classes Guide, Farming column: Lucky / Valiance / Forge / Vainglory'));
+assert.ok(html.includes('Simplified low-HP farming example'));
