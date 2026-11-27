@@ -56,3 +56,6 @@ Replaces three vague placeholders with two unlock checkpoints, six final stock t
 
 ### Team Builder click target and label cleanup
 Full slot card is the native class-selection button's stretched hit area. Independent flexible dropdown remains above the click layer, keyboard selection stays accessible, focus ring surrounds the card. Removed numbered headings and visible lineup count. Moved Fixed/Flexible explanation into Sources & strategy notes. No evidence or roster changes. Browser regression covers clicking role text, dropdown independence and keyboard selection.
+
+### Other Boss Guides — cue coverage
+All 29 existing approved guide entries inspected for action cues. 18 guides now have 33 structured cues (18 exact text entries, plus named non-quote events or explicitly uncertain community wording). All other entries explicitly say no specific warning confirmed; this is not a claim that no cue exists. Each cue carries action, responsible player, timing, failure consequence and linked source. Astral breath is not tauntable; the assigned taunt follows impact. Distinguish solo and 2.0 Mechabinky encounters. No new roster, no invented game dialogue or live combat validation. Sources recorded individually in cue registry. Browser regressions cover Xyfrag, NerfKitten, Astral and Angler; static checks enforce every guide's coverage state.

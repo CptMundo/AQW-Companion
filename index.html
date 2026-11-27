@@ -24,7 +24,7 @@
 <link rel="stylesheet" href="css/planner-routines.css?v=185">
 <link rel="stylesheet" href="css/recipe-coverage.css">
 <link rel="stylesheet" href="css/stack-alerts.css?v=140">
-<link rel="stylesheet" href="css/ultra-quote-actions.css?v=127">
+<link rel="stylesheet" href="css/ultra-quote-actions.css?v=128">
 <link rel="stylesheet" href="css/badge-hunter.css?v=4">
 </head><body><div class="wrap"><header class="top"><div class="brand"><div class="logo"><img src="assets/brand-logo.png" width="52" height="52" alt="AQW Companion Prometheus-inspired helmet logo"></div><div><h1>AQW Companion <span class="aqwc-stars-label" style="display:none">STARS</span> <span class="tag">BETA 0.13.7</span></h1><small>AdventureQuest Worlds Inventory & Farming · Created by CptMundo</small></div></div><div class="actions inventory-header-actions"><div class="inventory-tools" role="group" aria-label="Inventory tools"><a id="aqwc-get-extension" class="primary" href="extension/quick-start.html">🧩 Get extension</a><details class="inventory-advanced"><summary title="Advanced inventory options" aria-label="Advanced inventory options">⚙ <span>Options</span></summary><div class="inventory-advanced-menu"><div class="aqwc-theme-tools aqwc-options-theme"><label for="aqwc-site-theme" class="muted tiny">Theme</label><select id="aqwc-site-theme"><option value="companion">Companion</option><option value="dark">Dark Mode</option><option value="light">Light Mode</option><option value="cas">Cas B Neophyte</option><option value="stars">Stars</option></select></div><div class="aqwc-options-main"><a href="extension/quick-start.html">📘 Guide &amp; Download</a><button id="aqwc-tour-replay" type="button">✦ Quick tour</button></div><details id="aqwc-data-management" class="aqwc-data-management"><summary>📦 Data Management <span aria-hidden="true" class="aqwc-data-chevron">›</span></summary><div class="aqwc-data-actions"><button id="backup" title="Download backup">⬇ Download backup</button><label class="upload" title="Import JSON file">📂 Import JSON / Restore backup<input id="file" type="file" accept=".json,application/json" multiple></label><button id="aqwc-account-import" type="button" title="Import the Account Manager export and automatically sync the extension" disabled>📥 Import &amp; Sync</button><button id="aqwc-sync-inventory" type="button" disabled title="Send selected Companion snapshot to extension only">↻ Sync to extension</button><button id="clear" title="Clear local data">Clear local data…</button></div></details></div></details></div><div class="inventory-header-status"><span id="aqwc-sync-status" role="status" aria-live="polite" class="muted tiny">Extension not detected</span><span id="aqwc-account-status" role="status" aria-live="polite" class="muted tiny">Use Full Sync in the extension.</span></div></div></header><div id="aqwc-unified-progress-panel" class="notice" hidden style="margin:8px 0"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><strong id="aqwc-unified-progress-label" role="status" aria-live="polite">Sync in progress</strong><button id="aqwc-unified-progress-close" type="button" class="smallbutton" aria-label="Dismiss sync notification" title="Dismiss notification" style="flex:none;min-width:30px;padding:2px 8px;font-size:18px;line-height:1.2">×</button></div><progress id="aqwc-unified-progress" aria-label="Companion sync progress" max="1" style="display:block;width:100%;height:9px;accent-color:#59c3e8;margin-top:6px"></progress></div><div id="alert" class="alert"></div><details id="aqwc-public-panel" class="notice" hidden style="margin:8px 0"><summary id="aqwc-public-summary">Public Character Inventory</summary><p class="muted tiny">Separate public snapshot. Bank and unlisted items are unknown. Full account history and farming calculations remain unchanged.</p><input id="aqwc-public-search" type="search" placeholder="Search public inventory" aria-label="Search public inventory"><p id="aqwc-public-count" class="muted tiny"></p><p id="aqwc-public-active-source" class="muted tiny" role="status"></p><div id="aqwc-public-list" style="max-height:320px;overflow:auto"></div></details><div class="notice aqw-storage-diagnostics" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><strong id="inventory-storage-status" aria-live="polite">💾 Inventory: checking browser storage…</strong><button id="inventory-storage-diagnostic" class="smallbutton" type="button">📋 Copy storage diagnostic</button></div><div class="notice"><strong>🔒 Your game data stays in this browser.</strong> Inventory, Wishlist and progress are stored locally. Cookie-free visit statistics via Umami. <a href="privacy.html">Privacy details</a>. <a href="extension/quick-start.html">📘 Visual guide &amp; download ↗</a></div>
 <nav class="primarynav" aria-label="Main navigation"><button class="active" data-group="home">📊 Home</button><button data-group="projects">🎯 Wishlist</button><button data-group="planner">📅 Quest Tracker</button><button data-group="ultras">⚡ Ultras &amp; Bosses</button><button data-group="builds">⚒️ Forge Tracker</button><button data-group="story">📖 Story</button><button data-group="badges">🏆 Badge Hunter</button><button data-group="explore">✨ Explore</button><button data-group="inventory">📦 Inventory</button></nav>
@@ -2639,6 +2639,22 @@ function drawBossGuideRoleTips(root,profile,cls){
   body.append(node('strong',tip.title),p);if(tip.source!=='Community guide')body.append(node('small',tip.source,'muted tiny'));step.append(node('span',String(i+1).padStart(2,'0'),'boss-guide-step-number'),body);list.append(step);
  }root.append(list);
 }
+function appendBossReactionCues(root,guide,boss){
+ for(const cue of guide.cues||[]){
+  const step=node('article',undefined,'guide-v2-boss-cue cue-'+cue.kind);
+  const meta=node('div',undefined,'guide-v2-cue-meta');
+  meta.append(node('small',cue.type==='quote'?'BOSS QUOTE':cue.type==='source-cue'?'COMMUNITY CUE · wording unverified':'MECHANIC / TIMING','guide-v2-cue-type'),node('strong',cue.action,'guide-v2-cue-action'));
+  const signal=node('strong',cue.type==='quote'?'“'+cue.signal+'”':cue.signal,'guide-v2-cue-signal');
+  const who=node('p',undefined,'guide-v2-cue-who');who.append(node('strong','Who: '),document.createTextNode(cue.who));
+  const when=node('p',undefined,'guide-v2-cue-when');when.append(node('strong','When: '));ultraExplainText(when,cue.when,boss);
+  const fail=node('p',undefined,'guide-v2-cue-fail');fail.append(node('strong','If missed: '));ultraExplainText(fail,cue.fail,boss);
+  const source=node('a','Mechanic source ↗','tiny');source.href=cue.source;source.target='_blank';source.rel='noopener noreferrer';
+  step.append(meta,signal,who,when,fail,source);
+  if(cue.support){const extra=node('a','Strategy reference ↗','tiny');extra.href=cue.support;extra.target='_blank';extra.rel='noopener noreferrer';step.append(extra)}
+  root.append(step);
+ }
+ if(guide.cueCoverage==='no-specific-cue-confirmed')root.append(node('p','No specific boss warning text confirmed in the reviewed guide. Follow the mechanics below; do not assume a taunt is required.','muted tiny guide-v2-cue-unconfirmed'));
+}
 function renderBossGuideDetail(entry){
  const root=$('bossguidedetail');root.replaceChildren();
  if(!entry){root.append(node('p','No bosses match these filters.','muted tiny'));return}
@@ -2667,6 +2683,7 @@ function renderBossGuideDetail(entry){
  }
  const fight=node('section',undefined,'boss-guide-panel boss-guide-fight guide-v2-shared'+(names.length?'':' guide-v2-shared-only'));fight.append(node('h3','Fight at a glance'));
  const sharedSteps=node('div',undefined,'guide-v2-shared-steps');
+ appendBossReactionCues(sharedSteps,guide,entry.name);
  for(const [i,tip] of guide.tips.entries())appendStrategyStep(sharedSteps,guide.tips.length>1?'Step '+(i+1):'Key mechanic',tip,entry.name);fight.append(sharedSteps);columns.append(fight);root.append(columns);
  const sources=guideDisclosure('Sources & strategy notes');sources.append(bossGuideWiki(entry.wiki,'Wiki location ↗'));const link=node('a','Simplified Bosses Guide — '+profile.sheet+' ↗');const loc=auditedBossSheetLocations[profile.sheet];link.href=loc?simplifiedGuideSource+'#gid='+loc[0]:simplifiedGuideSource;link.target='_blank';link.rel='noopener noreferrer';sources.append(link);if(loc)sources.append(node('p','Workbook source: '+loc[1],'muted tiny'));if(guide.accessRef){const a=node('a','Access requirements ↗');a.href=guide.accessRef;a.target='_blank';a.rel='noopener noreferrer';sources.append(a)}if(guide.note)sources.append(node('p',guide.note,'muted tiny'));for(const [label,url] of guide.refs){const a=node('a',label+' ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';sources.append(a)}root.append(sources);
 
@@ -3920,7 +3937,9 @@ const approvedOtherBossGuides={
   "note": "Workbook tab is hidden; availability and current encounter variant should be checked.",
   "refs": [],
   "access": "Hidden source tab; encounter availability and exact current variant remain unverified.",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [],
+  "cueCoverage": "no-specific-cue-confirmed"
  },
  "Void Flibbi": {
   "kind": "Quick",
@@ -3932,7 +3951,9 @@ const approvedOtherBossGuides={
   "note": "Source gives a team example and one class-specific restriction, not a full rotation.",
   "refs": [],
   "status": "Source-documented · gameplay unverified",
-  "access": "Check the linked map for level, quest and seasonal requirements; current in-game access is not independently verified."
+  "access": "Check the linked map for level, quest and seasonal requirements; current in-game access is not independently verified.",
+  "cues": [],
+  "cueCoverage": "no-specific-cue-confirmed"
  },
  "Void Nightbane": {
   "kind": "Quick",
@@ -3951,17 +3972,19 @@ const approvedOtherBossGuides={
    ]
   ],
   "status": "Source-documented · gameplay unverified",
-  "access": "Check the linked map for level, quest and seasonal requirements; current in-game access is not independently verified."
+  "access": "Check the linked map for level, quest and seasonal requirements; current in-game access is not independently verified.",
+  "cues": [],
+  "cueCoverage": "no-specific-cue-confirmed"
  },
  "Void Xyfrag": {
   "kind": "Strategy",
   "tips": [
-   "Assign a durable taunter for Consume on the belch cue. Finish before the boss becomes invulnerable; favor rapid sustained damage."
+   "Favor rapid sustained damage and assign a durable taunter before pulling."
   ],
   "classes": [],
   "roles": {
-   "Legion Revenant": "Take the assigned Consume taunt.",
-   "Verus DoomKnight": "Backup Consume taunter if agreed."
+   "Legion Revenant": "If assigned, taunt Consume on the belch warning.",
+   "Verus DoomKnight": "If assigned as backup, taunt Consume on the same warning."
   },
   "note": "",
   "refs": [
@@ -3971,12 +3994,25 @@ const approvedOtherBossGuides={
    ]
   ],
   "status": "Source-documented · gameplay unverified",
-  "access": "Check the linked map for level, quest and seasonal requirements; current in-game access is not independently verified."
+  "access": "Check the linked map for level, quest and seasonal requirements; current in-game access is not independently verified.",
+  "cues": [
+   {
+    "signal": "BLEEEEEEEEEEEECCH",
+    "kind": "taunt",
+    "action": "Taunt Consume",
+    "who": "Assigned durable taunter (LR; VDK or Legendary Hero with suitable survival setup are documented options)",
+    "when": "Immediately on the warning; 2-second charge.",
+    "fail": "Otherwise Consumed and Decay hit the party; damage falls and normal healing is blocked.",
+    "source": "https://aqw.app/monsters/voidxyfrag",
+    "type": "quote"
+   }
+  ],
+  "cueCoverage": "reviewed-cues"
  },
  "Void NerfKitten": {
   "kind": "Strategy",
   "tips": [
-   "The Meow cue precedes a stat-stealing attack; agree alternating durable taunts to avoid stacking the penalty. Use rapid damage."
+   "Agree a durable taunt rotation before pulling. Use rapid damage."
   ],
   "classes": [],
   "roles": {
@@ -3986,7 +4022,30 @@ const approvedOtherBossGuides={
   "note": "",
   "refs": [],
   "status": "Source-documented · gameplay unverified",
-  "access": "Check the linked map for level, quest and seasonal requirements; current in-game access is not independently verified."
+  "access": "Check the linked map for level, quest and seasonal requirements; current in-game access is not independently verified.",
+  "cues": [
+   {
+    "signal": "Meow",
+    "kind": "taunt",
+    "action": "Taunt Stat Steal",
+    "who": "Assigned LR / VDK according to the agreed rotation",
+    "when": "During the 2-second charge.",
+    "fail": "The boss steals stats from affected players and becomes stronger.",
+    "source": "https://aqw.app/monsters/voidnerfkitten",
+    "type": "quote"
+   },
+   {
+    "signal": "You’ve been silenced. Mana is unusable!",
+    "kind": "avoid",
+    "action": "Wait out Silence",
+    "who": "Everyone",
+    "when": "Until the 3-second silence expires; do not waste a taunt on it.",
+    "fail": "MP-costing skills are unavailable.",
+    "source": "https://aqw.app/monsters/voidnerfkitten",
+    "type": "quote"
+   }
+  ],
+  "cueCoverage": "reviewed-cues"
  },
  "Kasuko & Whirlpool": {
   "kind": "Quick",
@@ -3999,7 +4058,9 @@ const approvedOtherBossGuides={
   "refs": [],
   "access": "Seasonal level 75+ seven-player room; access may vary.",
   "accessRef": "https://aqwwiki.wikidot.com/lavarock-shore",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [],
+  "cueCoverage": "no-specific-cue-confirmed"
  },
  "Temple Shrine — Left": {
   "kind": "Strategy",
@@ -4016,7 +4077,31 @@ const approvedOtherBossGuides={
   "refs": [],
   "access": "/join templeshrine is the Eclipse Ascent hub (20 players); the selected dungeon has a four-player party limit. Choose the Solstice Moon entrance.",
   "accessRef": "https://aqwwiki.wikidot.com/eclipse-ascent",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [
+   {
+    "signal": "You Gaze into the Moon",
+    "kind": "taunt",
+    "action": "Taunt Lunar Haze AFTER the cue disappears",
+    "who": "Lord of Order",
+    "when": "Follow the existing workbook rotation; community guides also describe a delayed taunt.",
+    "fail": "Repeated Moonlight Gaze can stun players.",
+    "source": "https://aqwwiki.wikidot.com/lunar-haze",
+    "type": "source-cue",
+    "support": "https://www.reddit.com/r/AQW/comments/1lptame/"
+   },
+   {
+    "signal": "The Moon Converges",
+    "kind": "taunt",
+    "action": "Taunt the Moon cast with Praxis plan",
+    "who": "Legion Revenant",
+    "when": "During the convergence cast; use the documented Praxis timing.",
+    "fail": "Repeated Lunar Convergence weakens defense.",
+    "source": "https://aqwwiki.wikidot.com/ascended-midnight",
+    "type": "quote"
+   }
+  ],
+  "cueCoverage": "reviewed-cues"
  },
  "Temple Shrine — Right": {
   "kind": "Strategy",
@@ -4032,7 +4117,31 @@ const approvedOtherBossGuides={
   "refs": [],
   "access": "/join templeshrine is the Eclipse Ascent hub (20 players); the selected dungeon has a four-player party limit. Choose the Midnight Sun entrance.",
   "accessRef": "https://aqwwiki.wikidot.com/eclipse-ascent",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [
+   {
+    "signal": "You feel the Warmth of the Sun",
+    "kind": "taunt",
+    "action": "Taunt Dawn Knight AFTER the cue disappears",
+    "who": "Legion Revenant",
+    "when": "Follow the existing workbook's delayed taunt timing.",
+    "fail": "Sun's Heat can reduce critical damage drastically.",
+    "source": "https://aqwwiki.wikidot.com/dawn-knight",
+    "type": "source-cue",
+    "support": "https://www.reddit.com/r/AQW/comments/1lptame/"
+   },
+   {
+    "signal": "The Sun Converges",
+    "kind": "taunt",
+    "action": "Taunt the Sun cast with Praxis plan",
+    "who": "Legion Revenant",
+    "when": "During the convergence cast; use the documented Praxis timing.",
+    "fail": "Repeated Solar Convergence weakens defense.",
+    "source": "https://aqwwiki.wikidot.com/ascended-solstice",
+    "type": "quote"
+   }
+  ],
+  "cueCoverage": "reviewed-cues"
  },
  "Temple Shrine — Middle": {
   "kind": "Advanced",
@@ -4051,7 +4160,62 @@ const approvedOtherBossGuides={
   "refs": [],
   "access": "/join templeshrine is the Eclipse Ascent hub (20 players); the selected dungeon has a four-player party limit. The middle challenge requires Rite of Ascension in inventory; enter via the portal.",
   "accessRef": "https://aqwwiki.wikidot.com/eclipse-ascent",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [
+   {
+    "signal": "The Sunlight Gathers",
+    "kind": "taunt",
+    "action": "Taunt Dying Light and use skill 4",
+    "who": "ArchPaladin",
+    "when": "On the workbook's gathering-light cue; exact in-game wording is not independently confirmed.",
+    "fail": "Solar Beam can apply a large defense penalty.",
+    "source": "https://aqwwiki.wikidot.com/dying-light",
+    "type": "source-cue"
+   },
+   {
+    "signal": "You Gaze into the Moon",
+    "kind": "taunt",
+    "action": "Taunt Lunar Haze AFTER the cue disappears",
+    "who": "Lord of Order",
+    "when": "Follow workbook timing.",
+    "fail": "Repeated Moonlight Gaze can stun players.",
+    "source": "https://aqwwiki.wikidot.com/lunar-haze",
+    "type": "source-cue",
+    "support": "https://www.reddit.com/r/AQW/comments/1lptame/"
+   },
+   {
+    "signal": "You feel the Warmth of the Sun",
+    "kind": "taunt",
+    "action": "Taunt Dawn Knight AFTER the cue disappears",
+    "who": "Legion Revenant",
+    "when": "Follow workbook timing.",
+    "fail": "Sun's Heat can severely reduce critical damage.",
+    "source": "https://aqwwiki.wikidot.com/dawn-knight",
+    "type": "source-cue",
+    "support": "https://www.reddit.com/r/AQW/comments/1lptame/"
+   },
+   {
+    "signal": "The Moon Converges",
+    "kind": "taunt",
+    "action": "Alternate Moon taunts",
+    "who": "Lord of Order / ArchPaladin",
+    "when": "During the cast according to the selected team plan.",
+    "fail": "Overlapping convergence effects can devastate defense.",
+    "source": "https://aqwwiki.wikidot.com/ascended-midnight",
+    "type": "quote"
+   },
+   {
+    "signal": "The Sun Converges",
+    "kind": "taunt",
+    "action": "Alternate Sun taunts",
+    "who": "Legion Revenant / Chrono ShadowHunter",
+    "when": "During the cast; maintain the documented Praxis plan.",
+    "fail": "Overlapping solar and lunar debuffs can devastate defense.",
+    "source": "https://aqwwiki.wikidot.com/ascended-solstice",
+    "type": "quote"
+   }
+  ],
+  "cueCoverage": "reviewed-cues"
  },
  "Astral Empyrean": {
   "kind": "Strategy",
@@ -4074,7 +4238,40 @@ const approvedOtherBossGuides={
   ],
   "access": "Level 95+, seven-player room; complete Hoshiyoru to reach the encounter.",
   "accessRef": "https://aqwwiki.wikidot.com/astral-shrine",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [
+   {
+    "signal": "Behold our starfire!",
+    "kind": "heal",
+    "action": "Prepare for breath — DO NOT TAUNT the breath",
+    "who": "Everyone; healers prepare recovery",
+    "when": "Before Stardust Breath lands. Keep HP high; the charge lasts 2 seconds.",
+    "fail": "The party takes 75% max HP as true damage; phase 2 reduces incoming healing.",
+    "source": "https://aqw.app/monsters/astralshrine",
+    "type": "quote"
+   },
+   {
+    "signal": "Stardust Breath lands",
+    "kind": "taunt",
+    "action": "Taunt AFTER the hit",
+    "who": "Assigned LR / VDK, alternating",
+    "when": "After the breath, not on its warning.",
+    "fail": "Uncontrolled Astral Beam attacks stack resistance loss.",
+    "source": "https://aqw.app/monsters/astralshrine",
+    "type": "event"
+   },
+   {
+    "signal": "The stars are ours to command.",
+    "kind": "move",
+    "action": "Leave the red zone",
+    "who": "Everyone",
+    "when": "Immediately during the 2-second charge.",
+    "fail": "Remaining in the zone causes instant death.",
+    "source": "https://aqw.app/monsters/astralshrine",
+    "type": "quote"
+   }
+  ],
+  "cueCoverage": "reviewed-cues"
  },
  "Mechabinky & Raxborg 2.0": {
   "kind": "Advanced",
@@ -4090,7 +4287,87 @@ const approvedOtherBossGuides={
   "note": "Confirm exact taunt assignments and Vigil exceptions with the team; no exploit or precise undocumented timer recommended.",
   "refs": [],
   "status": "Source-documented · gameplay unverified",
-  "access": "Check the linked map for level, quest and seasonal requirements; current in-game access is not independently verified."
+  "access": "Check the linked map for level, quest and seasonal requirements; current in-game access is not independently verified.",
+  "cues": [
+   {
+    "signal": "45M HP · Contrarium",
+    "kind": "avoid",
+    "action": "Stop healing during inversion",
+    "who": "Healers; assigned taunter according to team plan",
+    "when": "At 45M HP until healing inversion ends.",
+    "fail": "Healing becomes harmful.",
+    "source": "https://aqwwiki.wikidot.com/mechabinky-raxborg-2-0",
+    "type": "event",
+    "support": "https://solarisaqw.lol/guides/ultra-weeklies/grimchallenge"
+   },
+   {
+    "signal": "Meow",
+    "kind": "taunt",
+    "action": "Taunt Stat Steal",
+    "who": "Assigned taunter",
+    "when": "40M HP; during the warning.",
+    "fail": "Stat theft weakens affected players and empowers the boss.",
+    "source": "https://aqwwiki.wikidot.com/mechabinky-raxborg-2-0",
+    "type": "quote",
+    "support": "https://solarisaqw.lol/guides/ultra-weeklies/grimchallenge"
+   },
+   {
+    "signal": "BLEEEEEEEEEEEECCH",
+    "kind": "taunt",
+    "action": "Taunt Consume",
+    "who": "Other assigned taunter according to rotation",
+    "when": "35M HP; before Consume lands. Coordinate the 30M transition.",
+    "fail": "Consumed and Decay can compromise recovery before the next HP drop.",
+    "source": "https://aqwwiki.wikidot.com/mechabinky-raxborg-2-0",
+    "type": "quote",
+    "support": "https://solarisaqw.lol/guides/ultra-weeklies/grimchallenge"
+   },
+   {
+    "signal": "30M HP · Dracopyre Dive",
+    "kind": "heal",
+    "action": "Recover after HP drop",
+    "who": "Healers and all players",
+    "when": "Immediately after the hit; ensure recovery is available.",
+    "fail": "HP drops to 1; the following attack can kill.",
+    "source": "https://aqwwiki.wikidot.com/mechabinky-raxborg-2-0",
+    "type": "event",
+    "support": "https://solarisaqw.lol/guides/ultra-weeklies/grimchallenge"
+   },
+   {
+    "signal": "I possess the full power of the Legion at my disposal.",
+    "kind": "mitigate",
+    "action": "Coordinate Decay and mitigation",
+    "who": "Assigned Decay provider and ArchPaladin if in the documented lineup",
+    "when": "15M HP phase; follow team plan.",
+    "fail": "Boss gains healing and offensive buffs.",
+    "source": "https://aqwwiki.wikidot.com/mechabinky-raxborg-2-0",
+    "type": "quote",
+    "support": "https://solarisaqw.lol/guides/ultra-weeklies/grimchallenge"
+   },
+   {
+    "signal": "You will not resist!",
+    "kind": "vigil",
+    "action": "Activate Vigil",
+    "who": "Players assigned Vigil; agree taunter exceptions beforehand",
+    "when": "During the 10M phase warning, before Voice of the Sea. Solaris suggests activation 2–3 seconds after the warning.",
+    "fail": "Without Vigil, severe haste, accuracy and defense penalties apply.",
+    "source": "https://aqwwiki.wikidot.com/mechabinky-raxborg-2-0",
+    "type": "quote",
+    "support": "https://solarisaqw.lol/guides/ultra-weeklies/grimchallenge"
+   },
+   {
+    "signal": "5M HP · Self Destruct warning",
+    "kind": "damage",
+    "action": "Finish the boss immediately",
+    "who": "Everyone",
+    "when": "During the final charge; published warning and charge duration disagree, so do not rely on a precise countdown.",
+    "fail": "Self Destruct can kill.",
+    "source": "https://aqwwiki.wikidot.com/mechabinky-raxborg-2-0",
+    "type": "event",
+    "support": "https://solarisaqw.lol/guides/ultra-weeklies/grimchallenge"
+   }
+  ],
+  "cueCoverage": "reviewed-cues"
  },
  "Celestial Arena": {
   "kind": "Quick",
@@ -4116,7 +4393,9 @@ const approvedOtherBossGuides={
   "refs": [],
   "access": "Solo quest sequence. Accept the relevant quest and use the appropriate arena entrance; check the linked location for access.",
   "accessRef": "https://aqwwiki.wikidot.com/celestial-arena",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [],
+  "cueCoverage": "no-specific-cue-confirmed"
  },
  "Infernal Arena — early bosses": {
   "kind": "Quick",
@@ -4140,7 +4419,9 @@ const approvedOtherBossGuides={
   "refs": [],
   "access": "Solo quest sequence. Accept the relevant quest and use the appropriate arena entrance; check the linked location for access.",
   "accessRef": "https://aqwwiki.wikidot.com/infernal-arena",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [],
+  "cueCoverage": "no-specific-cue-confirmed"
  },
  "Deadly Duo": {
   "kind": "Strategy",
@@ -4165,7 +4446,20 @@ const approvedOtherBossGuides={
   "refs": [],
   "access": "Solo quest sequence. Accept the relevant quest and use the appropriate arena entrance; check the linked location for access.",
   "accessRef": "https://aqwwiki.wikidot.com/infernal-arena",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [
+   {
+    "signal": "Meal Prep → Dinner Time",
+    "kind": "mitigate",
+    "action": "Prepare Decay and recovery",
+    "who": "Solo player",
+    "when": "During the three-second charge; prevent the subsequent healing and recover after the hit.",
+    "fail": "The attack takes 70% current HP; the boss recovers 33% max HP before modifiers.",
+    "source": "https://aqwwiki.wikidot.com/deadly-duo",
+    "type": "event"
+   }
+  ],
+  "cueCoverage": "reviewed-cues"
  },
  "Cervus Malus": {
   "kind": "Strategy",
@@ -4186,7 +4480,20 @@ const approvedOtherBossGuides={
   "refs": [],
   "access": "Solo quest sequence. Accept the relevant quest and use the appropriate arena entrance; check the linked location for access.",
   "accessRef": "https://aqwwiki.wikidot.com/infernal-arena",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [
+   {
+    "signal": "Contrarium",
+    "kind": "avoid",
+    "action": "Wait before healing",
+    "who": "Solo player",
+    "when": "After the HP hit, wait until the four-second inversion ends.",
+    "fail": "Healing is inverted and can kill.",
+    "source": "https://aqwwiki.wikidot.com/cervus-malus",
+    "type": "event"
+   }
+  ],
+  "cueCoverage": "reviewed-cues"
  },
  "Key of Sholemoh": {
   "kind": "Quick",
@@ -4211,7 +4518,20 @@ const approvedOtherBossGuides={
   "refs": [],
   "access": "Solo quest sequence. Accept the relevant quest and use the appropriate arena entrance; check the linked location for access.",
   "accessRef": "https://aqwwiki.wikidot.com/infernal-arena",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [
+   {
+    "signal": "Prepare for your undoing!",
+    "kind": "heal",
+    "action": "Prepare enough HP for Hyper Beam",
+    "who": "Solo player",
+    "when": "During the four-second charge; keep enough HP for the 3,000 true-damage beam.",
+    "fail": "The fixed damage can kill if HP is too low.",
+    "source": "https://aqwwiki.wikidot.com/key-of-sholemoh",
+    "type": "quote"
+   }
+  ],
+  "cueCoverage": "reviewed-cues"
  },
  "Azalith's Scythe": {
   "kind": "Strategy",
@@ -4234,7 +4554,20 @@ const approvedOtherBossGuides={
   "refs": [],
   "access": "Solo quest sequence. Accept the relevant quest and use the appropriate arena entrance; check the linked location for access.",
   "accessRef": "https://aqwwiki.wikidot.com/infernal-arena",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [
+   {
+    "signal": "Decapitate",
+    "kind": "heal",
+    "action": "Keep HP high and recover",
+    "who": "Solo player",
+    "when": "Before the recurring HP hit and after it lands.",
+    "fail": "The attack removes 70% current HP; follow-up damage may kill.",
+    "source": "https://aqwwiki.wikidot.com/azalith-s-scythe",
+    "type": "event"
+   }
+  ],
+  "cueCoverage": "reviewed-cues"
  },
  "Na'al": {
   "kind": "Strategy",
@@ -4260,7 +4593,20 @@ const approvedOtherBossGuides={
   "refs": [],
   "access": "Solo quest sequence. Accept the relevant quest and use the appropriate arena entrance; check the linked location for access.",
   "accessRef": "https://aqwwiki.wikidot.com/infernal-arena",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [
+   {
+    "signal": "Vidi → Vici",
+    "kind": "mitigate",
+    "action": "Prepare damage debuffs and recovery",
+    "who": "Solo player",
+    "when": "When Vidi is applied, prepare for Vici four seconds later; use the following vulnerability window.",
+    "fail": "Heavy DoT and the 70% max-HP hit can kill an unprepared player.",
+    "source": "https://aqwwiki.wikidot.com/na-al",
+    "type": "event"
+   }
+  ],
+  "cueCoverage": "reviewed-cues"
  },
  "Grimskull?": {
   "kind": "Strategy",
@@ -4288,7 +4634,20 @@ const approvedOtherBossGuides={
   "refs": [],
   "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
   "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [
+   {
+    "signal": "The punching bag is tired of taking a beating!",
+    "kind": "avoid",
+    "action": "Stop attacking",
+    "who": "Solo player",
+    "when": "During the seven-second Windup; resume after Retaliate.",
+    "fail": "Damage dealt during the charge strengthens Retaliate.",
+    "source": "https://aqwwiki.wikidot.com/grimskull-question-mark",
+    "type": "quote"
+   }
+  ],
+  "cueCoverage": "reviewed-cues"
  },
  "Grim Bomb": {
   "kind": "Quick",
@@ -4316,7 +4675,9 @@ const approvedOtherBossGuides={
   "refs": [],
   "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
   "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [],
+  "cueCoverage": "no-specific-cue-confirmed"
  },
  "Empress Angler": {
   "kind": "Quick",
@@ -4344,7 +4705,20 @@ const approvedOtherBossGuides={
   "refs": [],
   "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
   "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [
+   {
+    "signal": "Heal up! Empress Angler is attempting to devour their injured prey!",
+    "kind": "heal",
+    "action": "Restore FULL HP",
+    "who": "Solo player",
+    "when": "Within the four-second warning, before Devour.",
+    "fail": "Any missing HP at Devour causes instant death.",
+    "source": "https://aqwwiki.wikidot.com/empress-angler",
+    "type": "quote"
+   }
+  ],
+  "cueCoverage": "reviewed-cues"
  },
  "Treasure Chest — first": {
   "kind": "Quick",
@@ -4372,7 +4746,9 @@ const approvedOtherBossGuides={
   "refs": [],
   "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
   "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [],
+  "cueCoverage": "no-specific-cue-confirmed"
  },
  "Reinforced Shelleton": {
   "kind": "Strategy",
@@ -4391,7 +4767,20 @@ const approvedOtherBossGuides={
   "refs": [],
   "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
   "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [
+   {
+    "signal": "Crash",
+    "kind": "damage",
+    "action": "Attack during vulnerability",
+    "who": "Solo player",
+    "when": "When the Crash effect appears, use the six-second opening.",
+    "fail": "Attacks outside this window are heavily reduced.",
+    "source": "https://aqwwiki.wikidot.com/reinforced-shelleton",
+    "type": "event"
+   }
+  ],
+  "cueCoverage": "reviewed-cues"
  },
  "Fell Statue": {
   "kind": "Strategy",
@@ -4415,7 +4804,20 @@ const approvedOtherBossGuides={
   "refs": [],
   "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
   "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [
+   {
+    "signal": "Fell Statue is temporarily charged with electricity!",
+    "kind": "move",
+    "action": "Switch targets",
+    "who": "Solo player",
+    "when": "After each roughly 5,000 HP lost by the statue.",
+    "fail": "The statue gains stacking critical damage.",
+    "source": "https://aqwwiki.wikidot.com/fell-statue",
+    "type": "quote"
+   }
+  ],
+  "cueCoverage": "reviewed-cues"
  },
  "Emperor Angler": {
   "kind": "Strategy",
@@ -4447,7 +4849,20 @@ const approvedOtherBossGuides={
   ],
   "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
   "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [
+   {
+    "signal": "Heal up! Emperor Angler will devour all prey below half HP!.",
+    "kind": "heal",
+    "action": "Keep HP above 50%",
+    "who": "Solo player",
+    "when": "Prepare recovery before each threshold and sustain through the ten-second frenzy.",
+    "fail": "Attacks instantly kill when below half HP during Feeding Frenzy.",
+    "source": "https://aqwwiki.wikidot.com/emperor-angler",
+    "type": "quote"
+   }
+  ],
+  "cueCoverage": "reviewed-cues"
  },
  "Treasure Chest — second": {
   "kind": "Quick",
@@ -4480,7 +4895,9 @@ const approvedOtherBossGuides={
   ],
   "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
   "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [],
+  "cueCoverage": "no-specific-cue-confirmed"
  },
  "Rick, Grim Soldier": {
   "kind": "Quick",
@@ -4513,7 +4930,9 @@ const approvedOtherBossGuides={
   ],
   "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
   "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [],
+  "cueCoverage": "no-specific-cue-confirmed"
  },
  "Rampaging Cyborg": {
   "kind": "Strategy",
@@ -4537,7 +4956,20 @@ const approvedOtherBossGuides={
   "refs": [],
   "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
   "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [
+   {
+    "signal": "Three Mechro Lich defeated",
+    "kind": "damage",
+    "action": "Finish the Cyborg",
+    "who": "Solo player",
+    "when": "Clear all three summons before focusing the Cyborg.",
+    "fail": "It is invulnerable until summons die; critical damage rises as they are defeated.",
+    "source": "https://aqwwiki.wikidot.com/rampaging-cyborg",
+    "type": "event"
+   }
+  ],
+  "cueCoverage": "reviewed-cues"
  },
  "Mechabinky & Raxborg": {
   "kind": "Strategy",
@@ -4569,7 +5001,9 @@ const approvedOtherBossGuides={
   ],
   "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
   "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
-  "status": "Source-documented · gameplay unverified"
+  "status": "Source-documented · gameplay unverified",
+  "cues": [],
+  "cueCoverage": "no-specific-cue-confirmed"
  }
 };
 const auditedBossSheetLocations={"Fourth Lynaria":[554509623,"G4:G22, A32"],"Void Bosses":[1827579588,"A32 / A101 / A170 / A239"],"Lavarock Shore":[1817901417,"G4:G28, A32"],"Temple Shrine":[536042830,"A32 / A92 / A152"],"Astral Shrine":[1682548440,"G4:G28, A32"],"Grimchallenge":[1217830111,"G4:G28, A32"],"Celestial Arena":[485533888,"I5:K23"],"Infernal Arena":[282052295,"K5:M163, N4:N144"],"Grim Gaol":[1924778701,"I5:K303, L4:L284"]};
