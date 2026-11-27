@@ -493,7 +493,9 @@ console.log("Ultra/Boss subnav CSS no longer excludes Ultras; reset toolbar remo
 
 assert.ok(html.includes("btn.setAttribute('aria-pressed',String(b.id===selectedUltra))"));
 assert.ok(html.includes("button.setAttribute('aria-pressed',String(e.id===selectedBossGuide))"));
-assert.ok(html.includes("css/ultra-quote-actions.css?v=121"));
+assert.ok(/href="css\/ultra-quote-actions\.css\?v=\d+"/.test(html),"Guide stylesheet stays cache-versioned");
+assert.ok(html.includes("ultra-role-step guide-v2-step"),"Consolidated rows have a dedicated layout class");
+assert.ok(ultraCSS.includes("#ultradetail .ultra-role-step.guide-v2-step")&&ultraCSS.includes("#bossguidedetail .ultra-role-step.guide-v2-step"),"Both guide surfaces use the full-width hotfix");
 assert.ok(ultraCSS.includes("#ultras #ultracards .ultracard.active,"));
 assert.ok(ultraCSS.includes("#boss-guides .boss-guide-list .boss-guide-item.active{background:linear-gradient"));
 assert.ok(ultraCSS.includes("inset 4px 0 0 #79d9ff"));
