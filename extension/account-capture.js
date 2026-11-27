@@ -1,6 +1,7 @@
 /* Runs only after the user invokes capture on the logged-in Inventory tab. */
 async function captureAccountInventory(onProgress,jobId){
- const report=(phase,read=0,total=null)=>{if(typeof onProgress==='function')onProgress({phase,read,total});if(jobId&&typeof chrome!=='undefined'&&chrome.runtime?.sendMessage)chrome.runtime.sendMessage({type:'one-click-progress',id:jobId,progress:{phase,read,total}}).catch(()=>{});};
+ try{
+ const report=(phase,read=0,total=null)=>{if(typeof onProgress==='function')onProgress({phase,read,total});if(jobId)try{if(typeof chrome!=='undefined'&&chrome.runtime?.sendMessage)Promise.resolve(chrome.runtime.sendMessage({type:'one-click-progress',id:jobId,progress:{phase,read,total}})).catch(()=>{})}catch{};};
  const origin='https://account.aq.com';
  if(location.origin!==origin||!/^\/AQW\/Inventory\/?$/i.test(location.pathname))throw Error('Open the AQW Account Manager Inventory tab first.');
  const resources=performance.getEntriesByType('resource').map(r=>{try{return new URL(r.name)}catch{return null}}).filter(u=>u&&u.origin===origin&&/(?:^|\/)InventoryData\/?$/i.test(u.pathname));
@@ -63,6 +64,12 @@ async function captureAccountInventory(onProgress,jobId){
   if(base+200<total)await new Promise(resolve=>setTimeout(resolve,150));
  }
  return result();
+ }catch(e){
+  // Chromium may return no InjectionResult when an injected async function rejects.
+  // Send a serializable error instead, without returning a partial snapshot.
+  if(jobId)return {captureError:String(e?.message||'Inventory capture failed.').slice(0,240)};
+  throw e;
+ }
 }
 
 // Read the rendered public Character Page inventory; never call private inventory endpoints.
