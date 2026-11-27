@@ -4508,6 +4508,7 @@ function renderUltraDetail(b){
  const teamInfo=node('p',undefined,'muted tiny'),choices=node('div',undefined,'guide-v2-team-choices');
  const showAll=node('button','Show all teams','guide-v2-show-teams');showAll.type='button';showAll.setAttribute('aria-pressed','false');
  team.append(teamInfo,choices);if(variants.length>1)team.append(showAll);
+ team.append(node('p','Source-documented team · community example, gameplay validation pending.','muted tiny'));
  const party=node('section',undefined,'ultra-focus-card guide-v2-party');
  party.append(node('h3','3. Your party'),node('p','You only need your selected class. Find teammates for the other slots.','muted tiny'));
  const chips=node('div',undefined,'ultra-recommended-classes guide-v2-class-buttons');
