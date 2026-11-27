@@ -638,3 +638,16 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.throws(()=>bh.matchCapture({...snapshot,badges:[]},all),/Invalid capture/);
  assert.ok(html.includes('id="badge-character-import"'));
 }
+
+// Information-integrity regressions: source-backed mechanics and unlock wording.
+{
+ assert.ok(!html.includes('Decay is ineffective.'));
+ assert.ok(html.includes('Blood Frenzy’s 100,000 HP recovery'));
+ assert.ok(html.includes('Stardust Breath, which ignores Focus'));
+ assert.ok(html.includes('taunt redirects attacks, not Berserk itself'));
+ assert.ok(html.includes("['Weapon','Smite','Level 60 · Blacksmithing Rank 6"));
+ assert.ok(html.includes("['Weapon','Praxis','Level 60 · Blacksmithing Rank 6"));
+ assert.ok(html.includes("['Weapon','Acheron','Level 80 · Blacksmithing Rank 8"));
+ assert.ok(html.includes("['Helm','Hearty',"));
+ console.log('Combat information integrity wording regressions checked.');
+}
