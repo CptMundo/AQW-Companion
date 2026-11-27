@@ -35,13 +35,13 @@ assert.ok(ultra.forRole("dage","Lord of Order").every(x=>!x.response.includes("Y
 assert.ok(ultra.forRole("speaker","ArchPaladin").some(x=>/Seal/.test(x.response)));
 assert.ok(ultra.forRole("speaker","Lord of Order").some(x=>/Scroll of Enrage/.test(x.response)));
 assert.ok(ultra.forRole("drakath","Lord of Order").some(x=>/BEFORE/.test(x.response)));
-assert.ok(html.includes("const rows=ultraUnifiedTips(b.id,cls,baseTips)"),"Render only the selected class’s unified actions");
+assert.ok(html.includes("const personal=evidence.roles[cls]"),"Render only the approved selected class actions");
 assert.ok(html.includes("ultra-role-quote"));
 assert.ok(html.includes('src="js/ultra-quote-actions.js"'));
 assert.match(html,/href="css\/ultra-quote-actions\.css(?:\?v=\d+)?"/);
 assert.ok(html.includes("function ultraStrategyVariants"),"Keep complete roster variants separate");
 assert.ok(html.includes("fillStrategyClasses(select,v.names"),"Restrict individual guides to the selected roster");
-assert.ok(html.includes("appendPersonalSpeakerRotation(sequence,cls,exampleNames)"),"Keep the chosen Speaker rotation inside the personal guide");
+assert.ok(html.includes("if(!variants.length)"),"Do not render unsupported Speaker rotations");
 assert.ok(!html.includes("No complete class-specific rotation in the guide."));
 assert.ok(stylesheet.includes(".ultra-role-quote"));
 console.log("Ultra quote actions: verified role-dependent prompts across all declared classes.");

@@ -21,7 +21,7 @@ const quote=guide.rows({
 assert.ok(quote.some(r=>r.quote==="You shall listen."&&r.text.includes("If assigned")));
 assert.ok(!html.includes("const caution=node('div','⚠ '+warning"),"Warning cards no longer rendered");
 assert.ok(!html.includes("vigil=node('div',undefined,'ultra-focus-timing')"),"No redundant Kathool quote callout card");
-assert.ok(html.includes("const rows=ultraUnifiedTips(b.id,cls,baseTips)"),"New unified class-specific role rows");
+assert.ok(html.includes("const personal=evidence.roles[cls]"),"Only source-gated personal rows render");
 assert.ok(html.includes("ultra-role-mini-title"));
 assert.ok(html.includes("const publicEncounterLoadouts=false;"),"Do not present unverified class loadouts in encounter guides");
 assert.ok(html.includes("function ultraStrategyVariants"),"Keep unsupported substitutions out of active strategies");
@@ -97,7 +97,7 @@ assert.equal(reviewedApi.encounterUltraBuild("gramiel","Shaman",null).consumable
 assert.equal(reviewedApi.encounterUltraBuild("darkon","StoneCrusher",null).base,"Fighter");
 assert.equal(reviewedApi.encounterUltraBuild("ezrajal","Void Highlord",null),null,"No invented encounter preset");
 assert.ok(reviewedApi.ultraReviewedTactics.gramiel.some(row=>row[1].includes("70%, 40% and 10%")));
-assert.ok(html.includes("const rows=ultraUnifiedTips(b.id,cls,baseTips)"),"Render curated fight phases in the role checklist");
+assert.ok(html.includes("for(const [label,tip] of evidence.shared)"),"Only approved shared rows render");
 assert.ok(!html.includes("Suggested general setup — not encounter-tested."));
 assert.ok(html.includes("const ultraReviewedSources="),"Retain internal source provenance");
 for(const rows of Object.values(reviewedApi.ultraReviewedSources))for(const [,url] of rows)assert.ok(url.startsWith("https://"));
@@ -123,7 +123,7 @@ assert.ok(!html.includes("appendSimplifiedProfile(root,simplifiedProfiles[b.id]"
 assert.ok(html.includes("renderBossGuides(root,$(\'bossguidesearch\').value.trim().toLowerCase(),$(\'bossguidecategory\').value)"));
 assert.ok(html.includes("community role"));
 
-const compact=vm.runInNewContext(reviewedCode+"\n({ultraClassOptions,ultraSelectedRating,ultraWorkbookBuild,ultraCompactTips,ultraActionTips,ultraBeginnerActions,ultraBeginnerText,ultraGlossary,ultraTermPattern,ultraTermInfo,ultraSuggestedGear,ultraRecommendedTeam,ultraUnifiedTips,ultraSpeakerRole,ultraSpeakerPersonal,simplifiedSpeakerPatterns,simplifiedProfiles,simplifiedRatings,simplifiedExtraEncounters,sameUltraClass,fillUltraClassSelect,renderUltraSelectedRating,appendUltraGearCells,ultraStrategyVariants,workbookPersonalGuide,workbookSharedGuide})",{
+const compact=vm.runInNewContext(reviewedCode+"\n({ultraClassOptions,ultraSelectedRating,ultraWorkbookBuild,ultraCompactTips,ultraActionTips,ultraBeginnerActions,ultraBeginnerText,ultraGlossary,ultraTermPattern,ultraTermInfo,ultraSuggestedGear,ultraRecommendedTeam,ultraUnifiedTips,ultraSpeakerRole,ultraSpeakerPersonal,simplifiedSpeakerPatterns,simplifiedProfiles,simplifiedRatings,simplifiedExtraEncounters,sameUltraClass,fillUltraClassSelect,renderUltraSelectedRating,appendUltraGearCells,ultraStrategyVariants,workbookPersonalGuide,workbookSharedGuide,approvedUltraGuides,withheldUltraGuides,approvedClassActivities})",{
  node(tag,text,cls){return {tag,text,cls,children:[],append(...x){this.children.push(...x)},replaceChildren(...x){this.children=x}}},
  Option:function(label,value){this.label=label;this.value=value},
  ultraOwned:cls=>['Lord of Order','Void Highlord'].includes(cls)
@@ -165,8 +165,8 @@ assert.ok(!rating.children.some(x=>x.text.includes("Healer")),"Class change clea
 assert.ok(html.includes("fillStrategyClasses(select,v.names"));
 assert.ok(html.includes("function ultraSuggestedGear(key,cls,profile,generic=null,encounter=null)"));
 assert.ok(html.includes("classInExampleTeam(exampleNames,cls)"));
-assert.ok(html.includes("const rows=ultraUnifiedTips(b.id,cls,baseTips)"));
-assert.ok(html.includes("if(b.id==='speaker')appendPersonalSpeakerRotation(sequence,cls,exampleNames)"));
+assert.ok(html.includes("const personal=evidence.roles[cls]"));
+assert.ok(html.includes("if(!variants.length)"),"Withhold unresolved strategies");
 assert.ok(!html.includes("Community workbook — suggested strategy"));
 assert.ok(!html.includes("Class suitability by role (community ratings)"));
 assert.ok(ultraCSS.includes(".ultra-selected-rating"));
@@ -511,17 +511,17 @@ for(const p of workbookApi.simplifiedExtraEncounters)assert.ok(boss120.bossGuide
 assert.ok(ultraCSS.includes(".boss-guide-list>*{flex-shrink:0}"));
 assert.ok(ultraCSS.includes("flex:0 0 auto;display:block;min-height:48px!important"));
 assert.ok(!html.includes("boss-class-search"));assert.ok(!ultraCSS.includes("boss-class-search"));
-assert.ok(html.includes("drawBossGuideRoleTips(rolePanel,profile,select.value)"));
+assert.ok(html.includes("const guide=approvedOtherBossGuide"));
 console.log("Boss sidebar order and source-scoped role tips passed.");
 
 const bossDetail121=html.slice(html.indexOf("function renderBossGuideDetail(entry)"),html.indexOf("function renderBossGuides("));
-assert.ok(bossDetail121.includes("fillUltraClassSelect(select,key,profile)"));
+assert.ok(bossDetail121.includes("fillStrategyClasses(select,"));
 assert.ok(bossDetail121.includes("select.onchange=draw"));
 assert.ok(!bossDetail121.includes("Suggested general enhancements — not verified for this encounter."));
 assert.ok(html.includes("const publicEncounterLoadouts=false;"));
 assert.ok(!detail108.includes("ultra-focus-gear"),"Public Ultra guide must not render gear");
-assert.ok(bossDetail121.includes("if(publicEncounterLoadouts)setup.append(gear)"));
-assert.ok(bossDetail121.includes("if(publicEncounterLoadouts&&profile.potions?.length)"));
+assert.ok(!bossDetail121.includes("ultra-focus-gear"));
+assert.ok(!bossDetail121.includes("profile.potions"));
 assert.ok(detail108.includes("Your class"));assert.ok(bossDetail121.includes("Your class"));
 assert.ok(html.includes("if(tip.source!=='Community guide')body.append"));
 assert.ok(bossDetail121.includes("Simplified Bosses Guide — "));
@@ -668,8 +668,13 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.deepEqual(Array.from(workbookApi.simplifiedSpeakerPatterns,x=>x.roles.length),[20,20,20,20,31,30]);
 }
 
-// All 12 source rosters are independently selectable; no rating-derived substitutions.
+// Only source-approved roster and role records may reach the public renderer.
 {const src=html.slice(html.indexOf('const ultraGuides=['),html.indexOf('const ultraRolePlaybooks'));const teams=vm.runInNewContext(src+'\n ultraGuides');let total=0;
-for(const b of teams){const p=compact.simplifiedProfiles[b.id],vs=compact.ultraStrategyVariants(b,p);total+=vs.length;assert.deepEqual(Array.from(vs[0].names),Array.from(b.team),b.id);
- const w=vs.find(x=>x.id==='workbook');if(w){assert.deepEqual(Array.from(w.names),Array.from(p.team,x=>x.cls),b.id);for(const cls of w.names)assert.ok(compact.workbookPersonalGuide[b.id][cls],b.id+' '+cls);assert.ok(compact.workbookSharedGuide[b.id].length);}
-}assert.equal(teams.length,12);assert.equal(total,23);console.log('GUIDES_V2: 12 original rosters, 11 distinct source rosters, source-specific coverage for each alternate roster member.');}
+ for(const b of teams){const p=compact.simplifiedProfiles[b.id],vs=compact.ultraStrategyVariants(b,p);total+=vs.length;
+  if(!compact.approvedUltraGuides[b.id]){assert.equal(vs.length,0,b.id);assert.ok(compact.withheldUltraGuides[b.id]);continue}
+  assert.equal(vs.length,1,b.id);assert.equal(vs[0].id,'workbook');assert.deepEqual(Array.from(vs[0].names),Array.from(p.team,x=>x.cls));const evidence=compact.approvedUltraGuides[b.id];for(const cls of vs[0].names)assert.ok(evidence.roles[cls]);assert.ok(evidence.shared.length&&evidence.refs.length);
+ }assert.equal(teams.length,12);assert.equal(total,5);assert.equal(Object.keys(compact.withheldUltraGuides).length,7);assert.equal(Object.keys(compact.approvedClassActivities).length,4);
+ assert.ok(compact.approvedUltraGuides.drakath.shared.some(x=>x[1].includes('10M is a transformation')));
+ assert.ok(compact.approvedUltraGuides.nulgath.avoid.includes('cannot'));
+ assert.ok(compact.approvedUltraGuides.gramiel.shared.some(x=>x[1].includes('70%, 40% and 10%')));
+ console.log('Strict guide publication: five documented teams, seven withheld, four class activity presets.');}

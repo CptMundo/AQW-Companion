@@ -60,7 +60,7 @@
 <section id="story" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle story-title">📖 Story Tracker</h3><p class="muted tiny">Book of Lore saga names appear first, with Chaos Lord names as search aliases. Adventures are tracked separately. Verified badges and confirmed inventory rewards supplement manual progress. Unknown is not proof that an area is locked.</p></div><span class="pill">Chronological guide · Badge + inventory + manual</span></div><div class="toolbar"><input id="storysearch" type="search" placeholder="Search saga, region, boss or adventure…"><select id="storyfilter"><option value="all">All stories</option><option value="main">Book of Lore & main sagas</option><option value="side">Adventures & other stories</option></select><button id="storyreset">Reset story statuses</button></div><details id="story-evidence-review" style="margin:8px 0 12px"><summary style="cursor:pointer">Story evidence &amp; Book of Lore</summary><div id="story-evidence-review-content" style="padding:10px 0"></div></details><div class="story-controls"><div class="story-status-filters" role="group" aria-label="Saga progress filter"><button type="button" data-story-state="all" aria-pressed="true">All sagas</button><button type="button" data-story-state="progress" aria-pressed="false">In progress</button><button type="button" data-story-state="new" aria-pressed="false">No completions</button><button type="button" data-story-state="done" aria-pressed="false">Completed</button></div><div id="storyoverview" class="story-overview"></div></div>
 <div class="story-gate-panel"><div class="story-gate-heading"><h3 class="sectiontitle">🔐 Verified Farming Access Checks</h3><span class="muted tiny" title="These are specific documented requirements, not claims that entire Adventures are mandatory. Unknown means not checked.">Manual · Verified gates only</span></div><div id="storyaccess"></div></div>
 <div id="storylist" class="sagagrid story-cover-grid"></div><section id="storydetail" class="story-detail" hidden></section><div class="muted tiny" style="margin-top:14px">Sources: <a href="https://www.aq.com/lore/guides/shadowsofwarsaga" target="_blank" rel="noopener noreferrer">Official Shadows of War</a> · <a href="https://aqwwiki.wikidot.com/the-story" target="_blank" rel="noopener noreferrer">AQWWiki Story Index</a> · <a href="https://www.aq.com/gamedesignnotes/date/2026/04" target="_blank" rel="noopener noreferrer">Age of Ruin guide</a>. Not a complete list of every map or quest.</div></div></section>
-<section id="ultras" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle">⚡ Ultra Boss Strategy Guides</h3><p class="muted tiny">Choose a boss and your class to see a suggested team, a role-specific plan, fight phases and common wipe causes. Strategies are community-sourced and may change. Guides are community references, not live combat instructions.</p></div><span class="pill">12 strategy guides · Community references</span></div><div class="toolbar"><input id="ultrasearch" type="search" placeholder="Search bosses, mechanics or classes…"><select id="ultrafilter"><option value="all">All guides</option><option value="ready">All suggested classes owned</option></select></div><div class="ultra-master-detail"><div id="ultracards" class="ultracards"></div><div id="ultradetail" class="ultradetail hidden"></div></div>
+<section id="ultras" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle">⚡ Ultra Boss Strategy Guides</h3><p class="muted tiny">Choose a boss with a documented strategy, then a class in its source team. Strategies are community-sourced and may change. Guides are community references, not live combat instructions.</p></div><span class="pill">Source-reviewed strategies · Community references</span></div><div class="toolbar"><input id="ultrasearch" type="search" placeholder="Search bosses, mechanics or classes…"><select id="ultrafilter"><option value="all">All guides</option><option value="ready">All suggested classes owned</option></select></div><div class="ultra-master-detail"><div id="ultracards" class="ultracards"></div><div id="ultradetail" class="ultradetail hidden"></div></div>
 </div></section><section id="boss-guides" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle">⚔️ Boss Guides</h3><p class="muted tiny">Browse group encounters, solo arenas, dungeons and seasonal bosses. Community strategies and suggested loadouts; not encounter-tested by Companion.</p></div><span id="bossguidecount" class="pill">Boss encounters</span></div><div class="toolbar boss-guide-toolbar"><input id="bossguidesearch" type="search" placeholder="Search bosses, maps or classes…" aria-label="Search boss guides"><select id="bossguidecategory" aria-label="Boss category"><option value="all">All categories</option><option>Void Bosses</option><option>Shrines</option><option>Solo arenas</option><option>Grim Challenge</option><option>Grim Gaol</option><option>Lavarock Shore</option><option>Seasonal challenges</option><option>Seasonal</option><option>Legacy / special</option></select></div><div class="boss-master-detail"><div id="ultracatalog" class="boss-guide-list" aria-label="Boss encounters"></div><div id="bossguidedetail" class="ultradetail boss-guide-detail" aria-live="polite"></div></div></div></section><section id="builds" class="view" hidden aria-hidden="true" inert style="display:none!important">
 
 <div class="card build-planner-card"><div class="unlocktop"><div><h3 class="sectiontitle">🛡️ Class Build Planner</h3><p class="muted tiny">Community build examples under review; individual enhancement and consumable effects have sources.</p></div><span class="pill">Beta · Class builds · 2026 meta</span></div><div class="build-controls"><label>Search class<input id="build-search" type="search" placeholder="Search by class name…" autocomplete="off"></label><label>Class<select id="build-class"></select></label><label>Activity<select id="build-role"></select></label></div><div id="build-results" aria-live="polite"></div></div>
@@ -1286,10 +1286,10 @@ const ultraBattleCues={
 };
 let selectedUltra='drakath';const selectedUltraClasses=new Map();
 function ultraOwned(name){return items.some(x=>x.Type.toLowerCase()==='class'&&sameUltraClass(x.Name,name))}
-function ultraTeamReady(b){return b.team.every(ultraOwned)||!!simplifiedProfiles[b.id]?.team?.length&&simplifiedProfiles[b.id].team.every(x=>ultraOwned(x.cls))}
-function renderUltras(){renderUltraCatalog();const term=$('ultrasearch').value.toLowerCase().trim(),filter=$('ultrafilter').value;const all=ultraGuides.filter(b=>(filter!=='ready'||ultraTeamReady(b))&&(!term||[b.name,b.description,b.join,...ultraClassOptions(b.id,simplifiedProfiles[b.id],[...b.team,...(b.alternate||[])]).flatMap(g=>g.names)].join(' ').toLowerCase().includes(term))).sort((a,b)=>(a.type==='Daily'?0:a.type==='Weekly'?1:2)-(b.type==='Daily'?0:b.type==='Weekly'?1:2)||a.name.localeCompare(b.name));
+function ultraTeamReady(b){return ultraStrategyVariants(b,simplifiedProfiles[b.id]).some(v=>v.names.every(ultraOwned))}
+function renderUltras(){renderUltraCatalog();const term=$('ultrasearch').value.toLowerCase().trim(),filter=$('ultrafilter').value;const all=ultraGuides.filter(b=>(filter!=='ready'||ultraTeamReady(b))&&(!term||[b.name,b.join,...ultraStrategyVariants(b,simplifiedProfiles[b.id]).flatMap(v=>v.names)].join(' ').toLowerCase().includes(term))).sort((a,b)=>(a.type==='Daily'?0:a.type==='Weekly'?1:2)-(b.type==='Daily'?0:b.type==='Weekly'?1:2)||a.name.localeCompare(b.name));
  if(!all.some(x=>x.id===selectedUltra))selectedUltra=all[0]?.id||'';
- const cards=$('ultracards');cards.replaceChildren();let currentGroup='';for(const b of all){const group=b.type==='Daily'?'☀️ Daily Ultras':b.type==='Weekly'?'📆 Weekly Ultras':b.type==='Challenge'?'🐙 Challenge Bosses':'Other Ultras';if(group!==currentGroup){currentGroup=group;cards.append(node('div',group,'ultra-group-label'))}const btn=node('button',undefined,'ultracard'+(b.id===selectedUltra?' active':''));btn.type='button';btn.setAttribute('aria-pressed',String(b.id===selectedUltra));btn.append(node('small',b.type+' · '+b.difficulty),node('strong',ultraEmojiFor(b)+' '+b.name),node('small',b.description));btn.onclick=()=>{selectedUltra=b.id;renderUltras()};cards.append(btn)}
+ const cards=$('ultracards');cards.replaceChildren();let currentGroup='';for(const b of all){const group=b.type==='Daily'?'☀️ Daily Ultras':b.type==='Weekly'?'📆 Weekly Ultras':b.type==='Challenge'?'🐙 Challenge Bosses':'Other Ultras';if(group!==currentGroup){currentGroup=group;cards.append(node('div',group,'ultra-group-label'))}const btn=node('button',undefined,'ultracard'+(b.id===selectedUltra?' active':''));btn.type='button';btn.setAttribute('aria-pressed',String(b.id===selectedUltra));btn.append(node('small',b.type+' · '+b.difficulty),node('strong',ultraEmojiFor(b)+' '+b.name),node('small',approvedUltraGuides[b.id]?'Documented strategy':'Guide withheld · review pending'));btn.onclick=()=>{selectedUltra=b.id;renderUltras()};cards.append(btn)}
  const chosen=all.find(x=>x.id===selectedUltra);renderUltraDetail(chosen);}
 const ultraBeginner101={
  kathool:{
@@ -2505,28 +2505,22 @@ function renderBossGuideDetail(entry){
  title.append(node('h2',entry.name),node('small',entry.group+' · '+(profile?'Community guide · review pending':'Catalog only'),'muted'));
  header.append(title,makeCopyJoin(entry.join));root.append(header);
  if(!profile){const note=node('div',undefined,'boss-guide-panel');note.append(node('h3','Guide not yet verified'),node('p','This encounter is listed for discovery. No reviewed strategy or loadout is available; verify the location and seasonal availability.','muted'),...(entry.availability?[node('p',entry.availability,'muted')]:[]),bossGuideWiki(entry.wiki,'Wiki location ↗'));root.append(note);return}
- const key=profile.name;
- if(profile.team?.length){const team=node('section',undefined,'boss-guide-panel boss-guide-team');team.append(node('h3','Example team'));const chips=node('div',undefined,'boss-guide-chips');for(const member of profile.team){const owned=ultraOwned(member.cls);const chip=node('span',(owned?'✓ ':'')+member.cls,'boss-guide-chip'+(owned?' is-owned':''));chips.append(chip)}team.append(chips);root.append(team)}
- const layout=node('div',undefined,'boss-guide-layout guide-v2-other-layout'),rolePanel=node('section',undefined,'boss-guide-panel boss-guide-role-panel');
- const groups=ultraClassOptions(key,profile),teamNames=[...new Set((profile.team||[]).map(member=>member.cls))],names=teamNames.length?teamNames:groups.flatMap(g=>g.names);
- if(names.length){
-  const setup=node('section',undefined,'boss-guide-panel boss-guide-loadout'),heading=node('h3',publicEncounterLoadouts?'Your Loadout':'Your class');setup.append(heading);
-  const select=node('select',undefined,'ultra-role-select');select.setAttribute('aria-label',key+' class');if(teamNames.length)fillStrategyClasses(select,teamNames,selectedBossClasses.get(key));else fillUltraClassSelect(select,key,profile);
-  preferExampleClass(select,(profile.team||[]).map(member=>member.cls));
-  if(names.includes(selectedBossClasses.get(key)))select.value=selectedBossClasses.get(key);
-  const rating=node('div',undefined,'ultra-selected-rating'),gear=node('div',undefined,'ultra-focus-gear');
-  const draw=()=>{selectedBossClasses.set(key,select.value);renderUltraSelectedRating(rating,key,select.value);if(publicEncounterLoadouts){gear.replaceChildren();const genericKey=Object.keys(starterBuilds).find(x=>sameUltraClass(x,select.value));const build=ultraSuggestedGear(key,select.value,profile,starterBuilds[genericKey]?.group);appendUltraGearCells(gear,build,key);heading.textContent=build?'Loadout · Community example':'Loadout · Review pending';gear.title='Not a verified best-in-slot recommendation';}drawBossGuideRoleTips(rolePanel,profile,select.value);};
-  setup.append(select,rating);if(publicEncounterLoadouts)setup.append(gear);select.onchange=draw;draw();layout.append(setup);
- }
- const fight=node('section',undefined,'boss-guide-panel boss-guide-fight');fight.append(node('h3','Fight at a glance'));
- const list=node('div',undefined,'boss-guide-steps');for(const [i,tip] of (profile.tips||[]).entries()){const step=node('div',undefined,'boss-guide-step'),p=node('p');ultraExplainText(p,ultraBeginnerText(tip,''),key);step.append(node('span',String(i+1),'boss-guide-step-number'),p);list.append(step)}fight.append(list);
- if(publicEncounterLoadouts&&profile.potions?.length){const consumables=node('div',undefined,'boss-guide-consumables');consumables.append(node('strong','Unverified community consumable examples'),node('p',profile.potions.join(' · ')));fight.append(consumables)}
- layout.append(fight);root.append(layout);if(!names.length)drawBossGuideRoleTips(rolePanel,profile,'');root.append(rolePanel);
- const sources=guideDisclosure('Sources & strategy notes');sources.classList.add('boss-guide-sources');sources.append(bossGuideWiki(entry.wiki,'Wiki location ↗'));const verifiedMechanics={'Emperor Angler':'https://aqwwiki.wikidot.com/emperor-angler','Reinforced Shelleton':'https://aqwwiki.wikidot.com/reinforced-shelleton','Fell Statue':'https://aqwwiki.wikidot.com/fell-statue','Rampaging Cyborg':'https://aqwwiki.wikidot.com/rampaging-cyborg','Cervus Malus':'https://aqwwiki.wikidot.com/cervus-malus','Key of Sholemoh':'https://aqwwiki.wikidot.com/key-of-sholemoh','Astral Empyrean':'https://aqw.app/monsters/astralshrine','Void Xyfrag':'https://aqw.app/monsters/voidxyfrag','Void NerfKitten':'https://aqwwiki.wikidot.com/sarah-the-nerfkitten','Mechabinky & Raxborg 2.0':'https://aqwwiki.wikidot.com/mechabinky-raxborg-2-0'};if(verifiedMechanics[key]){const a=node('a','Monster mechanics reference ↗');a.href=verifiedMechanics[key];a.target='_blank';a.rel='noopener noreferrer';sources.append(a)}const link=node('a','↗ Simplified Bosses Guide — '+profile.sheet);link.href=simplifiedGuideSource;link.target='_blank';link.rel='noopener noreferrer';sources.append(link);root.append(sources);
+ const guide=approvedOtherBossGuide;
+ if(entry.name!==guide.name||!profile.team?.length||!profile.team.every(x=>Object.hasOwn(guide.roles,x.cls))){root.append(node('p','Guide withheld · source coverage incomplete.','muted'));return}
+ const team=node('section',undefined,'boss-guide-panel boss-guide-team');
+ team.append(node('h3','Documented team'));
+ const chips=node('div',undefined,'boss-guide-chips');for(const member of profile.team){const owned=ultraOwned(member.cls);chips.append(node('span',(owned?'✓ ':'')+member.cls,'boss-guide-chip'+(owned?' is-owned':'')))}team.append(chips);root.append(team);
+ const fight=node('section',undefined,'boss-guide-panel boss-guide-fight');fight.append(node('h3','Fight at a glance'),node('p',guide.goal),node('p',guide.avoid));root.append(fight);
+ const setup=node('section',undefined,'boss-guide-panel boss-guide-loadout');setup.append(node('h3','Your class'));
+ const select=node('select',undefined,'ultra-role-select');select.setAttribute('aria-label',entry.name+' class');fillStrategyClasses(select,[...new Set(profile.team.map(x=>x.cls))],selectedBossClasses.get(entry.name));setup.append(select);root.append(setup);
+ const rolePanel=node('section',undefined,'boss-guide-panel boss-guide-role-panel');root.append(rolePanel);
+ const draw=()=>{const cls=select.value;selectedBossClasses.set(entry.name,cls);rolePanel.replaceChildren(node('h3','Your fight guide'));if(!Object.hasOwn(guide.roles,cls))return;appendStrategyStep(rolePanel,'Your responsibility',guide.roles[cls],entry.name);for(const [label,tip] of guide.shared)appendStrategyStep(rolePanel,label,tip,entry.name);rolePanel.append(node('p','Role guidance, not a verified skill rotation.','muted tiny'));};select.onchange=draw;draw();
+ const sources=guideDisclosure('Sources & strategy notes');sources.append(bossGuideWiki(entry.wiki,'Wiki location ↗'));const link=node('a','Simplified Bosses Guide — '+profile.sheet+' ↗');link.href=simplifiedGuideSource;link.target='_blank';link.rel='noopener noreferrer';sources.append(link);for(const [label,url] of guide.refs){const a=node('a',label+' ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';sources.append(a)}root.append(sources);
+
 }
 function renderBossGuides(root,term,category){
- const entries=bossGuideEntries(simplifiedExtraEncounters,ultraBossCatalog);
- const matches=bossGuideSorted(filterBossGuides(entries,term,category,p=>ultraClassOptions(p.name,p).flatMap(g=>g.names)));
+ const entries=bossGuideEntries(simplifiedExtraEncounters,ultraBossCatalog).map(e=>e.profile&&e.name!==approvedOtherBossGuide.name?{...e,profile:null,availability:'Strategy withheld pending source review.'}:e);
+ const matches=bossGuideSorted(filterBossGuides(entries,term,category,p=>(p.team||[]).map(x=>x.cls)));
  selectedBossGuide=bossGuideSelection(matches,selectedBossGuide);
  $('bossguidecount').textContent=matches.length+' / '+entries.length+' encounters · '+entries.filter(e=>e.profile).length+' guides';
  const scroll=root.scrollTop;root.replaceChildren();
@@ -2791,11 +2785,208 @@ const workbookSharedGuide={
   "Only enter your assigned Zone without forbidden debuffs; avoid consecutive Truths without planned mitigation."
  ]
 };
+// Strict source publication gate. Data remains in the repository for later review.
+const approvedUltraGuides={
+ "kathool": {
+  "goal": "All seven players equip Vigil and activate it on the Nightmare cue.",
+  "avoid": "Never replace Vigil with a taunt.",
+  "shared": [
+   [
+    "Vigil",
+    "When “You cannot resist.” appears, activate Vigil within the three-second charge. Every player must do this."
+   ],
+   [
+    "Targets",
+    "Supports handle spawning tendrils while DPS and debuffing supports focus the eyes. Agree the split before pulling; do not assign a target solely from a rating."
+   ]
+  ],
+  "roles": {
+   "Lord of Order": "Coordinate the support/tendril assignment with the group.",
+   "Legion Revenant": "Help with the support/tendril assignment agreed by the group.",
+   "Verus DoomKnight": "Debuff the eyes while assigned supports handle tendrils.",
+   "StoneCrusher": "Coordinate the support/tendril assignment with the group.",
+   "ArchFiend": "Confirm whether you are assigned to eyes or tendrils.",
+   "Glaceran Warlord": "Confirm whether you are assigned to eyes or tendrils.",
+   "Arcana Invoker": "Confirm your DPS target before pulling."
+  },
+  "refs": [
+   [
+    "Mechanic cross-check",
+    "https://aqw.app/monsters/kathooldepths"
+   ]
+  ]
+ },
+ "drakath": {
+  "goal": "Assign a taunter to each HP blast before crossing the threshold.",
+  "avoid": "Do not taunt the transformation or final meteor.",
+  "shared": [
+   [
+    "Before pulling",
+    "The workbook recommends around 3,500 buffed HP for the taunter and around 3,000 for other players. Agree which healer or LR handles each blast."
+   ],
+   [
+    "HP blasts",
+    "Taunt before 18M, 16M, 14M, 12M, 8M, 6M and 4M HP. Hold burst until the taunter is ready."
+   ],
+   [
+    "Exceptions",
+    "10M is a transformation. At 2M, finish the meteor damage check within 20 seconds; taunting cannot stop it."
+   ]
+  ],
+  "roles": {
+   "Lord of Order": "Coordinate recovery with Paladin Chronomancer; taunt blasts only when assigned.",
+   "Legion Revenant": "If assigned, take the HP blasts, coordinating any alternating taunts with the healer.",
+   "Paladin Chronomancer": "Coordinate heals with Lord of Order; if assigned, take the agreed HP blasts.",
+   "Chrono ShadowHunter": "Control burst around the HP thresholds. Save damage for the final meteor."
+  },
+  "refs": [
+   [
+    "HP threshold cross-check",
+    "https://aqw.app/monsters/championdrakath"
+   ]
+  ],
+  "correction": "The workbook's every-2M wording omits the 10M and 2M exceptions. The mechanics reference establishes those exceptions."
+ },
+ "dage": {
+  "goal": "Use life steal, move to the illuminated zone and suppress regeneration.",
+  "avoid": "Do not use ordinary heals or HoTs during Noxious Decay.",
+  "shared": [
+   [
+    "Survival",
+    "Use Health Vamp or Dauntless for life steal. Noxious Decay reverses normal healing and healing over time."
+   ],
+   [
+    "Safe zone",
+    "On the protection-spells cue, move onto the illuminated blue platform within three seconds."
+   ],
+   [
+    "Regeneration",
+    "At the Legion power cue, the assigned Decay player must maintain healing prevention as available; agree backup coverage before pulling."
+   ]
+  ],
+  "roles": {
+   "Chaos Avenger": "The workbook identifies CAv as the taunt specialist. If using its loop-taunt variant, open with Scroll of Enrage and use Flux (3) before the taunt expires; confirm the chosen plan.",
+   "ArchFiend": "Follow the shared damage, zone and sustain instructions; confirm any backup Decay duty with the group.",
+   "Verus DoomKnight": "If assigned Decay, Unleash Doom (5) provides three seconds of healing prevention. Coordinate coverage with the team; do not assume one cast covers the entire regeneration.",
+   "Chrono ShadowHunter": "Follow the damage and zone instructions; avoid healing skills and HoTs while Noxious Decay is active."
+  },
+  "refs": [
+   [
+    "Attack and taunt cross-check",
+    "https://aqw.app/monsters/ultradage"
+   ],
+   [
+    "VDK Decay skill",
+    "https://aqwwiki.wikidot.com/verus-doomknight-class"
+   ]
+  ]
+ },
+ "nulgath": {
+  "goal": "Coordinate two Contracts taunters and the Blade response.",
+  "avoid": "Abyssal Charge cannot be redirected by taunting.",
+  "shared": [
+   [
+    "Contracts",
+    "Agree a staggered taunt plan for Contracts of the Abyss, which recur every seven seconds. Do not overlap taunts."
+   ],
+   [
+    "Different attack",
+    "The Abyssal Charge cue is “Behold the power of the Abyss!”; that attack itself ignores taunt. Do not treat the quote as a universal taunt timer."
+   ],
+   [
+    "Blade",
+    "Focus Nulgath as assigned. If the sword charges its lethal attack, follow the agreed sword kill call; do not let the charge finish."
+   ]
+  ],
+  "roles": {
+   "Lord of Order": "Alternate Contracts taunts with Legion Revenant according to the agreed timing.",
+   "Legion Revenant": "Alternate Contracts taunts with Lord of Order according to the agreed timing.",
+   "StoneCrusher": "Maintain support and follow the called target; do not add unassigned taunts.",
+   "Guardian": "Focus Nulgath and switch to the sword on the team call."
+  },
+  "refs": [
+   [
+    "Contracts / Abyssal Charge cross-check",
+    "https://aqw.app/monsters/ultranulgath"
+   ]
+  ],
+  "correction": "The original workbook uses the Abyssal Charge quote to synchronize taunts. It is not the tauntable Contracts attack; the precise cue-based loop is withheld. Agree timing with an experienced team."
+ },
+ "gramiel": {
+  "goal": "Balance the crystals, then rotate all four taunts.",
+  "avoid": "Do not kill the crystals far apart or cross HP checkpoints without protection.",
+  "shared": [
+   [
+    "Crystal pairs",
+    "DPS + Lord of Order take one crystal; LR + healer take the other. Alternate within each pair at the defense-shattering cue; kill both crystals within five seconds."
+   ],
+   [
+    "After crystals",
+    "Wait for the explosion, then each player taunts in turn and takes two autos before the next player takes over. Repeat after the beam."
+   ],
+   [
+    "HP checkpoints",
+    "At 70%, 40% and 10% HP, each player needs Vendetta or Death’s Door to gain protection against Celestial Vanquish. Five Vendetta stacks are lethal when Grace Unleashed resolves."
+   ]
+  ],
+  "roles": {
+   "Lord of Order": "Pair with the assigned DPS and alternate crystal taunts. Follow your assigned Gramiel turn.",
+   "Legion Revenant": "Pair with the assigned healer and alternate crystal taunts. Follow your assigned Gramiel turn.",
+   "StoneCrusher": "Confirm the healer position and crystal partner; take your assigned Gramiel turn.",
+   "Shaman": "Confirm the DPS position and crystal partner; balance crystal HP and take your assigned Gramiel turn."
+  },
+  "refs": [
+   [
+    "Vendetta and protection thresholds",
+    "https://aqw.app/monsters/ultragramiel"
+   ]
+  ],
+  "correction": "The workbook omits the lethal HP checkpoints. Added from the mechanics reference; no fixed player order has been invented."
+ }
+};
+const withheldUltraGuides={
+ "ezrajal": "The workbook's main tactic relies on skill-lock manipulation; normal roster-specific instructions are not established.",
+ "warden": "The workbook names a fast healer but does not establish the assignment for its exact roster.",
+ "engineer": "The mechanics require ArchPaladin but the listed example team has StoneCrusher instead.",
+ "tyndarius": "The instructions assign an orb to Legion Revenant, who is absent from the listed example.",
+ "drago": "The loop-taunt instructions require Lord of Order, absent from the example roster.",
+ "darkon": "The sheet lists different healer/taunter compositions; the exact current rotation and mitigation timing need reconciliation.",
+ "speaker": "The listed StoneCrusher roster does not match the Lord of Order timing charts; no verified matching DPS assignment."
+};
+const approvedOtherBossGuide={
+ "name": "Void Xyfrag",
+ "goal": "Deal sustained damage and coordinate the Consume taunt.",
+ "avoid": "Do not allow the fight to reach the invulnerability phase.",
+ "shared": [
+  [
+   "Taunt",
+   "Assign Legion Revenant to intercept Consume on the belch cue; VDK is a possible backup only if agreed."
+  ],
+  [
+   "Damage",
+   "Use sustained rapid damage and finish before the boss becomes invulnerable."
+  ]
+ ],
+ "roles": {
+  "Legion Revenant": "Take the assigned Consume taunt.",
+  "Verus DoomKnight": "Backup Consume taunter only if agreed before pulling.",
+  "Lord of Order": "Follow the shared team instructions; no individual rotation is established.",
+  "Legendary Hero": "Follow the shared team instructions; no individual rotation is established.",
+  "ArchFiend": "Follow the shared team instructions; no individual rotation is established.",
+  "Chrono ShadowHunter": "Maintain damage during safe windows; both DPS slots have the same shared instructions."
+ },
+ "refs": [
+  [
+   "Consume mechanics",
+   "https://aqw.app/monsters/voidxyfrag"
+  ]
+ ]
+};
+const approvedClassActivities={"Arcana Invoker":["farm"],"Legion Revenant":["farm"],"Shaman":["solo"],"Verus DoomKnight":["solo"]};
 function ultraStrategyVariants(b,profile){
- const primary=ultraRecommendedTeam(b,profile),source=profile?.team?.map(x=>x.cls)||[];
- const variants=[{id:'primary',label:'Companion example',names:primary,source:'Community mechanics and role guidance'}];
- if(source.length&&!(source.length===primary.length&&source.every(n=>classInExampleTeam(primary,n))))variants.push({id:'workbook',label:'Simplified guide example',names:source,source:profile.sheet,partial:b.id==='speaker'||b.id==='drago'||b.id==='tyndarius'});
- return variants;
+ const evidence=approvedUltraGuides[b.id],names=profile?.team?.map(x=>x.cls)||[];
+ if(!evidence||!names.length||!names.every(n=>Object.hasOwn(evidence.roles,n)))return [];
+ return [{id:'workbook',label:'Documented team',names,source:profile.sheet}];
 }
 function fillStrategyClasses(select,names,selected){
  select.replaceChildren();
@@ -2814,19 +3005,20 @@ function guideDisclosure(label){
 
 function renderUltraDetail(b){
  const root=$('ultradetail');root.classList.toggle('hidden',!b);root.replaceChildren();if(!b)return;
- const quick=ultraBeginner101[b.id]||{},profile=simplifiedProfiles[b.id];
+ const evidence=approvedUltraGuides[b.id],profile=simplifiedProfiles[b.id];
  const variants=ultraStrategyVariants(b,profile);
  const titleBar=node('div',undefined,'goalhead ultra-title-row'),actions=node('div',undefined,'ultra-title-actions');
  actions.append(makeCopyJoin(b.join),node('span',b.type,'quick-pill'),node('span',b.difficulty,'pill'));
  titleBar.append(node('h2',ultraEmojiFor(b)+' '+b.name),actions);root.append(titleBar);
+ if(!variants.length){root.append(node('p','Guide withheld · '+(withheldUltraGuides[b.id]||'Source coverage incomplete.'),'muted'));const a=node('a','Source workbook ↗');a.href=simplifiedGuideSource;a.target='_blank';a.rel='noopener noreferrer';root.append(a);return}
  const summary=node('section',undefined,'ultra-focus-card ultra-quickstart guide-v2-overview');
  summary.append(node('h3','🎯 Fight at a glance'));
  const focus=node('div',undefined,'ultra-focus-grid');
  function focusCard(label,content,kind){
   const card=node('div',undefined,'ultra-focus-item '+kind),body=node('strong');
-  ultraExplainText(body,ultraBeginnerText(content,''),b.id);card.append(node('small',label),body);return card;
+  ultraExplainText(body,content,b.id);card.append(node('small',label),body);return card;
  }
- focus.append(focusCard('YOUR GOAL',quick.priority||b.phases[0]?.[1]||'Follow your assigned role','ultra-focus-good'),focusCard('AVOID',quick.avoid||b.mistakes[0]||'Avoid damage spikes','ultra-focus-danger'));
+ focus.append(focusCard('YOUR GOAL',evidence.goal,'ultra-focus-good'),focusCard('AVOID',evidence.avoid,'ultra-focus-danger'));
  summary.append(focus);root.append(summary);
  const team=node('section',undefined,'ultra-focus-card guide-v2-team');
  team.append(node('h3','1 · Team composition'));
@@ -2834,7 +3026,7 @@ function renderUltraDetail(b){
  for(const v of variants)pick.append(new Option(v.label,v.id));
  pick.value=variants.some(v=>v.id===selectedUltraStrategies.get(b.id))?selectedUltraStrategies.get(b.id):variants[0].id;
  const teamInfo=node('p',undefined,'muted tiny'),chips=node('div',undefined,'ultra-recommended-classes guide-v2-class-buttons');
- team.append(pick,teamInfo,chips,node('p','Community example — mechanics, team and rotation still need current-patch confirmation.','muted tiny'));root.append(team);
+ if(variants.length>1)team.append(pick);else pick.hidden=true;team.append(teamInfo,chips,node('p','Source-documented team · community example, gameplay validation pending.','muted tiny'));root.append(team);
  const setup=node('section',undefined,'ultra-focus-card ultra-setup-card guide-v2-class');
  setup.append(node('h3','2 · Your class'));
  const select=node('select',undefined,'ultra-role-select');select.setAttribute('aria-label','Your class');
@@ -2850,30 +3042,15 @@ function renderUltraDetail(b){
   for(const chip of chips.querySelectorAll('button'))chip.setAttribute('aria-pressed',String(sameUltraClass(chip.dataset.cls,cls)));
   rating.replaceChildren(node('span',ultraOwned(cls)?'✓ Owned':'Not owned',ultraOwned(cls)?'ultra-owned':'ultra-missing'));
   roleName.textContent=cls;sequence.replaceChildren();
-  if(variant.id==='workbook'){
-   const personal=workbookPersonalGuide[b.id]?.[cls];
-   appendStrategyStep(sequence,'Your responsibility',personal||'No individual assignment is documented. Confirm your role with the team.',b.id);
-   for(const tip of workbookSharedGuide[b.id]||[])appendStrategyStep(sequence,'Team mechanic',tip,b.id);
-   if(variant.partial)sequence.append(node('p','Partial strategy: confirm the missing or conflicting assignments with your group. No full class rotation is established.','muted tiny'));
-  }else{
-   sequence.append(node('p','Role and encounter guidance; not a verified skill rotation.','muted tiny'));
-   // Primary role notes belong to the primary roster, never to the workbook team.
-   // Speaker duties depend on the selected chart; do not hard-code a Zone here.
-   const roleNote=b.id==='speaker'?'Choose the matching timing chart below; follow only its assignments.':b.roles.find(([name])=>sameUltraClass(name,cls))?.[1];
-   if(roleNote)appendStrategyStep(sequence,'Your responsibility',roleNote,b.id);
-   const playKey=Object.keys(ultraRolePlaybooks[b.id]||{}).find(x=>sameUltraClass(x,cls)),play=ultraRolePlaybooks[b.id]?.[playKey];
-   const baseTips=[...new Set((play?.steps||[]).map(step=>String(step).trim()).filter(Boolean))];
-   const rows=ultraUnifiedTips(b.id,cls,baseTips);
-   for(const part of rows)appendStrategyStep(sequence,part.title,part.quote?part.text.replace('“'+part.quote+'” — ','').replace('“'+part.quote+'”','this cue'):part.text,b.id,part.quote);
-   if(b.id==='speaker')appendPersonalSpeakerRotation(sequence,cls,exampleNames);
-  }
+  const personal=evidence.roles[cls];
+  appendStrategyStep(sequence,'Your responsibility',personal,b.id);
+  for(const [label,tip] of evidence.shared)appendStrategyStep(sequence,label,tip,b.id);
+  sequence.append(node('p','Documented role guidance, not a complete class skill rotation. Confirm assignments before pulling.','muted tiny'));
   const details=guideDisclosure('Sources & strategy notes');
-  details.append(node('p',variant.source+' · Community example; current-patch gameplay not independently verified.','muted tiny'));
-  if(variant.id==='workbook'){
-   const a=node('a','Simplified Bosses Guide — '+profile.sheet+' ↗');a.href=simplifiedGuideSource;a.target='_blank';a.rel='noopener noreferrer';details.append(a);
-  }
-  const refs=b.id==='drakath'?[['Champion Drakath — mechanics and example teams','https://jix-aqw.github.io/guias/ultra-bosses/ultra-champion-drakath.html'],['Champion Drakath — Wiki','https://aqwwiki.wikidot.com/champion-drakath-monster']]:(ultraReviewedSources[b.id]||[]);
-  for(const [label,url] of refs){const a=node('a',label+' ↗','muted tiny');a.href=url;a.target='_blank';a.rel='noopener noreferrer';details.append(a)}
+  details.append(node('p','Simplified Bosses Guide — '+profile.sheet+' · community documentation, not independently playtested.','muted tiny'));
+  const a=node('a','Source workbook ↗');a.href=simplifiedGuideSource;a.target='_blank';a.rel='noopener noreferrer';details.append(a);
+  if(evidence.correction)details.append(node('p',evidence.correction,'muted tiny'));
+  for(const [label,url] of evidence.refs){const link=node('a',label+' ↗','muted tiny');link.href=url;link.target='_blank';link.rel='noopener noreferrer';details.append(link)}
   sequence.append(details);
  }
  function updateStrategy(){
@@ -3745,6 +3922,7 @@ function simplifiedClassSource(cls){const gid=simplifiedClassSheetIds[cls];retur
 function renderClassBuild(){
  const cls=$('build-class')?.value,role=$('build-role')?.value,root=$('build-results');if(!root)return;root.replaceChildren();
  const build=starterBuilds[cls]?.[role],meta=window.AQWCMetaBuilds?.metadata?.[cls];
+ if(!approvedClassActivities[cls]?.includes(role)){root.append(node('div','No reviewed activity-specific build available.','build-empty'));return}
  const disputed=sameUltraClass(cls,'Great Thief')||(sameUltraClass(cls,'Arcana Invoker')&&role!=='farm');
  if(disputed){const panel=node('div',undefined,'build-empty');panel.append(node('strong',cls+' — loadout under review'),node('p','This preset was flagged by experienced players. It is withdrawn rather than replaced with another untested build.'));const url=sameUltraClass(cls,'Great Thief')?'https://aqwwiki.wikidot.com/great-thief':sameUltraClass(cls,'Void Highlord')?'https://aqwwiki.wikidot.com/void-highlord-class':'https://aqwwiki.wikidot.com/arcana-invoker';const link=node('a','Current class skills ↗');link.href=url;link.target='_blank';link.rel='noopener noreferrer';panel.append(link);const src=simplifiedClassSource(cls);if(src){const a=node('a','Community class guide ↗');a.href=src;a.target='_blank';a.rel='noopener noreferrer';panel.append(a)}root.append(panel);return}
  if(build&&!build.evidence){const panel=node('div',undefined,'build-empty');panel.append(node('strong',cls+' — activity-specific preset not confirmed'),node('p','No complete matching source loadout established for this activity. A different activity is not automatically interchangeable.'));const src=simplifiedClassSource(cls)||meta?.guide;if(src){const a=node('a','Class reference ↗');a.href=src;a.target='_blank';a.rel='noopener noreferrer';panel.append(a)}root.append(panel);return}
@@ -4004,7 +4182,7 @@ function initClassBuildPlanner(){
   root.replaceChildren(node('div','Could not display this build: '+(error?.message||error),'build-empty'));
  }};
  const updateActivities=()=>{
-  const previous=role.value,available=supportedClassActivities(select.value);
+  const previous=role.value,available=(approvedClassActivities[select.value]||[]).slice();
   role.replaceChildren();
   for(const value of available)role.append(new Option(value==='solo'?'Solo / Boss':'Farming',value));
   role.value=available.includes(previous)?previous:available[0];
@@ -4012,7 +4190,7 @@ function initClassBuildPlanner(){
  const filter=()=>{
   const previous=select.value;
   const query=search.value.trim().toLowerCase();
-  const names=Object.keys(starterBuilds).filter(n=>n.toLowerCase().includes(query));
+  const names=Object.keys(approvedClassActivities).filter(n=>n.toLowerCase().includes(query));
   select.replaceChildren();
   for(const name of names)select.append(new Option(name,name));
   if(names.includes(previous))select.value=previous;
