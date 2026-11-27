@@ -6045,6 +6045,7 @@ function zurichParts(){const str=new Intl.DateTimeFormat('en-CA',{timeZone:'Euro
 function renderHomeMilestones(){
  const box=$('home-milestone-highlights'),api=window.AQWAccountStatistics;if(!box||!api?.homeMilestoneHighlights)return;
  box.replaceChildren();if(!current)return;
+ try{
  const projects=unlocks.map(p=>({name:p.name,type:p.type,owned:owned(p.name)}));
  const stats=api.analyze({current,snapshots,projects,forgeUnlocked:forgeUnlocked.size,forgeTotal:forgeCatalog.length,metadataLookup:name=>communityItems.get(communityKey(name))});
  const {latest,next}=api.homeMilestoneHighlights(stats,snapshots);
@@ -6060,6 +6061,7 @@ function renderHomeMilestones(){
  if(next){const track=node('progress');track.max=next.goal;track.value=next.value;track.setAttribute('aria-label',next.name+' progress');upcoming.append(node('strong',(next.icon||'🎯')+' '+next.name),track,node('small',fmt(next.value)+' / '+fmt(next.goal)+' · '+Math.floor(next.value/next.goal*100)+'%','muted tiny'))}
  else upcoming.append(node('small','All current milestones unlocked.','muted tiny'));
  grid.append(recent,upcoming);box.append(head,grid);
+ }catch(error){console.warn('Home milestone highlights unavailable',error);box.replaceChildren(node('p','Milestone summary unavailable. Open Companion Milestones for details.','muted tiny'))}
 }
 function renderHomeInventoryChanges(){
  renderHomeMilestones();
@@ -6976,8 +6978,9 @@ function loadForgeUnlocks(){
  }catch(e){console.warn('Forge unlock tracker load failed',e);forgeUnlocked=new Set()}
 }
 function saveForgeUnlocks(){
- try{localStorage.setItem(FORGE_PROGRESS_KEY,JSON.stringify([...forgeUnlocked]));renderHomeMilestones();return true}
+ try{localStorage.setItem(FORGE_PROGRESS_KEY,JSON.stringify([...forgeUnlocked]))}
  catch(e){console.error('Forge unlock save failed',e);message('Could not save Forge progress in this browser. Please check site storage.','error');return false}
+ renderHomeMilestones();return true
 }
 function renderForgeTracker(){
  const list=$('forge-list');if(!list)return;list.replaceChildren();
