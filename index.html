@@ -14,7 +14,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="AQW Companion | AQWorlds Inventory & Farming Tracker">
 <meta name="twitter:description" content="A free unofficial AdventureQuest Worlds companion with inventory, Wishlist, farming and Forge tracking."><link rel="icon" type="image/png" href="assets/brand-favicon.png">
-<link rel="stylesheet" href="css/site.css?v=141"><link rel="stylesheet" href="css/boost-finder.css?v=3">
+<link rel="stylesheet" href="css/site.css?v=142"><link rel="stylesheet" href="css/boost-finder.css?v=3">
 
 
 <link rel="stylesheet" href="css/item-icons.css">
@@ -2643,12 +2643,17 @@ function ultraSpeakerPersonal(pattern,cls){
   return [{number:i+1,event,text:[task,...ownSkill].filter(Boolean).join(' · ')}];
  });
 }
-function appendPersonalSpeakerRotation(content,cls){
+function appendPersonalSpeakerRotation(content,cls,team){
  const role=ultraSpeakerRole(cls);
- const wrap=node('div',undefined,'ultra-personal-rotation');
- wrap.append(node('h4','Your rotation'));
+ const wrap=guideDisclosure('Detailed personal rotation');wrap.classList.add('ultra-personal-rotation');
  if(!role){wrap.append(node('p','This class has no assigned role in the documented rotation charts. Confirm a separate team strategy before pulling.','muted tiny'));content.append(wrap);return}
- const choices=simplifiedSpeakerPatterns.map((p,i)=>({p,i})).filter(({p})=>p.roles.includes(role)&&(role==='GW'?p.name.includes('Glaceran'):role==='AP'?!p.name.includes('Glaceran'):true));
+ const choices=simplifiedSpeakerPatterns.map((p,i)=>({p,i})).filter(({p})=>{
+  if(!p.roles.includes(role)||!Array.isArray(team))return false;
+  const required=p.name.includes('Glaceran')?['Glaceran Warlord','Legion Revenant','Lord of Order']:['ArchPaladin','Legion Revenant','Lord of Order'];
+  if(!required.every(n=>classInExampleTeam(team,n)))return false;
+  // The selected DPS has not been verified for the self-taunt chart.
+  return !p.name.includes('DPS taunt skill');
+ });
  if(!choices.length){content.append(wrap);return}
  const pick=node('select');pick.setAttribute('aria-label','Speaker rotation');
  for(const {p,i} of choices)pick.append(new Option(p.name,String(i)));
@@ -2662,94 +2667,223 @@ function appendPersonalSpeakerRotation(content,cls){
  pick.onchange=draw;wrap.append(pick,rotation);content.append(wrap);draw();
 }
 
+// Strategy variants keep the roster and its instructions together. No rating-derived teams.
+const selectedUltraStrategies=new Map();
+const workbookPersonalGuide={
+ "kathool": {
+  "Lord of Order": "Maintain recovery and help the team clear tendrils when assigned.",
+  "Legion Revenant": "Support the team and clear spawned tendrils when assigned.",
+  "Verus DoomKnight": "Apply debuffs to the eyes while the designated supports handle tendrils.",
+  "StoneCrusher": "Keep mana support active and help clear assigned tendrils.",
+  "ArchFiend": "Focus the assigned target; help clear tendrils if assigned.",
+  "Glaceran Warlord": "Follow the team's assigned target split; no specific rotation is documented.",
+  "Arcana Invoker": "Follow the team's assigned target split; no specific rotation is documented."
+ },
+ "ezrajal": {
+  "Lord of Order": "Coordinate recovery around the prism burst.",
+  "Legion Revenant": "Stop damaging debuffs during reflection; resume support afterward.",
+  "ArchPaladin": "Stop damage at the counter charge; coordinate mitigation.",
+  "Chrono ShadowHunter": "Save damage for the safe window after reflection."
+ },
+ "warden": {
+  "Lord of Order": "Use skill 5 at Berserk as agreed; coordinate recovery.",
+  "Legion Revenant": "Maintain support; take taunts only if assigned.",
+  "StoneCrusher": "Keep recovery available; coordinate the Berserk taunter.",
+  "Chrono ShadowHunter": "Confirm recovery is ready before pushing into Berserk."
+ },
+ "engineer": {
+  "Lord of Order": "Use skill 5 on Attack Drone in the documented timing.",
+  "Legion Revenant": "Follow drone target order; do not damage Defense Drone during reflect.",
+  "StoneCrusher": "Maintain support and recovery through drone transitions.",
+  "Chrono ShadowHunter": "Focus the called drone and stop damage during reflection."
+ },
+ "tyndarius": {
+  "Lord of Order": "If needed, agree a loop-taunt plan with ArchPaladin; do not add an independent taunt.",
+  "StoneCrusher": "Sustain the team through orb transitions; confirm who takes orb taunts.",
+  "ArchPaladin": "Coordinate loop taunts with Lord of Order only if agreed.",
+  "Chrono ShadowHunter": "Prioritize the two orbs; if assigned an orb taunt, confirm which one."
+ },
+ "drakath": {
+  "Lord of Order": "Coordinate heals with Paladin Chronomancer. Taunt HP blasts only if assigned.",
+  "Legion Revenant": "Can be assigned HP blast taunts; coordinate with the healer before pulling.",
+  "Paladin Chronomancer": "Coordinate heals with Lord of Order; taunt only if assigned.",
+  "Chrono ShadowHunter": "Hold burst before each tauntable HP threshold until the assigned player is ready."
+ },
+ "dage": {
+  "Chaos Avenger": "Coordinate the assigned taunt and use life steal; avoid normal healing during Noxious Decay.",
+  "ArchFiend": "Follow the damage and safe-zone calls; confirm the assigned Decay user.",
+  "Verus DoomKnight": "If assigned Decay, coordinate Unleash Doom (5) at the Legion power cue; avoid empowered healing while Noxious Decay is active.",
+  "Chrono ShadowHunter": "Avoid Tracer Rounds (3) during Noxious Decay; use damage and reload in safe windows."
+ },
+ "nulgath": {
+  "Lord of Order": "Alternate Contracts taunts with Legion Revenant; confirm the timing before pulling.",
+  "Legion Revenant": "Alternate Contracts taunts with Lord of Order; confirm the timing before pulling.",
+  "StoneCrusher": "Maintain support and follow the called target; do not add unassigned taunts.",
+  "Guardian": "Focus Nulgath; switch to the sword when the team calls."
+ },
+ "drago": {
+  "StoneCrusher": "Maintain recovery and support; confirm the guard assignments.",
+  "Legion Revenant": "Control Bowmaster as assigned, until it dies.",
+  "ArchPaladin": "Control Executioner. The source also describes a LoO loop-taunt variant, but LoO is not in this roster; do not assume that rotation.",
+  "Guardian": "Focus Bowmaster, then Executioner, then Drago."
+ },
+ "darkon": {
+  "Lord of Order": "Alternate assigned taunts with Legion Revenant; coordinate heals and save skill 5 for the nuke near 4.5–4.6M HP.",
+  "Legion Revenant": "Alternate taunts with Lord of Order on the agreed timing; coordinate the loop after the HP refill.",
+  "Paladin Chronomancer": "Coordinate recovery with Lord of Order; avoid overlapping heals.",
+  "Chrono ShadowHunter": "Maintain damage during safe windows; respect the taunt and healing plan."
+ },
+ "gramiel": {
+  "Lord of Order": "Pair with DPS on one crystal. Alternate taunts with your partner, then follow the agreed four-player rotation.",
+  "Legion Revenant": "Pair with the assigned healer on the other crystal; alternate taunts and follow the later rotation.",
+  "StoneCrusher": "Confirm the healer assignment and crystal partner; follow the agreed four-player rotation.",
+  "Shaman": "Confirm the DPS assignment and crystal partner; balance crystal HP and follow the four-player rotation."
+ },
+ "speaker": {
+  "StoneCrusher": "The example roster contains StoneCrusher, but the supplied LoO charts do not establish a StoneCrusher rotation.",
+  "Legion Revenant": "Agree a separate Truth/Listen and Zone rotation with the group; the LoO charts do not match this roster.",
+  "ArchPaladin": "Coordinate mitigation with the team. No matching full rotation is provided for this roster.",
+  "Guardian": "Confirm the DPS and Zone assignment; no matching full rotation is provided for this roster."
+ }
+};
+const workbookSharedGuide={
+ "kathool": [
+  "All seven equip Vigil and activate it on “You cannot resist.”",
+  "Supports clear spawned tendrils; DPS and debuffing supports focus the eyes as assigned."
+ ],
+ "ezrajal": [
+  "Target at least 3,175 HP. Stop damage on Counter Attack and resume only after reflection."
+ ],
+ "warden": [
+  "Agree on a Berserk taunter and recovery plan before pulling. Recover Shockwave targets promptly."
+ ],
+ "engineer": [
+  "Defense Drone → Attack Drone → Engineer. Stop hitting Defense Drone during reflection."
+ ],
+ "tyndarius": [
+  "Kill both orbs quickly. Confirm orb assignments; fast DPS can reduce the need for additional taunts."
+ ],
+ "drakath": [
+  "Assign the HP-blast taunter before pulling; about 3,500 buffed HP for that player and around 3,000 for others in this example.",
+  "Tauntable blasts: 18M / 16M / 14M / 12M / 8M / 6M / 4M. 10M is transformation; 2M meteor is not tauntable."
+ ],
+ "dage": [
+  "Use life steal; avoid ordinary healing and HoTs during Noxious Decay.",
+  "Move to the lit blue zone on cue. Assign Decay for the Legion power cue."
+ ],
+ "nulgath": [
+  "Agree the alternating Contracts taunts before pulling. Abyssal Charge itself cannot be taunted.",
+  "Focus Nulgath; coordinate killing the sword during its lethal charge."
+ ],
+ "drago": [
+  "Bowmaster → Executioner → Drago. Confirm the guard control plan; the source's LoO loop requires a different roster."
+ ],
+ "darkon": [
+  "Alternate Elegy taunts; coordinate healing. Avoid Vainglory in this example.",
+  "Preserve the agreed taunt rotation after Darkon refills HP."
+ ],
+ "gramiel": [
+  "Kill both crystals within five seconds of each other. Each player takes their agreed turn in the four-player taunt rotation.",
+  "At 70%, 40% and 10% HP, confirm protection for every player before crossing."
+ ],
+ "speaker": [
+  "This roster has no matching full timing chart in the source. Do not reuse the Lord of Order charts.",
+  "Only enter your assigned Zone without forbidden debuffs; avoid consecutive Truths without planned mitigation."
+ ]
+};
+function ultraStrategyVariants(b,profile){
+ const primary=ultraRecommendedTeam(b,profile),source=profile?.team?.map(x=>x.cls)||[];
+ const variants=[{id:'primary',label:'Companion example',names:primary,source:'Community mechanics and role guidance'}];
+ if(source.length&&!(source.length===primary.length&&source.every(n=>classInExampleTeam(primary,n))))variants.push({id:'workbook',label:'Simplified guide example',names:source,source:profile.sheet,partial:b.id==='speaker'||b.id==='drago'||b.id==='tyndarius'});
+ return variants;
+}
+function fillStrategyClasses(select,names,selected){
+ select.replaceChildren();
+ for(const name of names)select.append(new Option((ultraOwned(name)?'✓ ':'')+name,name));
+ if(names.some(n=>sameUltraClass(n,selected)))select.value=names.find(n=>sameUltraClass(n,selected));
+ else preferExampleClass(select,names);
+}
+function appendStrategyStep(root,title,content,key,quote=''){
+ const step=node('div',undefined,'ultra-role-step'+(quote?' ultra-react-step':''));
+ const body=node('div',undefined,'ultra-role-step-body'),heading=node('h4',quote?'“'+quote+'”':title,'ultra-role-mini-title'+(quote?' ultra-role-quote-heading':''));
+ const desc=node('p');ultraExplainText(desc,content,key);body.append(heading,desc);step.append(body);root.append(step);
+}
+function guideDisclosure(label){
+ const panel=node('details',undefined,'guide-v2-disclosure');panel.append(node('summary',label));return panel;
+}
+
 function renderUltraDetail(b){
  const root=$('ultradetail');root.classList.toggle('hidden',!b);root.replaceChildren();if(!b)return;
- const quick=ultraBeginner101[b.id]||{},roleMap=new Map(b.roles),profile=simplifiedProfiles[b.id];
- const titleBar=node('div',undefined,'goalhead ultra-title-row');
- const actions=node('div',undefined,'ultra-title-actions');
+ const quick=ultraBeginner101[b.id]||{},profile=simplifiedProfiles[b.id];
+ const variants=ultraStrategyVariants(b,profile);
+ const titleBar=node('div',undefined,'goalhead ultra-title-row'),actions=node('div',undefined,'ultra-title-actions');
  actions.append(makeCopyJoin(b.join),node('span',b.type,'quick-pill'),node('span',b.difficulty,'pill'));
  titleBar.append(node('h2',ultraEmojiFor(b)+' '+b.name),actions);root.append(titleBar);
- root.append(node('p','Community encounter example — mechanics, team and rotation are still undergoing patch-specific review. Confirm assignments with an experienced group.','muted tiny'));
- appendUltraRecommendedTeam(root,b,profile);
- const compact=node('div',undefined,'ultra-guide-layout');
- const setup=node('section',undefined,'ultra-focus-card ultra-setup-card');
- setup.append(node('h3',publicEncounterLoadouts?'⚔️ Your loadout':'👤 Your class'));
- const selectorRow=node('div',undefined,'ultra-focus-selector');
- const select=node('select',undefined,'ultra-role-select');
- fillUltraClassSelect(select,b.id,profile,[...b.team,...(b.alternate||[])]);
- const exampleNames=ultraRecommendedTeam(b,profile);preferExampleClass(select,exampleNames);
- const savedClass=selectedUltraClasses.get(b.id);if(savedClass&&Array.from(select.options).some(o=>o.value===savedClass))select.value=savedClass;
- selectorRow.append(node('span','Class'),select);setup.append(selectorRow);
- const gear=node('div',undefined,'ultra-focus-gear');
- const rating=node('div',undefined,'ultra-selected-rating');
- setup.append(rating);if(publicEncounterLoadouts)setup.append(gear);
- const summary=node('section',undefined,'ultra-focus-card ultra-quickstart');
+ const summary=node('section',undefined,'ultra-focus-card ultra-quickstart guide-v2-overview');
  summary.append(node('h3','🎯 Fight at a glance'));
  const focus=node('div',undefined,'ultra-focus-grid');
- function focusCard(icon,label,content,kind){
-  const card=node('div',undefined,'ultra-focus-item '+(kind||''));
-  const body=node('strong');ultraExplainText(body,ultraBeginnerText(content,''),b.id);card.append(node('small',icon+' '+label),body);
-  return card;
+ function focusCard(label,content,kind){
+  const card=node('div',undefined,'ultra-focus-item '+kind),body=node('strong');
+  ultraExplainText(body,ultraBeginnerText(content,''),b.id);card.append(node('small',label),body);return card;
  }
- focus.append(focusCard('✅','YOUR GOAL',quick.priority||b.phases[0]?.[1]||'Follow your assigned role','ultra-focus-good'));
- focus.append(focusCard('⛔','AVOID',quick.avoid||b.mistakes[0]||'Avoid damage spikes','ultra-focus-danger'));
- summary.append(focus);
- compact.append(setup,summary);root.append(compact);
+ focus.append(focusCard('YOUR GOAL',quick.priority||b.phases[0]?.[1]||'Follow your assigned role','ultra-focus-good'),focusCard('AVOID',quick.avoid||b.mistakes[0]||'Avoid damage spikes','ultra-focus-danger'));
+ summary.append(focus);root.append(summary);
+ const team=node('section',undefined,'ultra-focus-card guide-v2-team');
+ team.append(node('h3','1 · Team composition'));
+ const pick=node('select',undefined,'ultra-role-select');pick.setAttribute('aria-label','Team composition');
+ for(const v of variants)pick.append(new Option(v.label,v.id));
+ pick.value=variants.some(v=>v.id===selectedUltraStrategies.get(b.id))?selectedUltraStrategies.get(b.id):variants[0].id;
+ const teamInfo=node('p',undefined,'muted tiny'),chips=node('div',undefined,'ultra-recommended-classes guide-v2-class-buttons');
+ team.append(pick,teamInfo,chips);root.append(team);
+ const setup=node('section',undefined,'ultra-focus-card ultra-setup-card guide-v2-class');
+ setup.append(node('h3','2 · Your class'));
+ const select=node('select',undefined,'ultra-role-select');select.setAttribute('aria-label','Your class');
+ const rating=node('div',undefined,'ultra-selected-rating');setup.append(select,rating);root.append(setup);
  const mechanics=node('section',undefined,'ultra-focus-card ultra-mechanics ultra-class-guide');
- const mechanicsTitle=node('h3','👤 Encounter mechanics');mechanics.append(mechanicsTitle);
- const roleContext=node('div',undefined,'ultra-role-context');
- const roleName=node('strong',undefined,'ultra-role-selected');
- roleContext.append(node('span','Playing as'),roleName);
- mechanics.append(roleContext);
- const sequence=node('div',undefined,'ultra-flow-list');mechanics.append(sequence);
- root.append(mechanics);
+ const mechanicsTitle=node('h3','3 · Your fight guide');mechanics.append(mechanicsTitle);
+ const roleName=node('strong',undefined,'ultra-role-selected'),sequence=node('div',undefined,'ultra-flow-list');
+ mechanics.append(roleName,sequence);root.append(mechanics);
+ const active=()=>variants.find(v=>v.id===pick.value)||variants[0];
  function updateRole(){
-  const cls=select.value;selectedUltraClasses.set(b.id,cls);
-  if(exampleNames.length&&!classInExampleTeam(exampleNames,cls)){
-   rating.replaceChildren(node('span',ultraOwned(cls)?'✓ Owned':'Not owned',ultraOwned(cls)?'ultra-owned':'ultra-missing'));
-   roleName.textContent=cls;mechanicsTitle.textContent='👤 Strategy not available for this class';sequence.replaceChildren(node('p','This class is not in the displayed example team. A compatible strategy has not been established here. Select a class in the example team or consult a matching team guide.','muted tiny'));return;
+  const variant=active(),exampleNames=variant.names,cls=select.value;selectedUltraClasses.set(b.id,cls);
+  if(!classInExampleTeam(exampleNames,cls)){sequence.replaceChildren(node('p','Choose a member of this team.','muted tiny'));return}
+  for(const chip of chips.querySelectorAll('button'))chip.setAttribute('aria-pressed',String(sameUltraClass(chip.dataset.cls,cls)));
+  rating.replaceChildren(node('span',ultraOwned(cls)?'✓ Owned':'Not owned',ultraOwned(cls)?'ultra-owned':'ultra-missing'));
+  roleName.textContent=cls;sequence.replaceChildren();
+  if(variant.id==='workbook'){
+   const personal=workbookPersonalGuide[b.id]?.[cls];
+   appendStrategyStep(sequence,'Your responsibility',personal||'No individual assignment is documented. Confirm your role with the team.',b.id);
+   for(const tip of workbookSharedGuide[b.id]||[])appendStrategyStep(sequence,'Team mechanic',tip,b.id);
+   if(variant.partial)sequence.append(node('p','Partial strategy: confirm the missing or conflicting assignments with your group. No full class rotation is established.','muted tiny'));
+  }else{
+   sequence.append(node('p','Role and encounter guidance; not a verified skill rotation.','muted tiny'));
+   const playKey=Object.keys(ultraRolePlaybooks[b.id]||{}).find(x=>sameUltraClass(x,cls)),play=ultraRolePlaybooks[b.id]?.[playKey];
+   const baseTips=[...new Set((play?.steps||[]).map(step=>String(step).trim()).filter(Boolean))];
+   const rows=ultraUnifiedTips(b.id,cls,baseTips);
+   for(const part of rows)appendStrategyStep(sequence,part.title,part.quote?part.text.replace('“'+part.quote+'” — ','').replace('“'+part.quote+'”','this cue'):part.text,b.id,part.quote);
+   if(b.id==='speaker')appendPersonalSpeakerRotation(sequence,cls,exampleNames);
   }
-  const playKey=Object.keys(ultraRolePlaybooks[b.id]||{}).find(x=>sameUltraClass(x,cls)),play=ultraRolePlaybooks[b.id]?.[playKey];
-  const roleKey=[...roleMap.keys()].find(x=>sameUltraClass(x,cls)),role=roleMap.get(roleKey);
-  const workbook=ultraWorkbookBuild(profile,cls);
-  // Bard is a Kathool support class. Official guidance endorses Healer/Wizard/Lucky;
-  // Awe Blast + defensive Forge is a suggested group utility setup, not a hard requirement.
-  const bardSupport={weapon:'Awe Blast',helm:'Forge',cape:'Absolution',
-    note:'Healer base/armor for safer support; Wizard or Lucky are alternatives. Penitence is a defensive cape option.'};
-  const genericKey=Object.keys(starterBuilds).find(x=>sameUltraClass(x,cls));
-  const generic=starterBuilds[genericKey]?.group||(cls==='Bard'?bardSupport:null);
-  const encounter=encounterUltraBuild(b.id,cls,generic);
-  const build=ultraSuggestedGear(b.id,cls,profile,generic,encounter);
-  renderUltraSelectedRating(rating,b.id,cls);
-  if(publicEncounterLoadouts){gear.replaceChildren();
-  if(build){
-   appendUltraGearCells(gear,build,b.id);
-   if(cls==='Bard'){
-    const source=node('a','Bard enhancement reference ↗','ultra-gear-source');
-    source.href='https://www.aq.com/lore/classes/bard';source.target='_blank';source.rel='noopener noreferrer';gear.append(source);
-   }
-  }else gear.append(node('span','No reviewed class-specific gear preset yet. Consult a current encounter guide.','muted tiny'));
-  gear.title='Not a verified best-in-slot recommendation';setup.querySelector('h3').textContent=build?'⚔️ Loadout · Community example':'⚔️ Loadout · Review pending';}
-  roleName.textContent=cls;
-  mechanicsTitle.textContent=b.id==='drakath'?'👤 Role & encounter guidance':'👤 Encounter mechanics · community guide';
-  sequence.replaceChildren();sequence.append(node('p',b.id==='drakath'?'Role guidance for the standard designated-taunter strategy; not a class rotation.':'Shared encounter mechanics, not a verified class-specific rotation. Confirm your assignment with the team.','muted tiny'));
-  const baseTips=[...new Set((play?.steps||[]).map(step=>String(step).trim()).filter(Boolean))];
-  const rows=ultraUnifiedTips(b.id,cls,baseTips).map((part,i)=>({...part,number:String(i+1).padStart(2,'0')}));
-  for(const part of rows){
-   const step=node('div',undefined,'ultra-role-step');
-   const body=node('div',undefined,'ultra-role-step-body');
-   const heading=node('h4',part.quote?'“'+part.quote+'”':part.title,'ultra-role-mini-title');
-   if(part.quote||/“[^”]+”/.test(part.text)){heading.classList.add('ultra-role-quote-heading');step.classList.add('ultra-react-step')}
-   const description=node('p');
-   ultraExplainText(description,part.quote?part.text.replace('“'+part.quote+'” — ','').replace('“'+part.quote+'”','this cue'):part.text,b.id);
-   body.append(heading,description);
-   step.append(node('span',part.number,'ultra-step-number'),body);
-   sequence.append(step);
+  const details=guideDisclosure('Sources & strategy notes');
+  details.append(node('p',variant.source+' · Community example; current-patch gameplay not independently verified.','muted tiny'));
+  if(variant.id==='workbook'){
+   const a=node('a','Simplified Bosses Guide — '+profile.sheet+' ↗');a.href=simplifiedGuideSource;a.target='_blank';a.rel='noopener noreferrer';details.append(a);
   }
-  if(b.id==='speaker')appendPersonalSpeakerRotation(sequence,cls);
-  const refs=b.id==='drakath'?[['Champion Drakath — mechanics and example teams','https://jix-aqw.github.io/guias/ultra-bosses/ultra-champion-drakath.html'],['Champion Drakath — Wiki','https://aqwwiki.wikidot.com/champion-drakath-monster']]:(ultraReviewedSources[b.id]||[]);for(const [label,url] of refs){const a=node('a',label+' ↗','muted tiny');a.href=url;a.target='_blank';a.rel='noopener noreferrer';sequence.append(a)}
+  const refs=b.id==='drakath'?[['Champion Drakath — mechanics and example teams','https://jix-aqw.github.io/guias/ultra-bosses/ultra-champion-drakath.html'],['Champion Drakath — Wiki','https://aqwwiki.wikidot.com/champion-drakath-monster']]:(ultraReviewedSources[b.id]||[]);
+  for(const [label,url] of refs){const a=node('a',label+' ↗','muted tiny');a.href=url;a.target='_blank';a.rel='noopener noreferrer';details.append(a)}
+  sequence.append(details);
  }
- select.onchange=updateRole;updateRole();
+ function updateStrategy(){
+  const v=active();selectedUltraStrategies.set(b.id,v.id);
+  teamInfo.textContent=v.names.length+' players · '+v.names.filter(ultraOwned).length+' owned'+(v.partial?' · Partial strategy':'');
+  fillStrategyClasses(select,v.names,selectedUltraClasses.get(b.id));chips.replaceChildren();
+  for(const name of v.names){
+   const owned=ultraOwned(name),chip=node('button',undefined,'ultra-team-chip'+(owned?' is-owned':''));
+   chip.type='button';chip.dataset.cls=name;chip.append(node('span',owned?'✓':'○','ultra-team-mark'),node('span',name));chip.title=(owned?'Owned: ':'Not owned: ')+name;
+   chip.onclick=()=>{select.value=name;updateRole()};chips.append(chip);
+  }
+  updateRole();
+ }
+ pick.onchange=updateStrategy;select.onchange=updateRole;updateStrategy();
 }
 $('ultrasearch').addEventListener('input',renderUltras);$('ultrafilter').addEventListener('change',renderUltras);$('bossguidesearch').addEventListener('input',renderUltraCatalog);$('bossguidecategory').addEventListener('change',renderUltraCatalog);
 

@@ -1,0 +1,8 @@
+# Guides V2 — review notes
+- Preserve original team and separately show exact Simplified Bosses Guide example, deduplicated by roster. No ratings, no automatic substitution, no universal BiS.
+- 12 primary rosters, 11 distinct workbook rosters, 23 selectable compositions. Gramiel has the same class set in both; original preserved.
+- Individual class selection restricted to active roster; owned indicator and clickable chips. Source-specific assignments/coverage notes; not all roles have a documented skill rotation.
+- Workbook reopened on 27 Nov 2026: Kathool, Timeinn Trio, Tyndarius, Drakath, Dage, Nulgath, Drago, Darkon, Gramiel, Speaker, Speaker Charts. Source: https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit .
+- Known conflicts: Nulgath quote is Abyssal Charge, not a tauntable attack; preserve prior reviewed Contracts guidance. Drago workbook roster has SC but instructions mention LoO; Tyndarius roster has SC but text mentions LR; no assignment invented. Speaker workbook roster has SC instead of LoO; no LoO chart rendered for this roster. No self-taunt DPS chart without verified DPS compatibility. GW chart remains internal until a matching team is documented. Ezrajal skill-lock manipulation not promoted.
+- Existing primary guide uses previously audited role/mechanic rows; this is documentary review, not in-game certification. Public loadouts and Class Builds remain hidden.
+- Further work: independently validate all original and alternative rotations, reconcile disputed sources, collect expert feedback. General class reference and farming benchmark integration is separate; not published here.
