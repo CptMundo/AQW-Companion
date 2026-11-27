@@ -30,7 +30,7 @@ jobs:
           retention-days: 14
 
   persist-preview-assets:
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'feat/guide-assets-')
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && (startsWith(github.head_ref, 'feat/guide-assets-') || github.head_ref == 'fix/hide-class-builds-keep-forge')
     needs: preview
     runs-on: ubuntu-24.04
     permissions:
@@ -49,7 +49,7 @@ jobs:
           SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          [[ "$SOURCE_BRANCH" == feat/guide-assets-* ]]
+          [[ "$SOURCE_BRANCH" == feat/guide-assets-* || "$SOURCE_BRANCH" == fix/hide-class-builds-keep-forge ]]
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           test "$(find extension/guide-images -maxdepth 1 -name 'guide-*.png' | wc -l)" -eq 14
           (cd downloads && sha256sum -c AQW_Companion.sha256)
