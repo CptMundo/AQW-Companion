@@ -1277,7 +1277,7 @@ const ultraBattleCues={
   {quote:'I will make you see the truth.',action:'TRUTH: the assigned taunter intercepts it; follow the rotation decided before the fight.'}
  ],
  nulgath:[
-  {quote:'Behold the power of the Abyss!',action:'ABYSSAL CHARGE: useful cue for the second taunter in the efficient 6-second offset rotation. Confirm who taunts before pull.'},
+  {quote:'Behold the power of the Abyss!',action:'ABYSSAL CHARGE: this attack cannot be taunted. Assigned taunters alternate Contracts of the Abyss (7-second cycle), not Abyssal Charge.'},
   {quote:'I will shatter you to the core!',action:'OVERFIEND BLADE: kill the sword within 5 seconds, then return to Nulgath; do not kill it unnecessarily.'}
  ],
  dage:[
@@ -1718,6 +1718,7 @@ Object.assign(starterBuilds,window.AQWCMetaBuilds?.builds||{});
 // Encounter-specific recommendations, separate from general class builds.
 // Community strategies are examples, not mandatory or universal BiS.
 const ultraReviewedSources={
+ nulgath:[['AQW App — Contracts and Abyssal Charge mechanics','https://aqw.app/monsters/ultranulgath']],
  dage:[['AQW App — Dage mechanics','https://aqw.app/monsters/ultradage']],
  drakath:[['AQWG — Drakath strategy','https://sites.google.com/view/aqwg-net/ultra-bosses']],
  ezrajal:[['AQW App — Ezrajal mechanics','https://aqw.app/monsters/ultraezrajal']],
@@ -1777,7 +1778,7 @@ const simplifiedProfiles={
  tyndarius:{sheet:'Tyndarius',team:[sgLoO(),sgSC(),sgAP(),sgCSH('Arcana Concerto','Base Forge')],tips:['Prioritize killing the two orbs. If needed, assign DPS and a support to taunt one orb each; a slower party can coordinate AP/LoO loop taunts. Fast DPS may make extra taunting unnecessary.']},
  drakath:{sheet:'Drakath',team:[sgLoO(),sgLR('Ravenous','Wizard'),sgPC('Mana Vamp','Hearty','Vainglory'),sgCSH('Arcana Concerto','Examen','Lament')],tips:['Keep healers from overlapping direct heals. Assign a healer or LR to the HP blasts, using the existing guide’s precise threshold exceptions. Workbook recommends at least 3,500 buffed HP for the taunter and around 3,000 for other players.']},
  dage:{sheet:'Dage',team:[sgBuild('Chaos Avenger','Dauntless','Lucky','Anima','Vainglory'),sgAF('Dauntless'),sgVDK('Dauntless'),sgCSH('Health Vamp')],tips:['Bring a Decay class and lifesteal; do not use ordinary heals under inverted healing. Apply Decay at the Legion power cue, enter the blue safe zones, then resume damage. Workbook favors Dauntless on CAv; Health Vamp and Scroll of Life Steal are alternatives.']},
- nulgath:{sheet:'Nulgath',team:[sgLoO(),sgLR(),sgSC(),sgGuardian()],tips:['In this rotation LoO and LR alternate Nulgath taunts: first shortly after pull, second on “Behold the power of the Abyss!”, then renew as the taunt ends. DPS focuses Nulgath. If damage is low, prepare the sword to about half HP and handle its dangerous attacks with the team.']},
+ nulgath:{sheet:'Nulgath',team:[sgLoO(),sgLR(),sgSC(),sgGuardian()],tips:['In this example LoO and LR alternate Contracts of the Abyss on the agreed 7-second cycle. Abyssal Charge itself cannot be taunted. DPS focuses Nulgath. If damage is low, prepare the sword to about half HP and handle its dangerous attacks with the team.']},
  drago:{sheet:'Drago',team:[sgSC(),sgLR('Awe Blast'),sgAP(),sgGuardian()],tips:['LR controls Bowmaster. AP controls Executioner; if your variant includes LoO, AP and LoO can loop taunt it together. DPS prioritizes Bowmaster, then Executioner, then Drago. Do not assume LoO is present in the example SC composition.']},
  darkon:{sheet:'Darkon',team:[sgLoO('Absolution'),sgLR('Ravenous'),sgPC('Lacerate','Vim','Fighter'),sgCSH('Arcana Concerto','Examen','Base Forge')],tips:['Avoid Vainglory. This example uses LoO and LR alternating taunts on the tentacle animation (or every two autos), then loop taunts after Darkon refills HP. Coordinate heals; preserve LoO skill 5 for the nuke near 4.5–4.6M HP. Consider Potent Honor Potion for secondary healer.']},
  gramiel:{sheet:'Gramiel',team:[sgLoO(),sgLR('Arcana Concerto','Wizard'),sgSC('Praxis'),sgBuild('Shaman','Elysium','Lucky','Base Forge','Lament')],tips:['DPS + LoO take one crystal and LR + healer the other. Each pair alternates taunts at the defense-shattering cue; kill both within five seconds. After the explosion, rotate all four players through taunts, two autos per player, until beam; repeat after beam. Retain the existing threshold safety checks.']},
@@ -2377,7 +2378,7 @@ function ultraUnifiedTips(key,cls,previous=[]){
    const quote=text.match(/“([^”]+)”/)?.[1]||'';
    add(quote?'Blade · 5-second charge':/Contracts/.test(text)?'Assigned Contracts taunt':/half HP/.test(text)?'Prepare the Blade':/Essence Gathered/.test(text)?'Return to Nulgath':'Your skills',text,quote);
   }
-  if(support)add('Optional taunt variant','Only if you are the second taunter in the 6-second-offset strategy, use Scroll of Enrage on the Abyssal Charge cue. Do not mix it with another timing.','Behold the power of the Abyss!');
+  if(support)add('Optional taunt variant','Abyssal Charge cannot be taunted. Only the designated taunters alternate Contracts of the Abyss on the agreed 7-second cycle. Do not treat this quote as a universal scroll instruction.','Behold the power of the Abyss!');
  }else if(key==='speaker'){
   add('Before pulling','Choose one rotation below with your team. Equip Scroll of Enrage if your rotation assigns you scroll taunts.');
   add('Zone safety','Enter only your own assigned Zone. Stay out when affected by Magia Burn, Stasis or Sanctity.','All stand equal beneath the eyes of the Eternal.');

@@ -31,7 +31,7 @@
   const zoneDage=()=>make(Q.zoneDage,"ALL CLASSES: move onto whichever blue floor platform is glowing, within 3 seconds. Do not guess left or right.",S.dage);
   const magesAssigned=()=>make(Q.magesDage,"IF YOU ARE THE ASSIGNED DECAY USER: apply Decay at the start of the Legion Mages regeneration window, before Dage heals.",S.dage);
   const magesSupport=()=>make(Q.magesDage,"Make sure the assigned LDK/LR/Scroll of Decay player applies Decay; prepare mitigation for the following burst. Do not cast ordinary heals while your own Noxious Decay is active.",S.dage);
-  const nulgathSecond=()=>make(Q.abyssNulgath,"ONLY IF ASSIGNED SECOND TAUNTER in the 6-second-offset tactic: use Scroll of Enrage on this callout. Do not overlap your teammate's taunt; other tactics may use different timing.",S.nulgath);
+  const nulgathSecond=()=>make(Q.abyssNulgath,"Abyssal Charge cannot be taunted. Only designated taunters should alternate Contracts of the Abyss (7-second cycle). Follow your agreed rotation, not a universal scroll instruction.",S.nulgath);
   const nulgathBlade=()=>make(Q.bladeNulgath,"Overfiend Blade's lethal 5-second charge has started. If your team's strategy calls for a Blade kill, switch and finish it before the cast; otherwise follow the pre-agreed call. Taunting cannot stop this attack.",S.nulgath);
   const speakerZone=(position)=>make(Q.zoneSpeaker,"ZONE #"+position+" in the standard DPS → LR → AP → LoO rotation: enter the glowing zone ONLY on your own turn. Stay out on others' turns; never enter with Magia Burn, Stasis or Sanctity.",S.speaker);
   const speakerTruth=(role)=>make(Q.truthSpeaker,role,S.speaker);
