@@ -2270,7 +2270,7 @@ function renderBossGuideDetail(entry){
  const root=$('bossguidedetail');root.replaceChildren();
  if(!entry){root.append(node('p','No bosses match these filters.','muted tiny'));return}
  const profile=entry.profile,header=node('div',undefined,'boss-guide-heading'),title=node('div',undefined,'boss-guide-title');
- title.append(node('h2',entry.name),node('small',entry.group+' · '+(profile?'Community guide':'Catalog only'),'muted'));
+ title.append(node('h2',entry.name),node('small',entry.group+' · '+(profile?'Community guide · review pending':'Catalog only'),'muted'));
  header.append(title,makeCopyJoin(entry.join));root.append(header);
  if(!profile){const note=node('div',undefined,'boss-guide-panel');note.append(node('h3','Guide not yet verified'),node('p','This encounter is listed for discovery. No reviewed strategy or loadout is available; verify the location and seasonal availability.','muted'),bossGuideWiki(entry.wiki,'Wiki location ↗'));root.append(note);return}
  const key=profile.name;
@@ -2287,7 +2287,7 @@ function renderBossGuideDetail(entry){
  }
  const fight=node('section',undefined,'boss-guide-panel boss-guide-fight');fight.append(node('h3','Fight at a glance'));
  const list=node('div',undefined,'boss-guide-steps');for(const [i,tip] of (profile.tips||[]).entries()){const step=node('div',undefined,'boss-guide-step'),p=node('p');ultraExplainText(p,ultraBeginnerText(tip,''),key);step.append(node('span',String(i+1),'boss-guide-step-number'),p);list.append(step)}fight.append(list);
- if(profile.potions?.length){const consumables=node('div',undefined,'boss-guide-consumables');consumables.append(node('strong','Suggested consumables'),node('p',profile.potions.join(' · ')));fight.append(consumables)}
+ if(profile.potions?.length){const consumables=node('div',undefined,'boss-guide-consumables');consumables.append(node('strong','Unverified community consumable examples'),node('p',profile.potions.join(' · ')));fight.append(consumables)}
  layout.append(fight);root.append(layout);if(!names.length)drawBossGuideRoleTips(rolePanel,profile,'');root.append(rolePanel);
  const sources=node('div',undefined,'boss-guide-sources');sources.append(bossGuideWiki(entry.wiki,'Wiki location ↗'));const link=node('a','↗ Simplified Bosses Guide — '+profile.sheet);link.href=simplifiedGuideSource;link.target='_blank';link.rel='noopener noreferrer';sources.append(link);root.append(sources);
 }
@@ -2433,6 +2433,7 @@ function renderUltraDetail(b){
  const actions=node('div',undefined,'ultra-title-actions');
  actions.append(makeCopyJoin(b.join),node('span',b.type,'quick-pill'),node('span',b.difficulty,'pill'));
  titleBar.append(node('h2',ultraEmojiFor(b)+' '+b.name),actions);root.append(titleBar);
+ root.append(node('p','Community encounter example — mechanics, team and rotation are still undergoing patch-specific review. Confirm assignments with an experienced group.','muted tiny'));
  appendUltraRecommendedTeam(root,b,profile);
  const compact=node('div',undefined,'ultra-guide-layout');
  const setup=node('section',undefined,'ultra-focus-card ultra-setup-card');
@@ -3152,13 +3153,13 @@ const enhancementHelp={
 const baseClassEnhancement={
  'Void Highlord':'Lucky','Legion Revenant':'Wizard','ArchPaladin':'Lucky',
  'StoneCrusher':'Wizard','Lord of Order':'Lucky','Chaos Avenger':'Lucky',
- 'ArchMage':'Wizard','Arcana Invoker':'Lucky','Dragon of Time':'Wizard',
+ 'ArchMage':'Wizard','Arcana Invoker':'Wizard','Dragon of Time':'Wizard',
  'Shaman':'Wizard','Blaze Binder':'Wizard','Verus DoomKnight':'Lucky',
- 'Yami no Ronin':'Lucky',"King's Echo":'Lucky','LightCaster':'Wizard'
+ 'Yami no Ronin':'Lucky',"King's Echo":'Wizard','LightCaster':'Wizard'
 };
 Object.assign(baseClassEnhancement,window.AQWCMetaBuilds?.base||{});
 function suggestedBaseEnhancement(cls,role,slot){
- const base=baseClassEnhancement[cls]||'Lucky';
+ const base=baseClassEnhancement[cls]||'Not reviewed';
  return base;
 }
 const enhancementEffects={
@@ -3227,7 +3228,8 @@ const classAlchemy={
 };
 Object.assign(classAlchemy,window.AQWCMetaBuilds?.alchemy||{});
 function suggestedConsumables(cls,role){
- const selected=classAlchemy[cls];if(!selected)return [];
+ // No class/activity consumable combination has yet passed the evidence gate.
+ const selected=null;if(!selected)return [];
  // Reorder to match the actual Tonic, Elixir, Potion categories.
  return [['Tonic',selected[0]],['Elixir',selected[1]],['Potion',selected[2]]]
   .filter(([,name])=>alchemySources[name]&&alchemyEffects[name]).map(([kind,name])=>({kind,name,effect:alchemyEffects[name],source:'https://aqwwiki.wikidot.com/'+alchemySources[name]}));
@@ -3265,6 +3267,7 @@ function renderClassBuild(){
   panel.append(identity);
  }
  panel.append(node('p','Community example — current patch / activity review pending. Not a verified best-in-slot loadout.','build-meta-note'));
+ const crossRef=node('a','Community enhancement reference (2025 templates) ↗','muted tiny');crossRef.href='https://docs.google.com/spreadsheets/d/1wupDvLuPnRC0fF0aNPc7rzrri7X1YcYy7S2s5Z6o_F4/edit';crossRef.target='_blank';crossRef.rel='noopener noreferrer';panel.append(crossRef);
  if(sameUltraClass(cls,'Void Highlord')&&role==='solo'){if(build.note)panel.append(node('p',build.note,'build-meta-note'));const refs=node('div',undefined,'build-meta-sources');for(const [label,url] of [['May 2026 benchmark','https://www.reddit.com/r/AQW/comments/1thhrix/tierlist_for_solo_and_farming/'],['Basic Class Guide','https://github.com/Shell1010/AQW-md/blob/main/Other%20Guides/Basic%20Class%20Guide.md']]){const a=node('a',label+' ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';refs.append(a)}panel.append(refs);}
  const layout=node('div',undefined,'build-character-layout');
  const mannequin=node('div',undefined,'build-mannequin');
@@ -3356,7 +3359,7 @@ function renderClassBuild(){
  expl.append(node('p','Trait effects and loadout suitability are separate; the combinations are not yet validated.','muted tiny'));const traitRef=node('a','Official enhancement traits ↗');traitRef.href='https://www.aq.com/lore/guides/enhancementtraits';traitRef.target='_blank';traitRef.rel='noopener noreferrer';expl.append(traitRef);
  info.append(expl);
  const pots=node('section',undefined,'build-info-panel build-consumables-panel');
- pots.append(node('h4','Consumables · example choices'),node('p','Individual effects verified against Wiki item pages. Class / activity suitability still under review.','muted tiny'));
+ pots.append(node('h4','Consumables · review pending'),node('p','No verified class/activity combination is available yet. Individual item effects are documented in the combat audit; consult the encounter guide before choosing consumables.','muted tiny'));
  for(const {kind,name,effect,source} of suggestedConsumables(cls,role)){
   const line=node('div',undefined,'build-consumable-row');
   const heading=node('div',undefined,'build-effect-heading');
@@ -3371,6 +3374,8 @@ function renderClassBuild(){
   alt.append(node('strong','Unreviewed alternative: '),document.createTextNode(build.alternative));
   panel.append(alt);
  }
+ const baseRefs={'Arcana Invoker':'https://aqwwiki.wikidot.com/arcana-invoker',"King's Echo":'https://aqwwiki.wikidot.com/king-s-echo','Dark Lord':'https://aqwwiki.wikidot.com/dark-lord','Phantasm Chronomancer':'https://www.aq.com/gamedesignnotes/aqw-29nov24-2024calendarclassskills-9776','Phantom Chronomancer':'https://www.aq.com/gamedesignnotes/aqw-29nov24-2024calendarclassskills-9776','Kathool Adept':'https://www.artix.com/posts/aqw-kathoolclasspreview-17oct26','Hollowborn Vindicator':'https://www.aq.com/gamedesignnotes/aqw-update-20june25-10026'};
+ if(baseRefs[cls]){const a=node('a','Class stat / skill reference ↗','muted tiny');a.href=baseRefs[cls];a.target='_blank';a.rel='noopener noreferrer';panel.append(a)}
  if(meta){
   const references=node('div',undefined,'build-meta-sources');
   for(const [label,url] of [['Class information',meta.guide],['Build reference',meta.source]]){
