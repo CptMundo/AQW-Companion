@@ -4500,31 +4500,40 @@ function renderUltraDetail(b){
  focus.append(focusCard('YOUR GOAL',evidence.goal,'ultra-focus-good'),focusCard('AVOID',evidence.avoid,'ultra-focus-danger'));
  summary.append(focus);if(evidence.access){const access=node('p',evidence.access,'muted tiny');const link=node('a',' Location / requirements ↗');link.href=evidence.accessRef;link.target='_blank';link.rel='noopener noreferrer';access.append(link);summary.append(access)}
  const team=node('section',undefined,'ultra-focus-card guide-v2-team');
- team.append(node('h3','Team composition'));
- const pick=node('select',undefined,'guide-v2-team-select');pick.setAttribute('aria-label','Team composition');
- for(const v of variants)pick.append(new Option(v.label,v.id));
- pick.value=variants.some(v=>v.id===selectedUltraStrategies.get(b.id))?selectedUltraStrategies.get(b.id):variants[0].id;
- const teamInfo=node('p',undefined,'muted tiny'),chips=node('div',undefined,'ultra-recommended-classes guide-v2-class-buttons');
- if(variants.length>1)team.append(pick);else pick.hidden=true;team.append(teamInfo,chips,node('p','Source-documented team · community example, gameplay validation pending.','muted tiny'));const controls=node('div',undefined,'guide-v2-control-grid guide-v2-top-grid');controls.append(team,summary);root.append(controls);
  const setup=node('section',undefined,'guide-v2-class guide-v2-inline-class');
- setup.append(node('h3','Your class'));
+ setup.append(node('h3','1. Choose your class'));
  const select=node('select',undefined,'ultra-role-select');select.setAttribute('aria-label','Your class');
- const rating=node('div',undefined,'ultra-selected-rating');setup.append(select,rating);team.append(setup);
+ const rating=node('div',undefined,'ultra-selected-rating');setup.append(select,rating);
+ team.append(setup,node('h3','2. Choose your team'));
+ const teamInfo=node('p',undefined,'muted tiny'),choices=node('div',undefined,'guide-v2-team-choices');
+ const showAll=node('button','Show all teams','guide-v2-show-teams');showAll.type='button';showAll.setAttribute('aria-pressed','false');
+ team.append(teamInfo,choices);if(variants.length>1)team.append(showAll);
+ const party=node('section',undefined,'ultra-focus-card guide-v2-party');
+ party.append(node('h3','3. Your party'),node('p','You only need your selected class. Find teammates for the other slots.','muted tiny'));
+ const chips=node('div',undefined,'ultra-recommended-classes guide-v2-class-buttons');
+ party.append(chips);
+ const copyTeam=makeCopyJoin('');copyTeam.classList.add('guide-v2-copy-team');party.append(copyTeam);
+ const controls=node('div',undefined,'guide-v2-control-grid guide-v2-top-grid');controls.append(team,party);root.append(controls,summary);
+ const allNames=[...new Set(variants.flatMap(v=>v.names))].sort((a,b)=>Number(ultraOwned(b))-Number(ultraOwned(a)));
+ fillStrategyClasses(select,allNames,selectedUltraClasses.get(b.id));
+ let chosen=variants.find(v=>v.id===selectedUltraStrategies.get(b.id)&&classInExampleTeam(v.names,select.value))||variants.find(v=>classInExampleTeam(v.names,select.value))||variants[0];
+ let showEveryTeam=false;
+ function friendlyTeamName(v){return v.label.replace(/\bPCM\b/g,'Paladin Chronomancer').replace(/\bLoO\b/g,'Lord of Order').replace(/\bLR\b/g,'Legion Revenant').replace(/\bSC\b/g,'StoneCrusher').replace(/\bLDK\b/g,'Legion DoomKnight').replace(/\bVDK\b/g,'Verus DoomKnight').replace(/\bDPS\b/g,'Damage')}
  const mechanics=node('section',undefined,'ultra-focus-card ultra-mechanics ultra-class-guide');
  const mechanicsTitle=node('h3','Fight instructions');mechanics.append(mechanicsTitle);
  const roleName=node('strong',undefined,'ultra-role-selected'),sequence=node('div',undefined,'ultra-flow-list');
  mechanics.append(roleName,sequence);root.append(mechanics);
- const active=()=>variants.find(v=>v.id===pick.value)||variants[0];
+ const active=()=>chosen;
  function updateRole(){
   const variant=active(),exampleNames=variant.names,cls=select.value;selectedUltraClasses.set(b.id,cls);
   if(!classInExampleTeam(exampleNames,cls)){sequence.replaceChildren(node('p','Choose a member of this team.','muted tiny'));return}
-  for(const chip of chips.querySelectorAll('button'))chip.setAttribute('aria-pressed',String(sameUltraClass(chip.dataset.cls,cls)));
-  rating.replaceChildren(node('span',ultraOwned(cls)?'✓ Owned':'Not owned',ultraOwned(cls)?'ultra-owned':'ultra-missing'));
+  for(const chip of chips.querySelectorAll('button')){const mine=sameUltraClass(chip.dataset.cls,cls);chip.setAttribute('aria-pressed',String(mine));chip.querySelector('.guide-v2-you').hidden=!mine;}
+  rating.replaceChildren(node('span',ultraOwned(cls)?'✓ Class owned':items.length?'Not found in imported inventory':'Import your inventory to check ownership',ultraOwned(cls)?'ultra-owned':'muted'));
   roleName.textContent=cls;sequence.replaceChildren();
   const personal=variant.roles[cls];
   const rows=node('div',undefined,'guide-v2-instruction-rows');
   if(variant.prep?.length)appendStrategyStep(rows,'Preparation & consumables',variant.prep.join(' '),b.id);
-  if(personal)appendStrategyStep(rows,'Your responsibility',personal,b.id);
+  if(personal)appendStrategyStep(rows,'Your responsibility',personal,b.id);else if(!Number.isInteger(variant.chart))rows.append(node('p','No individual assignment documented for this class. Follow the shared fight instructions.','muted tiny'));
   for(const [label,tip] of evidence.shared)appendStrategyStep(rows,label,tip,b.id);
   sequence.append(rows);
   if(variant.note)sequence.append(node('p',variant.note,'muted tiny guide-v2-strategy-note'));
@@ -4536,17 +4545,28 @@ function renderUltraDetail(b){
  }
  function updateStrategy(){
   const v=active();selectedUltraStrategies.set(b.id,v.id);
-  teamInfo.textContent=v.names.length+' players · '+[...new Set(v.names)].filter(ultraOwned).length+'/'+new Set(v.names).size+' distinct classes owned'+(v.partial?' · Partial strategy':'');
-  fillStrategyClasses(select,[...new Set(v.names)],selectedUltraClasses.get(b.id));chips.replaceChildren();
-  const personalAvailable=Object.keys(v.roles).length>0||Number.isInteger(v.chart);setup.hidden=!personalAvailable;roleName.hidden=!personalAvailable;
-  for(const name of v.names){
-   const owned=ultraOwned(name),chip=node('button',undefined,'ultra-team-chip'+(owned?' is-owned':''));
-   chip.type='button';chip.dataset.cls=name;chip.append(node('span',owned?'✓':'○','ultra-team-mark'),node('span',name));chip.title=(owned?'Owned: ':'Not owned: ')+name;
-   if(personalAvailable)chip.onclick=()=>{select.value=name;updateRole()};else chip.disabled=true;chips.append(chip);
+  if(!classInExampleTeam(v.names,select.value))preferExampleClass(select,v.names);
+  const compatible=variants.filter(t=>classInExampleTeam(t.names,select.value));
+  teamInfo.textContent=compatible.length+' compatible '+(compatible.length===1?'team':'teams')+(showEveryTeam?' · Showing all '+variants.length:'');
+  choices.replaceChildren();
+  for(const option of (showEveryTeam?variants:compatible)){
+   const button=node('button',undefined,'guide-v2-team-option');button.type='button';button.dataset.strategy=option.id;button.setAttribute('aria-pressed',String(option.id===v.id));
+   button.append(node('strong',friendlyTeamName(option)),node('small',option.names.length+' players'+(option.partial?' · Partial strategy':'')+' · '+(classInExampleTeam(option.names,select.value)?'Compatible with your class':'Choose a different class'),'muted tiny'));
+   button.onclick=()=>{chosen=option;updateStrategy()};choices.append(button);
   }
+  showAll.textContent=showEveryTeam?'Show compatible teams':'Show all teams';showAll.setAttribute('aria-pressed',String(showEveryTeam));
+  chips.replaceChildren();
+  for(const name of v.names){
+   const chip=node('button',undefined,'ultra-team-chip');chip.type='button';chip.dataset.cls=name;
+   const heading=node('span',undefined,'guide-v2-party-heading'),you=node('small','YOU','guide-v2-you');you.hidden=true;heading.append(node('strong',name),you);chip.append(heading);
+   const role=v.roles[name];if(role){const desc=node('span',role,'guide-v2-party-role');chip.append(desc)}
+   chip.onclick=()=>{select.value=name;updateStrategy()};chips.append(chip);
+  }
+  const replacement=makeCopyJoin(v.names.join(' / '));replacement.classList.add('guide-v2-copy-team');replacement.querySelector('.ultra-copy-command').textContent='Copy team';party.querySelector('.guide-v2-copy-team').replaceWith(replacement);
   updateRole();
  }
- pick.onchange=updateStrategy;select.onchange=updateRole;updateStrategy();
+ showAll.onclick=()=>{showEveryTeam=!showEveryTeam;updateStrategy()};
+ select.onchange=()=>{if(!classInExampleTeam(chosen.names,select.value))chosen=variants.find(v=>classInExampleTeam(v.names,select.value))||variants[0];updateStrategy()};updateStrategy();
 }
 $('ultrasearch').addEventListener('input',renderUltras);$('ultrafilter').addEventListener('change',renderUltras);$('bossguidesearch').addEventListener('input',renderUltraCatalog);$('bossguidecategory').addEventListener('change',renderUltraCatalog);
 

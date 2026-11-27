@@ -40,7 +40,7 @@ assert.ok(html.includes("ultra-role-quote"));
 assert.ok(html.includes('src="js/ultra-quote-actions.js"'));
 assert.match(html,/href="css\/ultra-quote-actions\.css(?:\?v=\d+)?"/);
 assert.ok(html.includes("function ultraStrategyVariants"),"Keep complete roster variants separate");
-assert.ok(html.includes("fillStrategyClasses(select,[...new Set(v.names)]"),"Restrict individual guides to the selected roster");
+assert.ok(html.includes("fillStrategyClasses(select,allNames,selectedUltraClasses.get(b.id)"),"Class-first picker includes documented roster members");
 assert.ok(html.includes("if(!variants.length)"),"Do not render unsupported Speaker rotations");
 assert.ok(!html.includes("No complete class-specific rotation in the guide."));
 assert.ok(stylesheet.includes(".ultra-role-quote"));

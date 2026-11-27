@@ -249,3 +249,19 @@ nav.tabs.subnav[aria-label="Section navigation"]:has(button[data-parent="ultras"
  #ultradetail .guide-v2-control-grid.guide-v2-top-grid,
  #ultradetail .guide-v2-control-grid.guide-v2-top-grid:has(.guide-v2-class:not([hidden])){grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 }
+
+/* Class-first team setup: party on the right; shared overview below. */
+#ultradetail .guide-v2-top-grid>.guide-v2-party{margin:0;padding:12px;min-width:0;display:grid;align-content:start;gap:8px}
+#ultradetail .guide-v2-top-grid>.guide-v2-party p{margin:0}
+#ultradetail .guide-v2-top-grid .guide-v2-inline-class{border-top:0;border-bottom:1px solid var(--line);padding:0 0 10px;margin:0 0 4px;gap:6px}
+#ultradetail .guide-v2-team-choices,#ultradetail .guide-v2-party .guide-v2-class-buttons{display:grid;grid-template-columns:minmax(0,1fr);gap:7px;min-width:0}
+#ultradetail .guide-v2-team-option,#ultradetail .guide-v2-party .ultra-team-chip{display:grid;gap:4px;text-align:left;white-space:normal;overflow-wrap:anywhere;width:100%;min-width:0;padding:9px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);border-radius:8px;cursor:pointer;box-sizing:border-box}
+#ultradetail .guide-v2-team-option[aria-pressed="true"],#ultradetail .guide-v2-party .ultra-team-chip[aria-pressed="true"]{border-color:var(--cyan);outline:1px solid var(--cyan)}
+#ultradetail .guide-v2-party-heading{display:flex;gap:6px;align-items:baseline;justify-content:space-between}
+#ultradetail .guide-v2-you{color:var(--cyan);font-weight:750}
+#ultradetail .guide-v2-you[hidden]{display:none!important}
+#ultradetail .guide-v2-party-role{font-size:12px;line-height:1.4;color:var(--muted)}
+#ultradetail .guide-v2-copy-team,#ultradetail .guide-v2-show-teams{width:100%;max-width:100%;white-space:normal}
+#ultradetail>.guide-v2-overview{margin:0 0 12px;min-width:0}
+#ultradetail>.guide-v2-overview .ultra-focus-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+@container(min-width:620px){#ultradetail>.guide-v2-overview .ultra-focus-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}

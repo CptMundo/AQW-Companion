@@ -162,7 +162,7 @@ assert.ok(rating.children.some(x=>x.text.includes("Healer")));
 compact.renderUltraSelectedRating(rating,"drakath","Bard");
 assert.ok(rating.children.some(x=>x.text==="Not owned"));
 assert.ok(!rating.children.some(x=>x.text.includes("Healer")),"Class change clears previous rating");
-assert.ok(html.includes("fillStrategyClasses(select,[...new Set(v.names)]"));
+assert.ok(html.includes("fillStrategyClasses(select,allNames,selectedUltraClasses.get(b.id)"));
 assert.ok(html.includes("function ultraSuggestedGear(key,cls,profile,generic=null,encounter=null)"));
 assert.ok(html.includes("classInExampleTeam(exampleNames,cls)"));
 assert.ok(html.includes("const personal=variant.roles[cls]"));
