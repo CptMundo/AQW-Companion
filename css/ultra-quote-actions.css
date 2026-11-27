@@ -294,3 +294,21 @@ nav.tabs.subnav[aria-label="Section navigation"]:has(button[data-parent="ultras"
 @container(min-width:430px){#ultradetail .guide-v2-builder .guide-v2-class-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @container(min-width:620px){#ultradetail .guide-v2-builder-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @container(min-width:900px){#ultradetail .guide-v2-builder .guide-v2-class-buttons{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+/* Team builder controls share the same top alignment and field dimensions. */
+#ultradetail .guide-v2-builder .guide-v2-builder-controls{align-items:start}
+#ultradetail .guide-v2-builder .guide-v2-builder-controls>:is(.guide-v2-inline-class,.guide-v2-builder-strategy){display:grid;grid-template-rows:20px 40px auto;gap:5px;align-items:start;align-content:start;min-width:0;margin:0!important;padding:0!important;border:0!important}
+#ultradetail .guide-v2-builder .guide-v2-builder-controls h3{line-height:20px!important;margin:0!important;padding:0!important}
+#ultradetail .guide-v2-builder .guide-v2-builder-controls :is(select,.guide-v2-strategy-static){box-sizing:border-box;width:100%;height:40px!important;min-height:40px!important;max-height:40px!important;margin:0!important;font-size:13px;line-height:20px;padding:9px 12px!important;border:1px solid var(--line);border-radius:8px;background:var(--panel2);color:var(--txt)}
+#ultradetail .guide-v2-strategy-static{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+#ultradetail .guide-v2-builder [hidden]{display:none!important}
+#ultradetail .guide-v2-builder .guide-v2-builder-controls :is(.ultra-selected-rating,p){margin:0!important;min-height:17px;line-height:17px}
+#ultradetail .guide-v2-builder .guide-v2-play-class{display:block!important;min-width:0;max-width:100%;padding:0!important;border:0!important;background:transparent!important;color:var(--txt)!important;font-size:13px;font-weight:750;text-align:left;line-height:1.4;white-space:normal;overflow-wrap:anywhere;cursor:pointer}
+#ultradetail .guide-v2-builder .guide-v2-play-class:hover{color:var(--cyan)!important;text-decoration:underline}
+#ultradetail .guide-v2-builder .guide-v2-play-class:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+#ultradetail .guide-v2-builder .guide-v2-party .ultra-team-chip:has(.guide-v2-slot-select){grid-template-rows:auto auto 1fr auto}
+#ultras #ultradetail>.guide-v2-overview{padding:12px;margin:12px 0}
+#ultras #ultradetail>.guide-v2-overview>h3{margin:0 0 10px!important}
+#ultradetail .guide-v2-overview .ultra-focus-item{min-width:0;overflow-wrap:anywhere}
+#ultradetail .guide-v2-overview .guide-v2-focus-role{border-left:2px solid var(--cyan)}
+#ultradetail .guide-v2-overview .guide-v2-focus-prep{border-left:2px solid var(--muted)}

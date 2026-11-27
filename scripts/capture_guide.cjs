@@ -105,11 +105,14 @@ async function main(){
    assert.equal(await party.getAttribute('data-variant-id'),id);
   };
   await classPick.selectOption('Verus DoomKnight');assert.ok((await detail.locator('.ultra-class-guide').innerText()).includes('Debuff the eyes'));
-  await classPick.selectOption('StoneCrusher');assert.equal(await party.locator('.ultra-team-chip:is(button,a,[tabindex])').count(),0);
+  await classPick.selectOption('StoneCrusher');assert.equal(await party.locator('.guide-v2-play-class').count(),7);await party.locator('.guide-v2-play-class').filter({hasText:'Verus DoomKnight'}).click();assert.equal(await classPick.inputValue(),'Verus DoomKnight');assert.ok(await party.locator('.ultra-team-chip.is-you').getAttribute('data-cls')==='Verus DoomKnight');
   await page.locator('#ultracards button').filter({hasText:'Ultra Avatar Tyndarius'}).click();
-  await chooseTeam('hub-cav','ArchPaladin');assert.equal(await strategyPick.locator('option').count(),1);assert.ok(await party.locator('.guide-v2-slot-select').count());
+  await chooseTeam('hub-cav','ArchPaladin');assert.equal(await strategyPick.locator('option').count(),1);assert.ok(await strategyPick.isHidden());assert.ok(await detail.locator('.guide-v2-strategy-static').isVisible());assert.ok(await party.locator('.guide-v2-slot-select').count());
   await chooseTeam('nand-ssot','ArchPaladin');assert.ok((await party.innerText()).includes('ShadowStalker of Time'));
   await chooseTeam('hub-ai','Arcana Invoker');assert.ok((await detail.locator('.ultra-class-guide').innerText()).includes('right orb'));
+  const mine=party.locator('.ultra-team-chip.is-you .guide-v2-slot-select');assert.ok(await mine.isVisible());await mine.selectOption('hub-cav');assert.equal(await classPick.inputValue(),'Chaos Avenger');assert.equal(await party.getAttribute('data-variant-id'),'hub-cav');assert.ok((await detail.locator('.guide-v2-focus-role').innerText()).includes('Chaos Avenger'));assert.equal(await detail.locator('.guide-v2-overview .ultra-focus-item').count(),4);assert.equal(await detail.locator('.guide-v2-overview a[href*="location"]').count(),0);
+  const fields=await detail.locator('.guide-v2-builder-controls').evaluate(e=>{const a=e.querySelector('.ultra-role-select').getBoundingClientRect(),b=e.querySelector('.guide-v2-strategy-static').getBoundingClientRect();return {dy:Math.abs(a.y-b.y),dh:Math.abs(a.height-b.height)}});assert.ok(fields.dy<2&&fields.dh<2,'Aligned class and strategy fields');
+  const groups=await classPick.locator('optgroup').evaluateAll(g=>g.map(x=>x.label));assert.ok(groups.length>0&&groups.every(x=>['Owned','Not owned','Ownership not checked'].includes(x)));assert.ok((await classPick.locator('option').allTextContents()).every(x=>!x.startsWith('✓')));
   await page.locator('#ultracards button').filter({hasText:'Champion Drakath'}).click();await classPick.selectOption('Lord of Order');assert.ok(await strategyPick.locator('option').count()>=3);
   const ordered=await detail.evaluate(e=>{const top=e.querySelector('.guide-v2-builder').getBoundingClientRect(),overview=e.querySelector('.guide-v2-overview').getBoundingClientRect(),fight=e.querySelector('.ultra-class-guide').getBoundingClientRect();return top.bottom<=overview.top+1&&overview.bottom<=fight.top+1});assert.ok(ordered);
   await page.locator('#ultracards button').filter({hasText:'Ultra Speaker'}).click();await chooseTeam('three-vhl','Void Highlord');assert.ok((await detail.locator('.ultra-class-guide').innerText()).includes('Zone 1'));await classPick.selectOption('Lord of Order');assert.ok((await detail.locator('.ultra-class-guide').innerText()).includes('Listen'));
@@ -126,7 +129,7 @@ async function main(){
      await chooseTeam(v.id,cls);
      assert.equal(await party.locator('.ultra-team-chip.is-you').count(),1);
      assert.equal(await party.locator('.ultra-team-chip.is-you').getAttribute('data-cls'),cls);
-     assert.equal(await party.locator('.ultra-team-chip.is-you .guide-v2-slot-select').count(),0);
+     assert.equal(await party.locator('.guide-v2-play-class[aria-pressed="true"]').count(),1);assert.ok((await detail.locator('.guide-v2-focus-role').innerText()).includes(cls));
      assert.ok((await detail.locator('.ultra-class-guide').innerText()).includes(cls));assert.ok(await detail.locator('.guide-v2-disclosure').count());
     }
    }
