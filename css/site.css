@@ -1350,7 +1350,7 @@ html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-i
 #ultradetail .guide-v2-class-buttons{justify-content:flex-start;gap:6px;flex-wrap:wrap}
 #ultradetail .guide-v2-class-buttons button{cursor:pointer;min-height:34px}
 #ultradetail .guide-v2-class-buttons button[aria-pressed="true"]{outline:2px solid currentColor;outline-offset:1px;font-weight:700}
-#ultradetail .guide-v2-class .ultra-role-select,#ultradetail .guide-v2-team .ultra-role-select{width:100%;max-width:100%}
+#ultradetail .guide-v2-class .ultra-role-select,#ultradetail .guide-v2-team .guide-v2-team-select{width:100%;max-width:100%}
 .guide-v2-disclosure{border:1px solid var(--line,#304b63);border-radius:8px;padding:9px 12px;margin-top:8px}
 .guide-v2-disclosure summary{cursor:pointer;font-weight:600}
 .guide-v2-disclosure[open] summary{margin-bottom:8px}
@@ -1359,3 +1359,7 @@ html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-i
 #ultradetail .ultra-role-step-body{width:100%;min-width:0}
 #ultradetail .ultra-role-step-body p{margin:4px 0 0}
 @media(max-width:650px){#ultradetail .guide-v2-overview .ultra-focus-grid{grid-template-columns:1fr}}
+
+#bossguidedetail .guide-v2-other-layout{grid-template-columns:minmax(0,1fr)}
+#bossguidedetail .guide-v2-other-layout .boss-guide-loadout{min-height:0}
+#bossguidedetail .guide-v2-other-layout .boss-guide-fight{order:-1}

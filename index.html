@@ -2485,7 +2485,7 @@ function bossGuideRoleTips(profile,cls,role){
  return rows;
 }
 function drawBossGuideRoleTips(root,profile,cls){
- root.replaceChildren();root.append(node('h3','Encounter guidance · community example'));root.append(node('p','Not a verified class-specific rotation. Confirm mechanics and assignments with the source guide.','muted tiny'));
+ root.replaceChildren();root.append(node('h3','Your fight guide'));root.append(node('p','Role and encounter guidance; not a verified skill rotation.','muted tiny'));
  if(!cls){root.append(node('p','No class-specific loadout is documented for this encounter.','muted tiny'));return}
  const team=(profile.team||[]).map(member=>member.cls);
  if(team.length&&!classInExampleTeam(team,cls)){root.append(node('p','This class is not in the displayed example team. A compatible strategy has not been established here. Use a matching team guide before attempting the encounter.','muted tiny'));return}
@@ -2507,11 +2507,11 @@ function renderBossGuideDetail(entry){
  if(!profile){const note=node('div',undefined,'boss-guide-panel');note.append(node('h3','Guide not yet verified'),node('p','This encounter is listed for discovery. No reviewed strategy or loadout is available; verify the location and seasonal availability.','muted'),...(entry.availability?[node('p',entry.availability,'muted')]:[]),bossGuideWiki(entry.wiki,'Wiki location ↗'));root.append(note);return}
  const key=profile.name;
  if(profile.team?.length){const team=node('section',undefined,'boss-guide-panel boss-guide-team');team.append(node('h3','Example team'));const chips=node('div',undefined,'boss-guide-chips');for(const member of profile.team){const owned=ultraOwned(member.cls);const chip=node('span',(owned?'✓ ':'')+member.cls,'boss-guide-chip'+(owned?' is-owned':''));chips.append(chip)}team.append(chips);root.append(team)}
- const layout=node('div',undefined,'boss-guide-layout'),rolePanel=node('section',undefined,'boss-guide-panel boss-guide-role-panel');
- const groups=ultraClassOptions(key,profile),names=groups.flatMap(g=>g.names);
+ const layout=node('div',undefined,'boss-guide-layout guide-v2-other-layout'),rolePanel=node('section',undefined,'boss-guide-panel boss-guide-role-panel');
+ const groups=ultraClassOptions(key,profile),teamNames=[...new Set((profile.team||[]).map(member=>member.cls))],names=teamNames.length?teamNames:groups.flatMap(g=>g.names);
  if(names.length){
   const setup=node('section',undefined,'boss-guide-panel boss-guide-loadout'),heading=node('h3',publicEncounterLoadouts?'Your Loadout':'Your class');setup.append(heading);
-  const select=node('select',undefined,'ultra-role-select');select.setAttribute('aria-label',key+' class');fillUltraClassSelect(select,key,profile);
+  const select=node('select',undefined,'ultra-role-select');select.setAttribute('aria-label',key+' class');if(teamNames.length)fillStrategyClasses(select,teamNames,selectedBossClasses.get(key));else fillUltraClassSelect(select,key,profile);
   preferExampleClass(select,(profile.team||[]).map(member=>member.cls));
   if(names.includes(selectedBossClasses.get(key)))select.value=selectedBossClasses.get(key);
   const rating=node('div',undefined,'ultra-selected-rating'),gear=node('div',undefined,'ultra-focus-gear');
@@ -2522,7 +2522,7 @@ function renderBossGuideDetail(entry){
  const list=node('div',undefined,'boss-guide-steps');for(const [i,tip] of (profile.tips||[]).entries()){const step=node('div',undefined,'boss-guide-step'),p=node('p');ultraExplainText(p,ultraBeginnerText(tip,''),key);step.append(node('span',String(i+1),'boss-guide-step-number'),p);list.append(step)}fight.append(list);
  if(publicEncounterLoadouts&&profile.potions?.length){const consumables=node('div',undefined,'boss-guide-consumables');consumables.append(node('strong','Unverified community consumable examples'),node('p',profile.potions.join(' · ')));fight.append(consumables)}
  layout.append(fight);root.append(layout);if(!names.length)drawBossGuideRoleTips(rolePanel,profile,'');root.append(rolePanel);
- const sources=node('div',undefined,'boss-guide-sources');sources.append(bossGuideWiki(entry.wiki,'Wiki location ↗'));const verifiedMechanics={'Emperor Angler':'https://aqwwiki.wikidot.com/emperor-angler','Reinforced Shelleton':'https://aqwwiki.wikidot.com/reinforced-shelleton','Fell Statue':'https://aqwwiki.wikidot.com/fell-statue','Rampaging Cyborg':'https://aqwwiki.wikidot.com/rampaging-cyborg','Cervus Malus':'https://aqwwiki.wikidot.com/cervus-malus','Key of Sholemoh':'https://aqwwiki.wikidot.com/key-of-sholemoh','Astral Empyrean':'https://aqw.app/monsters/astralshrine','Void Xyfrag':'https://aqw.app/monsters/voidxyfrag','Void NerfKitten':'https://aqwwiki.wikidot.com/sarah-the-nerfkitten','Mechabinky & Raxborg 2.0':'https://aqwwiki.wikidot.com/mechabinky-raxborg-2-0'};if(verifiedMechanics[key]){const a=node('a','Monster mechanics reference ↗');a.href=verifiedMechanics[key];a.target='_blank';a.rel='noopener noreferrer';sources.append(a)}const link=node('a','↗ Simplified Bosses Guide — '+profile.sheet);link.href=simplifiedGuideSource;link.target='_blank';link.rel='noopener noreferrer';sources.append(link);root.append(sources);
+ const sources=guideDisclosure('Sources & strategy notes');sources.classList.add('boss-guide-sources');sources.append(bossGuideWiki(entry.wiki,'Wiki location ↗'));const verifiedMechanics={'Emperor Angler':'https://aqwwiki.wikidot.com/emperor-angler','Reinforced Shelleton':'https://aqwwiki.wikidot.com/reinforced-shelleton','Fell Statue':'https://aqwwiki.wikidot.com/fell-statue','Rampaging Cyborg':'https://aqwwiki.wikidot.com/rampaging-cyborg','Cervus Malus':'https://aqwwiki.wikidot.com/cervus-malus','Key of Sholemoh':'https://aqwwiki.wikidot.com/key-of-sholemoh','Astral Empyrean':'https://aqw.app/monsters/astralshrine','Void Xyfrag':'https://aqw.app/monsters/voidxyfrag','Void NerfKitten':'https://aqwwiki.wikidot.com/sarah-the-nerfkitten','Mechabinky & Raxborg 2.0':'https://aqwwiki.wikidot.com/mechabinky-raxborg-2-0'};if(verifiedMechanics[key]){const a=node('a','Monster mechanics reference ↗');a.href=verifiedMechanics[key];a.target='_blank';a.rel='noopener noreferrer';sources.append(a)}const link=node('a','↗ Simplified Bosses Guide — '+profile.sheet);link.href=simplifiedGuideSource;link.target='_blank';link.rel='noopener noreferrer';sources.append(link);root.append(sources);
 }
 function renderBossGuides(root,term,category){
  const entries=bossGuideEntries(simplifiedExtraEncounters,ultraBossCatalog);
@@ -2830,7 +2830,7 @@ function renderUltraDetail(b){
  summary.append(focus);root.append(summary);
  const team=node('section',undefined,'ultra-focus-card guide-v2-team');
  team.append(node('h3','1 · Team composition'));
- const pick=node('select',undefined,'ultra-role-select');pick.setAttribute('aria-label','Team composition');
+ const pick=node('select',undefined,'guide-v2-team-select');pick.setAttribute('aria-label','Team composition');
  for(const v of variants)pick.append(new Option(v.label,v.id));
  pick.value=variants.some(v=>v.id===selectedUltraStrategies.get(b.id))?selectedUltraStrategies.get(b.id):variants[0].id;
  const teamInfo=node('p',undefined,'muted tiny'),chips=node('div',undefined,'ultra-recommended-classes guide-v2-class-buttons');
