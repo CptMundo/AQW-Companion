@@ -1,4 +1,4 @@
-# AQW Companion — Beta 0.13.5
+# AQW Companion — Beta 0.13.6
 
 Created by **CptMundo**. Unofficial AdventureQuest Worlds fan project, not affiliated with Artix Entertainment.
 
