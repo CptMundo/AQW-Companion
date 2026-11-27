@@ -1233,7 +1233,7 @@ const ultraBossCatalog=[
  {name:'Ultra Alteon',map:'ultraalteon',group:'Legacy / special'},
  {name:'Ultra Brutalcorn',map:'ultrabrutalcorn',group:'Legacy / special'},
  {name:'Ultra Carnax',map:'ultracarnax',group:'Legacy / special'},
- {name:'Ultra Chairman',map:'ultrachairman',group:'Legacy / special'},
+ {name:'Ultra Chairman',map:'ultrachairman',group:'Legacy / special',availability:'Rare member-only location; normal access not confirmed.'},
  {name:'Ultra Dreadfight',map:'ultradread',group:'Legacy / special'},
  {name:'Ultra Franken',map:'ultrafranken',group:'Seasonal'},
  {name:'Ultra Frostfang',map:'ultrafrostfang',group:'Seasonal'},
@@ -1806,7 +1806,7 @@ const simplifiedExtraEncounters=[
  {name:'Void Nightbane',group:'Void Bosses',join:'/join voidnightbane',wiki:'void-nightbane',sheet:'Void Bosses',team:sgVoidTeam(true),tips:['Avoid Vainglory because healing is heavily reduced. Favor rapid sustained hits rather than large individual nukes. Bring a Decay source to block Blood Frenzy’s 100,000 HP recovery; other healing effects may still occur.']},
  {name:'Void Xyfrag',group:'Void Bosses',join:'/join voidxyfrag',wiki:'void-xyfrag',sheet:'Void Bosses',team:sgVoidTeam(false,true),tips:['Assign a durable taunter to redirect Consume on the “BLEEEEEEEEEEEECCH” cue; LR, VDK or Legendary Hero are community options, depending on setup. Favor fast sustained damage. Finish promptly before the encounter becomes invulnerable.']},
  {name:'Void NerfKitten',group:'Void Bosses',join:'/join voidnerfkitten',wiki:'void-nerfkitten',sheet:'Void Bosses',team:sgVoidTeam(),tips:['Taunt the Meow cue; alternate LR and another durable support if possible because taunting applies a debuff. Favor rapid damage.']},
- {name:'Kasuko & Whirlpool',group:'Lavarock Shore',join:'/join lavarockshore',wiki:'lavarock-shore',sheet:'Lavarock Shore',team:[sgLoO(),sgLR(),sgVDK(),sgSC(),sgAF(),sgCSH(),sgCSH()],tips:['Seasonal encounter. HP-based nukes require near-full HP and regular healing. Focus Whirlpool first unless strong multi-target damage makes direct Kasuko focus safe.']},
+ {name:'Kasuko & Whirlpool',group:'Lavarock Shore',join:'/join lavarockshore',wiki:'lavarock-shore',sheet:'Lavarock Shore',team:[sgLoO(),sgLR(),sgVDK(),sgSC(),sgAF(),sgCSH(),sgCSH()],tips:['Seasonal encounter. Kasuko charges for 3 seconds at 90%, 70%, 50%, 30% and 10% HP, then deals 90% of current HP; Focus cannot redirect this attack. Recover immediately. At 60% HP Enrage increases attack frequency and damage. Whirlpool-first is one community strategy, not mandatory.']},
  {name:'Temple Shrine — Left',group:'Shrines',join:'/join templeshrine',wiki:'eclipse-ascent',sheet:'Temple Shrine',team:[sgLoO(),sgLR('Praxis'),sgSC(),sgCSH()],tips:['Use the hub to enter the left shrine. LoO taunts Lunar Haze after the gaze message vanishes; LR uses Praxis and taunt at the Moon Converges cue.']},
  {name:'Temple Shrine — Right',group:'Shrines',join:'/join templeshrine',wiki:'eclipse-ascent',sheet:'Temple Shrine',team:[sgLoO(),sgLR('Praxis'),sgVDK(),sgCSH()],tips:['Use the hub to enter the right shrine. LR taunts Dawn Knight after the warmth message vanishes and uses Praxis with taunt on Sun Converges. Check HP when choosing reduced-HP helms.']},
  {name:'Temple Shrine — Middle',group:'Shrines',join:'/join templeshrine',wiki:'eclipse-ascent',sheet:'Temple Shrine',team:[sgLoO(),sgLR('Praxis','Wizard'),sgAP('Arcana Concerto','Vainglory'),sgCSH('Arcana Concerto','Base Forge')],tips:['AP handles Dying Light at Sunlight Gathers with skill 4; LoO handles Lunar Haze; LR handles Dawn Knight. Alternate LR/DPS for Ascended Sunlight, using Praxis; LoO/AP alternate Ascended Moonlight.']},
@@ -1814,28 +1814,28 @@ const simplifiedExtraEncounters=[
  {name:'Mechabinky & Raxborg 2.0',group:'Grim Challenge',join:'/join grimchallenge',wiki:'grim-challenge',sheet:'Grimchallenge',team:[sgLoO(),sgLR('Arcana Concerto','Wizard'),sgVDK('Dauntless','Anima'),sgLH('Forge'),sgAP(),sgGW('Penitence'),sgPhantom('Vainglory')],tips:['Assign two taunters; other players equip Vigil. At 45M stop heals during inversion; taunt at 45M, 40M and 35M according to assignment. At 30M heal after HP drops to 1. At 25M damage increases; at 20M dodge rises. At 15M apply Decay and prepare mitigation. At 10M use Vigil on the cue. At 5M finish the DPS check.']},
  {name:'Celestial Arena',group:'Solo arenas',join:'/join celestialarena',wiki:'celestial-arena',sheet:'Celestial Arena',tips:['Solo quest sequence. Bring Awe enhancements and a class with reliable sustain, such as Master Ranger, StoneCrusher or Legion DoomKnight. Accept the corresponding quest before entering the arena.']},
  {name:'Infernal Arena — early bosses',group:'Solo arenas',join:'/join infernalarena',wiki:'infernal-arena',sheet:'Infernal Arena',tips:['For the early level 20–70 bosses, prioritize sustain with Awe enhancements; a damage-boosting weapon and Forge helm when unlocked are optional improvements.']},
- {name:'Deadly Duo',group:'Solo arenas',join:'/join infernalarena',wiki:'infernal-arena',sheet:'Infernal Arena',tips:['Level 75 section. Enter the charge at full HP, heal after the nuke, and use Scroll of Decay to stop the boss healing. Revitalize Elixir and a healing potion can help.']},
- {name:'Cervus Malus',group:'Solo arenas',join:'/join infernalarena',wiki:'infernal-arena',sheet:'Infernal Arena',tips:['Level 80 section. Stay healthy before the nuke; wait until inverted healing ends before recovering.']},
- {name:'Key of Sholemoh',group:'Solo arenas',join:'/join infernalarena',wiki:'infernal-arena',sheet:'Infernal Arena',tips:['Level 85 section. Maintain full health; workbook describes damage as not reducible. Use potions for safety.']},
- {name:"Azalith's Scythe",group:'Solo arenas',join:'/join infernalarena',wiki:'infernal-arena',sheet:'Infernal Arena',tips:['Level 90 section. Recover promptly after nukes and choose classes with reliable hit mechanics. Scroll of Chaos Fog may help members.']},
- {name:"Na'al",group:'Solo arenas',join:'/join infernalarena',wiki:'infernal-arena',sheet:'Infernal Arena',tips:['Level 95 section. Apply damage debuffs at Vidi, heal after the hit, and consider Barrier Potion and Revitalize Elixir. Lower-survival classes particularly benefit from barriers.']}
+ {name:'Deadly Duo',group:'Solo arenas',join:'/join infernalarena',wiki:'infernal-arena',sheet:'Infernal Arena',tips:['Level 75 section. The 15-second attack cycle includes a 3-second charge and a hit for 70% maximum HP. Time Decay for the boss recovery after the hit (33% maximum HP), then restore your HP. Revitalize Elixir and healing potions are community options.']},
+ {name:'Cervus Malus',group:'Solo arenas',join:'/join infernalarena',wiki:'infernal-arena',sheet:'Infernal Arena',tips:['Level 80 section. Every 10 seconds, the attack removes 60% of current HP and applies healing inversion for 4 seconds. Wait for inversion to expire before healing.']},
+ {name:'Key of Sholemoh',group:'Solo arenas',join:'/join infernalarena',wiki:'infernal-arena',sheet:'Infernal Arena',tips:['Level 85 section. Auto attacks deal 1,000 true damage every 2.5 seconds. Hyper Beam charges for 4 seconds, deals 3,000 true damage and has an 18-second cooldown. Plan HP and recovery for these fixed hits.']},
+ {name:"Azalith's Scythe",group:'Solo arenas',join:'/join infernalarena',wiki:'infernal-arena',sheet:'Infernal Arena',tips:['Level 90 section. The nuke takes 70% of current HP on a 10-second cycle. The boss has 100% dodge; use reliable-hit skills. Scroll of Chaos Fog is a community member-only option.']},
+ {name:"Na'al",group:'Solo arenas',join:'/join infernalarena',wiki:'infernal-arena',sheet:'Infernal Arena',tips:['Level 95 section. Opening vulnerability lasts 12 seconds. Veni applies damage over time; Vidi follows after 3 seconds, then Vici 4 seconds later deals 70% maximum HP and opens a 4-second vulnerability. Prepare mitigation and sustain before the sequence; use the openings for damage.']}
 ];
 
 const sgGaolClasses=['Dragon of Time','Chaos Avenger',"King's Echo",'Hollowborn Vindicator','Verus DoomKnight','Void Highlord','Lich'];
 const sgGaolPremium=['Sentinel','Chrono ShadowSlayer','Phantom Chronomancer','Dragon Knight','Infinity Knight','Elemental Warrior','Legendary Hero'];
-const sgGaol=(name,tips,shield,potions,classes=sgGaolClasses,premium=sgGaolPremium)=>({name,group:'Grim Gaol',join:'/join gaolcell',wiki:'the-gaol-of-eternal-torment-and-misery',sheet:'Grim Gaol',tips:[shield+' boss shield. Enter the dungeon from Gaol Cell; leaving resets progress.',...tips],potions,classes,premium});
+const sgGaol=(name,tips,shield,potions,classes=sgGaolClasses,premium=sgGaolPremium)=>({name,group:'Grim Gaol',join:'/join gaolcell',wiki:'the-gaol-of-eternal-torment-and-misery',sheet:'Grim Gaol',tips:[(shield?shield+' boss shield. ':'Damage reduction mechanic; numerical cap not confirmed. ')+'Enter the solo dungeon through the Gaol Cell portal (/join gaolcell); leaving resets progress.',...tips],potions,classes,premium});
 simplifiedExtraEncounters.push(
  sgGaol('Grimskull?',['On the punching-bag cue, stop attacking for seven seconds unless you can finish safely within the window. Lich and King’s Echo are recommended.'],'10k',['Barrier Potion']),
  sgGaol('Grim Bomb',['Defeat all three bombs within one minute.'],'50k',['Felicitous Philtre']),
  sgGaol('Empress Angler',['Restore full HP at the Heal up cue. Health Vamp can help maintain health.'],'50k',['Revitalize Elixir','Health Potion']),
  sgGaol('Treasure Chest — first',['Clear the chest and proceed.'],'5k',[]),
- sgGaol('Reinforced Shelleton',['Survive until the turtle stuns itself, then attack the stunned target. High resistance or healing helps.'],'5k',['Revitalize Elixir','Health Potion / Potent Honor Potion'],['Dragon of Time','ArchMage','Blaze Binder'],['Dragon Knight','Infinity Knight']),
- sgGaol('Fell Statue',['Swap targets after dealing 5k damage to a statue; pause or switch if health becomes unsafe.'],'1k',['Revitalize Elixir','Health Potion'],['StoneCrusher','Dragon of Time','Hollowborn Vindicator','Verus DoomKnight','Void Highlord','ArchMage'],['Dragon Knight','Infinity Knight','Phantom Chronomancer','Chrono ShadowSlayer']),
- sgGaol('Emperor Angler',['Heal to full on the Heal up cue; steady sustain is useful.'],'50k',['Revitalize Elixir','Health Potion']),
- sgGaol('Treasure Chest — second',['Start at full health, then defeat the chest.'],'5k',[]),
- sgGaol('Rick, Grim Soldier',['Sufficient damage prevents repeated recovery.'],'50k',['Revitalize Elixir','Health Potion']),
- sgGaol('Rampaging Cyborg',['Kill summons first; use enough sustain to survive while keeping damage high.'],'50k',['Revitalize Elixir','Damage potions'],['Dragon of Time','Hollowborn Vindicator','Verus DoomKnight','Void Highlord','ArchMage'],['Sentinel','Chrono ShadowSlayer','Phantom Chronomancer','Dragon Knight','Infinity Knight']),
- sgGaol('Mechabinky & Raxborg',['At 90% HP healing is inverted briefly. Avoid healing-over-time until the debuff expires. Account for variable buffs and debuffs.'],'50k',['Damage potions'],['Dragon of Time','Hollowborn Vindicator','Verus DoomKnight','Void Highlord','Lich','Chaos Avenger',"King's Echo"],['Sentinel','Chrono ShadowSlayer','Phantom Chronomancer','Dragon Knight','Infinity Knight','Elemental Warrior'])
+ sgGaol('Reinforced Shelleton',['Survive until the Shelleton crashes (15% chance following the August 2026 balance change). It is vulnerable for 6 seconds after the crash; player stuns do not trigger this window. Use sustain.'],null,['Revitalize Elixir','Health Potion / Potent Honor Potion'],['Dragon of Time','ArchMage','Blaze Binder'],['Dragon Knight','Infinity Knight']),
+ sgGaol('Fell Statue',['Damage is capped at 1,000 per hit. Each 5,000 HP lost increases the statue’s critical damage by 200% for 5 seconds, stacking. Rotate targets or pause to let stacks expire.'],'1k',['Revitalize Elixir','Health Potion'],['StoneCrusher','Dragon of Time','Hollowborn Vindicator','Verus DoomKnight','Void Highlord','ArchMage'],['Dragon Knight','Infinity Knight','Phantom Chronomancer','Chrono ShadowSlayer']),
+ sgGaol('Emperor Angler',['Heal to full on the cue. Fish Breath deals 60% maximum HP at 80%, 60%, 40% and 20%; below 50% HP, prepare for the periodic execute and 75% healing reduction lasting 12 seconds.'],'50k',['Revitalize Elixir','Health Potion']),
+ sgGaol('Treasure Chest — second',['Unlike the first chest, this one attacks for 75% of maximum HP every 10 seconds and stuns for 2 seconds. Enter with enough HP and recover between attacks.'],'5k',[]),
+ sgGaol('Rick, Grim Soldier',['Rick can recover up to 90% maximum HP and gain major critical chance and resistance buffs. Prepare for recovery cycles rather than assuming a simple DPS check.'],'50k',['Revitalize Elixir','Health Potion']),
+ sgGaol('Rampaging Cyborg',['The Cyborg is invulnerable until all three Mechro Liches die. Killing a Lich triggers stacking critical damage on the Cyborg; use sustain while clearing summons.'],'50k',['Revitalize Elixir','Damage potions'],['Dragon of Time','Hollowborn Vindicator','Verus DoomKnight','Void Highlord','ArchMage'],['Sentinel','Chrono ShadowSlayer','Phantom Chronomancer','Dragon Knight','Infinity Knight']),
+ sgGaol('Mechabinky & Raxborg',['At 90% HP, Contrarium deals 60% current HP and inverts healing by 200% for 4 seconds. Avoid healing until it expires. Devour was removed by the August 2026 balance patch.'],'50k',['Damage potions'],['Dragon of Time','Hollowborn Vindicator','Verus DoomKnight','Void Highlord','Lich','Chaos Avenger',"King's Echo"],['Sentinel','Chrono ShadowSlayer','Phantom Chronomancer','Dragon Knight','Infinity Knight','Elemental Warrior'])
 );
 // The workbook rates five different party roles. Keep these subjective ratings
 // separate from the Companion's own class recommendations and ownership checks.
@@ -2082,23 +2082,22 @@ function ultraBaseFor(cls){
 function ultraSuggestedGear(key,cls,profile,generic=null,encounter=null){
  // Never infer encounter gear from a generic preset, another boss, or a rating.
  if(sameUltraClass(cls,'Great Thief')||sameUltraClass(cls,'Arcana Invoker'))return null;
- const exact=ultraWorkbookBuild(profile,cls)||encounter;if(!exact)return null;
+ const workbook=ultraWorkbookBuild(profile,cls);const exact=workbook||encounter;if(!exact)return null;
  const out={};for(const field of ['weapon','helm','cape','base','consumable'])if(typeof exact[field]==='string'&&exact[field].trim()&&!/^choose/i.test(exact[field]))out[field]=exact[field];
- return Object.keys(out).length?{...out,estimated:true,source:profile?.sheet?simplifiedGuideSource:null}:null;
+ return Object.keys(out).length?{...out,estimated:true,source:workbook&&profile?.sheet?simplifiedGuideSource:null}:null;
 }
 function ultraRecommendedTeam(b,profile){
  // Select one intact documented composition. Never assemble a new lineup
  // from individual ratings, because taunt and healing rotations may differ.
  const source=profile?.team?.map(r=>r.cls)||[];
- const candidates=[b.team||[],b.alternate||[],source].filter(t=>t.length);
- const size=b.team?.length||source.length;
- return (candidates.find(t=>t.length===size&&t.every(cls=>{const score=ultraSelectedRating(b.id,cls);return !score||score.rating>=3}))||candidates[0]||[]).slice();
+ // Prefer the original guide composition; do not select teams by unverified ratings.
+ return (b.team?.length?b.team:source).slice();
 }
 function appendUltraRecommendedTeam(root,b,profile){
  const names=ultraRecommendedTeam(b,profile);if(!names.length)return;
  const wrap=node('section',undefined,'ultra-recommended-team');
  const header=node('div',undefined,'ultra-recommended-heading');
- header.append(node('h3','Community team example'),node('small',names.length+' players · review pending','muted tiny'));wrap.append(header);
+ header.append(node('h3','Community team example'),node('small',names.length+' players · example only; follow its matching rotation','muted tiny'));wrap.append(header);
  const list=node('div',undefined,'ultra-recommended-classes');
  for(const name of names){const owned=ultraOwned(name),chip=node('span',undefined,'ultra-team-chip'+(owned?' is-owned':''));
  chip.append(node('span',owned?'✓':'○','ultra-team-mark'),node('span',name));chip.title=owned?'Class owned':'Class not owned';list.append(chip)}
@@ -2295,7 +2294,7 @@ function renderBossGuideDetail(entry){
  const list=node('div',undefined,'boss-guide-steps');for(const [i,tip] of (profile.tips||[]).entries()){const step=node('div',undefined,'boss-guide-step'),p=node('p');ultraExplainText(p,ultraBeginnerText(tip,''),key);step.append(node('span',String(i+1),'boss-guide-step-number'),p);list.append(step)}fight.append(list);
  if(profile.potions?.length){const consumables=node('div',undefined,'boss-guide-consumables');consumables.append(node('strong','Unverified community consumable examples'),node('p',profile.potions.join(' · ')));fight.append(consumables)}
  layout.append(fight);root.append(layout);if(!names.length)drawBossGuideRoleTips(rolePanel,profile,'');root.append(rolePanel);
- const sources=node('div',undefined,'boss-guide-sources');sources.append(bossGuideWiki(entry.wiki,'Wiki location ↗'));const verifiedMechanics={'Astral Empyrean':'https://aqw.app/monsters/astralshrine','Void Xyfrag':'https://aqw.app/monsters/voidxyfrag','Void NerfKitten':'https://aqwwiki.wikidot.com/sarah-the-nerfkitten','Mechabinky & Raxborg 2.0':'https://aqwwiki.wikidot.com/mechabinky-raxborg-2-0'};if(verifiedMechanics[key]){const a=node('a','Monster mechanics reference ↗');a.href=verifiedMechanics[key];a.target='_blank';a.rel='noopener noreferrer';sources.append(a)}const link=node('a','↗ Simplified Bosses Guide — '+profile.sheet);link.href=simplifiedGuideSource;link.target='_blank';link.rel='noopener noreferrer';sources.append(link);root.append(sources);
+ const sources=node('div',undefined,'boss-guide-sources');sources.append(bossGuideWiki(entry.wiki,'Wiki location ↗'));const verifiedMechanics={'Emperor Angler':'https://aqwwiki.wikidot.com/emperor-angler','Reinforced Shelleton':'https://aqwwiki.wikidot.com/reinforced-shelleton','Fell Statue':'https://aqwwiki.wikidot.com/fell-statue','Rampaging Cyborg':'https://aqwwiki.wikidot.com/rampaging-cyborg','Cervus Malus':'https://aqwwiki.wikidot.com/cervus-malus','Key of Sholemoh':'https://aqwwiki.wikidot.com/key-of-sholemoh','Astral Empyrean':'https://aqw.app/monsters/astralshrine','Void Xyfrag':'https://aqw.app/monsters/voidxyfrag','Void NerfKitten':'https://aqwwiki.wikidot.com/sarah-the-nerfkitten','Mechabinky & Raxborg 2.0':'https://aqwwiki.wikidot.com/mechabinky-raxborg-2-0'};if(verifiedMechanics[key]){const a=node('a','Monster mechanics reference ↗');a.href=verifiedMechanics[key];a.target='_blank';a.rel='noopener noreferrer';sources.append(a)}const link=node('a','↗ Simplified Bosses Guide — '+profile.sheet);link.href=simplifiedGuideSource;link.target='_blank';link.rel='noopener noreferrer';sources.append(link);root.append(sources);
 }
 function renderBossGuides(root,term,category){
  const entries=bossGuideEntries(simplifiedExtraEncounters,ultraBossCatalog);
