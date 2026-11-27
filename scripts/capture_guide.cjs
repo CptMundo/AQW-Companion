@@ -57,10 +57,78 @@ async function main(){
   await page.evaluate(stamp=>{const api=window.AQWCAccountProgress;if(!api)throw Error('Account progress module not loaded');api.save({section:'summary',capturedAt:stamp,created:'2021-01-01',months:12,purchased:20000,bonus:5000,total:25000});api.save({section:'sagas',capturedAt:stamp,rows:[{name:'Prologue',state:'colored'},{name:'Shadowfall',state:'colored'},{name:'Chiral Valley',state:'unknown'}]});api.save({section:'membership',capturedAt:stamp,rows:[{name:'1 Month',state:'colored',evidence:'threshold'},{name:'12 Months',state:'colored',evidence:'threshold'},{name:'2 Years',state:'gray',evidence:'threshold'}]})},stamp);
   const go=async(group,tab)=>{await page.locator('.primarynav [data-group="'+group+'"]').click();if(tab&&tab!=='overview'){const button=page.locator('.subnav [data-tab="'+tab+'"]');if(!await page.locator('#'+tab+'.active').count())await button.click();await page.locator('#'+tab+'.active').waitFor({state:'visible',timeout:15000})}};
   await go('ultras','ultras');
+  await page.locator('#ultracards button').filter({hasText:'God of the Depths'}).click();
   assert.ok(await page.locator('#ultradetail .ultra-role-select').isVisible());
+  const classPick=page.locator('#ultradetail [aria-label="Your class"]'),teamPick=page.locator('#ultradetail [aria-label="Team composition"]');
+  await page.locator('#ultracards button').filter({hasText:'God of the Depths'}).click();
+  assert.equal(await classPick.locator('option').count(),7);
+  assert.ok((await classPick.locator('option').allTextContents()).some(x=>x.includes('Arcana Invoker')));
+  await classPick.selectOption('Verus DoomKnight');
+  assert.ok((await page.locator('#ultradetail .ultra-class-guide').innerText()).includes('Debuff the eyes'));
+  await page.locator('#ultradetail .guide-v2-class-buttons button').filter({hasText:'StoneCrusher'}).click();
+  assert.equal(await classPick.inputValue(),'StoneCrusher');
+  await page.locator('#ultracards button').filter({hasText:'Ultra Avatar Tyndarius'}).click();
+  await teamPick.selectOption('hub-cav');assert.ok((await classPick.locator('option').allTextContents()).some(x=>x.includes('Chaos Avenger')));
+  await classPick.selectOption('Chaos Avenger');assert.ok((await page.locator('#ultradetail .ultra-class-guide').innerText()).includes('right orb'));
+  await teamPick.selectOption('hub-ai');assert.ok(!(await classPick.locator('option').allTextContents()).some(x=>x.includes('Chaos Avenger')));
+  await classPick.selectOption('Arcana Invoker');assert.ok((await page.locator('#ultradetail .ultra-class-guide').innerText()).includes('right orb'));
+  await page.locator('#ultracards button').filter({hasText:'Ultra Speaker'}).click();
+  await teamPick.selectOption('three-vhl');await classPick.selectOption('Void Highlord');
+  assert.ok((await page.locator('#ultradetail .ultra-class-guide').innerText()).includes('Zone 1'));
+  await classPick.selectOption('Lord of Order');assert.ok((await page.locator('#ultradetail .ultra-class-guide').innerText()).includes('Listen'));
+  await page.locator('#ultracards button').filter({hasText:'Ultra Ezrajal'}).click();
+  assert.ok(await page.locator('#ultradetail .guide-v2-class').isHidden());
+  assert.ok((await page.locator('#ultradetail').innerText()).includes('Counter Attack'));
+  await page.locator('#ultracards button').filter({hasText:'God of the Depths'}).click();
+  // Audit every published strategy and its class options, not only the sample encounters.
+  const allUltraCards=page.locator('#ultracards button');
+  const totalUltra=await allUltraCards.count();assert.equal(totalUltra,12);let variantsChecked=0;
+  for(let i=0;i<totalUltra;i++){
+   await allUltraCards.nth(i).click();
+   const pick=page.locator('#ultradetail [aria-label="Team composition"]');
+   const options=await pick.count()?await pick.locator('option').evaluateAll(os=>os.map(o=>o.value)):['single'];
+   for(const id of options){
+    if(await pick.count())await pick.selectOption(id);
+    variantsChecked++;
+    assert.ok((await page.locator('#ultradetail').innerText()).includes('Fight instructions'));
+    assert.equal(await page.locator('#ultradetail .ultra-focus-gear').count(),0);
+    if(await classPick.isVisible()){
+     for(const cls of await classPick.locator('option').evaluateAll(os=>os.map(o=>o.value))){
+      await classPick.selectOption(cls);
+      assert.equal(await classPick.inputValue(),cls);
+      assert.ok((await page.locator('#ultradetail .ultra-class-guide').innerText()).includes(cls));
+      assert.ok(await page.locator('#ultradetail .guide-v2-disclosure').count());
+     }
+    }
+   }
+  }
+  assert.equal(variantsChecked,22);
+  // The old Ultra search toolbar is intentionally hidden by the existing compact layout. Test its event handler without exposing a control the user previously hid.
+  await page.locator('#ultrasearch').evaluate(e=>{e.value='Frailty';e.dispatchEvent(new Event('input',{bubbles:true}))});assert.equal(await page.locator('#ultracards button').count(),1);await page.locator('#ultrasearch').evaluate(e=>{e.value='';e.dispatchEvent(new Event('input',{bubbles:true}))});
+  await page.locator('#ultracards button').filter({hasText:'God of the Depths'}).click();
+  await page.setViewportSize({width:390,height:844});
+  const overflow=await page.locator('#ultradetail').evaluate(e=>e.scrollWidth>e.clientWidth+3);assert.ok(!overflow,'Ultra guide must fit mobile width');
+  await page.setViewportSize({width:1360,height:1100});
   assert.equal(await page.locator('#ultradetail .ultra-focus-gear').count(),0);
   await go('ultras','boss-guides');
   assert.equal(await page.locator('#bossguidedetail .ultra-focus-gear').count(),0);
+  await page.locator('#ultracatalog button').filter({hasText:'Celestial Arena'}).click();assert.ok((await page.locator('#bossguidedetail').innerText()).includes('Recommended classes'));assert.equal(await page.locator('#bossguidedetail .ultra-role-select').count(),0);
+  await page.locator('#ultracatalog button').filter({hasText:'Temple Shrine — Middle'}).click();assert.equal(await page.locator('#bossguidedetail .ultra-role-select option').count(),4);
+  await page.locator('#bossguidedetail .ultra-role-select').selectOption('Lord of Order');assert.ok((await page.locator('#bossguidedetail').innerText()).includes('Lunar Haze'));
+  await page.locator('#ultracatalog button').filter({hasText:'Void Nightbane'}).click();assert.ok((await page.locator('#bossguidedetail').innerText()).includes('100,000 HP'));assert.equal(await page.locator('#bossguidedetail .ultra-role-select').count(),0);
+  const allBossCards=page.locator('#ultracatalog button');assert.equal(await allBossCards.count(),40);let published=0;
+  for(let i=0;i<await allBossCards.count();i++){
+   await allBossCards.nth(i).click();
+   const detail=page.locator('#bossguidedetail');
+   assert.ok(await detail.locator('.ultra-copy-join').count());
+   if((await detail.innerText()).includes('Fight at a glance')){
+    published++;
+    assert.ok(await detail.locator('.guide-v2-disclosure').count());
+    const role=detail.locator('.ultra-role-select');
+    if(await role.count())for(const cls of await role.locator('option').evaluateAll(os=>os.map(o=>o.value))){await role.selectOption(cls);assert.ok((await detail.innerText()).includes(cls))}
+   }
+   assert.equal(await detail.locator('.ultra-focus-gear').count(),0);
+  }assert.equal(published,29);
   await go('builds','forge');
   assert.ok(await page.locator('#builds').isHidden(),'Class Builds view must remain hidden');
   assert.ok(await page.locator('[data-tab="builds"]').isHidden(),'Class Builds navigation must remain hidden');

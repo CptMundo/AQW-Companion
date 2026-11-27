@@ -21,10 +21,10 @@ const quote=guide.rows({
 assert.ok(quote.some(r=>r.quote==="You shall listen."&&r.text.includes("If assigned")));
 assert.ok(!html.includes("const caution=node('div','⚠ '+warning"),"Warning cards no longer rendered");
 assert.ok(!html.includes("vigil=node('div',undefined,'ultra-focus-timing')"),"No redundant Kathool quote callout card");
-assert.ok(html.includes("const rows=ultraUnifiedTips(b.id,cls,baseTips)"),"New unified class-specific role rows");
+assert.ok(html.includes("const personal=variant.roles[cls]"),"Only source-gated personal rows render");
 assert.ok(html.includes("ultra-role-mini-title"));
-assert.ok(html.includes("bardSupport={weapon:'Awe Blast',helm:'Forge',cape:'Absolution'"),"Bard has documented support equipment");
-assert.ok(html.includes("https://www.aq.com/lore/classes/bard"));
+assert.ok(html.includes("const publicEncounterLoadouts=false;"),"Do not present unverified class loadouts in encounter guides");
+assert.ok(html.includes("function ultraStrategyVariants"),"Keep unsupported substitutions out of active strategies");
 assert.ok(ultraCSS.includes(".ultra-role-mini-title"));
 assert.ok(html.includes('id="build-search"'));
 assert.ok(html.includes("classNoFarming"));
@@ -97,7 +97,7 @@ assert.equal(reviewedApi.encounterUltraBuild("gramiel","Shaman",null).consumable
 assert.equal(reviewedApi.encounterUltraBuild("darkon","StoneCrusher",null).base,"Fighter");
 assert.equal(reviewedApi.encounterUltraBuild("ezrajal","Void Highlord",null),null,"No invented encounter preset");
 assert.ok(reviewedApi.ultraReviewedTactics.gramiel.some(row=>row[1].includes("70%, 40% and 10%")));
-assert.ok(html.includes("const rows=ultraUnifiedTips(b.id,cls,baseTips)"),"Render curated fight phases in the role checklist");
+assert.ok(html.includes("for(const [label,tip] of evidence.shared)"),"Only approved shared rows render");
 assert.ok(!html.includes("Suggested general setup — not encounter-tested."));
 assert.ok(html.includes("const ultraReviewedSources="),"Retain internal source provenance");
 for(const rows of Object.values(reviewedApi.ultraReviewedSources))for(const [,url] of rows)assert.ok(url.startsWith("https://"));
@@ -123,7 +123,7 @@ assert.ok(!html.includes("appendSimplifiedProfile(root,simplifiedProfiles[b.id]"
 assert.ok(html.includes("renderBossGuides(root,$(\'bossguidesearch\').value.trim().toLowerCase(),$(\'bossguidecategory\').value)"));
 assert.ok(html.includes("community role"));
 
-const compact=vm.runInNewContext(reviewedCode+"\n({ultraClassOptions,ultraSelectedRating,ultraWorkbookBuild,ultraCompactTips,ultraActionTips,ultraBeginnerActions,ultraBeginnerText,ultraGlossary,ultraTermPattern,ultraTermInfo,ultraSuggestedGear,ultraRecommendedTeam,ultraUnifiedTips,ultraSpeakerRole,ultraSpeakerPersonal,simplifiedSpeakerPatterns,simplifiedProfiles,simplifiedRatings,simplifiedExtraEncounters,sameUltraClass,fillUltraClassSelect,renderUltraSelectedRating,appendUltraGearCells})",{
+const compact=vm.runInNewContext(reviewedCode+"\n({ultraClassOptions,ultraSelectedRating,ultraWorkbookBuild,ultraCompactTips,ultraActionTips,ultraBeginnerActions,ultraBeginnerText,ultraGlossary,ultraTermPattern,ultraTermInfo,ultraSuggestedGear,ultraRecommendedTeam,ultraUnifiedTips,ultraSpeakerRole,ultraSpeakerPersonal,simplifiedSpeakerPatterns,simplifiedProfiles,simplifiedRatings,simplifiedExtraEncounters,sameUltraClass,fillUltraClassSelect,renderUltraSelectedRating,appendUltraGearCells,ultraStrategyVariants,workbookPersonalGuide,workbookSharedGuide,approvedUltraGuides,approvedOtherBossGuides,approvedClassActivities,auditedBossSheetLocations})",{
  node(tag,text,cls){return {tag,text,cls,children:[],append(...x){this.children.push(...x)},replaceChildren(...x){this.children=x}}},
  Option:function(label,value){this.label=label;this.value=value},
  ultraOwned:cls=>['Lord of Order','Void Highlord'].includes(cls)
@@ -162,11 +162,11 @@ assert.ok(rating.children.some(x=>x.text.includes("Healer")));
 compact.renderUltraSelectedRating(rating,"drakath","Bard");
 assert.ok(rating.children.some(x=>x.text==="Not owned"));
 assert.ok(!rating.children.some(x=>x.text.includes("Healer")),"Class change clears previous rating");
-assert.ok(html.includes("fillUltraClassSelect(select,b.id,profile,"));
-assert.ok(html.includes("const build=ultraSuggestedGear(b.id,cls,profile,generic,encounter)"));
-assert.ok(html.includes("renderUltraSelectedRating(rating,b.id,cls)"));
-assert.ok(html.includes("const rows=ultraUnifiedTips(b.id,cls,baseTips)"));
-assert.ok(html.includes("if(b.id==='speaker')appendPersonalSpeakerRotation(sequence,cls)"));
+assert.ok(html.includes("fillStrategyClasses(select,[...new Set(v.names)]"));
+assert.ok(html.includes("function ultraSuggestedGear(key,cls,profile,generic=null,encounter=null)"));
+assert.ok(html.includes("classInExampleTeam(exampleNames,cls)"));
+assert.ok(html.includes("const personal=variant.roles[cls]"));
+assert.ok(html.includes("if(!variants.length)"),"Withhold unresolved strategies");
 assert.ok(!html.includes("Community workbook — suggested strategy"));
 assert.ok(!html.includes("Class suitability by role (community ratings)"));
 assert.ok(ultraCSS.includes(".ultra-selected-rating"));
@@ -245,7 +245,7 @@ assert.ok(compact.ultraGlossary["Noxious Decay"].text.includes("11 seconds"));
 assert.ok(compact.ultraGlossary["Righteous Seal"].text.includes("skill 4"));
 assert.ok(compact.ultraGlossary["Sacred Magic: Eden"].text.includes("skill 5"));
 assert.ok("Noxious Decay reverses HoTs".split(compact.ultraTermPattern).includes("Noxious Decay"));
-assert.ok(html.includes("ultraExplainText(description,part.quote?"));
+assert.ok(html.includes("ultraExplainText(desc,content,key)"));
 assert.ok(html.includes("img.referrerPolicy='no-referrer'"));
 assert.ok(ultraCSS.includes(".ultra-help-term:focus>.ultra-help-popup"));
 assert.ok(!html.includes("Workbook loadout · agree your party strategy."));
@@ -280,7 +280,7 @@ assert.ok(apDage.some(x=>x.includes("Scroll of Decay")&&x.includes("backup")));
 assert.ok(apDage.every(x=>!/\b(?:LDK|LR|Legion Revenant|Legion DoomKnight)\b/.test(x)));
 assert.equal(apDage.filter(x=>x.includes("Cower behind")).length,1);
 assert.equal(compact.ultraRecommendedTeam({team:["A","B","C","D"]},{team:[{cls:"E"}]}).join(","),"A,B,C,D");
-assert.ok(html.includes("appendUltraRecommendedTeam(root,b,profile)"));
+assert.ok(html.includes("const variants=ultraStrategyVariants(b,profile)"));
 assert.ok(ultraCSS.includes(".ultra-react-step"));
 assert.ok(ultraCSS.includes(".ultra-recommended-team"));
 console.log("Ultra team, all selectable class gear slots, scoped glossary, and AP reaction guidance passed.");
@@ -511,18 +511,18 @@ for(const p of workbookApi.simplifiedExtraEncounters)assert.ok(boss120.bossGuide
 assert.ok(ultraCSS.includes(".boss-guide-list>*{flex-shrink:0}"));
 assert.ok(ultraCSS.includes("flex:0 0 auto;display:block;min-height:48px!important"));
 assert.ok(!html.includes("boss-class-search"));assert.ok(!ultraCSS.includes("boss-class-search"));
-assert.ok(html.includes("drawBossGuideRoleTips(rolePanel,profile,select.value)"));
+assert.ok(html.includes("const guide=approvedOtherBossGuides[entry.name]"));
 console.log("Boss sidebar order and source-scoped role tips passed.");
 
 const bossDetail121=html.slice(html.indexOf("function renderBossGuideDetail(entry)"),html.indexOf("function renderBossGuides("));
-assert.ok(bossDetail121.includes("fillUltraClassSelect(select,key,profile)"));
+assert.ok(bossDetail121.includes("fillStrategyClasses(select,"));
 assert.ok(bossDetail121.includes("select.onchange=draw"));
 assert.ok(!bossDetail121.includes("Suggested general enhancements — not verified for this encounter."));
 assert.ok(html.includes("const publicEncounterLoadouts=false;"));
-assert.ok(detail108.includes("if(publicEncounterLoadouts)setup.append(gear)"));
-assert.ok(bossDetail121.includes("if(publicEncounterLoadouts)setup.append(gear)"));
-assert.ok(bossDetail121.includes("if(publicEncounterLoadouts&&profile.potions?.length)"));
-assert.ok(detail108.includes("Your class"));assert.ok(bossDetail121.includes("Your class"));
+assert.ok(!detail108.includes("ultra-focus-gear"),"Public Ultra guide must not render gear");
+assert.ok(!bossDetail121.includes("ultra-focus-gear"));
+assert.ok(!bossDetail121.includes("profile.potions"));
+assert.ok(detail108.includes("Your class"));assert.ok(bossDetail121.includes("Class-specific responsibilities"));
 assert.ok(html.includes("if(tip.source!=='Community guide')body.append"));
 assert.ok(bossDetail121.includes("Simplified Bosses Guide — "));
 assert.ok(bossDetail121.includes("Wiki location"));
@@ -667,3 +667,32 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.equal(workbookApi.simplifiedSpeakerPatterns.length,6);
  assert.deepEqual(Array.from(workbookApi.simplifiedSpeakerPatterns,x=>x.roles.length),[20,20,20,20,31,30]);
 }
+
+// Consolidated guides: all 12 Ultras, independently scoped variants, all workbook encounter profiles.
+{const src=html.slice(html.indexOf('const ultraGuides=['),html.indexOf('const ultraRolePlaybooks'));const teams=vm.runInNewContext(src+'\n ultraGuides');let total=0;
+ for(const b of teams){const p=compact.simplifiedProfiles[b.id],vs=compact.ultraStrategyVariants(b,p);assert.ok(vs.length,b.id);total+=vs.length;const evidence=compact.approvedUltraGuides[b.id];assert.ok(['Quick','Strategy','Advanced'].includes(evidence.depth));assert.ok(evidence.shared.length);
+  assert.equal(new Set(vs.map(v=>v.id)).size,vs.length);
+  for(const v of vs){assert.equal(v.names.length,b.id==='kathool'?7:4,b.id);assert.ok(v.refs.length);assert.ok(v.refs.every(r=>r.length===2&&r[1].startsWith('https://')));for(const cls of Object.keys(v.roles))assert.ok(v.names.includes(cls),b.id+' '+cls);if(v.chart!==undefined){assert.equal(b.id,'speaker');assert.equal(v.chart,0);assert.ok(v.names.includes('Lord of Order')&&v.names.includes('ArchPaladin')&&v.names.includes('Legion Revenant'));}}
+ }assert.equal(teams.length,12);assert.equal(total,22);
+ for(const p of compact.simplifiedExtraEncounters){const guide=compact.approvedOtherBossGuides[p.name];assert.ok(guide,p.name);assert.ok(guide.tips.length);for(const cls of Object.keys(guide.roles))assert.ok(p.team?.some(x=>x.cls===cls),p.name+' '+cls);}
+ assert.equal(Object.keys(compact.approvedOtherBossGuides).length,compact.simplifiedExtraEncounters.length);
+ assert.equal(Object.keys(compact.approvedClassActivities).length,16);
+ assert.ok(compact.approvedUltraGuides.drakath.shared.some(x=>x[1].includes('10M is a transformation')));
+ assert.ok(compact.approvedUltraGuides.nulgath.avoid.includes('ignores taunt'));
+ assert.ok(compact.approvedUltraGuides.gramiel.shared.some(x=>x[1].includes('70%, 40% and 10%')));assert.ok(compact.approvedUltraGuides.gramiel.shared.some(x=>x[1].includes('Do not apply Decay')));assert.ok(compact.approvedUltraGuides.darkon.shared.some(x=>x[1].includes('72 seconds')));
+ console.log('Consolidated coverage: 12 Ultras, 22 strategy variants, '+compact.simplifiedExtraEncounters.length+' source-backed other encounter guides.');}
+
+// Pre-merge documentary audit: exact chart rows, required prep, source ranges and solo options.
+{const chart=compact.simplifiedSpeakerPatterns[0];const expected=[['Truth','LR',''],['Listen','LoO',''],['Zone 1','DPS',''],['Truth','AP','AP 4'],['Listen','LoO','LoO 5'],['Truth','',''],['Zone 2','LR',''],['Listen','',''],['Truth','','AP 4'],['Truth','LoO',''],['Listen','',''],['Zone 3','AP',''],['Truth','','AP 4'],['Listen','LR',''],['Truth','','LoO 5'],['Zone 4','LoO',''],['Listen','',''],['Truth','','AP 4'],['Truth','LR',''],['Listen','LoO','']];
+ const events=vm.runInNewContext(html.slice(html.indexOf('const simplifiedSpeakerEvents='),html.indexOf('const simplifiedSpeakerPatterns='))+'\n simplifiedSpeakerEvents');
+ assert.deepEqual(Array.from(events,(event,i)=>[event,chart.roles[i],chart.skills[i]||'']),expected);
+ for(const [id,g] of Object.entries(compact.approvedUltraGuides)){assert.ok(g.access&&g.accessRef.startsWith('https://')&&g.auditNote,id);for(const v of g.variants){assert.ok(v.status&&Array.isArray(v.prep));if(['tyndarius','dage','drakath','nulgath','speaker','gramiel','darkon','kathool'].includes(id))assert.ok(v.prep.length,id);}}
+ const other=compact.approvedOtherBossGuides;for(const p of compact.simplifiedExtraEncounters){assert.ok(compact.auditedBossSheetLocations[p.sheet]);assert.ok(other[p.name].access&&other[p.name].status)}
+ assert.ok(other['Emperor Angler'].classes.includes('Verus DoomKnight')&&!other['Emperor Angler'].classes.includes('Lich'));
+ assert.ok(other['Na\'al'].classes.includes('Legion Revenant'));
+ assert.ok(other['Celestial Arena'].classes.includes('ArchFiend'));
+ assert.ok(other['Temple Shrine — Middle'].access.includes('Rite of Ascension'));
+ assert.ok(other['Grim Bomb'].access.includes('Level 80+'));
+ assert.ok(compact.approvedUltraGuides.gramiel.variants[0].roles['Legion Revenant'].includes('StoneCrusher'));
+ assert.ok(html.includes("chronoshadowslayer:'chronoshadowhunter'"));
+ console.log('Pre-merge exact Speaker chart, role preparation, access requirements, and source options checked.');}

@@ -1340,3 +1340,30 @@ html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-i
 .top .inventory-advanced-menu .aqwc-data-management[open] .aqwc-data-chevron{transform:rotate(90deg)}
 .top .inventory-advanced-menu button:disabled{opacity:.48;cursor:not-allowed}
 .top .inventory-advanced-menu{max-height:min(72vh,520px);overflow-y:auto;overscroll-behavior:contain}
+
+/* Guides V2: visible priorities, intact team variants, click-to-select classes and collapsible references. */
+#ultradetail .guide-v2-overview,#ultradetail .guide-v2-team,#ultradetail .guide-v2-class{margin-bottom:12px}
+#ultradetail .guide-v2-overview .ultra-focus-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#ultradetail .guide-v2-team,#ultradetail .guide-v2-class{display:grid;gap:8px}
+#ultradetail .guide-v2-team h3,#ultradetail .guide-v2-class h3{margin:0;text-align:left}
+#ultradetail .guide-v2-team p{margin:0}
+#ultradetail .guide-v2-class-buttons{justify-content:flex-start;gap:6px;flex-wrap:wrap}
+#ultradetail .guide-v2-class-buttons button{cursor:pointer;min-height:34px}
+#ultradetail .guide-v2-class-buttons button[aria-pressed="true"]{outline:2px solid currentColor;outline-offset:1px;font-weight:700}
+#ultradetail .guide-v2-class .ultra-role-select,#ultradetail .guide-v2-team .guide-v2-team-select{width:100%;max-width:100%}
+.guide-v2-disclosure{border:1px solid var(--line,#304b63);border-radius:8px;padding:9px 12px;margin-top:8px}
+.guide-v2-disclosure summary{cursor:pointer;font-weight:600}
+.guide-v2-disclosure[open] summary{margin-bottom:8px}
+.guide-v2-disclosure a{display:block;margin:5px 0}
+#ultradetail .ultra-role-step{min-height:0}
+#ultradetail .ultra-role-step-body{width:100%;min-width:0}
+#ultradetail .ultra-role-step-body p{margin:4px 0 0}
+@media(max-width:650px){#ultradetail .guide-v2-overview .ultra-focus-grid{grid-template-columns:1fr}}
+
+#bossguidedetail .guide-v2-other-layout{grid-template-columns:minmax(0,1fr)}
+#bossguidedetail .guide-v2-other-layout .boss-guide-loadout{min-height:0}
+#bossguidedetail .guide-v2-other-layout .boss-guide-fight{order:-1}
+
+/* Keep quick guides compact even if other layout selectors set display. */
+#ultradetail .guide-v2-class[hidden],#ultradetail .ultra-role-selected[hidden],#ultradetail .guide-v2-team-select[hidden]{display:none!important}
+#ultradetail .guide-v2-class-buttons button:disabled{cursor:default;opacity:1}
