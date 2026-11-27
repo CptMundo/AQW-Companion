@@ -34,7 +34,7 @@ for(const id of ["builds","planner","overview","inventory","unlocks","story","ul
 for(const marker of [
   'function initClassBuildPlanner()',
   'function initForgeTracker()',
-  'initClassBuildPlanner();initForgeTracker()',
+  "['Forge tracker',()=>{initForgeTracker()}]",
   'id="forge-list"'
 ])assert.ok(html.includes(marker),"existing Build/Forge functionality was affected: "+marker);
 assert.ok(siteCss.includes("#forge .forge-tracker-items"),"Forge CSS was lost during extraction");
