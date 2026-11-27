@@ -77,3 +77,26 @@ assert.equal(addon.builds['Dark Lord'].farm.cape,'Avarice');
 assert.ok(html.includes("starterBuilds[cls]?.[role]?.base||baseClassEnhancement[cls]"),'Per-activity base overrides class default');
 assert.ok(html.includes('Simplified Classes Guide, Farming column: Lucky / Valiance / Forge / Vainglory'));
 assert.ok(html.includes('Simplified low-HP farming example'));
+
+{
+ const a=html.indexOf("const starterBuilds="),b=html.indexOf("// Encounter-specific recommendations",a);
+ const p=html.indexOf("const alchemyEffects="),q=html.indexOf("const enhancementMiniDescriptions",p);
+ const api=vm.runInNewContext(html.slice(a,b)+html.slice(p,q)+"\n({starterBuilds,documentedClassRows,suggestedConsumables})",{window:{AQWCMetaBuilds:addon}});
+ assert.equal(Object.values(api.documentedClassRows).reduce((n,r)=>n+Object.keys(r).length,0),22);
+ for(const [cls,modes] of Object.entries(api.documentedClassRows))for(const [role,row] of Object.entries(modes)){
+  const build=api.starterBuilds[cls][role];
+  assert.deepEqual(Array.from([build.base,build.weapon,build.helm,build.cape]),Array.from(row.slice(0,4)),cls+" "+role);
+  assert.equal(build.evidence,row[4]);
+ }
+ assert.equal(api.starterBuilds.Shaman.solo.base,"Lucky");
+ assert.equal(api.starterBuilds["Phantom Chronomancer"].solo.base,"Lucky");
+ assert.equal(api.starterBuilds["Hollowborn Vindicator"].solo.cape,"Penitence");
+ assert.equal(api.starterBuilds["Yami no Ronin"].solo.weapon,"Valiance");
+ assert.equal(api.starterBuilds["ArchPaladin"].solo.evidence,undefined);
+ assert.equal(api.suggestedConsumables("Void Highlord","farm")[1].name,"Battle Elixir");
+ assert.equal(api.suggestedConsumables("Chrono ShadowSlayer","solo").length,3);
+ assert.equal(api.suggestedConsumables("Arcana Invoker","farm").length,0);
+ api.starterBuilds["Void Highlord"].farm.cape="Vainglory";
+ assert.equal(api.suggestedConsumables("Void Highlord","farm").length,0,"Do not recommend potions for a different loadout");
+ assert.ok(html.includes("if(build&&!build.evidence)"));
+}
