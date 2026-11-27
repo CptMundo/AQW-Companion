@@ -44,7 +44,7 @@ const initialEnd=html.indexOf("\n};\nObject.assign(starterBuilds",initialStart);
 assert.ok(initialStart>=0&&initialEnd>initialStart,"Original 15-class catalog remains available");
 const originalClassKeys=[...html.slice(initialStart,initialEnd).matchAll(/^ "([^"]+)": \{/gm)].map(m=>m[1]);
 assert.equal(originalClassKeys.length,15,"Do not delete or overwrite any preexisting build class");
-assert.equal(new Set([...originalClassKeys,...addon.classes]).size,27,"Dropdown should expose 27 unique names");
+assert.equal(new Set([...originalClassKeys,...addon.classes]).size,27,"Retain 27 original and alias records internally");
 
 assert.ok(html.includes("Object.assign(baseClassEnhancement,window.AQWCMetaBuilds?.base||{})"));
 assert.ok(html.includes("Object.assign(classAlchemy,window.AQWCMetaBuilds?.alchemy||{})"));
@@ -56,7 +56,7 @@ assert.ok(html.includes("No recommended "),"Unsupported roles show truthful expl
 assert.ok(html.includes("Same skills as "),"Alias explanations available");
 assert.ok(html.includes("Build reference"),"Source links shown in UI");
 assert.ok(html.includes("Community example — current patch / activity review pending"),"Do not present unverified legacy notes as fact");assert.ok(html.includes("May 2026 benchmark"),"Show the source and date of the corrected VHL example");
-assert.ok(html.includes("if(build.alternative)"),"Show viable alternatives");
+assert.ok(!html.includes("if(build.alternative)"),"Do not display unreviewed alternative presets");
 assert.ok(css.includes(".build-meta-sources"));
 for(const [i,script] of [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].entries()){
  if(!script[1].includes("src=")&&script[2].trim())
@@ -100,3 +100,6 @@ assert.ok(html.includes('Simplified low-HP farming example'));
  assert.equal(api.suggestedConsumables("Void Highlord","farm").length,0,"Do not recommend potions for a different loadout");
  assert.ok(html.includes("if(build&&!build.evidence)"));
 }
+
+// Public class planner may only expose exact source-backed activities; legacy records remain internal.
+{const a=html.indexOf("const starterBuilds="),b=html.indexOf("// Encounter-specific recommendations",a),c=html.indexOf("const approvedClassActivities="),d=html.indexOf("function ultraStrategyVariants",c);const api=vm.runInNewContext(html.slice(a,b)+html.slice(c,d)+"\n({starterBuilds,approvedClassActivities,approvedClassProvenance})",{window:{AQWCMetaBuilds:addon}});assert.equal(Object.keys(api.approvedClassActivities).length,16);for(const [name,roles] of Object.entries(api.approvedClassActivities)){assert.ok(api.approvedClassProvenance[name]);for(const role of roles){const b=api.starterBuilds[name][role];assert.ok(b.evidence&&b.base&&b.weapon&&b.helm&&b.cape,name+' '+role)}}assert.ok(!api.approvedClassActivities['Kathool Adept']);assert.ok(!api.approvedClassActivities['Great Thief']);assert.deepEqual(Array.from(api.approvedClassActivities['Void Highlord']),['farm']);assert.deepEqual(Array.from(api.approvedClassActivities['Arcana Invoker']),['farm']);console.log('16 source-specific class configurations gated correctly.');}
