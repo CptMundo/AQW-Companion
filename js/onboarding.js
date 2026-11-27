@@ -8,7 +8,7 @@ const STEPS=Object.freeze([
  {group:'planner',tab:'planner',icon:'📅',title:'Never lose track of a quest',body:'Pin daily and weekly quests, copy /join commands, and check off quests yourself.'},
  {group:'inventory',tab:'inventory',icon:'📦',title:'Know what you own',body:'Search Inventory & Bank. Sync again after farming to refresh quantities; this is not live game data.'},
  {group:'story',tab:'story',icon:'📖',title:'Follow your story',body:'Review saga badges and manually confirm chapters when needed. Unknown does not mean locked.'},
- {group:'home',tab:'overview',icon:'🧩',title:'Keep exploring',body:'Use the Wiki extension to add items to Wishlist. The visual guide covers builds, bosses, badges, themes and more.'}
+ {group:'home',tab:'overview',icon:'🧩',title:'Keep exploring',body:'Use the Wiki extension to add items to Wishlist. The visual guide covers Forge, bosses, badges, themes and more.'}
 ]);
 function read(store){try{const v=store.getItem(KEY);return ['seen','existing'].includes(v)?v:null}catch{return null}}
 function write(store,value){try{store.setItem(KEY,value)}catch{}return value}
