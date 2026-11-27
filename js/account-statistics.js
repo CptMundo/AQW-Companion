@@ -162,12 +162,17 @@
     const next=milestones.filter(m=>!m.unlocked&&m.goal>0).sort((a,b)=>b.value/b.goal-a.value/a.goal||(a.goal-a.value)-(b.goal-b.value)||a.name.localeCompare(b.name))[0]||null;
     const ordered=(Array.isArray(snapshots)?snapshots:[]).filter(s=>Array.isArray(s?.items)&&captureTime(s)!==null).map((s,i)=>({s,i,time:captureTime(s)})).sort((a,b)=>a.time-b.time||a.i-b.i);
     const eligible=milestones.filter(m=>m.unlocked&&!['Forge','Wishlist','Collection tags'].includes(m.group));
+    const counts=new Map();
+    const countsAt=row=>{
+      if(!counts.has(row)){const records=uniqueItems(row.s),byType={};for(const item of records.values()){const type=key(category(item.Type));byType[type]=(byType[type]||0)+1}counts.set(row,{total:records.size,byType})}
+      return counts.get(row);
+    };
     const seenAt=(row,index,m)=>{
       if(!row)return false;
       if(m.id==='import'||m.id.startsWith('snapshots'))return index+1>=m.goal;
-      const records=uniqueItems(row.s), type=m.id.match(/^(class|weapon|armor|helm|cape|misc)/)?.[1];
-      if(type)return [...records.values()].filter(x=>key(category(x.Type))===type).length>=m.goal;
-      if(m.id.startsWith('items'))return records.size>=m.goal;
+      const type=m.id.match(/^(class|weapon|armor|helm|cape|misc)/)?.[1],c=countsAt(row);
+      if(type)return (c.byType[type]||0)>=m.goal;
+      if(m.id.startsWith('items'))return c.total>=m.goal;
       return false;
     };
     let latest=null;
