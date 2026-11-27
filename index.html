@@ -1908,7 +1908,7 @@ function fillUltraClassSelect(select,key,profile,original=[]){
  const names=groups.flatMap(x=>x.names);select.value=names[0]||'';
 }
 function renderUltraSelectedRating(target,key,cls){
- // Score belongs only in the selector. Keep the ownership indicator.
+ // Legacy ratings are not published; retain ownership and a community role label.
  target.replaceChildren();
  target.append(node('span',ultraOwned(cls)?'✓ Owned':'Not owned',ultraOwned(cls)?'ultra-owned':'ultra-missing'));
  const score=ultraSelectedRating(key,cls);
@@ -2100,9 +2100,9 @@ function appendUltraRecommendedTeam(root,b,profile){
 
 function appendUltraGearCells(gear,build,boss){
  if(!build){gear.append(node('span','No reviewed class-specific gear preset yet. Consult a current encounter guide.','muted tiny'));return}
- gear.append(node('p','Community example — not independently validated for the current patch.','muted tiny'));if(build.source){const ref=node('a','Original community guide ↗');ref.href=build.source;ref.target='_blank';ref.rel='noopener noreferrer';gear.append(ref)}
+ gear.append(node('p','Community example — not independently validated for the current patch.','muted tiny ultra-gear-evidence'));if(build.source){const ref=node('a','Original community guide ↗','ultra-gear-evidence');ref.href=build.source;ref.target='_blank';ref.rel='noopener noreferrer';gear.append(ref)}
  for(const [label,value] of [['Weapon',build.weapon],['Helm',build.helm],['Cape',build.cape],['Base',build.base],['Consumable',build.consumable]].filter(([,v])=>v)){
-  const cell=node('div',undefined,'ultra-focus-gear-cell'),name=node('strong');ultraExplainText(name,value,boss);cell.append(node('small',label),name);gear.append(cell);
+  const cell=node('div',undefined,'ultra-focus-gear-cell'+(label==='Consumable'?' ultra-gear-consumable':'')),name=node('strong');ultraExplainText(name,value,boss);cell.append(node('small',label),name);gear.append(cell);
  }
 }
 // Add only useful source guidance for the selected class; conditional on the

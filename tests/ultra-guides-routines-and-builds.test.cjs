@@ -91,7 +91,7 @@ console.log("Expanded quest library coverage:",catalog.length,"tasks;",routines.
 
 const reviewedCode=html.slice(html.indexOf("const ultraReviewedSources="),html.indexOf("function renderUltraDetail(b)"));
 const reviewedApi=vm.runInNewContext(reviewedCode+"\n({ultraReviewedSources,ultraReviewedTactics,encounterUltraBuild})");
-assert.equal(reviewedApi.encounterUltraBuild("dage","Lord of Order",{weapon:"Awe Blast",helm:"Forge",cape:"Absolution"}).weapon,"Health Vamp / Dauntless");
+assert.equal(reviewedApi.encounterUltraBuild("dage","Lord of Order",{weapon:"Awe Blast",helm:"Forge",cape:"Absolution"}),null,"Dage common sustain advice cannot manufacture a gear preset");
 assert.equal(reviewedApi.encounterUltraBuild("gramiel","Legion Revenant",null).weapon,"Mana Vamp");
 assert.equal(reviewedApi.encounterUltraBuild("gramiel","Shaman",null).consumable,"Scroll of Enrage");
 assert.equal(reviewedApi.encounterUltraBuild("darkon","StoneCrusher",null).base,"Fighter");
@@ -121,7 +121,7 @@ assert.equal(workbookApi.simplifiedRoleRatings("gramiel",3).find(x=>x.name==="Sh
 for(const key of Object.keys(workbookApi.simplifiedRatings))for(let i=0;i<5;i++){const rows=workbookApi.simplifiedRoleRatings(key,i);assert.equal(rows.length,workbookApi.simplifiedRatingRoles[i][1].length,key+" role "+i);assert.ok(rows.every(x=>x.rating>=0&&x.rating<=5))}
 assert.ok(!html.includes("appendSimplifiedProfile(root,simplifiedProfiles[b.id]"),"No second workbook panel in main guide");
 assert.ok(html.includes("renderBossGuides(root,$(\'bossguidesearch\').value.trim().toLowerCase(),$(\'bossguidecategory\').value)"));
-assert.ok(html.includes("Score belongs only in the selector"));
+assert.ok(html.includes("community role"));
 
 const compact=vm.runInNewContext(reviewedCode+"\n({ultraClassOptions,ultraSelectedRating,ultraWorkbookBuild,ultraCompactTips,ultraActionTips,ultraBeginnerActions,ultraBeginnerText,ultraGlossary,ultraTermPattern,ultraTermInfo,ultraSuggestedGear,ultraRecommendedTeam,ultraUnifiedTips,ultraSpeakerRole,ultraSpeakerPersonal,simplifiedSpeakerPatterns,simplifiedProfiles,simplifiedRatings,simplifiedExtraEncounters,sameUltraClass,fillUltraClassSelect,renderUltraSelectedRating,appendUltraGearCells})",{
  node(tag,text,cls){return {tag,text,cls,children:[],append(...x){this.children.push(...x)},replaceChildren(...x){this.children=x}}},
@@ -151,11 +151,11 @@ assert.ok(!compact.ultraCompactTips("drakath","Void Highlord").some(x=>x.include
 assert.equal(compact.ultraCompactTips("ezrajal","Void Highlord",["Workbook survival target: at least 3,175 HP before pulling."]).length,1,"Identical tips are deduplicated");
 assert.ok(compact.ultraCompactTips("nulgath","Legion Revenant").some(x=>x.includes("Only in the workbook")));
 assert.ok(!compact.ultraCompactTips("nulgath","Guardian").some(x=>x.includes("alternate Nulgath taunts")));
-for(const [key,p] of Object.entries(compact.simplifiedProfiles)){const groups=compact.ultraClassOptions(key,p);const classes=groups.flatMap(x=>x.names);assert.ok(classes.length,key);assert.ok(classes.every(n=>{const s=compact.ultraSelectedRating(key,n);return !s||[3,4,5].includes(s.rating)}),key);for(const group of groups){const scores=group.names.map(n=>compact.ultraSelectedRating(key,n)?.rating??-1);assert.ok(scores.every((s,i)=>i===0||scores[i-1]>=s),key+" sorted");}for(const cls of classes)assert.ok(compact.ultraActionTips(key,cls,[]).length>=2,key+" / "+cls+" has real mechanics");}
+for(const [key,p] of Object.entries(compact.simplifiedProfiles)){const groups=compact.ultraClassOptions(key,p);const classes=groups.flatMap(x=>x.names);assert.ok(classes.length,key);assert.ok(classes.every(n=>{const s=compact.ultraSelectedRating(key,n);return !s||[3,4,5].includes(s.rating)}),key);for(const group of groups)assert.ok(group.names.every((n,i)=>i===0||group.names[i-1].localeCompare(n)<=0),key+" alphabetical");for(const cls of classes)assert.ok(compact.ultraActionTips(key,cls,[]).length>=2,key+" / "+cls+" has real mechanics");}
 const select={children:[],append(x){this.children.push(x)}};
 compact.fillUltraClassSelect(select,"drakath",profile,["Void Highlord"]);
 assert.equal(select.value,"Lord of Order");
-assert.ok(select.children.flatMap(g=>g.children).some(o=>o.value==="Chrono ShadowHunter"&&o.label.includes("/5")));
+assert.ok(select.children.flatMap(g=>g.children).some(o=>o.value==="Chrono ShadowHunter"));assert.ok(select.children.flatMap(g=>g.children).every(o=>!o.label.includes("/5")),"Unvalidated numerical ratings not shown");
 const rating={children:[],append(...x){this.children.push(...x)},replaceChildren(...x){this.children=x}};
 compact.renderUltraSelectedRating(rating,"drakath","Lord of Order");
 assert.ok(rating.children.some(x=>x.text.includes("Healer")));
@@ -177,7 +177,7 @@ assert.ok(groups[0].names.every(n=>n==="Lord of Order"||n==="Void Highlord"));
 assert.ok(groups.slice(1).every(g=>g.owned===false));
 assert.ok(select.children[0].children.every(o=>o.label.startsWith("✓ ")&&!o.label.includes("OWNED ·")));
 compact.renderUltraSelectedRating(rating,"drakath","Lord of Order");
-assert.ok(rating.children.every(x=>!/\/5/.test(x.text)),"Rating appears only in select");
+assert.ok(rating.children.every(x=>!/\/5/.test(x.text)),"No unvalidated rating displayed");
 assert.ok(compact.ultraActionTips("ezrajal","Verus DoomKnight",[]).some(x=>x.includes("Counter Attack")));
 assert.ok(compact.ultraActionTips("kathool","Chrono ShadowHunter",[]).some(x=>x.includes("Vigil")));
 assert.ok(compact.ultraActionTips("dage","Verus DoomKnight",[]).some(x=>x.includes("blue circle")));
@@ -221,7 +221,7 @@ assert.ok(html.includes("Progression / retired / legacy references"));
 assert.ok(html.includes("selectedUltraClasses.get(b.id)"));
 assert.ok(html.includes("selectedUltraClasses.set(b.id,cls)"));
 assert.ok(html.includes("const chosen=all.find"));
-assert.ok(html.includes("out.consumable='Vigil'"));
+assert.ok(compact.ultraUnifiedTips("kathool","Chaos Shaper").some(t=>t.text.includes("Vigil")),"Required Vigil guidance independent of gear evidence");
 assert.equal(workbookApi.simplifiedExtraEncounters.find(x=>x.name==="Fourth Lynaria").join,"/join murdermoon");
 assert.equal(workbookApi.simplifiedRoleRatings("Fourth Lynaria",0).find(x=>x.name==="Verus DoomKnight").rating,5);
 assert.equal(guide.caption("Avoid Decay during the crystal phase"),"Decay · Hold the debuff");
@@ -251,20 +251,23 @@ assert.ok(ultraCSS.includes(".ultra-help-term:focus>.ultra-help-popup"));
 assert.ok(!html.includes("Workbook loadout · agree your party strategy."));
 console.log("Beginner tips: rating 3–5, exact sword timing, skill names, glossary and icon reference.");
 
-for(const [key,p] of Object.entries(compact.simplifiedProfiles)){
+for(const [key,p] of [...Object.entries(compact.simplifiedProfiles),...compact.simplifiedExtraEncounters.map(p=>[p.name,p])]){
  for(const cls of compact.ultraClassOptions(key,p).flatMap(x=>x.names)){
-  const gear=compact.ultraSuggestedGear(key,cls,p);
-  for(const slot of ["weapon","helm","cape","base"])assert.ok(gear[slot],key+" / "+cls+" / "+slot);
-  if(key==="dage")assert.match(gear.weapon,/Health Vamp|Dauntless/);
-  if(key==="kathool")assert.equal(gear.consumable,"Vigil");
+  const gear=compact.ultraSuggestedGear(key,cls,p),exact=compact.ultraWorkbookBuild(p,cls);
+  const disputed=["greatthief","arcanainvoker"].includes(cls.toLowerCase().replace(/[^a-z0-9]/g,""));
+  if(!exact||disputed){assert.equal(gear,null,key+" / "+cls+" no evidence");continue;}
+  assert.equal(gear.estimated,true,key+" / "+cls+" source example is not verified");
+  for(const slot of ["weapon","helm","cape","base"])if(gear[slot])assert.equal(gear[slot],exact[slot],key+" / "+cls+" / "+slot+" must not be fabricated");
  }
 }
-for(const p of compact.simplifiedExtraEncounters)for(const cls of compact.ultraClassOptions(p.name,p).flatMap(x=>x.names)){
- const gear=compact.ultraSuggestedGear(p.name,cls,p);for(const slot of ["weapon","helm","cape","base"])assert.ok(gear[slot],p.name+" / "+cls+" / "+slot);
+assert.equal(compact.ultraSuggestedGear("tyndarius","Chaos Shaper",null),null);
+assert.equal(compact.ultraSuggestedGear("engineer","Sentinel",null),null);
+assert.equal(compact.ultraSuggestedGear("kathool","Chaos Shaper",null),null);
+for(const cls of ["Great Thief","Arcana Invoker","Void Highlord"]){
+ const tips=compact.ultraUnifiedTips("drakath",cls);
+ assert.ok(tips.some(t=>t.title==="DPS assignment"));
+ assert.ok(tips.every(t=>!/Equip seven|activate Scroll of Enrage BEFORE|Assigned taunter: intercept/.test(t.text)));
 }
-assert.equal(compact.ultraSuggestedGear("tyndarius","Chaos Shaper",null).base,"Lucky");
-assert.equal(compact.ultraSuggestedGear("engineer","Sentinel",null).estimated,true);
-assert.equal(compact.ultraSuggestedGear("kathool","Chaos Shaper",null).consumable,"Vigil");
 assert.ok(!compact.ultraTermInfo("Zone","dage").text.includes("Speaker"));
 assert.ok(!compact.ultraTermInfo("Zone","speaker").text.includes("Dage"));
 assert.ok(!compact.ultraTermInfo("HoT","engineer").text.includes("Dage"));
@@ -515,7 +518,7 @@ const bossDetail121=html.slice(html.indexOf("function renderBossGuideDetail(entr
 assert.ok(bossDetail121.includes("fillUltraClassSelect(select,key,profile)"));
 assert.ok(bossDetail121.includes("select.onchange=draw"));
 assert.ok(!bossDetail121.includes("Suggested general enhancements — not verified for this encounter."));
-assert.ok(bossDetail121.includes("Your Loadout · Suggested"));
+assert.ok(bossDetail121.includes("Loadout · Review pending"));assert.ok(bossDetail121.includes("Loadout · Community example"));
 assert.ok(html.includes("if(tip.source!=='Community guide')body.append"));
 assert.ok(bossDetail121.includes("Simplified Bosses Guide — "));
 assert.ok(bossDetail121.includes("Wiki location"));

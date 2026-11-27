@@ -168,3 +168,8 @@ nav.tabs.subnav[aria-label="Section navigation"]:has(button[data-parent="ultras"
 #boss-guides .boss-guide-role-panel .boss-guide-step strong{display:block;color:#a6e5ff;font-size:13px;margin-bottom:4px}
 #boss-guides .boss-guide-role-panel .boss-guide-step small{display:block;margin-top:5px;font-size:10px}
 @media(max-width:700px){#boss-guides .boss-guide-list{display:grid;grid-auto-rows:max-content;max-height:260px}#boss-guides .boss-guide-list .boss-guide-item{min-height:48px!important}}
+
+/* Evidence rows do not consume enhancement grid slots. */
+#ultras .ultra-setup-card .ultra-focus-gear>.ultra-gear-evidence,#boss-guides .ultra-focus-gear>.ultra-gear-evidence{grid-column:1/-1;margin:0;overflow-wrap:anywhere;font-size:11px}
+#ultras .ultra-setup-card .ultra-focus-gear>.ultra-focus-gear-cell:not(.ultra-gear-consumable){grid-column:auto}
+#ultras .ultra-setup-card .ultra-focus-gear>.ultra-gear-consumable{grid-column:1/-1}
