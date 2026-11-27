@@ -1289,7 +1289,7 @@ function ultraOwned(name){return items.some(x=>x.Type.toLowerCase()==='class'&&s
 function ultraTeamReady(b){return ultraStrategyVariants(b,simplifiedProfiles[b.id]).some(v=>v.names.every(ultraOwned))}
 function renderUltras(){renderUltraCatalog();const term=$('ultrasearch').value.toLowerCase().trim(),filter=$('ultrafilter').value;const all=ultraGuides.filter(b=>(filter!=='ready'||ultraTeamReady(b))&&(!term||[b.name,b.join,...ultraStrategyVariants(b,simplifiedProfiles[b.id]).flatMap(v=>v.names)].join(' ').toLowerCase().includes(term))).sort((a,b)=>(a.type==='Daily'?0:a.type==='Weekly'?1:2)-(b.type==='Daily'?0:b.type==='Weekly'?1:2)||a.name.localeCompare(b.name));
  if(!all.some(x=>x.id===selectedUltra))selectedUltra=all[0]?.id||'';
- const cards=$('ultracards');cards.replaceChildren();let currentGroup='';for(const b of all){const group=b.type==='Daily'?'☀️ Daily Ultras':b.type==='Weekly'?'📆 Weekly Ultras':b.type==='Challenge'?'🐙 Challenge Bosses':'Other Ultras';if(group!==currentGroup){currentGroup=group;cards.append(node('div',group,'ultra-group-label'))}const btn=node('button',undefined,'ultracard'+(b.id===selectedUltra?' active':''));btn.type='button';btn.setAttribute('aria-pressed',String(b.id===selectedUltra));btn.append(node('small',b.type+' · '+b.difficulty),node('strong',ultraEmojiFor(b)+' '+b.name),node('small',approvedUltraGuides[b.id]?'Documented strategy':'Guide withheld · review pending'));btn.onclick=()=>{selectedUltra=b.id;renderUltras()};cards.append(btn)}
+ const cards=$('ultracards');cards.replaceChildren();let currentGroup='';for(const b of all){const group=b.type==='Daily'?'☀️ Daily Ultras':b.type==='Weekly'?'📆 Weekly Ultras':b.type==='Challenge'?'🐙 Challenge Bosses':'Other Ultras';if(group!==currentGroup){currentGroup=group;cards.append(node('div',group,'ultra-group-label'))}const btn=node('button',undefined,'ultracard'+(b.id===selectedUltra?' active':''));btn.type='button';btn.setAttribute('aria-pressed',String(b.id===selectedUltra));btn.append(node('small',b.type+' · '+b.difficulty),node('strong',ultraEmojiFor(b)+' '+b.name),node('small',approvedUltraGuides[b.id]?approvedUltraGuides[b.id].depth+' guide':'Guide pending'));btn.onclick=()=>{selectedUltra=b.id;renderUltras()};cards.append(btn)}
  const chosen=all.find(x=>x.id===selectedUltra);renderUltraDetail(chosen);}
 const ultraBeginner101={
  kathool:{
@@ -2505,22 +2505,33 @@ function renderBossGuideDetail(entry){
  title.append(node('h2',entry.name),node('small',entry.group+' · '+(profile?'Community guide · review pending':'Catalog only'),'muted'));
  header.append(title,makeCopyJoin(entry.join));root.append(header);
  if(!profile){const note=node('div',undefined,'boss-guide-panel');note.append(node('h3','Guide not yet verified'),node('p','This encounter is listed for discovery. No reviewed strategy or loadout is available; verify the location and seasonal availability.','muted'),...(entry.availability?[node('p',entry.availability,'muted')]:[]),bossGuideWiki(entry.wiki,'Wiki location ↗'));root.append(note);return}
- const guide=approvedOtherBossGuide;
- if(entry.name!==guide.name||!profile.team?.length||!profile.team.every(x=>Object.hasOwn(guide.roles,x.cls))){root.append(node('p','Guide withheld · source coverage incomplete.','muted'));return}
- const team=node('section',undefined,'boss-guide-panel boss-guide-team');
- team.append(node('h3','Documented team'));
- const chips=node('div',undefined,'boss-guide-chips');for(const member of profile.team){const owned=ultraOwned(member.cls);chips.append(node('span',(owned?'✓ ':'')+member.cls,'boss-guide-chip'+(owned?' is-owned':'')))}team.append(chips);root.append(team);
- const fight=node('section',undefined,'boss-guide-panel boss-guide-fight');fight.append(node('h3','Fight at a glance'),node('p',guide.goal),node('p',guide.avoid));root.append(fight);
- const setup=node('section',undefined,'boss-guide-panel boss-guide-loadout');setup.append(node('h3','Your class'));
- const select=node('select',undefined,'ultra-role-select');select.setAttribute('aria-label',entry.name+' class');fillStrategyClasses(select,[...new Set(profile.team.map(x=>x.cls))],selectedBossClasses.get(entry.name));setup.append(select);root.append(setup);
- const rolePanel=node('section',undefined,'boss-guide-panel boss-guide-role-panel');root.append(rolePanel);
- const draw=()=>{const cls=select.value;selectedBossClasses.set(entry.name,cls);rolePanel.replaceChildren(node('h3','Your fight guide'));if(!Object.hasOwn(guide.roles,cls))return;appendStrategyStep(rolePanel,'Your responsibility',guide.roles[cls],entry.name);for(const [label,tip] of guide.shared)appendStrategyStep(rolePanel,label,tip,entry.name);rolePanel.append(node('p','Role guidance, not a verified skill rotation.','muted tiny'));};select.onchange=draw;draw();
- const sources=guideDisclosure('Sources & strategy notes');sources.append(bossGuideWiki(entry.wiki,'Wiki location ↗'));const link=node('a','Simplified Bosses Guide — '+profile.sheet+' ↗');link.href=simplifiedGuideSource;link.target='_blank';link.rel='noopener noreferrer';sources.append(link);for(const [label,url] of guide.refs){const a=node('a',label+' ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';sources.append(a)}root.append(sources);
+ const guide=approvedOtherBossGuides[entry.name];
+ if(!guide){root.append(node('p','Guide pending · source coverage incomplete.','muted'));return}
+ const teamNames=(profile.team||[]).map(x=>x.cls),recommendations=guide.classes||[];
+ title.replaceChildren(node('h2',entry.name),node('small',entry.group+' · '+guide.kind+' guide','muted'));
+ if(teamNames.length||recommendations.length){
+  const team=node('section',undefined,'boss-guide-panel boss-guide-team');
+  team.append(node('h3',teamNames.length?'Workbook example team':'Recommended classes'));
+  const chips=node('div',undefined,'boss-guide-chips');for(const cls of teamNames.length?teamNames:recommendations){const owned=ultraOwned(cls);chips.append(node('span',(owned?'✓ ':'')+cls,'boss-guide-chip'+(owned?' is-owned':'')))}team.append(chips);root.append(team);
+  if(recommendations.length&&!teamNames.length)team.append(node('p','Choose one class for a solo encounter; these are source options, not a ranked build list.','muted tiny'));
+ }
+ const fight=node('section',undefined,'boss-guide-panel boss-guide-fight');fight.append(node('h3','Fight at a glance'));
+ for(const [i,tip] of guide.tips.entries())appendStrategyStep(fight,guide.tips.length>1?'Step '+(i+1):'Key mechanic',tip,entry.name);root.append(fight);
+ const names=[...new Set(teamNames)].filter(cls=>Object.hasOwn(guide.roles,cls));
+ if(names.length){
+  const setup=node('section',undefined,'boss-guide-panel boss-guide-loadout');setup.append(node('h3','Class-specific responsibilities'));
+  const select=node('select',undefined,'ultra-role-select');select.setAttribute('aria-label',entry.name+' class');fillStrategyClasses(select,names,selectedBossClasses.get(entry.name));setup.append(select);root.append(setup);
+  const rolePanel=node('section',undefined,'boss-guide-panel boss-guide-role-panel');root.append(rolePanel);
+  const draw=()=>{const cls=select.value;selectedBossClasses.set(entry.name,cls);rolePanel.replaceChildren(node('h3',cls));if(guide.roles[cls])appendStrategyStep(rolePanel,'Your responsibility',guide.roles[cls],entry.name);};select.onchange=draw;draw();
+  if(names.length<new Set(teamNames).size)setup.append(node('p','Other team members follow the shared instructions above; no separate rotation is established.','muted tiny'));
+ }
+ const sources=guideDisclosure('Sources & strategy notes');sources.append(bossGuideWiki(entry.wiki,'Wiki location ↗'));const link=node('a','Simplified Bosses Guide — '+profile.sheet+' ↗');link.href=simplifiedGuideSource;link.target='_blank';link.rel='noopener noreferrer';sources.append(link);if(guide.note)sources.append(node('p',guide.note,'muted tiny'));for(const [label,url] of guide.refs){const a=node('a',label+' ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';sources.append(a)}root.append(sources);
 
 }
 function renderBossGuides(root,term,category){
- const entries=bossGuideEntries(simplifiedExtraEncounters,ultraBossCatalog).map(e=>e.profile&&e.name!==approvedOtherBossGuide.name?{...e,profile:null,availability:'Strategy withheld pending source review.'}:e);
- const matches=bossGuideSorted(filterBossGuides(entries,term,category,p=>(p.team||[]).map(x=>x.cls)));
+ const entries=bossGuideEntries(simplifiedExtraEncounters,ultraBossCatalog).map(e=>e.profile&&!sourceOtherGuide(e.profile)?{...e,profile:null,availability:'Source coverage incomplete.'}:e);
+ const publicEntries=entries.map(e=>e.profile?{...e,profile:{...e.profile,tips:sourceOtherGuide(e.profile).tips,classes:sourceOtherGuide(e.profile).classes,premium:[]}}:e);
+ const matches=bossGuideSorted(filterBossGuides(publicEntries,term,category,p=>[...(p.team||[]).map(x=>x.cls),...(sourceOtherGuide(p)?.classes||[])]));
  selectedBossGuide=bossGuideSelection(matches,selectedBossGuide);
  $('bossguidecount').textContent=matches.length+' / '+entries.length+' encounters · '+entries.filter(e=>e.profile).length+' guides';
  const scroll=root.scrollTop;root.replaceChildren();
@@ -2786,8 +2797,515 @@ const workbookSharedGuide={
  ]
 };
 // Strict source publication gate. Data remains in the repository for later review.
+// Consolidated source records. Every strategy owns its roster, role instructions and references.
 const approvedUltraGuides={
+ "ezrajal": {
+  "depth": "Quick",
+  "goal": "Stop dealing damage during reflection.",
+  "avoid": "Do not keep attacking while Counter Attack is active.",
+  "shared": [
+   [
+    "Counter Attack",
+    "Untarget or stop damaging skills when the reflection is announced; resume only when it ends."
+   ],
+   [
+    "Survival",
+    "Keep recovery available during the heavy burst and watch skill locks. The workbook recommends at least 3,175 HP."
+   ]
+  ],
+  "variants": [
+   {
+    "id": "workbook",
+    "label": "Workbook team",
+    "team": [
+     "Lord of Order",
+     "Legion Revenant",
+     "ArchPaladin",
+     "Chrono ShadowHunter"
+    ],
+    "roles": {},
+    "refs": [
+     [
+      "Simplified Bosses Guide — Timeinn Trio",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+     ],
+     [
+      "Mechanics",
+      "https://aqw.app/monsters/ultraezrajal"
+     ],
+     [
+      "Ordinary clear",
+      "https://sites.google.com/view/aqwg-net/ultra-bosses"
+     ]
+    ]
+   },
+   {
+    "id": "hub",
+    "label": "Accessible DPS team",
+    "team": [
+     "Lord of Order",
+     "ArchPaladin",
+     "Chaos Avenger",
+     "Legion Revenant"
+    ],
+    "roles": {},
+    "refs": [
+     [
+      "AQW Hub — Timeinn Ultras",
+      "https://github.com/Shell1010/AQW-md/blob/main/Ultra%20Guides/Timeinn%20Ultras.md"
+     ],
+     [
+      "Mechanics",
+      "https://aqwwiki.wikidot.com/ultra-ezrajal-monster"
+     ]
+    ]
+   }
+  ]
+ },
+ "warden": {
+  "depth": "Quick",
+  "goal": "Recover quickly from the 1-HP attack; protect the Berserk phase.",
+  "avoid": "A taunt redirects eligible attacks, not Berserk itself.",
+  "shared": [
+   [
+    "Recovery",
+    "Keep heals available for the sudden HP drop. Avoid pushing damage if your recovery is not ready."
+   ],
+   [
+    "Berserk",
+    "At 30% HP (450k), the boss attacks much faster. The assigned durable player taunts attacks; LoO coordinates skill 5 and the team recovers."
+   ]
+  ],
+  "variants": [
+   {
+    "id": "workbook",
+    "label": "Workbook team",
+    "team": [
+     "Lord of Order",
+     "Legion Revenant",
+     "StoneCrusher",
+     "Chrono ShadowHunter"
+    ],
+    "roles": {
+     "Lord of Order": "Time skill 5 and heals for the Berserk transition.",
+     "Legion Revenant": "Take the assigned taunts, especially near Berserk; coordinate recovery.",
+     "StoneCrusher": "Maintain support and recovery after HP drops.",
+     "Chrono ShadowHunter": "Control damage at the Berserk threshold until your team is ready."
+    },
+    "refs": [
+     [
+      "Simplified Bosses Guide — Timeinn Trio",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+     ],
+     [
+      "AQW Hub — Timeinn Ultras",
+      "https://github.com/Shell1010/AQW-md/blob/main/Ultra%20Guides/Timeinn%20Ultras.md"
+     ],
+     [
+      "Mechanics",
+      "https://aqwwiki.wikidot.com/ultra-warden-monster"
+     ]
+    ]
+   },
+   {
+    "id": "hub",
+    "label": "Accessible DPS team",
+    "team": [
+     "Lord of Order",
+     "Legion Revenant",
+     "StoneCrusher",
+     "Chaos Avenger"
+    ],
+    "roles": {
+     "Lord of Order": "Coordinate recovery and skill 5 near Berserk.",
+     "Legion Revenant": "Use assigned taunts to redirect dangerous attacks.",
+     "StoneCrusher": "Maintain steady recovery.",
+     "Chaos Avenger": "Deal damage and hold the transition until recovery is ready."
+    },
+    "refs": [
+     [
+      "AQW Hub — Timeinn Ultras",
+      "https://github.com/Shell1010/AQW-md/blob/main/Ultra%20Guides/Timeinn%20Ultras.md"
+     ],
+     [
+      "Mechanics",
+      "https://aqw.app/monsters/ultrawarden"
+     ]
+    ]
+   }
+  ]
+ },
+ "engineer": {
+  "depth": "Quick",
+  "goal": "Defense Drone → Attack Drone → Engineer.",
+  "avoid": "Never damage the Defense Drone into reflection.",
+  "shared": [
+   [
+    "Opening",
+    "Buff before starting; let a long-range player initiate before moving in."
+   ],
+   [
+    "Drones",
+    "Kill Defense Drone first and Attack Drone second. Stop hitting Defense Drone during Counter Attack. Engineer is protected while drones remain."
+   ],
+   [
+    "Finish",
+    "Once the drones are gone, focus Engineer. Prepare for heavy damage if the fight continues."
+   ]
+  ],
+  "variants": [
+   {
+    "id": "workbook",
+    "label": "Workbook team",
+    "team": [
+     "Lord of Order",
+     "Legion Revenant",
+     "StoneCrusher",
+     "Chrono ShadowHunter"
+    ],
+    "roles": {},
+    "refs": [
+     [
+      "Simplified Bosses Guide — Timeinn Trio",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+     ],
+     [
+      "Mechanics",
+      "https://aqw.app/monsters/ultraengineer"
+     ],
+     [
+      "Target order",
+      "https://sites.google.com/view/aqwg-net/ultra-bosses"
+     ]
+    ],
+    "note": "The workbook’s AP-specific combo does not apply to this StoneCrusher roster; use the general drone sequence instead."
+   },
+   {
+    "id": "hub",
+    "label": "ArchPaladin team",
+    "team": [
+     "Lord of Order",
+     "ArchPaladin",
+     "Chaos Avenger",
+     "Legion Revenant"
+    ],
+    "roles": {
+     "Lord of Order": "Maintain buffs; the workbook's Attack Drone skill 5 debuff may help if coordinated.",
+     "ArchPaladin": "Support survivability; follow the Defense Drone target and avoid reflection.",
+     "Chaos Avenger": "Focus the Defense Drone, then Attack Drone, then Engineer.",
+     "Legion Revenant": "Support and focus the called drone."
+    },
+    "refs": [
+     [
+      "AQW Hub — Timeinn Ultras",
+      "https://github.com/Shell1010/AQW-md/blob/main/Ultra%20Guides/Timeinn%20Ultras.md"
+     ],
+     [
+      "Mechanics",
+      "https://aqw.app/monsters/ultraengineer"
+     ]
+    ]
+   }
+  ]
+ },
+ "tyndarius": {
+  "depth": "Strategy",
+  "goal": "Control both orbs and focus Tyndarius after them.",
+  "avoid": "Avoid uncontrolled orb overlap and random taunts.",
+  "shared": [
+   [
+    "Before pulling",
+    "Agree who handles the boss and each orb. Keep assigned targets controlled and kill the orbs rapidly."
+   ],
+   [
+    "Repeat",
+    "When an orb respawns, its assigned player returns to it. Help the remaining orb before returning to Tyndarius."
+   ]
+  ],
+  "variants": [
+   {
+    "id": "hub-dot",
+    "label": "Three taunters · Dragon of Time",
+    "team": [
+     "Lord of Order",
+     "Legion Revenant",
+     "ArchPaladin",
+     "Dragon of Time"
+    ],
+    "roles": {
+     "Lord of Order": "Maintain buffs and attack Tyndarius; no separate taunt assignment in this variant.",
+     "Legion Revenant": "Taunt and defeat the left orb.",
+     "ArchPaladin": "Enter first and taunt Tyndarius; use skill 4 for mitigation.",
+     "Dragon of Time": "Taunt the right orb, defeat it, then help the left orb."
+    },
+    "refs": [
+     [
+      "AQW Hub — Ultra Tyndarius",
+      "https://github.com/Shell1010/AQW-md/blob/main/Ultra%20Guides/Ultra%20Tyndarius.md"
+     ],
+     [
+      "Three-target strategy",
+      "https://nandixer.github.io/tyndarius/"
+     ]
+    ]
+   },
+   {
+    "id": "hub-cav",
+    "label": "Three taunters · Chaos Avenger",
+    "team": [
+     "Lord of Order",
+     "Legion Revenant",
+     "ArchPaladin",
+     "Chaos Avenger"
+    ],
+    "roles": {
+     "Lord of Order": "Maintain buffs and attack Tyndarius.",
+     "Legion Revenant": "Taunt and defeat the left orb.",
+     "ArchPaladin": "Initiate, mitigate with skill 4 and taunt Tyndarius.",
+     "Chaos Avenger": "Control the right orb, then help left."
+    },
+    "refs": [
+     [
+      "AQW Hub — Ultra Tyndarius",
+      "https://github.com/Shell1010/AQW-md/blob/main/Ultra%20Guides/Ultra%20Tyndarius.md"
+     ],
+     [
+      "Three-target strategy",
+      "https://nandixer.github.io/tyndarius/"
+     ]
+    ]
+   },
+   {
+    "id": "hub-ai",
+    "label": "Three taunters · Arcana Invoker",
+    "team": [
+     "Lord of Order",
+     "Legion Revenant",
+     "ArchPaladin",
+     "Arcana Invoker"
+    ],
+    "roles": {
+     "Lord of Order": "Maintain buffs and attack Tyndarius.",
+     "Legion Revenant": "Taunt the left orb.",
+     "ArchPaladin": "Initiate, mitigate and taunt Tyndarius.",
+     "Arcana Invoker": "Pre-stack if possible, taunt and defeat the right orb, then help left."
+    },
+    "refs": [
+     [
+      "AQW Hub — Ultra Tyndarius",
+      "https://github.com/Shell1010/AQW-md/blob/main/Ultra%20Guides/Ultra%20Tyndarius.md"
+     ]
+    ]
+   }
+  ]
+ },
+ "drago": {
+  "depth": "Strategy",
+  "goal": "Defeat Bowmaster, then Executioner, then Drago.",
+  "avoid": "Do not allow the guards to remain alive for too long.",
+  "shared": [
+   [
+    "Target order",
+    "Focus right-side Bowmaster first, then left-side Executioner. Coordinate before switching targets."
+   ],
+   [
+    "Time limit",
+    "Guard debuffs accumulate; finish the guards promptly to avoid the lethal Judgement Day."
+   ]
+  ],
+  "variants": [
+   {
+    "id": "hub",
+    "label": "Two guard taunters",
+    "team": [
+     "Lord of Order",
+     "ArchPaladin",
+     "Chaos Avenger",
+     "Legion Revenant"
+    ],
+    "roles": {
+     "Lord of Order": "Keep buffs up and remain on Executioner; time Quixotic just before Bowmaster dies.",
+     "ArchPaladin": "Taunt the left-side Executioner.",
+     "Chaos Avenger": "Taunt the right-side Bowmaster; coordinate Scroll of Enrage and your own taunt.",
+     "Legion Revenant": "Maintain support and damage on the called target."
+    },
+    "refs": [
+     [
+      "AQW Hub — Astravia Ultras",
+      "https://github.com/Shell1010/AQW-md/blob/main/Ultra%20Guides/Astravia%20Ultras.md"
+     ],
+     [
+      "Timing",
+      "https://sites.google.com/view/aqwg-net/ultra-bosses"
+     ],
+     [
+      "Jix composition",
+      "https://jix-aqw.github.io/guias/ultra-bosses/ultra-drago.html"
+     ]
+    ]
+   }
+  ]
+ },
+ "darkon": {
+  "depth": "Advanced",
+  "goal": "Control Elegy stuns, stagger healing and respect the damage checks.",
+  "avoid": "Avoid consecutive Elegy exposure and Vainglory during healing reduction.",
+  "shared": [
+   [
+    "Healing",
+    "Alternate major heals rather than using them together. Avoid Vainglory during the severe healing reduction."
+   ],
+   [
+    "Taunts",
+    "Follow only the chosen team's assigned taunt pair. Watch the mouth animation; do not let the same player accumulate consecutive Elegy effects."
+   ],
+   [
+    "Transition",
+    "The team must agree the taunt and healing timing around the HP refill and final phase before entering."
+   ]
+  ],
+  "variants": [
+   {
+    "id": "workbook",
+    "label": "Workbook · LoO / LR taunts",
+    "team": [
+     "Lord of Order",
+     "Legion Revenant",
+     "Paladin Chronomancer",
+     "Chrono ShadowHunter"
+    ],
+    "roles": {
+     "Lord of Order": "Alternate taunts with LR, coordinate heals with PCM; reserve skill 5 for the nuke around 4.6–4.5M HP as described by the source.",
+     "Legion Revenant": "Alternate Elegy taunts with LoO on the agreed timing, then follow the agreed post-refill loop.",
+     "Paladin Chronomancer": "Alternate major heals with LoO; keep recovery for the final phase.",
+     "Chrono ShadowHunter": "Sustain DPS while respecting the team's healing and taunt plan."
+    },
+    "refs": [
+     [
+      "Simplified Bosses Guide — Darkon",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+     ],
+     [
+      "Monster mechanics",
+      "https://aqwwiki.wikidot.com/darkon-the-conductor"
+     ]
+    ],
+    "note": "Workbook rotation: first taunter on pull, next on tentacle/mouth animation, repeat until refill. Source does not specify a full individual skill schedule; confirm exact post-refill timing with the group."
+   },
+   {
+    "id": "hub",
+    "label": "AQW Hub · LR / SC taunts",
+    "team": [
+     "Lord of Order",
+     "Legion Revenant",
+     "StoneCrusher",
+     "LightCaster"
+    ],
+    "roles": {
+     "Lord of Order": "Coordinate healing with LightCaster; keep buffs active and reserve mitigation for the agreed nuke.",
+     "Legion Revenant": "First taunter in the LR/SC pair; alternate with SC.",
+     "StoneCrusher": "Second taunter in the LR/SC pair; alternate with LR.",
+     "LightCaster": "Sustain DPS and alternate heals with LoO."
+    },
+    "refs": [
+     [
+      "AQW Hub — Astravia Ultras",
+      "https://github.com/Shell1010/AQW-md/blob/main/Ultra%20Guides/Astravia%20Ultras.md"
+     ],
+     [
+      "Phase guide",
+      "https://solarisaqw.lol/guides/ultra-weeklies/ultradarkon"
+     ]
+    ],
+    "note": "This roster uses different taunters from the workbook. Do not apply the LoO/LR loop to it. Confirm the full phase timing via the linked guide."
+   }
+  ]
+ },
+ "speaker": {
+  "depth": "Advanced",
+  "goal": "Follow one full taunt and Zone chart as a team.",
+  "avoid": "Never improvise a taunt or enter a Zone while marked, petrified or recently zoned.",
+  "shared": [
+   [
+    "Truth / Listen",
+    "Truth increases incoming magic damage; Listen petrifies. Intercept only the attacks assigned by the selected chart."
+   ],
+   [
+    "Zone",
+    "One assigned player stays inside the red square to cleanse auto-attack stacks. Everyone else exits; a player with prohibited debuffs must not zone."
+   ],
+   [
+    "Preparation",
+    "The three support taunters bring Scrolls of Enrage and agree the exact chart before pulling. The DPS still follows its Zone assignment."
+   ]
+  ],
+  "variants": [
+   {
+    "id": "three-vhl",
+    "label": "3-man taunt · Void Highlord",
+    "team": [
+     "Lord of Order",
+     "Legion Revenant",
+     "ArchPaladin",
+     "Void Highlord"
+    ],
+    "roles": {
+     "Lord of Order": "Follow the LoO rows of the chart. Maintain buffs, coordinate heals and use skill 5 only at assigned mitigation cues.",
+     "Legion Revenant": "Follow LR's chart rows; apply skill 2 as the red Zone appears to prevent boss healing.",
+     "ArchPaladin": "Follow AP's chart rows; coordinate Seal mitigation and heals.",
+     "Void Highlord": "DPS role: take the first Zone in this chart; deal damage and do not add taunts."
+    },
+    "refs": [
+     [
+      "Simplified Bosses Guide — Speaker Charts — E3:G23",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+     ],
+     [
+      "AQW Hub — Ultra Speaker",
+      "https://github.com/Shell1010/AQW-md/blob/main/Ultra%20Guides/Ultra%20Speaker.md"
+     ],
+     [
+      "Mechanics",
+      "https://nandixer.github.io/malgor/"
+     ]
+    ],
+    "chart": 0
+   },
+   {
+    "id": "three-csh",
+    "label": "3-man taunt · Chrono ShadowHunter",
+    "team": [
+     "Lord of Order",
+     "Legion Revenant",
+     "ArchPaladin",
+     "Chrono ShadowHunter"
+    ],
+    "roles": {
+     "Lord of Order": "Follow LoO's chart rows. Maintain buffs and coordinate healing and assigned skill 5.",
+     "Legion Revenant": "Follow LR's chart rows; apply skill 2 when a Zone appears.",
+     "ArchPaladin": "Follow AP's chart rows and coordinate Seal mitigation and healing.",
+     "Chrono ShadowHunter": "DPS role: take Zone 1, sustain damage and do not add taunts."
+    },
+    "refs": [
+     [
+      "Simplified Bosses Guide — Speaker Charts — E3:G23",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+     ],
+     [
+      "AQW Hub — Ultra Speaker",
+      "https://github.com/Shell1010/AQW-md/blob/main/Ultra%20Guides/Ultra%20Speaker.md"
+     ],
+     [
+      "Mechanics",
+      "https://nandixer.github.io/malgor/"
+     ]
+    ],
+    "chart": 0
+   }
+  ]
+ },
  "kathool": {
+  "depth": "Strategy",
   "goal": "All seven players equip Vigil and activate it on the Nightmare cue.",
   "avoid": "Never replace Vigil with a taunt.",
   "shared": [
@@ -2800,23 +3318,43 @@ const approvedUltraGuides={
     "Supports handle spawning tendrils while DPS and debuffing supports focus the eyes. Agree the split before pulling; do not assign a target solely from a rating."
    ]
   ],
-  "roles": {
-   "Lord of Order": "Coordinate the support/tendril assignment with the group.",
-   "Legion Revenant": "Help with the support/tendril assignment agreed by the group.",
-   "Verus DoomKnight": "Debuff the eyes while assigned supports handle tendrils.",
-   "StoneCrusher": "Coordinate the support/tendril assignment with the group.",
-   "ArchFiend": "Confirm whether you are assigned to eyes or tendrils.",
-   "Glaceran Warlord": "Confirm whether you are assigned to eyes or tendrils.",
-   "Arcana Invoker": "Confirm your DPS target before pulling."
-  },
-  "refs": [
-   [
-    "Mechanic cross-check",
-    "https://aqw.app/monsters/kathooldepths"
-   ]
+  "variants": [
+   {
+    "id": "workbook",
+    "label": "Workbook team",
+    "team": [
+     "Lord of Order",
+     "Legion Revenant",
+     "Verus DoomKnight",
+     "StoneCrusher",
+     "ArchFiend",
+     "Glaceran Warlord",
+     "Arcana Invoker"
+    ],
+    "roles": {
+     "Lord of Order": "Coordinate the support/tendril assignment with the group.",
+     "Legion Revenant": "Help with the support/tendril assignment agreed by the group.",
+     "Verus DoomKnight": "Debuff the eyes while assigned supports handle tendrils.",
+     "StoneCrusher": "Coordinate the support/tendril assignment with the group.",
+     "ArchFiend": "Confirm whether you are assigned to eyes or tendrils.",
+     "Glaceran Warlord": "Confirm whether you are assigned to eyes or tendrils.",
+     "Arcana Invoker": "Confirm your DPS target before pulling."
+    },
+    "refs": [
+     [
+      "Simplified Bosses Guide — Kathool",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+     ],
+     [
+      "Mechanic cross-check",
+      "https://aqw.app/monsters/kathooldepths"
+     ]
+    ]
+   }
   ]
  },
  "drakath": {
+  "depth": "Strategy",
   "goal": "Assign a taunter to each HP blast before crossing the threshold.",
   "avoid": "Do not taunt the transformation or final meteor.",
   "shared": [
@@ -2833,86 +3371,216 @@ const approvedUltraGuides={
     "10M is a transformation. At 2M, finish the meteor damage check within 20 seconds; taunting cannot stop it."
    ]
   ],
-  "roles": {
-   "Lord of Order": "Coordinate recovery with Paladin Chronomancer; taunt blasts only when assigned.",
-   "Legion Revenant": "If assigned, take the HP blasts, coordinating any alternating taunts with the healer.",
-   "Paladin Chronomancer": "Coordinate heals with Lord of Order; if assigned, take the agreed HP blasts.",
-   "Chrono ShadowHunter": "Control burst around the HP thresholds. Save damage for the final meteor."
-  },
-  "refs": [
-   [
-    "HP threshold cross-check",
-    "https://aqw.app/monsters/championdrakath"
-   ]
-  ],
-  "correction": "The workbook's every-2M wording omits the 10M and 2M exceptions. The mechanics reference establishes those exceptions."
+  "variants": [
+   {
+    "id": "workbook",
+    "label": "Workbook team",
+    "team": [
+     "Lord of Order",
+     "Legion Revenant",
+     "Paladin Chronomancer",
+     "Chrono ShadowHunter"
+    ],
+    "roles": {
+     "Lord of Order": "Coordinate recovery with Paladin Chronomancer; taunt blasts only when assigned.",
+     "Legion Revenant": "If assigned, take the HP blasts, coordinating any alternating taunts with the healer.",
+     "Paladin Chronomancer": "Coordinate heals with Lord of Order; if assigned, take the agreed HP blasts.",
+     "Chrono ShadowHunter": "Control burst around the HP thresholds. Save damage for the final meteor."
+    },
+    "refs": [
+     [
+      "Simplified Bosses Guide — Drakath",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+     ],
+     [
+      "HP threshold cross-check",
+      "https://aqw.app/monsters/championdrakath"
+     ]
+    ],
+    "note": "The 10M transformation and final 2M meteor are exceptions to the workbook's every-2M wording."
+   },
+   {
+    "id": "aqwg",
+    "label": "Accessible DPS · LoO taunts",
+    "team": [
+     "Void Highlord",
+     "StoneCrusher",
+     "Lord of Order",
+     "ArchPaladin"
+    ],
+    "roles": {
+     "Void Highlord": "Deal controlled damage; stop burst before each HP threshold.",
+     "StoneCrusher": "Keep support and recovery active.",
+     "Lord of Order": "Taunt all seven HP blasts just before their thresholds; bring sufficient Scrolls of Enrage.",
+     "ArchPaladin": "Maintain mitigation and coordinate heals."
+    },
+    "refs": [
+     [
+      "Team and threshold exceptions",
+      "https://sites.google.com/view/aqwg-net/ultra-bosses"
+     ]
+    ]
+   }
+  ]
  },
  "dage": {
+  "depth": "Strategy",
   "goal": "Use life steal, move to the illuminated zone and suppress regeneration.",
   "avoid": "Do not use ordinary heals or HoTs during Noxious Decay.",
   "shared": [
    [
     "Survival",
-    "Use Health Vamp or Dauntless for life steal. Noxious Decay reverses normal healing and healing over time."
+    "Use life steal rather than ordinary healing while Noxious Decay is active. Check the aura before any heal."
    ],
    [
-    "Safe zone",
-    "On the protection-spells cue, move onto the illuminated blue platform within three seconds."
+    "Safe zones",
+    "Move immediately to the illuminated platform when the protection cue appears."
    ],
    [
     "Regeneration",
-    "At the Legion power cue, the assigned Decay player must maintain healing prevention as available; agree backup coverage before pulling."
+    "On the Legion power cue, the assigned Decay player prevents healing; coordinate backup coverage. A player death restores Dage's HP."
    ]
   ],
-  "roles": {
-   "Chaos Avenger": "The workbook identifies CAv as the taunt specialist. If using its loop-taunt variant, open with Scroll of Enrage and use Flux (3) before the taunt expires; confirm the chosen plan.",
-   "ArchFiend": "Follow the shared damage, zone and sustain instructions; confirm any backup Decay duty with the group.",
-   "Verus DoomKnight": "If assigned Decay, Unleash Doom (5) provides three seconds of healing prevention. Coordinate coverage with the team; do not assume one cast covers the entire regeneration.",
-   "Chrono ShadowHunter": "Follow the damage and zone instructions; avoid healing skills and HoTs while Noxious Decay is active."
-  },
-  "refs": [
-   [
-    "Attack and taunt cross-check",
-    "https://aqw.app/monsters/ultradage"
-   ],
-   [
-    "VDK Decay skill",
-    "https://aqwwiki.wikidot.com/verus-doomknight-class"
-   ]
+  "variants": [
+   {
+    "id": "workbook",
+    "label": "Workbook · VDK Decay",
+    "team": [
+     "Chaos Avenger",
+     "ArchFiend",
+     "Verus DoomKnight",
+     "Chrono ShadowHunter"
+    ],
+    "roles": {
+     "Chaos Avenger": "Coordinate loop taunt using skill 3 and Scroll of Enrage. Avoid your ordinary HoT during inversion.",
+     "ArchFiend": "Maintain damage and follow the zone calls.",
+     "Verus DoomKnight": "Use skill 5 to apply Decay at the Legion power cue; its short duration may require backup Scroll of Decay. Avoid empowered healing during inversion.",
+     "Chrono ShadowHunter": "Use damage and reload; avoid Tracer Rounds' HoT while Noxious Decay is active."
+    },
+    "refs": [
+     [
+      "Simplified Bosses Guide — Dage",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+     ],
+     [
+      "AQW Hub — Ultra Dage",
+      "https://github.com/Shell1010/AQW-md/blob/main/Ultra%20Guides/Ultra%20Dage.md"
+     ],
+     [
+      "VDK skill",
+      "https://aqwwiki.wikidot.com/verus-doomknight-class"
+     ]
+    ],
+    "note": "Confirm the Decay backup before pulling; the source does not specify a complete coverage schedule for this roster."
+   },
+   {
+    "id": "hub-ldk",
+    "label": "Sustain team · LDK Decay",
+    "team": [
+     "Chaos Avenger",
+     "Legion DoomKnight",
+     "Lord of Order",
+     "ArchPaladin"
+    ],
+    "roles": {
+     "Chaos Avenger": "Loop taunt with skill 3 and Scroll of Enrage; avoid ordinary HoT during inversion.",
+     "Legion DoomKnight": "Maintain Decay with skill 5 during the boss recovery; use your life steal.",
+     "Lord of Order": "Maintain buffs and avoid your healing skill during inversion; coordinate mitigation.",
+     "ArchPaladin": "Debuff and mitigate; avoid healing during inversion."
+    },
+    "refs": [
+     [
+      "AQW Hub — Ultra Dage",
+      "https://github.com/Shell1010/AQW-md/blob/main/Ultra%20Guides/Ultra%20Dage.md"
+     ],
+     [
+      "Mechanics and healing",
+      "https://sites.google.com/view/aqwg-net/ultra-bosses"
+     ]
+    ]
+   }
   ]
  },
  "nulgath": {
-  "goal": "Coordinate two Contracts taunters and the Blade response.",
-  "avoid": "Abyssal Charge cannot be redirected by taunting.",
+  "depth": "Strategy",
+  "goal": "Alternate Contracts taunters and manage the sword.",
+  "avoid": "Abyssal Charge itself ignores taunt; avoid killing the sword unnecessarily.",
   "shared": [
    [
     "Contracts",
-    "Agree a staggered taunt plan for Contracts of the Abyss, which recur every seven seconds. Do not overlap taunts."
+    "The two assigned taunters alternate to keep Frailty from escalating across the party."
    ],
    [
-    "Different attack",
-    "The Abyssal Charge cue is “Behold the power of the Abyss!”; that attack itself ignores taunt. Do not treat the quote as a universal taunt timer."
+    "Timing",
+    "The Abyssal Charge line is a synchronization reference for a later Contracts taunt, not an attack that can be redirected. Follow one agreed timing method."
    ],
    [
-    "Blade",
-    "Focus Nulgath as assigned. If the sword charges its lethal attack, follow the agreed sword kill call; do not let the charge finish."
+    "Sword",
+    "Damage dealers focus Nulgath; kill the Blade before its lethal charge if the boss will not die in time. Each Blade kill strengthens Nulgath."
    ]
   ],
-  "roles": {
-   "Lord of Order": "Alternate Contracts taunts with Legion Revenant according to the agreed timing.",
-   "Legion Revenant": "Alternate Contracts taunts with Lord of Order according to the agreed timing.",
-   "StoneCrusher": "Maintain support and follow the called target; do not add unassigned taunts.",
-   "Guardian": "Focus Nulgath and switch to the sword on the team call."
-  },
-  "refs": [
-   [
-    "Contracts / Abyssal Charge cross-check",
-    "https://aqw.app/monsters/ultranulgath"
-   ]
-  ],
-  "correction": "The original workbook uses the Abyssal Charge quote to synchronize taunts. It is not the tauntable Contracts attack; the precise cue-based loop is withheld. Agree timing with an experienced team."
+  "variants": [
+   {
+    "id": "workbook",
+    "label": "Workbook · LR / LoO",
+    "team": [
+     "Lord of Order",
+     "Legion Revenant",
+     "StoneCrusher",
+     "Guardian"
+    ],
+    "roles": {
+     "Lord of Order": "Alternate Contracts taunts with LR. Use a survivable setup and agree the timing before pulling.",
+     "Legion Revenant": "Alternate Contracts taunts with LoO; monitor Frailty and avoid overlap.",
+     "StoneCrusher": "Maintain support and follow the sword call.",
+     "Guardian": "Focus Nulgath, switch to sword if the lethal charge must be stopped."
+    },
+    "refs": [
+     [
+      "Simplified Bosses Guide — Nulgath",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+     ],
+     [
+      "AQW Hub — Ultra Nulgath",
+      "https://github.com/Shell1010/AQW-md/blob/main/Ultra%20Guides/Ultra%20Nulgath.md"
+     ],
+     [
+      "Efficient timing and conditions",
+      "https://sites.google.com/view/aqwg-net/ultra-bosses"
+     ]
+    ],
+    "note": "The sources differ on the first taunt timing (workbook shortly after pull; AQWG efficient method at six seconds). Do not combine them. For this roster use the source-linked timing plan the team has agreed and practiced; LoO requires sufficient sustain."
+   },
+   {
+    "id": "hub-dot",
+    "label": "AQW Hub · double Dragon of Time",
+    "team": [
+     "Dragon of Time",
+     "Dragon of Time",
+     "Legion Revenant",
+     "Lord of Order"
+    ],
+    "roles": {
+     "Lord of Order": "Alternate Contracts taunts with LR; agree a survivable setup and one timing method.",
+     "Legion Revenant": "Alternate Contracts taunts with LoO.",
+     "Dragon of Time": "Damage Nulgath; agree which DPS checks the sword if it is still alive around 30 seconds."
+    },
+    "refs": [
+     [
+      "AQW Hub — Ultra Nulgath",
+      "https://github.com/Shell1010/AQW-md/blob/main/Ultra%20Guides/Ultra%20Nulgath.md"
+     ],
+     [
+      "Timing",
+      "https://sites.google.com/view/aqwg-net/ultra-bosses"
+     ]
+    ],
+    "note": "Both DPS slots share guidance; agree the sword assignment between them."
+   }
+  ]
  },
  "gramiel": {
+  "depth": "Advanced",
   "goal": "Balance the crystals, then rotate all four taunts.",
   "avoid": "Do not kill the crystals far apart or cross HP checkpoints without protection.",
   "shared": [
@@ -2929,65 +3597,606 @@ const approvedUltraGuides={
     "At 70%, 40% and 10% HP, each player needs Vendetta or Death’s Door to gain protection against Celestial Vanquish. Five Vendetta stacks are lethal when Grace Unleashed resolves."
    ]
   ],
-  "roles": {
-   "Lord of Order": "Pair with the assigned DPS and alternate crystal taunts. Follow your assigned Gramiel turn.",
-   "Legion Revenant": "Pair with the assigned healer and alternate crystal taunts. Follow your assigned Gramiel turn.",
-   "StoneCrusher": "Confirm the healer position and crystal partner; take your assigned Gramiel turn.",
-   "Shaman": "Confirm the DPS position and crystal partner; balance crystal HP and take your assigned Gramiel turn."
-  },
-  "refs": [
-   [
-    "Vendetta and protection thresholds",
-    "https://aqw.app/monsters/ultragramiel"
-   ]
-  ],
-  "correction": "The workbook omits the lethal HP checkpoints. Added from the mechanics reference; no fixed player order has been invented."
+  "variants": [
+   {
+    "id": "workbook",
+    "label": "Workbook team",
+    "team": [
+     "Lord of Order",
+     "Legion Revenant",
+     "StoneCrusher",
+     "Shaman"
+    ],
+    "roles": {
+     "Lord of Order": "Pair with the assigned DPS and alternate crystal taunts. Follow your assigned Gramiel turn.",
+     "Legion Revenant": "Pair with the assigned healer and alternate crystal taunts. Follow your assigned Gramiel turn.",
+     "StoneCrusher": "Confirm the healer position and crystal partner; take your assigned Gramiel turn.",
+     "Shaman": "Confirm the DPS position and crystal partner; balance crystal HP and take your assigned Gramiel turn."
+    },
+    "refs": [
+     [
+      "Simplified Bosses Guide — Gramiel",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+     ],
+     [
+      "Vendetta and protection thresholds",
+      "https://aqw.app/monsters/ultragramiel"
+     ]
+    ],
+    "note": "Confirm the two crystal pairs and the later four-player order before pulling. The source does not prescribe a universal fixed order."
+   }
+  ]
  }
 };
-const withheldUltraGuides={
- "ezrajal": "The workbook's main tactic relies on skill-lock manipulation; normal roster-specific instructions are not established.",
- "warden": "The workbook names a fast healer but does not establish the assignment for its exact roster.",
- "engineer": "The mechanics require ArchPaladin but the listed example team has StoneCrusher instead.",
- "tyndarius": "The instructions assign an orb to Legion Revenant, who is absent from the listed example.",
- "drago": "The loop-taunt instructions require Lord of Order, absent from the example roster.",
- "darkon": "The sheet lists different healer/taunter compositions; the exact current rotation and mitigation timing need reconciliation.",
- "speaker": "The listed StoneCrusher roster does not match the Lord of Order timing charts; no verified matching DPS assignment."
-};
-const approvedOtherBossGuide={
- "name": "Void Xyfrag",
- "goal": "Deal sustained damage and coordinate the Consume taunt.",
- "avoid": "Do not allow the fight to reach the invulnerability phase.",
- "shared": [
-  [
-   "Taunt",
-   "Assign Legion Revenant to intercept Consume on the belch cue; VDK is a possible backup only if agreed."
+const approvedOtherBossGuides={
+ "Fourth Lynaria": {
+  "kind": "Quick",
+  "tips": [
+   "Expect brief periods of high dodge and occasional magic-class debuffs. Maintain recovery and damage; no elaborate rotation is prescribed."
   ],
-  [
-   "Damage",
-   "Use sustained rapid damage and finish before the boss becomes invulnerable."
-  ]
- ],
- "roles": {
-  "Legion Revenant": "Take the assigned Consume taunt.",
-  "Verus DoomKnight": "Backup Consume taunter only if agreed before pulling.",
-  "Lord of Order": "Follow the shared team instructions; no individual rotation is established.",
-  "Legendary Hero": "Follow the shared team instructions; no individual rotation is established.",
-  "ArchFiend": "Follow the shared team instructions; no individual rotation is established.",
-  "Chrono ShadowHunter": "Maintain damage during safe windows; both DPS slots have the same shared instructions."
+  "classes": [
+   "Lord of Order",
+   "Legion Revenant",
+   "StoneCrusher",
+   "Verus DoomKnight"
+  ],
+  "roles": {},
+  "note": "Workbook tab is hidden; availability and current encounter variant should be checked.",
+  "refs": []
  },
- "refs": [
-  [
-   "Consume mechanics",
-   "https://aqw.app/monsters/voidxyfrag"
+ "Void Flibbi": {
+  "kind": "Quick",
+  "tips": [
+   "Avoid Shaman skill 5; the workbook explicitly warns against it. Maintain group recovery and sustained damage."
+  ],
+  "classes": [],
+  "roles": {},
+  "note": "Source gives a team example and one class-specific restriction, not a full rotation.",
+  "refs": []
+ },
+ "Void Nightbane": {
+  "kind": "Quick",
+  "tips": [
+   "Use frequent sustained hits instead of relying on very large nukes.",
+   "Avoid Vainglory because incoming healing is heavily reduced.",
+   "The workbook says Decay does not work; the monster wiki identifies Blood Frenzy's 100,000 HP recovery as decayable. Do not rely on Decay to stop every healing effect."
+  ],
+  "classes": [],
+  "roles": {},
+  "note": "The monster mechanics supersede the workbook's blanket Decay statement.",
+  "refs": [
+   [
+    "Monster mechanics",
+    "https://aqwwiki.wikidot.com/nightbane"
+   ]
   ]
- ]
+ },
+ "Void Xyfrag": {
+  "kind": "Strategy",
+  "tips": [
+   "Assign a durable taunter for Consume on the belch cue. Finish before the boss becomes invulnerable; favor rapid sustained damage."
+  ],
+  "classes": [],
+  "roles": {
+   "Legion Revenant": "Take the assigned Consume taunt.",
+   "Verus DoomKnight": "Backup Consume taunter if agreed."
+  },
+  "note": "",
+  "refs": [
+   [
+    "Consume mechanics",
+    "https://aqw.app/monsters/voidxyfrag"
+   ]
+  ]
+ },
+ "Void NerfKitten": {
+  "kind": "Strategy",
+  "tips": [
+   "The Meow cue precedes a stat-stealing attack; agree alternating durable taunts to avoid stacking the penalty. Use rapid damage."
+  ],
+  "classes": [],
+  "roles": {
+   "Legion Revenant": "Take assigned Meow taunts and coordinate with VDK.",
+   "Verus DoomKnight": "Alternate Meow taunts with LR if assigned."
+  },
+  "note": "",
+  "refs": []
+ },
+ "Kasuko & Whirlpool": {
+  "kind": "Quick",
+  "tips": [
+   "Recover immediately after the large current-HP hits. If multi-target damage is fast, focus Kasuko; otherwise clear Whirlpool first. Maintain healing."
+  ],
+  "classes": [],
+  "roles": {},
+  "note": "Workbook describes target priority as conditional, not mandatory.",
+  "refs": []
+ },
+ "Temple Shrine — Left": {
+  "kind": "Strategy",
+  "tips": [
+   "Coordinate Lunar Haze and the Moon Converges cast."
+  ],
+  "classes": [],
+  "roles": {
+   "Lord of Order": "Taunt Lunar Haze when You Gaze into the Moon disappears.",
+   "Legion Revenant": "Use Praxis and taunt at The Moon Converges according to the source plan."
+  },
+  "note": "",
+  "refs": []
+ },
+ "Temple Shrine — Right": {
+  "kind": "Strategy",
+  "tips": [
+   "Coordinate Dawn Knight and the Sun Converges cast."
+  ],
+  "classes": [],
+  "roles": {
+   "Legion Revenant": "Taunt Dawn Knight when You feel the Warmth of the Sun disappears; use Praxis with taunt at The Sun Converges."
+  },
+  "note": "",
+  "refs": []
+ },
+ "Temple Shrine — Middle": {
+  "kind": "Advanced",
+  "tips": [
+   "Agree each knight assignment and the alternating solar/lunar taunt plan. Follow the same source roster and do not improvise."
+  ],
+  "classes": [],
+  "roles": {
+   "ArchPaladin": "Taunt Dying Light at The Sunlight Gathers and use skill 4; alternate Moon Converges with LoO.",
+   "Lord of Order": "Taunt Lunar Haze after the gaze message disappears; alternate Moon Converges with AP.",
+   "Legion Revenant": "Taunt Dawn Knight after the warmth message disappears. Use Praxis for Sun Converges; alternate its taunts with DPS.",
+   "Chrono ShadowHunter": "Alternate Sun Converges taunts with LR; coordinate LR's Praxis timing."
+  },
+  "note": "",
+  "refs": []
+ },
+ "Astral Empyrean": {
+  "kind": "Strategy",
+  "tips": [
+   "Stay outside the red zone and avoid deaths that empower the boss.",
+   "Stardust Breath ignores taunt; keep the party healthy for it. Alternate assigned taunts after the breath lands to control the subsequent Astral Beam attacks.",
+   "Avoid Vainglory during reduced incoming healing."
+  ],
+  "classes": [],
+  "roles": {
+   "Legion Revenant": "Alternate assigned post-breath taunts with VDK.",
+   "Verus DoomKnight": "Alternate assigned post-breath taunts with LR."
+  },
+  "note": "Workbook taunt wording is clarified using the monster reference; no gear presets shown.",
+  "refs": [
+   [
+    "Breath and beam mechanics",
+    "https://aqw.app/monsters/astralshrine"
+   ]
+  ]
+ },
+ "Mechabinky & Raxborg 2.0": {
+  "kind": "Advanced",
+  "tips": [
+   "Assign two taunters; other players equip Vigil in the workbook strategy.",
+   "45M: stop healing during inversion. 40M and 35M: assigned taunts. 30M: recover from the HP drop. 25M and 20M: expect increasing damage and dodge.",
+   "15M: coordinate Decay and mitigation. 10M: use Vigil on the cue. 5M: finish the damage check."
+  ],
+  "classes": [],
+  "roles": {
+   "ArchPaladin": "Time skill 4 before the 15M damage event."
+  },
+  "note": "Confirm exact taunt assignments and Vigil exceptions with the team; no exploit or precise undocumented timer recommended.",
+  "refs": []
+ },
+ "Celestial Arena": {
+  "kind": "Quick",
+  "tips": [
+   "Solo sequence. Pick a sustain class and use Awe enhancements; accept the appropriate quest before fighting."
+  ],
+  "classes": [
+   "Master Ranger",
+   "StoneCrusher",
+   "Legion DoomKnight",
+   "Rogue",
+   "Dragonslayer",
+   "Sentinel",
+   "Legendary Hero",
+   "Chrono ShadowHunter",
+   "Phantom Chronomancer",
+   "Elemental Warrior"
+  ],
+  "roles": {},
+  "note": "",
+  "refs": []
+ },
+ "Infernal Arena — early bosses": {
+  "kind": "Quick",
+  "tips": [
+   "For level 20–70 opponents, survival is the key. Awe enhancements and a damage-boosting weapon are the source's suggested preparation."
+  ],
+  "classes": [
+   "Master Ranger",
+   "StoneCrusher",
+   "Legion DoomKnight",
+   "Rogue",
+   "Dragonslayer",
+   "Sentinel",
+   "Legendary Hero",
+   "Chrono ShadowHunter",
+   "Phantom Chronomancer",
+   "Elemental Warrior"
+  ],
+  "roles": {},
+  "note": "",
+  "refs": []
+ },
+ "Deadly Duo": {
+  "kind": "Strategy",
+  "tips": [
+   "Enter the charge at full health, recover after the nuke, and use Scroll of Decay to prevent the boss's recovery. Sustain consumables can help."
+  ],
+  "classes": [
+   "Master Ranger",
+   "StoneCrusher",
+   "Legion DoomKnight",
+   "Dragonslayer",
+   "Dragonslayer General",
+   "ArchPaladin",
+   "Sentinel",
+   "Legendary Hero",
+   "Chrono ShadowHunter",
+   "Phantom Chronomancer",
+   "Elemental Warrior"
+  ],
+  "roles": {},
+  "note": "",
+  "refs": []
+ },
+ "Cervus Malus": {
+  "kind": "Strategy",
+  "tips": [
+   "Be healthy before the 60% hit. Healing is inverted immediately afterward; wait until that effect expires before recovering."
+  ],
+  "classes": [
+   "Master Ranger",
+   "ArchPaladin",
+   "Legion DoomKnight",
+   "Dragonslayer General",
+   "Sentinel",
+   "Legendary Hero",
+   "Elemental Warrior"
+  ],
+  "roles": {},
+  "note": "",
+  "refs": []
+ },
+ "Key of Sholemoh": {
+  "kind": "Quick",
+  "tips": [
+   "The boss deals fixed damage that cannot be reduced. Prioritize enough HP and reliable recovery to remain healthy before the charge."
+  ],
+  "classes": [
+   "Master Ranger",
+   "ArchPaladin",
+   "Legion DoomKnight",
+   "Dragonslayer General",
+   "StoneCrusher",
+   "Dragonslayer",
+   "Sentinel",
+   "Legendary Hero",
+   "Elemental Warrior",
+   "Chrono ShadowHunter",
+   "Phantom Chronomancer"
+  ],
+  "roles": {},
+  "note": "",
+  "refs": []
+ },
+ "Azalith's Scythe": {
+  "kind": "Strategy",
+  "tips": [
+   "Keep HP high before nukes and recover after them. Use reliable-hit skills against the high dodge. Scroll of Chaos Fog is a member-only option."
+  ],
+  "classes": [
+   "Lord of Order",
+   "Void Highlord",
+   "Dragon of Time",
+   "Lich",
+   "ArchPaladin",
+   "Sentinel",
+   "Elemental Warrior",
+   "Dragon Knight"
+  ],
+  "roles": {},
+  "note": "",
+  "refs": []
+ },
+ "Na'al": {
+  "kind": "Strategy",
+  "tips": [
+   "Use damage debuffs when Vidi appears, then heal after the hit. Barrier potions and Revitalize Elixir help with survival; Forge is optional."
+  ],
+  "classes": [
+   "Lord of Order",
+   "Void Highlord",
+   "King's Echo",
+   "Legion DoomKnight",
+   "ArchPaladin",
+   "Sentinel",
+   "Chrono ShadowHunter",
+   "Phantom Chronomancer",
+   "Dragon Knight"
+  ],
+  "roles": {},
+  "note": "",
+  "refs": []
+ },
+ "Grimskull?": {
+  "kind": "Strategy",
+  "tips": [
+   "Stop dealing damage when the punching-bag warning appears for seven seconds, unless the kill is guaranteed within that interval."
+  ],
+  "classes": [
+   "Lich",
+   "King's Echo",
+   "Dragon of Time",
+   "Chaos Avenger",
+   "Hollowborn Vindicator",
+   "Void Highlord",
+   "Sentinel",
+   "Chrono ShadowHunter",
+   "Phantom Chronomancer",
+   "Dragon Knight",
+   "Elemental Warrior",
+   "Legendary Hero"
+  ],
+  "roles": {},
+  "note": "",
+  "refs": []
+ },
+ "Grim Bomb": {
+  "kind": "Quick",
+  "tips": [
+   "Clear the bombs quickly; the source gives class options rather than a detailed individual rotation."
+  ],
+  "classes": [
+   "Dragon of Time",
+   "Chaos Avenger",
+   "King's Echo",
+   "Hollowborn Vindicator",
+   "Void Highlord",
+   "Lich",
+   "Sentinel",
+   "Chrono ShadowHunter",
+   "Phantom Chronomancer",
+   "Dragon Knight",
+   "Elemental Warrior",
+   "Legendary Hero"
+  ],
+  "roles": {},
+  "note": "",
+  "refs": []
+ },
+ "Empress Angler": {
+  "kind": "Quick",
+  "tips": [
+   "Restore maximum HP at the Heal up cue. Constant recovery such as Health Vamp helps."
+  ],
+  "classes": [
+   "Dragon of Time",
+   "Chaos Avenger",
+   "King's Echo",
+   "Hollowborn Vindicator",
+   "Void Highlord",
+   "Lich",
+   "Sentinel",
+   "Chrono ShadowHunter",
+   "Phantom Chronomancer",
+   "Dragon Knight",
+   "Elemental Warrior",
+   "Legendary Hero"
+  ],
+  "roles": {},
+  "note": "",
+  "refs": []
+ },
+ "Treasure Chest — first": {
+  "kind": "Quick",
+  "tips": [
+   "Defeat the first chest and continue; the source lists class options but no special rotation."
+  ],
+  "classes": [
+   "Dragon of Time",
+   "Chaos Avenger",
+   "King's Echo",
+   "Hollowborn Vindicator",
+   "Void Highlord",
+   "Lich",
+   "Sentinel",
+   "Chrono ShadowHunter",
+   "Phantom Chronomancer",
+   "Dragon Knight",
+   "Elemental Warrior",
+   "Legendary Hero"
+  ],
+  "roles": {},
+  "note": "",
+  "refs": []
+ },
+ "Reinforced Shelleton": {
+  "kind": "Strategy",
+  "tips": [
+   "Survive until the turtle stuns itself, then attack during the vulnerability. High resistance or strong healing helps; Revitalize Elixir is a source option."
+  ],
+  "classes": [
+   "Dragon of Time",
+   "ArchMage",
+   "Blaze Binder",
+   "Dragon Knight",
+   "Infinity Knight"
+  ],
+  "roles": {},
+  "note": "",
+  "refs": []
+ },
+ "Fell Statue": {
+  "kind": "Strategy",
+  "tips": [
+   "Change targets after dealing roughly 5,000 damage to a statue. Pause or switch if the incoming damage becomes unsafe."
+  ],
+  "classes": [
+   "StoneCrusher",
+   "Dragon of Time",
+   "Hollowborn Vindicator",
+   "Verus DoomKnight",
+   "Void Highlord",
+   "ArchMage",
+   "Dragon Knight",
+   "Infinity Knight",
+   "Phantom Chronomancer",
+   "Chrono ShadowHunter"
+  ],
+  "roles": {},
+  "note": "",
+  "refs": []
+ },
+ "Emperor Angler": {
+  "kind": "Strategy",
+  "tips": [
+   "Restore HP promptly at Heal up. Feeding Frenzy punishes staying below half HP; keep recovery available and account for the separate healing reduction."
+  ],
+  "classes": [
+   "Dragon of Time",
+   "Chaos Avenger",
+   "King's Echo",
+   "Hollowborn Vindicator",
+   "Void Highlord",
+   "Lich",
+   "Sentinel",
+   "Chrono ShadowHunter",
+   "Phantom Chronomancer",
+   "Dragon Knight",
+   "Elemental Warrior",
+   "Legendary Hero"
+  ],
+  "roles": {},
+  "note": "",
+  "refs": [
+   [
+    "Monster mechanics",
+    "https://aqwwiki.wikidot.com/emperor-angler"
+   ]
+  ]
+ },
+ "Treasure Chest — second": {
+  "kind": "Quick",
+  "tips": [
+   "The second chest deals periodic large HP-based damage and stuns; maintain health and recovery rather than assuming the first chest's behavior."
+  ],
+  "classes": [
+   "Dragon of Time",
+   "Chaos Avenger",
+   "King's Echo",
+   "Hollowborn Vindicator",
+   "Void Highlord",
+   "Lich",
+   "Sentinel",
+   "Chrono ShadowHunter",
+   "Phantom Chronomancer",
+   "Dragon Knight",
+   "Elemental Warrior",
+   "Legendary Hero"
+  ],
+  "roles": {},
+  "note": "Supplemental mechanics cross-check from the monster reference; no class-specific rotation is established.",
+  "refs": [
+   [
+    "Dungeon reference",
+    "https://aqwwiki.wikidot.com/the-gaol-of-eternal-torment-and-misery"
+   ]
+  ]
+ },
+ "Rick, Grim Soldier": {
+  "kind": "Quick",
+  "tips": [
+   "Maintain damage and sustain through the boss's recovery and buff cycles. The workbook provides class recommendations and no special rotation."
+  ],
+  "classes": [
+   "Dragon of Time",
+   "Chaos Avenger",
+   "King's Echo",
+   "Hollowborn Vindicator",
+   "Void Highlord",
+   "Lich",
+   "Sentinel",
+   "Chrono ShadowHunter",
+   "Phantom Chronomancer",
+   "Dragon Knight",
+   "Elemental Warrior",
+   "Legendary Hero"
+  ],
+  "roles": {},
+  "note": "",
+  "refs": [
+   [
+    "Monster mechanics",
+    "https://aqwwiki.wikidot.com/rick-grim-soldier"
+   ]
+  ]
+ },
+ "Rampaging Cyborg": {
+  "kind": "Strategy",
+  "tips": [
+   "Kill all summons before focusing the invulnerable Cyborg. Use enough damage and sustain for the rising pressure."
+  ],
+  "classes": [
+   "Dragon of Time",
+   "Hollowborn Vindicator",
+   "Verus DoomKnight",
+   "Void Highlord",
+   "ArchMage",
+   "Sentinel",
+   "Chrono ShadowHunter",
+   "Phantom Chronomancer",
+   "Dragon Knight",
+   "Infinity Knight"
+  ],
+  "roles": {},
+  "note": "",
+  "refs": []
+ },
+ "Mechabinky & Raxborg": {
+  "kind": "Strategy",
+  "tips": [
+   "At 90% HP, wait for healing inversion to expire before using heals or HoTs. The source warns that subsequent effects can vary."
+  ],
+  "classes": [
+   "Dragon of Time",
+   "Hollowborn Vindicator",
+   "Verus DoomKnight",
+   "Void Highlord",
+   "Lich",
+   "King's Echo",
+   "Sentinel",
+   "Chrono ShadowHunter",
+   "Phantom Chronomancer",
+   "Dragon Knight",
+   "Infinity Knight"
+  ],
+  "roles": {},
+  "note": "",
+  "refs": [
+   [
+    "Monster mechanics",
+    "https://aqwwiki.wikidot.com/mechabinky-raxborg-2-0"
+   ]
+  ]
+ }
 };
 const approvedClassActivities={"Arcana Invoker":["farm"],"Legion Revenant":["farm"],"Shaman":["solo"],"Verus DoomKnight":["solo"]};
 function ultraStrategyVariants(b,profile){
- const evidence=approvedUltraGuides[b.id],names=profile?.team?.map(x=>x.cls)||[];
- if(!evidence||!names.length||!names.every(n=>Object.hasOwn(evidence.roles,n)))return [];
- return [{id:'workbook',label:'Documented team',names,source:profile.sheet}];
+ const evidence=approvedUltraGuides[b.id];
+ return (evidence?.variants||[]).filter(v=>v.team.length&&v.refs.length).map(v=>({...v,names:v.team}));
 }
+function sourceOtherGuide(profile){return profile&&approvedOtherBossGuides[profile.name]||null}
 function fillStrategyClasses(select,names,selected){
  select.replaceChildren();
  for(const name of names)select.append(new Option((ultraOwned(name)?'✓ ':'')+name,name));
@@ -3003,14 +4212,33 @@ function guideDisclosure(label){
  const panel=node('details',undefined,'guide-v2-disclosure');panel.append(node('summary',label));return panel;
 }
 
+// The 3-man chart was transcribed from Speaker Charts E3:G23 (skip the repeat marker).
+// Render only the chosen strategy's chart, never combine with another chart or infer a role from a rating.
+function appendConsolidatedSpeakerChart(root,variant,cls){
+ const pattern=simplifiedSpeakerPatterns[variant.chart];if(!pattern)return;
+ const role=cls==='Lord of Order'?'LoO':cls==='Legion Revenant'?'LR':cls==='ArchPaladin'?'AP':variant.team.includes(cls)?'DPS':null;
+ if(!role)return;
+ const events=pattern.events||simplifiedSpeakerEvents;
+ const panel=guideDisclosure('Your taunt & Zone sequence');panel.open=true;
+ panel.append(node('p','Opening Truth and Listen happen once. Repeat from Zone 1. Numbering follows the full chart. Blank assignments are not extra taunts.','muted tiny'));
+ for(const [i,event] of events.entries()){
+  const assigned=pattern.roles[i]===role,own=(pattern.skills[i]||'').split(' · ').filter(x=>x.startsWith(role+' '));
+  if(!assigned&&!own.length)continue;
+  const action=assigned?(event.startsWith('Zone')?'Stay inside your assigned Zone; exit all others.':'Taunt the assigned '+event+'.'):'';
+  appendStrategyStep(panel,String(i+1).padStart(2,'0')+' · '+event,[action,...own].filter(Boolean).join(' · '),'speaker');
+ }
+ const all=guideDisclosure('Full team timing reference');
+ for(const [i,event] of events.entries())all.append(node('p',String(i+1).padStart(2,'0')+' · '+event+' · '+(pattern.roles[i]||'—')+(pattern.skills[i]?' · '+pattern.skills[i]:''),'muted tiny'));
+ panel.append(all);root.append(panel);
+}
 function renderUltraDetail(b){
  const root=$('ultradetail');root.classList.toggle('hidden',!b);root.replaceChildren();if(!b)return;
  const evidence=approvedUltraGuides[b.id],profile=simplifiedProfiles[b.id];
  const variants=ultraStrategyVariants(b,profile);
  const titleBar=node('div',undefined,'goalhead ultra-title-row'),actions=node('div',undefined,'ultra-title-actions');
- actions.append(makeCopyJoin(b.join),node('span',b.type,'quick-pill'),node('span',b.difficulty,'pill'));
+ actions.append(makeCopyJoin(b.join),node('span',b.type,'quick-pill'),node('span',evidence?.depth||b.difficulty,'pill'));
  titleBar.append(node('h2',ultraEmojiFor(b)+' '+b.name),actions);root.append(titleBar);
- if(!variants.length){root.append(node('p','Guide withheld · '+(withheldUltraGuides[b.id]||'Source coverage incomplete.'),'muted'));const a=node('a','Source workbook ↗');a.href=simplifiedGuideSource;a.target='_blank';a.rel='noopener noreferrer';root.append(a);return}
+ if(!variants.length){root.append(node('p','Guide pending · source coverage incomplete.','muted'));const a=node('a','Source workbook ↗');a.href=simplifiedGuideSource;a.target='_blank';a.rel='noopener noreferrer';root.append(a);return}
  const summary=node('section',undefined,'ultra-focus-card ultra-quickstart guide-v2-overview');
  summary.append(node('h3','🎯 Fight at a glance'));
  const focus=node('div',undefined,'ultra-focus-grid');
@@ -3021,18 +4249,18 @@ function renderUltraDetail(b){
  focus.append(focusCard('YOUR GOAL',evidence.goal,'ultra-focus-good'),focusCard('AVOID',evidence.avoid,'ultra-focus-danger'));
  summary.append(focus);root.append(summary);
  const team=node('section',undefined,'ultra-focus-card guide-v2-team');
- team.append(node('h3','1 · Team composition'));
+ team.append(node('h3','Team composition'));
  const pick=node('select',undefined,'guide-v2-team-select');pick.setAttribute('aria-label','Team composition');
  for(const v of variants)pick.append(new Option(v.label,v.id));
  pick.value=variants.some(v=>v.id===selectedUltraStrategies.get(b.id))?selectedUltraStrategies.get(b.id):variants[0].id;
  const teamInfo=node('p',undefined,'muted tiny'),chips=node('div',undefined,'ultra-recommended-classes guide-v2-class-buttons');
  if(variants.length>1)team.append(pick);else pick.hidden=true;team.append(teamInfo,chips,node('p','Source-documented team · community example, gameplay validation pending.','muted tiny'));root.append(team);
  const setup=node('section',undefined,'ultra-focus-card ultra-setup-card guide-v2-class');
- setup.append(node('h3','2 · Your class'));
+ setup.append(node('h3','Your class'));
  const select=node('select',undefined,'ultra-role-select');select.setAttribute('aria-label','Your class');
  const rating=node('div',undefined,'ultra-selected-rating');setup.append(select,rating);root.append(setup);
  const mechanics=node('section',undefined,'ultra-focus-card ultra-mechanics ultra-class-guide');
- const mechanicsTitle=node('h3','3 · Your fight guide');mechanics.append(mechanicsTitle);
+ const mechanicsTitle=node('h3','Fight instructions');mechanics.append(mechanicsTitle);
  const roleName=node('strong',undefined,'ultra-role-selected'),sequence=node('div',undefined,'ultra-flow-list');
  mechanics.append(roleName,sequence);root.append(mechanics);
  const active=()=>variants.find(v=>v.id===pick.value)||variants[0];
@@ -3042,25 +4270,25 @@ function renderUltraDetail(b){
   for(const chip of chips.querySelectorAll('button'))chip.setAttribute('aria-pressed',String(sameUltraClass(chip.dataset.cls,cls)));
   rating.replaceChildren(node('span',ultraOwned(cls)?'✓ Owned':'Not owned',ultraOwned(cls)?'ultra-owned':'ultra-missing'));
   roleName.textContent=cls;sequence.replaceChildren();
-  const personal=evidence.roles[cls];
-  appendStrategyStep(sequence,'Your responsibility',personal,b.id);
+  const personal=variant.roles[cls];
+  if(personal)appendStrategyStep(sequence,'Your responsibility',personal,b.id);
   for(const [label,tip] of evidence.shared)appendStrategyStep(sequence,label,tip,b.id);
-  sequence.append(node('p','Documented role guidance, not a complete class skill rotation. Confirm assignments before pulling.','muted tiny'));
+  if(variant.note)sequence.append(node('p',variant.note,'muted tiny'));
+  if(Number.isInteger(variant.chart))appendConsolidatedSpeakerChart(sequence,variant,cls);
   const details=guideDisclosure('Sources & strategy notes');
-  details.append(node('p','Simplified Bosses Guide — '+profile.sheet+' · community documentation, not independently playtested.','muted tiny'));
-  const a=node('a','Source workbook ↗');a.href=simplifiedGuideSource;a.target='_blank';a.rel='noopener noreferrer';details.append(a);
-  if(evidence.correction)details.append(node('p',evidence.correction,'muted tiny'));
-  for(const [label,url] of evidence.refs){const link=node('a',label+' ↗','muted tiny');link.href=url;link.target='_blank';link.rel='noopener noreferrer';details.append(link)}
+  details.append(node('p','Community documentation, not independently playtested.','muted tiny'));
+  for(const [label,url] of variant.refs){const link=node('a',label+' ↗','muted tiny');link.href=url;link.target='_blank';link.rel='noopener noreferrer';details.append(link)}
   sequence.append(details);
  }
  function updateStrategy(){
   const v=active();selectedUltraStrategies.set(b.id,v.id);
   teamInfo.textContent=v.names.length+' players · '+v.names.filter(ultraOwned).length+' owned'+(v.partial?' · Partial strategy':'');
-  fillStrategyClasses(select,v.names,selectedUltraClasses.get(b.id));chips.replaceChildren();
+  fillStrategyClasses(select,[...new Set(v.names)],selectedUltraClasses.get(b.id));chips.replaceChildren();
+  const personalAvailable=Object.keys(v.roles).length>0||Number.isInteger(v.chart);setup.hidden=!personalAvailable;roleName.hidden=!personalAvailable;
   for(const name of v.names){
    const owned=ultraOwned(name),chip=node('button',undefined,'ultra-team-chip'+(owned?' is-owned':''));
    chip.type='button';chip.dataset.cls=name;chip.append(node('span',owned?'✓':'○','ultra-team-mark'),node('span',name));chip.title=(owned?'Owned: ':'Not owned: ')+name;
-   chip.onclick=()=>{select.value=name;updateRole()};chips.append(chip);
+   if(personalAvailable)chip.onclick=()=>{select.value=name;updateRole()};else chip.disabled=true;chips.append(chip);
   }
   updateRole();
  }
