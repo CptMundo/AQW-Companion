@@ -6,9 +6,9 @@ Created by **CptMundo**. Unofficial AdventureQuest Worlds fan project, not affil
 
 ## Features
 
-AQW Companion is a browser-based collection and planning tool with Home, Wishlist, Daily / Weekly Tracker, Ultras, Class Builds (with Forge Tracker), Story, Explore and Inventory. Inventory contains Inventory & Bank, Account Statistics, Compare Exports and History. Home deliberately has **no** secondary tabs.
+AQW Companion is a browser-based collection and planning tool with Home, Wishlist, Daily / Weekly Tracker, Ultras, Forge Tracker, Story, Explore and Inventory. Inventory contains Inventory & Bank, Account Statistics, Compare Exports and History. Home deliberately has **no** secondary tabs.
 
-Players import their own Account Management JSON exports, then track inventory, Wishlist goals, farming materials, manually completed quests, Ultra strategies, Forge and class builds. Account Statistics uses saved snapshots and does not fabricate game achievements or acquisition dates.
+Players import their own Account Management JSON exports, then track inventory, Wishlist goals, farming materials, manually completed quests, Ultra strategies and Forge unlocks. Class Builds is temporarily hidden while recommendations undergo community review. Account Statistics uses saved snapshots and does not fabricate game achievements or acquisition dates.
 
 ## Current files
 
