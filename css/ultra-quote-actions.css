@@ -341,4 +341,7 @@ nav.tabs.subnav[aria-label="Section navigation"]:has(button[data-parent="ultras"
 #ultradetail .ultra-role-select optgroup.guide-v2-owned-group{color:#8ce6ac}
 #ultradetail .ultra-role-select optgroup.guide-v2-not-owned-group{color:#ff929c}
 #ultradetail .ultra-role-select optgroup:is(.guide-v2-owned-group,.guide-v2-not-owned-group) option{color:#dceaf7;font-weight:400}
-#ultradetail .guide-v2-strategy-select option:disabled{color:#8290a2}
+#ultradetail .guide-v2-strategy-select option.guide-v2-incompatible-option{color:#ff929c}
+#ultradetail .guide-v2-strategy-warning,#ultradetail .guide-v2-role-incompatible strong{color:#ff929c;font-size:inherit}
+#ultradetail .guide-v2-builder-strategy .guide-v2-strategy-warning{font-size:11px;font-weight:700;line-height:1.4}
+#ultradetail .guide-v2-strategy-warning[hidden]{display:none!important}

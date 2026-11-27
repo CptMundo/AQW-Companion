@@ -35,7 +35,7 @@ assert.ok(ultra.forRole("dage","Lord of Order").every(x=>!x.response.includes("Y
 assert.ok(ultra.forRole("speaker","ArchPaladin").some(x=>/Seal/.test(x.response)));
 assert.ok(ultra.forRole("speaker","Lord of Order").some(x=>/Scroll of Enrage/.test(x.response)));
 assert.ok(ultra.forRole("drakath","Lord of Order").some(x=>/BEFORE/.test(x.response)));
-assert.ok(html.includes("const personal=variant.roles[cls]"),"Render only the approved selected class actions");
+assert.ok(html.includes("const personal=matches?variant.roles[cls]:null"),"Render only the approved selected class actions when roster-compatible");
 assert.ok(html.includes("ultra-role-quote"));
 assert.ok(html.includes('src="js/ultra-quote-actions.js"'));
 assert.match(html,/href="css\/ultra-quote-actions\.css(?:\?v=\d+)?"/);
