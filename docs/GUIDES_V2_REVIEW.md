@@ -24,3 +24,6 @@ Added exact source tabs, access notes, explicit preparation, reconciled named so
 
 ### Final audit follow-up
 Rechecked ten existing approved alchemy triples against the source cells; six additional source potion columns reviewed without adding unverified public prescriptions. Nightbane wiki Level 100 Blood Frenzy explicitly marks its 100,000 HP recovery Decayable; workbook disagrees, and other recovery is not guaranteed stoppable. Existing hidden Ultra toolbar stays hidden; test its event handler programmatically rather than forcing visible UI. First audit CI: 13/14 passed; preview failed on hidden search field after traversing 22 strategies. This follow-up corrects that test and retains explicit source disagreement.
+
+## Beta 0.13.4 — production layout hotfix
+The consolidated appendStrategyStep emits one body, while the inherited legacy numbered-step CSS reserved a 28px (23px mobile) first grid track. The single body occupied that track. A dedicated guide-v2-step class now defines a single full-width track for Ultras and other boss guides, preserving legacy numbered rows. Geometry regressions check actual body and paragraph widths (not just page overflow), desktop/mobile across all guides, and representative dark/light/default theme views. No strategy data changed. Cache bust the actual CSS and regenerate the extension guide images and ZIP under 0.13.4.

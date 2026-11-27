@@ -56,6 +56,21 @@ async function main(){
   await page.setViewportSize({width:390,height:844});const bounds=await tour.boundingBox();assert.ok(bounds.x>=0&&bounds.x+bounds.width<=390&&bounds.y>=0&&bounds.y+bounds.height<=844);await page.locator('#aqwc-tour-skip').click();assert.ok(await tour.isHidden());await page.setViewportSize({width:1360,height:1100});
   await page.evaluate(stamp=>{const api=window.AQWCAccountProgress;if(!api)throw Error('Account progress module not loaded');api.save({section:'summary',capturedAt:stamp,created:'2021-01-01',months:12,purchased:20000,bonus:5000,total:25000});api.save({section:'sagas',capturedAt:stamp,rows:[{name:'Prologue',state:'colored'},{name:'Shadowfall',state:'colored'},{name:'Chiral Valley',state:'unknown'}]});api.save({section:'membership',capturedAt:stamp,rows:[{name:'1 Month',state:'colored',evidence:'threshold'},{name:'12 Months',state:'colored',evidence:'threshold'},{name:'2 Years',state:'gray',evidence:'threshold'}]})},stamp);
   const go=async(group,tab)=>{await page.locator('.primarynav [data-group="'+group+'"]').click();if(tab&&tab!=='overview'){const button=page.locator('.subnav [data-tab="'+tab+'"]');if(!await page.locator('#'+tab+'.active').count())await button.click();await page.locator('#'+tab+'.active').waitFor({state:'visible',timeout:15000})}};
+  // An overflow-only assertion missed a 28px text track. Verify the actual
+  // content box fills its card's usable width, at every tested viewport.
+  const assertGuideWidth=async(selector,label)=>{
+   const metrics=await page.locator(selector+' .guide-v2-step:visible').evaluateAll(steps=>steps.map(step=>{
+    const body=step.querySelector('.ultra-role-step-body'),p=body?.querySelector('p'),s=getComputedStyle(step);
+    const inner=step.clientWidth-parseFloat(s.paddingLeft)-parseFloat(s.paddingRight);
+    const width=body?.getBoundingClientRect().width||0, textWidth=p?.getBoundingClientRect().width||0;
+    return {inner,width,textWidth,title:body?.querySelector('h4')?.textContent||'',height:p?.getBoundingClientRect().height||0,length:p?.textContent?.length||0};
+   }));
+   assert.ok(metrics.length,label+': no visible instruction cards');
+   for(const m of metrics){
+    assert.ok(m.inner>=100&&m.width>=m.inner*.95&&m.textWidth>=m.inner*.90,label+': compressed instruction '+JSON.stringify(m));
+    assert.ok(m.height<=Math.max(84,Math.ceil(m.length/Math.max(10,Math.floor(m.textWidth/10)))*30+50),label+': abnormal text wrapping '+JSON.stringify(m));
+   }
+  };
   await go('ultras','ultras');
   await page.locator('#ultracards button').filter({hasText:'God of the Depths'}).click();
   assert.ok(await page.locator('#ultradetail .ultra-role-select').isVisible());
@@ -92,12 +107,14 @@ async function main(){
     variantsChecked++;
     assert.ok((await page.locator('#ultradetail').innerText()).includes('Fight instructions'));
     assert.equal(await page.locator('#ultradetail .ultra-focus-gear').count(),0);
+    await assertGuideWidth('#ultradetail','Ultra desktop '+i+' '+id);
     if(await classPick.isVisible()){
      for(const cls of await classPick.locator('option').evaluateAll(os=>os.map(o=>o.value))){
       await classPick.selectOption(cls);
       assert.equal(await classPick.inputValue(),cls);
       assert.ok((await page.locator('#ultradetail .ultra-class-guide').innerText()).includes(cls));
       assert.ok(await page.locator('#ultradetail .guide-v2-disclosure').count());
+      await assertGuideWidth('#ultradetail','Ultra desktop '+i+' '+id+' '+cls);
      }
     }
    }
@@ -108,6 +125,10 @@ async function main(){
   await page.locator('#ultracards button').filter({hasText:'God of the Depths'}).click();
   await page.setViewportSize({width:390,height:844});
   const overflow=await page.locator('#ultradetail').evaluate(e=>e.scrollWidth>e.clientWidth+3);assert.ok(!overflow,'Ultra guide must fit mobile width');
+  for(let i=0;i<totalUltra;i++){
+   await allUltraCards.nth(i).click();const pick=page.locator('#ultradetail [aria-label="Team composition"]');const opts=await pick.count()?await pick.locator('option').evaluateAll(os=>os.map(o=>o.value)):['single'];
+   for(const id of opts){if(await pick.count())await pick.selectOption(id);await assertGuideWidth('#ultradetail','Ultra mobile '+i+' '+id)}
+  }
   await page.setViewportSize({width:1360,height:1100});
   assert.equal(await page.locator('#ultradetail .ultra-focus-gear').count(),0);
   await go('ultras','boss-guides');
@@ -123,12 +144,30 @@ async function main(){
    assert.ok(await detail.locator('.ultra-copy-join').count());
    if((await detail.innerText()).includes('Fight at a glance')){
     published++;
+    await assertGuideWidth('#bossguidedetail','Boss desktop '+i);
     assert.ok(await detail.locator('.guide-v2-disclosure').count());
     const role=detail.locator('.ultra-role-select');
-    if(await role.count())for(const cls of await role.locator('option').evaluateAll(os=>os.map(o=>o.value))){await role.selectOption(cls);assert.ok((await detail.innerText()).includes(cls))}
+    if(await role.count())for(const cls of await role.locator('option').evaluateAll(os=>os.map(o=>o.value))){await role.selectOption(cls);assert.ok((await detail.innerText()).includes(cls));await assertGuideWidth('#bossguidedetail','Boss desktop '+i+' '+cls)}
    }
    assert.equal(await detail.locator('.ultra-focus-gear').count(),0);
   }assert.equal(published,29);
+  await page.setViewportSize({width:390,height:844});
+  for(let i=0;i<await allBossCards.count();i++){
+   await allBossCards.nth(i).click();
+   if(await page.locator('#bossguidedetail .guide-v2-step:visible').count())await assertGuideWidth('#bossguidedetail','Boss mobile '+i);
+  }
+  // Exercise real theme selection event (the options menu may be closed).
+  for(const theme of ['dark','light','companion']){
+   await page.locator('#aqwc-site-theme').evaluate((e,v)=>{e.value=v;e.dispatchEvent(new Event('change',{bubbles:true}))},theme);
+   await page.waitForFunction(v=>document.documentElement.dataset.aqwcBackground===v,theme);
+   await allBossCards.filter({hasText:'Temple Shrine — Middle'}).click();await assertGuideWidth('#bossguidedetail','Boss '+theme+' mobile');
+   await go('ultras','ultras');await allUltraCards.filter({hasText:'Ultra Avatar Tyndarius'}).click();await assertGuideWidth('#ultradetail','Tyndarius '+theme+' mobile');
+   await page.setViewportSize({width:1360,height:1100});await assertGuideWidth('#ultradetail','Tyndarius '+theme+' desktop');
+   await go('ultras','boss-guides');await allBossCards.filter({hasText:'Temple Shrine — Middle'}).click();await assertGuideWidth('#bossguidedetail','Boss '+theme+' desktop');
+   await page.setViewportSize({width:390,height:844});
+  }
+  await page.setViewportSize({width:1360,height:1100});
+  console.log('Guide geometry passed: all Ultra variants, all published other boss guides, mobile and desktop, theme samples.');
   await go('builds','forge');
   assert.ok(await page.locator('#builds').isHidden(),'Class Builds view must remain hidden');
   assert.ok(await page.locator('[data-tab="builds"]').isHidden(),'Class Builds navigation must remain hidden');

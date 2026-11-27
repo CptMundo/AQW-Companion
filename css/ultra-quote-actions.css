@@ -173,3 +173,34 @@ nav.tabs.subnav[aria-label="Section navigation"]:has(button[data-parent="ultras"
 #ultras .ultra-setup-card .ultra-focus-gear>.ultra-gear-evidence,#boss-guides .ultra-focus-gear>.ultra-gear-evidence{grid-column:1/-1;margin:0;overflow-wrap:anywhere;font-size:11px}
 #ultras .ultra-setup-card .ultra-focus-gear>.ultra-focus-gear-cell:not(.ultra-gear-consumable){grid-column:auto}
 #ultras .ultra-setup-card .ultra-focus-gear>.ultra-gear-consumable{grid-column:1/-1}
+
+/* Guides V2: appendStrategyStep renders ONE body, not the legacy numbered
+   two-column layout. Scope the fix so older numbered steps remain intact. */
+#ultradetail .ultra-role-step.guide-v2-step,
+#bossguidedetail .ultra-role-step.guide-v2-step{
+ display:grid;grid-template-columns:minmax(0,1fr);gap:0;
+ min-width:0;min-height:0;box-sizing:border-box;
+ padding:12px 14px;margin:0 0 8px;border:1px solid var(--line);
+ border-radius:9px;background:var(--input);color:var(--txt);
+}
+#ultradetail .guide-v2-step>.ultra-role-step-body,
+#bossguidedetail .guide-v2-step>.ultra-role-step-body{
+ grid-column:1/-1;width:100%;min-width:0;max-width:100%;box-sizing:border-box;
+ overflow-wrap:break-word;word-break:normal;white-space:normal;
+}
+#ultradetail .guide-v2-step .ultra-role-mini-title,
+#bossguidedetail .guide-v2-step .ultra-role-mini-title{
+ margin:0 0 5px;color:var(--cyan);font-weight:750;font-size:13px;line-height:1.45;
+}
+#ultradetail .guide-v2-step p,
+#bossguidedetail .guide-v2-step p{
+ margin:0;color:var(--txt);font-size:13px;line-height:1.6;white-space:normal;overflow-wrap:break-word;word-break:normal;
+}
+#ultradetail .guide-v2-step.ultra-react-step,
+#bossguidedetail .guide-v2-step.ultra-react-step{border-left:3px solid var(--gold)}
+#ultradetail .guide-v2-step .ultra-react-quote,
+#bossguidedetail .guide-v2-step .ultra-react-quote{color:var(--gold)}
+@media(max-width:550px){
+ #ultradetail .ultra-role-step.guide-v2-step,
+ #bossguidedetail .ultra-role-step.guide-v2-step{padding:10px 11px;grid-template-columns:minmax(0,1fr)}
+}
