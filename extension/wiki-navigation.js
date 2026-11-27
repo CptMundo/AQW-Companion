@@ -7,7 +7,9 @@ const norm=s=>clean(s).toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/
 function wikiSearchUrl(query){const u=new URL('https://www.google.com/search');u.searchParams.set('q','site:aqwwiki.wikidot.com '+clean(query));return u.href}
 function validItem(r){return r&&typeof r.name==='string'&&r.name.length<=350&&typeof r.slug==='string'&&/^[a-z0-9][a-z0-9-]{0,199}$/.test(r.slug)}
 function matches(rows,query,limit=7){const q=norm(query);if(q.length<2)return [];const score=r=>{const n=norm(r.name);return n===q?0:n.startsWith(q)?1:n.includes(q)?2:3};return rows.filter(r=>validItem(r)&&score(r)<3).sort((a,b)=>score(a)-score(b)||a.name.localeCompare(b.name)).slice(0,limit)}
-globalThis.AQWCWikiNav=Object.freeze({wikiSearchUrl,validItem,matches});
+// A tab can retain an old content script after an extension reload.
+function catalogUrl(runtime){try{return runtime?.getURL('boost-index.json')||null}catch{return null}}
+globalThis.AQWCWikiNav=Object.freeze({wikiSearchUrl,validItem,matches,catalogUrl});
 if(typeof document==='undefined'||location.origin!==ORIGIN)return;
 const header=document.getElementById('header'),bar=document.getElementById('top-bar'),side=document.getElementById('side-bar'),main=document.getElementById('main-content');
 if(!main)return;
@@ -55,8 +57,8 @@ const input=el('input');input.type='search';input.placeholder='Find an item…';
 const submit=el('button','aqwc-search-submit','Search');submit.type='submit';wrap.append(input,submit);
 const results=el('div','aqwc-quick-results');results.id='aqwc-quick-results';results.hidden=true;
 form.append(wrap,results);shell.append(form);
-let rows=[],ready=false,loading=null;
-function load(){if(ready||loading)return;loading=fetch(chrome.runtime.getURL('boost-index.json')).then(r=>{if(!r.ok)throw Error('Catalog unavailable');return r.json()}).then(d=>{if(Array.isArray(d.rows)&&d.rows.length<=10000){rows=d.rows.filter(validItem);ready=true;render()}}).catch(()=>{}).finally(()=>{loading=null})}
+let rows=[],ready=false,loading=null,staleContext=false;
+function load(){if(ready||loading||staleContext)return;const url=catalogUrl(typeof chrome==='undefined'?null:chrome.runtime);if(!url){staleContext=true;return}loading=Promise.resolve().then(()=>fetch(url)).then(r=>{if(!r.ok)throw Error('Catalog unavailable');return r.json()}).then(d=>{if(Array.isArray(d.rows)&&d.rows.length<=10000){rows=d.rows.filter(validItem);ready=true;render()}}).catch(()=>{}).finally(()=>{loading=null})}
 function hide(){results.hidden=true;input.setAttribute('aria-expanded','false')}
 function render(){
  const query=clean(input.value);results.replaceChildren();if(query.length<2||!form.contains(document.activeElement)){hide();return}
