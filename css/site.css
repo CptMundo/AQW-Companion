@@ -1367,3 +1367,30 @@ html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-i
 /* Keep quick guides compact even if other layout selectors set display. */
 #ultradetail .guide-v2-class[hidden],#ultradetail .ultra-role-selected[hidden],#ultradetail .guide-v2-team-select[hidden]{display:none!important}
 #ultradetail .guide-v2-class-buttons button:disabled{cursor:default;opacity:1}
+
+/* Home: Calendar determines desktop row height, not the inventory feed. */
+#overview .home-main-grid>.home-inventory-changes{box-sizing:border-box;height:auto!important;min-height:0!important;overflow:hidden;gap:9px}
+#overview .home-inventory-changes>.homehead,#overview .home-badge-discoveries{flex:0 0 auto}
+#overview .home-changes-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-gutter:stable;padding-right:3px}
+#overview .home-changes-scroll .home-delta{margin-top:0;max-height:none!important;overflow:visible!important}
+#overview .home-delta-new-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+#overview .home-delta-new-item{padding:7px 6px;gap:5px}
+#overview .home-delta-metrics-v2{margin-bottom:8px}
+#overview .home-delta-metrics-v2 .home-delta-metric{padding:7px 4px;gap:1px}
+#overview .home-quantity-changes{margin-top:8px}
+#overview .home-quantity-list{max-height:none;overflow:visible}
+#overview .home-badge-discoveries{border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:var(--panel2);min-width:0}
+#overview .home-badge-discovery-head{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;font-size:12px;margin-bottom:6px}
+#overview .home-badge-discovery-head button{font-size:10px;padding:4px 6px}
+#overview .home-badge-discovery-body{display:grid;grid-template-columns:minmax(88px,.65fr) minmax(0,1.6fr);gap:8px;align-items:center}
+#overview .home-badge-discovery-count{display:flex;flex-direction:column;text-align:center;gap:2px;border-right:1px solid var(--line);padding-right:7px}
+#overview .home-badge-discovery-count strong{font-size:22px;color:var(--txt);line-height:1.1;font-variant-numeric:tabular-nums}
+#overview .home-badge-discovery-count small,#overview .home-badge-discovery-name small{font-size:10px;color:var(--muted);line-height:1.3}
+#overview .home-badge-discovery-latest{display:flex;align-items:center;min-width:0;gap:8px}
+#overview .home-badge-discovery-latest p{margin:0}
+#overview .home-badge-discovery-art{width:48px;height:48px;flex:0 0 48px;display:grid;place-items:center;overflow:hidden;border-radius:7px;border:1px solid var(--line)}
+#overview .home-badge-discovery-art img{width:100%;height:100%;object-fit:contain}
+#overview .home-badge-discovery-name{display:grid;gap:2px;min-width:0}
+#overview .home-badge-discovery-name strong{font-size:12px;overflow-wrap:anywhere;line-height:1.25}
+@media(min-width:731px){#overview .home-main-grid>.home-inventory-changes{contain:size;align-self:stretch}}
+@media(max-width:730px){#overview .home-main-grid>.home-inventory-changes{max-height:540px}}
