@@ -60,7 +60,7 @@
 <section id="story" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle story-title">📖 Story Tracker</h3><p class="muted tiny">Book of Lore saga names appear first, with Chaos Lord names as search aliases. Adventures are tracked separately. Verified badges and confirmed inventory rewards supplement manual progress. Unknown is not proof that an area is locked.</p></div><span class="pill">Chronological guide · Badge + inventory + manual</span></div><div class="toolbar"><input id="storysearch" type="search" placeholder="Search saga, region, boss or adventure…"><select id="storyfilter"><option value="all">All stories</option><option value="main">Book of Lore & main sagas</option><option value="side">Adventures & other stories</option></select><button id="storyreset">Reset story statuses</button></div><details id="story-evidence-review" style="margin:8px 0 12px"><summary style="cursor:pointer">Story evidence &amp; Book of Lore</summary><div id="story-evidence-review-content" style="padding:10px 0"></div></details><div class="story-controls"><div class="story-status-filters" role="group" aria-label="Saga progress filter"><button type="button" data-story-state="all" aria-pressed="true">All sagas</button><button type="button" data-story-state="progress" aria-pressed="false">In progress</button><button type="button" data-story-state="new" aria-pressed="false">No completions</button><button type="button" data-story-state="done" aria-pressed="false">Completed</button></div><div id="storyoverview" class="story-overview"></div></div>
 <div class="story-gate-panel"><div class="story-gate-heading"><h3 class="sectiontitle">🔐 Verified Farming Access Checks</h3><span class="muted tiny" title="These are specific documented requirements, not claims that entire Adventures are mandatory. Unknown means not checked.">Manual · Verified gates only</span></div><div id="storyaccess"></div></div>
 <div id="storylist" class="sagagrid story-cover-grid"></div><section id="storydetail" class="story-detail" hidden></section><div class="muted tiny" style="margin-top:14px">Sources: <a href="https://www.aq.com/lore/guides/shadowsofwarsaga" target="_blank" rel="noopener noreferrer">Official Shadows of War</a> · <a href="https://aqwwiki.wikidot.com/the-story" target="_blank" rel="noopener noreferrer">AQWWiki Story Index</a> · <a href="https://www.aq.com/gamedesignnotes/date/2026/04" target="_blank" rel="noopener noreferrer">Age of Ruin guide</a>. Not a complete list of every map or quest.</div></div></section>
-<section id="ultras" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle">⚡ Ultra Boss Strategy Guides</h3><p class="muted tiny">Choose a boss with a documented strategy, then a class in its source team. Strategies are community-sourced and may change. Guides are community references, not live combat instructions.</p></div><span class="pill">Source-reviewed strategies · Community references</span></div><div class="toolbar"><input id="ultrasearch" type="search" placeholder="Search bosses, mechanics or classes…"><select id="ultrafilter"><option value="all">All guides</option><option value="ready">All suggested classes owned</option></select></div><div class="ultra-master-detail"><div id="ultracards" class="ultracards"></div><div id="ultradetail" class="ultradetail hidden"></div></div>
+<section id="ultras" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle">⚡ Ultra Boss Strategy Guides</h3><p class="muted tiny">Choose a boss with a documented strategy, then a class in its source team. Strategies are community-sourced and may change. Guides are community references, not live combat instructions.</p></div><span class="pill">Source-reviewed strategies · Community references</span></div><div class="toolbar"><input id="ultrasearch" type="search" placeholder="Search bosses, mechanics or classes…"><select id="ultrafilter"><option value="all">All guides</option><option value="ready">All distinct classes owned</option></select></div><div class="ultra-master-detail"><div id="ultracards" class="ultracards"></div><div id="ultradetail" class="ultradetail hidden"></div></div>
 </div></section><section id="boss-guides" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle">⚔️ Boss Guides</h3><p class="muted tiny">Browse group encounters, solo arenas, dungeons and seasonal bosses. Community strategies and suggested loadouts; not encounter-tested by Companion.</p></div><span id="bossguidecount" class="pill">Boss encounters</span></div><div class="toolbar boss-guide-toolbar"><input id="bossguidesearch" type="search" placeholder="Search bosses, maps or classes…" aria-label="Search boss guides"><select id="bossguidecategory" aria-label="Boss category"><option value="all">All categories</option><option>Void Bosses</option><option>Shrines</option><option>Solo arenas</option><option>Grim Challenge</option><option>Grim Gaol</option><option>Lavarock Shore</option><option>Seasonal challenges</option><option>Seasonal</option><option>Legacy / special</option></select></div><div class="boss-master-detail"><div id="ultracatalog" class="boss-guide-list" aria-label="Boss encounters"></div><div id="bossguidedetail" class="ultradetail boss-guide-detail" aria-live="polite"></div></div></div></section><section id="builds" class="view" hidden aria-hidden="true" inert style="display:none!important">
 
 <div class="card build-planner-card"><div class="unlocktop"><div><h3 class="sectiontitle">🛡️ Class Build Planner</h3><p class="muted tiny">Community build examples under review; individual enhancement and consumable effects have sources.</p></div><span class="pill">Beta · Class builds · 2026 meta</span></div><div class="build-controls"><label>Search class<input id="build-search" type="search" placeholder="Search by class name…" autocomplete="off"></label><label>Class<select id="build-class"></select></label><label>Activity<select id="build-role"></select></label></div><div id="build-results" aria-live="polite"></div></div>
@@ -1233,13 +1233,13 @@ const ultraBossCatalog=[
  {name:'Ultra Brutalcorn',map:'ultrabrutalcorn',group:'Legacy / special',wiki:'ultra-brutalcorn-location',availability:'Dedicated location contains SMU BrutalCorn; distinct from the Underground Lab B monster.'},
  {name:'Ultra Carnax',map:'ultracarnax',group:'Legacy / special',wiki:'ultra-carnax',availability:'Legend access required; check quest prerequisites.'},
  {name:'Ultra Chairman',map:'ultrachairman',group:'Legacy / special',wiki:'ultra-chairman',availability:'Rare member-only location; normal access not confirmed.'},
- {name:'Ultra Dreadfight',map:'ultradread',group:'Legacy / special',wiki:'ultra-dreadfight',availability:'Legacy location; access not independently confirmed. Do not confuse with /join dreadfight.'},
- {name:'Ultra Franken',map:'ultrafranken',group:'Seasonal',wiki:'ultra-franken',availability:'Seasonal Legend location; availability is not guaranteed.'},
+ {name:'Ultra Dreadfight',map:'ultradread',group:'Legacy / special',wiki:'ultra-dreadfight',availability:'Legacy location; official 17 Oct 2025 patch reduced /ultradread to four players. Current access not independently confirmed. Do not confuse with /join dreadfight.'},
+ {name:'Ultra Franken',map:'ultrafranken',group:'Seasonal',wiki:'ultra-franken',availability:'Seasonal Legend location; six-player room. Availability is not guaranteed.'},
  {name:'Ultra Frostfang',map:'ultrafrostfang',group:'Seasonal',wiki:'ultra-frostfang',availability:'Seasonal Frostval location; availability varies.'},
- {name:'Ultra Iara',map:'ultraiara',group:'Seasonal',wiki:'ultra-iara-location',availability:'Seasonal Talk Like a Pirate Day location; check availability.'},
- {name:'Ultra Kala',map:'ultrakala',group:'Seasonal',wiki:'ultra-kala',availability:'Seasonal location; check event calendar.'},
+ {name:'Ultra Iara',map:'ultraiara',group:'Seasonal',wiki:'ultra-iara-location',availability:'Seasonal location; level 61+ and The Test of Will required. Check availability.'},
+ {name:'Ultra Kala',map:'ultrakala',group:'Seasonal',wiki:'ultra-kala',availability:'Seasonal location; level 61+ and Kala-mity Time required. Check event calendar.'},
  {name:'Ultra Phedra',map:'ultraphedra',group:'Legacy / special',wiki:'ultra-phedra-monster'},
- {name:'Ultra Lionfang',map:'ultralionfang',group:'Legacy / special',wiki:'ultra-lionfang-location',availability:'Legend access required; check quest prerequisites.'}
+ {name:'Ultra Lionfang',map:'ultralionfang',group:'Legacy / special',wiki:'ultra-lionfang-location',availability:'Legend access required; six-player room. Check current access.'}
 ];
 function renderUltraCatalog(){
  const root=$('ultracatalog');if(!root)return;
@@ -1285,9 +1285,10 @@ const ultraBattleCues={
  ]
 };
 let selectedUltra='drakath';const selectedUltraClasses=new Map();
-function ultraOwned(name){return items.some(x=>x.Type.toLowerCase()==='class'&&sameUltraClass(x.Name,name))}
+// Exact inventory names remain separate; only explicitly documented identical-skill aliases count for guide compatibility.
+function ultraOwned(name){const aliases={chronoshadowslayer:'chronoshadowhunter',phantomchronomancer:'phantasmchronomancer',nechronomancer:'necroticchronomancer'};const key=n=>aliases[ultraClassKey(n)]||ultraClassKey(n);return items.some(x=>String(x.Type||'').toLowerCase()==='class'&&key(x.Name)===key(name))}
 function ultraTeamReady(b){return ultraStrategyVariants(b,simplifiedProfiles[b.id]).some(v=>v.names.every(ultraOwned))}
-function renderUltras(){renderUltraCatalog();const term=$('ultrasearch').value.toLowerCase().trim(),filter=$('ultrafilter').value;const all=ultraGuides.filter(b=>(filter!=='ready'||ultraTeamReady(b))&&(!term||[b.name,b.join,...ultraStrategyVariants(b,simplifiedProfiles[b.id]).flatMap(v=>v.names)].join(' ').toLowerCase().includes(term))).sort((a,b)=>(a.type==='Daily'?0:a.type==='Weekly'?1:2)-(b.type==='Daily'?0:b.type==='Weekly'?1:2)||a.name.localeCompare(b.name));
+function renderUltras(){renderUltraCatalog();const term=$('ultrasearch').value.toLowerCase().trim(),filter=$('ultrafilter').value;const all=ultraGuides.filter(b=>(filter!=='ready'||ultraTeamReady(b))&&(!term||[b.name,b.join,approvedUltraGuides[b.id]?.goal,approvedUltraGuides[b.id]?.avoid,...(approvedUltraGuides[b.id]?.shared||[]).flat(),...ultraStrategyVariants(b,simplifiedProfiles[b.id]).flatMap(v=>[...v.names,...Object.values(v.roles),...(v.prep||[]),v.note||''])].join(' ').toLowerCase().includes(term))).sort((a,b)=>(a.type==='Daily'?0:a.type==='Weekly'?1:2)-(b.type==='Daily'?0:b.type==='Weekly'?1:2)||a.name.localeCompare(b.name));
  if(!all.some(x=>x.id===selectedUltra))selectedUltra=all[0]?.id||'';
  const cards=$('ultracards');cards.replaceChildren();let currentGroup='';for(const b of all){const group=b.type==='Daily'?'☀️ Daily Ultras':b.type==='Weekly'?'📆 Weekly Ultras':b.type==='Challenge'?'🐙 Challenge Bosses':'Other Ultras';if(group!==currentGroup){currentGroup=group;cards.append(node('div',group,'ultra-group-label'))}const btn=node('button',undefined,'ultracard'+(b.id===selectedUltra?' active':''));btn.type='button';btn.setAttribute('aria-pressed',String(b.id===selectedUltra));btn.append(node('small',b.type+' · '+b.difficulty),node('strong',ultraEmojiFor(b)+' '+b.name),node('small',approvedUltraGuides[b.id]?approvedUltraGuides[b.id].depth+' guide':'Guide pending'));btn.onclick=()=>{selectedUltra=b.id;renderUltras()};cards.append(btn)}
  const chosen=all.find(x=>x.id===selectedUltra);renderUltraDetail(chosen);}
@@ -2144,7 +2145,7 @@ function renderUltraSelectedRating(target,key,cls){
 // Small, source-reviewed glossary. No dependency on later Class Builds globals.
 const ultraGlossary={
  'Noxious Decay':{text:'Dage reverses direct heals and healing over time for 11 seconds. Life steal still works. Do not confuse this debuff on you with Decay on the boss.',icon:'https://aqw.app/assets/NoxiusDecay.png',source:'https://aqw.app/monsters/ultradage'},
- 'Decay':{text:'Blocks ordinary healing on the affected target.'},
+ 'Decay':{text:'Blocks ordinary healing on susceptible targets; some encounter-specific recovery ignores it.'},
  'Health Vamp':{text:'Awe weapon enhancement. Auto attacks can restore HP through life steal.'},
  'Dauntless':{text:'Forge weapon enhancement. Skill 2 triggers damage and life steal; temporarily blocks ordinary healing.'},
  'Scroll of Enrage':{text:'Consumable that forces eligible attacks onto you. Use only on your assigned taunt turn.'},
@@ -2174,8 +2175,8 @@ const ultraGlossary={
  'Unleash Doom':{text:'Verus DoomKnight skill 5; applies Decay for 3 seconds.'},
  'Soul Fracture':{text:'Verus DoomKnight skill 2; reduces enemy damage resistance.'},
  'Life Carve':{text:'Verus DoomKnight skill 3; drains life, but empowered version also applies healing over time.'},
- 'Blessing of Order':{text:'Lord of Order skill 5; applies Quixotic mitigation briefly, then Stability prevents repeated application.'},
- 'Quixotic':{text:'Brief damage suppression from Lord of Order’s Blessing of Order (5). Stability prevents immediately applying it again.'},
+ 'Blessing of Order':{text:'Lord of Order skill 5; briefly applies Quixotic to suppress eligible physical/magical damage. Stability prevents immediate reapplication.'},
+ 'Quixotic':{text:'Brief physical and magical outgoing-damage suppression from Lord of Order’s Blessing of Order (5). Stability prevents immediate reapplication; do not assume it prevents fixed or true damage.'},
  'Righteous Seal':{text:'ArchPaladin skill 4; briefly reduces the enemy’s damage.'},
  'Sacred Magic: Eden':{text:'ArchPaladin skill 5; consumes Righteous Seal and applies Broken Seal.'},
  'Broken Seal':{text:'Damage-reduction debuff applied when Sacred Magic: Eden consumes Righteous Seal.'},
@@ -2508,7 +2509,7 @@ function renderBossGuideDetail(entry){
  const guide=approvedOtherBossGuides[entry.name];
  if(!guide){root.append(node('p','Guide pending · source coverage incomplete.','muted'));return}
  const teamNames=(profile.team||[]).map(x=>x.cls),recommendations=guide.classes||[];
- title.replaceChildren(node('h2',entry.name),node('small',entry.group+' · '+guide.kind+' guide','muted'));
+ title.replaceChildren(node('h2',entry.name),node('small',entry.group+' · '+guide.kind+' guide · source example','muted'));if(guide.access){const info=node('p',guide.access,'muted tiny');root.append(info)}
  if(teamNames.length||recommendations.length){
   const team=node('section',undefined,'boss-guide-panel boss-guide-team');
   team.append(node('h3',teamNames.length?'Workbook example team':entry.name==='Fourth Lynaria'?'Workbook recommended group':'Recommended classes'));
@@ -2525,7 +2526,7 @@ function renderBossGuideDetail(entry){
   const draw=()=>{const cls=select.value;selectedBossClasses.set(entry.name,cls);rolePanel.replaceChildren(node('h3',cls));if(guide.roles[cls])appendStrategyStep(rolePanel,'Your responsibility',guide.roles[cls],entry.name);};select.onchange=draw;draw();
   if(names.length<new Set(teamNames).size)setup.append(node('p','Other team members follow the shared instructions above; no separate rotation is established.','muted tiny'));
  }
- const sources=guideDisclosure('Sources & strategy notes');sources.append(bossGuideWiki(entry.wiki,'Wiki location ↗'));const link=node('a','Simplified Bosses Guide — '+profile.sheet+' ↗');link.href=simplifiedGuideSource;link.target='_blank';link.rel='noopener noreferrer';sources.append(link);if(guide.note)sources.append(node('p',guide.note,'muted tiny'));for(const [label,url] of guide.refs){const a=node('a',label+' ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';sources.append(a)}root.append(sources);
+ const sources=guideDisclosure('Sources & strategy notes');sources.append(bossGuideWiki(entry.wiki,'Wiki location ↗'));const link=node('a','Simplified Bosses Guide — '+profile.sheet+' ↗');const loc=auditedBossSheetLocations[profile.sheet];link.href=loc?simplifiedGuideSource+'#gid='+loc[0]:simplifiedGuideSource;link.target='_blank';link.rel='noopener noreferrer';sources.append(link);if(loc)sources.append(node('p','Workbook source: '+loc[1],'muted tiny'));if(guide.accessRef){const a=node('a','Access requirements ↗');a.href=guide.accessRef;a.target='_blank';a.rel='noopener noreferrer';sources.append(a)}if(guide.note)sources.append(node('p',guide.note,'muted tiny'));for(const [label,url] of guide.refs){const a=node('a',label+' ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';sources.append(a)}root.append(sources);
 
 }
 function renderBossGuides(root,term,category){
@@ -2826,8 +2827,8 @@ const approvedUltraGuides={
     "roles": {},
     "refs": [
      [
-      "Simplified Bosses Guide — Timeinn Trio",
-      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+      "Simplified Bosses Guide — Timeinn Trio (G4:G16, A32)",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit#gid=916842202"
      ],
      [
       "Mechanics",
@@ -2837,7 +2838,9 @@ const approvedUltraGuides={
       "Ordinary clear",
       "https://sites.google.com/view/aqwg-net/ultra-bosses"
      ]
-    ]
+    ],
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": []
    },
    {
     "id": "hub",
@@ -2858,9 +2861,14 @@ const approvedUltraGuides={
       "Mechanics",
       "https://aqwwiki.wikidot.com/ultra-ezrajal-monster"
      ]
-    ]
+    ],
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": []
    }
-  ]
+  ],
+  "access": "4-player encounter. Check level and the Time Inn quest chain before joining.",
+  "accessRef": "https://aqwwiki.wikidot.com/ultra-ezrajal-location",
+  "auditNote": "Normal clear uses reflection handling; no weapon-lock exploit. Workbook HP is advisory."
  },
  "warden": {
   "depth": "Quick",
@@ -2869,11 +2877,11 @@ const approvedUltraGuides={
   "shared": [
    [
     "Recovery",
-    "Keep heals available for the sudden HP drop. Avoid pushing damage if your recovery is not ready."
+    "Celestial Shockwave is triggered at 5% HP intervals. Keep recovery available for the sudden HP drop; avoid pushing the next threshold if heals are not ready."
    ],
    [
     "Berserk",
-    "At 30% HP (450k), the boss attacks much faster. The assigned durable player taunts attacks; LoO coordinates skill 5 and the team recovers."
+    "At 30% HP (450k), the boss attacks faster. The assigned durable player redirects eligible attacks; LoO times skill 5 for eligible damage, not the fixed HP drop itself. Recover promptly."
    ]
   ],
   "variants": [
@@ -2894,8 +2902,8 @@ const approvedUltraGuides={
     },
     "refs": [
      [
-      "Simplified Bosses Guide — Timeinn Trio",
-      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+      "Simplified Bosses Guide — Timeinn Trio (G64:G76, A92)",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit#gid=916842202"
      ],
      [
       "AQW Hub — Timeinn Ultras",
@@ -2905,6 +2913,10 @@ const approvedUltraGuides={
       "Mechanics",
       "https://aqwwiki.wikidot.com/ultra-warden-monster"
      ]
+    ],
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": [
+     "Assigned taunter: Scroll of Enrage. Agree who handles sudden HP drops."
     ]
    },
    {
@@ -2931,9 +2943,16 @@ const approvedUltraGuides={
       "Mechanics",
       "https://aqw.app/monsters/ultrawarden"
      ]
+    ],
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": [
+     "Assigned taunter: Scroll of Enrage. Agree who handles sudden HP drops."
     ]
    }
-  ]
+  ],
+  "access": "4-player encounter; level 61+. Time Inn progression unlocks the challenge buttons.",
+  "accessRef": "https://aqwwiki.wikidot.com/ultra-warden-location",
+  "auditNote": "SC is a documented healer alternative, not a guarantee of recovery. Time skill 5 for eligible damage, not the fixed HP reduction."
  },
  "engineer": {
   "depth": "Quick",
@@ -2966,8 +2985,8 @@ const approvedUltraGuides={
     "roles": {},
     "refs": [
      [
-      "Simplified Bosses Guide — Timeinn Trio",
-      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+      "Simplified Bosses Guide — Timeinn Trio (G125:G137, A153)",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit#gid=916842202"
      ],
      [
       "Mechanics",
@@ -2978,7 +2997,9 @@ const approvedUltraGuides={
       "https://sites.google.com/view/aqwg-net/ultra-bosses"
      ]
     ],
-    "note": "The workbook’s AP-specific combo does not apply to this StoneCrusher roster; use the general drone sequence instead."
+    "note": "The workbook’s AP-specific combo does not apply to this StoneCrusher roster; use the general drone sequence instead.",
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": []
    },
    {
     "id": "hub",
@@ -2990,8 +3011,8 @@ const approvedUltraGuides={
      "Legion Revenant"
     ],
     "roles": {
-     "Lord of Order": "Maintain buffs; the workbook's Attack Drone skill 5 debuff may help if coordinated.",
-     "ArchPaladin": "Support survivability; follow the Defense Drone target and avoid reflection.",
+     "Lord of Order": "Maintain buffs. Coordinate mitigation for the Attack Drone if the team uses that tactic.",
+     "ArchPaladin": "Support survivability and focus Defense Drone first; avoid reflection. The workbook describes a 2-4-5 burst for AP, only outside reflection.",
      "Chaos Avenger": "Focus the Defense Drone, then Attack Drone, then Engineer.",
      "Legion Revenant": "Support and focus the called drone."
     },
@@ -3003,10 +3024,19 @@ const approvedUltraGuides={
      [
       "Mechanics",
       "https://aqw.app/monsters/ultraengineer"
+     ],
+     [
+      "AP-specific combo — Timeinn Trio A153 (G125:G137, A153)",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit#gid=916842202"
      ]
-    ]
+    ],
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": []
    }
-  ]
+  ],
+  "access": "4-player encounter; level 61+. Time Inn progression unlocks the challenge buttons.",
+  "accessRef": "https://aqwwiki.wikidot.com/ultra-engineer-location",
+  "auditNote": "SC variant has no AP combo. Drone order and counter response are shared; do not assume identical burst timing."
  },
  "tyndarius": {
   "depth": "Strategy",
@@ -3036,7 +3066,7 @@ const approvedUltraGuides={
      "Lord of Order": "Maintain buffs and attack Tyndarius; no separate taunt assignment in this variant.",
      "Legion Revenant": "Taunt and defeat the left orb.",
      "ArchPaladin": "Enter first and taunt Tyndarius; use skill 4 for mitigation.",
-     "Dragon of Time": "Taunt the right orb, defeat it, then help the left orb."
+     "Dragon of Time": "For this taunt variant, bring Scroll of Enrage and control the right orb. Kill it before its breath, then help the left orb."
     },
     "refs": [
      [
@@ -3047,6 +3077,10 @@ const approvedUltraGuides={
       "Three-target strategy",
       "https://nandixer.github.io/tyndarius/"
      ]
+    ],
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": [
+     "LR and AP: Scroll of Enrage. Right-orb player: Scroll of Enrage for this three-taunter strategy; coordinate native Focus if available."
     ]
    },
    {
@@ -3062,7 +3096,7 @@ const approvedUltraGuides={
      "Lord of Order": "Maintain buffs and attack Tyndarius.",
      "Legion Revenant": "Taunt and defeat the left orb.",
      "ArchPaladin": "Initiate, mitigate with skill 4 and taunt Tyndarius.",
-     "Chaos Avenger": "Control the right orb, then help left."
+     "Chaos Avenger": "Control the right orb with your native Focus and Scroll of Enrage as needed, then help left."
     },
     "refs": [
      [
@@ -3073,6 +3107,10 @@ const approvedUltraGuides={
       "Three-target strategy",
       "https://nandixer.github.io/tyndarius/"
      ]
+    ],
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": [
+     "LR and AP: Scroll of Enrage. Right-orb player: Scroll of Enrage for this three-taunter strategy; coordinate native Focus if available."
     ]
    },
    {
@@ -3095,9 +3133,16 @@ const approvedUltraGuides={
       "AQW Hub — Ultra Tyndarius",
       "https://github.com/Shell1010/AQW-md/blob/main/Ultra%20Guides/Ultra%20Tyndarius.md"
      ]
+    ],
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": [
+     "LR and AP: Scroll of Enrage. Right-orb player: Scroll of Enrage for this three-taunter strategy; coordinate native Focus if available."
     ]
    }
-  ]
+  ],
+  "access": "4-player encounter; level 61+ and Avatar of Fire quest completed. Not the separate Ultra Tyndarius in /ultraflamelord.",
+  "accessRef": "https://aqwwiki.wikidot.com/ultra-avatar-tyndarius-location",
+  "auditNote": "Orb-specific roles are preserved; the three-taunter variant requires scrolls or a native taunt. Faster no-taunt clear is not assumed."
  },
  "drago": {
   "depth": "Strategy",
@@ -3124,7 +3169,7 @@ const approvedUltraGuides={
      "Legion Revenant"
     ],
     "roles": {
-     "Lord of Order": "Keep buffs up and remain on Executioner; time Quixotic just before Bowmaster dies.",
+     "Lord of Order": "Maintain buffs; if using the AQWG mitigation timing, stay on Executioner and time Quixotic just before Bowmaster dies.",
      "ArchPaladin": "Taunt the left-side Executioner.",
      "Chaos Avenger": "Taunt the right-side Bowmaster; coordinate Scroll of Enrage and your own taunt.",
      "Legion Revenant": "Maintain support and damage on the called target."
@@ -3142,9 +3187,16 @@ const approvedUltraGuides={
       "Jix composition",
       "https://jix-aqw.github.io/guias/ultra-bosses/ultra-drago.html"
      ]
+    ],
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": [
+     "AP and CAv are the assigned guard taunters. AP needs Scroll of Enrage for this assignment; CAv coordinates native Focus with a scroll."
     ]
    }
-  ]
+  ],
+  "access": "4-player encounter; level 80+ and Mahapadma quest completed.",
+  "accessRef": "https://aqwwiki.wikidot.com/ultra-drago",
+  "auditNote": "Guard assignment is source-backed. LoO mitigation before Bowmaster death is a conditional tactic; not a universal requirement."
  },
  "darkon": {
   "depth": "Advanced",
@@ -3161,7 +3213,7 @@ const approvedUltraGuides={
    ],
    [
     "Taunts",
-    "Follow only the chosen team's assigned taunt pair. Watch the mouth animation; do not let the same player accumulate consecutive Elegy effects."
+    "Follow only the chosen team's assigned taunt pair during the Elegy phase. Alternate the dangerous hits; do not infer that loop timing continues unchanged after the HP refill."
    ],
    [
     "Transition",
@@ -3186,8 +3238,8 @@ const approvedUltraGuides={
     },
     "refs": [
      [
-      "Simplified Bosses Guide — Darkon",
-      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+      "Simplified Bosses Guide — Darkon (G4:G16, A32)",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit#gid=1970892061"
      ],
      [
       "Monster mechanics",
@@ -3198,7 +3250,11 @@ const approvedUltraGuides={
       "https://solarisaqw.lol/guides/ultra-weeklies/ultradarkon"
      ]
     ],
-    "note": "Workbook rotation: first taunter on pull, next on the tentacle/mouth animation, repeat until the HP refill. The workbook and other community guides differ on post-refill loop timing; follow the agreed phase-specific plan, not the opening loop automatically."
+    "note": "Workbook rotation: first taunter on pull, next on the tentacle/mouth animation, repeat until the HP refill. The workbook and other community guides differ on post-refill loop timing; follow the agreed phase-specific plan, not the opening loop automatically. This is partial role guidance, not a complete fight schedule.",
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": [
+     "Assigned taunt pair: Scroll of Enrage. Agree phase-specific timing and stagger direct heals. Avoid Vainglory in the healing-reduction phase."
+    ]
    },
    {
     "id": "hub",
@@ -3225,9 +3281,16 @@ const approvedUltraGuides={
       "https://solarisaqw.lol/guides/ultra-weeklies/ultradarkon"
      ]
     ],
-    "note": "This roster uses different taunters from the workbook. Do not apply the LoO/LR loop to it. Confirm the full phase timing via the linked guide."
+    "note": "This roster uses different taunters from the workbook. Do not apply the LoO/LR loop to it. Confirm the full phase timing via the linked guide. This is partial role guidance, not a complete fight schedule.",
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": [
+     "Assigned taunt pair: Scroll of Enrage. Agree phase-specific timing and stagger direct heals. Avoid Vainglory in the healing-reduction phase."
+    ]
    }
-  ]
+  ],
+  "access": "4-player encounter. Check the story and level requirements at the linked location before joining.",
+  "accessRef": "https://aqwwiki.wikidot.com/ultra-darkon",
+  "auditNote": "Two distinct taunt pairs, incomplete phase-specific post-refill timing. Both are conditional community strategies, not complete standalone rotations."
  },
  "speaker": {
   "depth": "Advanced",
@@ -3244,7 +3307,7 @@ const approvedUltraGuides={
    ],
    [
     "Preparation",
-    "The three support taunters bring Scrolls of Enrage and agree the exact chart before pulling. The DPS still follows its Zone assignment."
+    "LR, LoO and AP bring Scrolls of Enrage and agree this exact three-taunter chart. DPS follows its Zone assignment. If the boss sequence deviates from the chart, coordinate a reset or an experienced team response rather than blindly advancing."
    ]
   ],
   "variants": [
@@ -3265,8 +3328,8 @@ const approvedUltraGuides={
     },
     "refs": [
      [
-      "Simplified Bosses Guide — Speaker Charts — E3:G23",
-      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+      "Simplified Bosses Guide — Speaker Charts — E3:G23 (E3:G23)",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit#gid=750413215"
      ],
      [
       "AQW Hub — Ultra Speaker",
@@ -3277,7 +3340,11 @@ const approvedUltraGuides={
       "https://nandixer.github.io/malgor/"
      ]
     ],
-    "chart": 0
+    "chart": 0,
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": [
+     "Three taunters: Scroll of Enrage. Verify HP and mitigation; DPS damage consumables are a source option."
+    ]
    },
    {
     "id": "three-csh",
@@ -3296,8 +3363,8 @@ const approvedUltraGuides={
     },
     "refs": [
      [
-      "Simplified Bosses Guide — Speaker Charts — E3:G23",
-      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+      "Simplified Bosses Guide — Speaker Charts — E3:G23 (E3:G23)",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit#gid=750413215"
      ],
      [
       "AQW Hub — Ultra Speaker",
@@ -3308,9 +3375,16 @@ const approvedUltraGuides={
       "https://nandixer.github.io/malgor/"
      ]
     ],
-    "chart": 0
+    "chart": 0,
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": [
+     "Three taunters: Scroll of Enrage. Verify HP and mitigation; DPS damage consumables are a source option."
+    ]
    }
-  ]
+  ],
+  "access": "4-player encounter; level 90+ and Your Hero quest completed.",
+  "accessRef": "https://aqwwiki.wikidot.com/ultra-speaker",
+  "auditNote": "Exact chart transcription checked; DPS and gear/survival still need playtest. Chart does not guarantee behavior in a desynchronized fight."
  },
  "kathool": {
   "depth": "Strategy",
@@ -3319,7 +3393,7 @@ const approvedUltraGuides={
   "shared": [
    [
     "Vigil",
-    "When “You cannot resist.” appears, activate Vigil within the three-second charge. Every player must do this."
+    "When “You cannot resist.” appears, activate Vigil within the three-second charge. Every player must do this. Missing it applies a severe stun and healing block; a taunt is not a substitute."
    ],
    [
     "Targets",
@@ -3350,16 +3424,23 @@ const approvedUltraGuides={
     },
     "refs": [
      [
-      "Simplified Bosses Guide — Kathool",
-      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+      "Simplified Bosses Guide — Kathool (G4:G28, A32)",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit#gid=200910874"
      ],
      [
       "Mechanic cross-check",
       "https://aqw.app/monsters/kathooldepths"
      ]
+    ],
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": [
+     "All seven players equip Vigil before entering combat."
     ]
    }
-  ]
+  ],
+  "access": "7-player encounter. Check the location requirements before joining.",
+  "accessRef": "https://aqwwiki.wikidot.com/kathool-depths",
+  "auditNote": "Vigil mandatory for the documented mechanic. Target split depends on damage type and group; agree in advance."
  },
  "drakath": {
   "depth": "Strategy",
@@ -3368,7 +3449,7 @@ const approvedUltraGuides={
   "shared": [
    [
     "Before pulling",
-    "The workbook recommends around 3,500 buffed HP for the taunter and around 3,000 for other players. Agree which healer or LR handles each blast."
+    "The workbook recommends around 3,500 buffed HP for the taunter and 3,000 for other players as safety targets, not universal access requirements. Confirm the selected team's taunt assignment."
    ],
    [
     "HP blasts",
@@ -3397,15 +3478,19 @@ const approvedUltraGuides={
     },
     "refs": [
      [
-      "Simplified Bosses Guide — Drakath",
-      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+      "Simplified Bosses Guide — Drakath (G4:G16, A32)",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit#gid=779020835"
      ],
      [
       "HP threshold cross-check",
       "https://aqw.app/monsters/championdrakath"
      ]
     ],
-    "note": "The 10M transformation and final 2M meteor are exceptions to the workbook's every-2M wording."
+    "note": "The 10M transformation and final 2M meteor are exceptions to the workbook's every-2M wording.",
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": [
+     "Bring enough Scrolls of Enrage for all seven assigned HP blasts; coordinate if splitting them across players."
+    ]
    },
    {
     "id": "aqwg",
@@ -3419,7 +3504,7 @@ const approvedUltraGuides={
     "roles": {
      "Void Highlord": "Deal controlled damage; stop burst before each HP threshold.",
      "StoneCrusher": "Keep support and recovery active.",
-     "Lord of Order": "Taunt all seven HP blasts just before their thresholds; bring sufficient Scrolls of Enrage.",
+     "Lord of Order": "Taunt the seven eligible HP blasts just before their thresholds. Bring at least seven Scrolls of Enrage if handling every blast; verify HP and mitigation.",
      "ArchPaladin": "Maintain mitigation and coordinate heals."
     },
     "refs": [
@@ -3427,9 +3512,16 @@ const approvedUltraGuides={
       "Team and threshold exceptions",
       "https://sites.google.com/view/aqwg-net/ultra-bosses"
      ]
+    ],
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": [
+     "Bring enough Scrolls of Enrage for all seven assigned HP blasts; coordinate if splitting them across players."
     ]
    }
-  ]
+  ],
+  "access": "4-player encounter; level 80+ and The Final Showdown! quest completed.",
+  "accessRef": "https://aqwwiki.wikidot.com/champion-drakath-location",
+  "auditNote": "Health recommendations depend on buffs and gear; seven eligible blasts only. The alternate lineup needs its own LoO taunt assignment."
  },
  "dage": {
   "depth": "Strategy",
@@ -3438,7 +3530,7 @@ const approvedUltraGuides={
   "shared": [
    [
     "Survival",
-    "Use life steal rather than ordinary healing while Noxious Decay is active. Check the aura before any heal."
+    "Before pulling, make sure every player has reliable life steal (native life steal, Health Vamp, or a compatible Dauntless setup). Check the Noxious Decay aura before using any ordinary heal."
    ],
    [
     "Safe zones",
@@ -3446,7 +3538,7 @@ const approvedUltraGuides={
    ],
    [
     "Regeneration",
-    "On the Legion power cue, the assigned Decay player prevents healing; coordinate backup coverage. A player death restores Dage's HP."
+    "On the Legion power cue, the assigned Decay player covers the 10-second regeneration cast; coordinate backup coverage where needed. Every player death restores 500,000 HP to Dage."
    ]
   ],
   "variants": [
@@ -3462,8 +3554,8 @@ const approvedUltraGuides={
     "roles": {
      "Chaos Avenger": "Loop taunt with skill 3 and Scroll of Enrage; avoid ordinary HoT during inversion.",
      "Legion DoomKnight": "Maintain Decay with skill 5 during the boss recovery; use your life steal.",
-     "Lord of Order": "Maintain buffs and avoid your healing skill during inversion; coordinate mitigation.",
-     "ArchPaladin": "Debuff and mitigate; avoid healing during inversion."
+     "Lord of Order": "Maintain buffs and mitigation; do not cast Ordinance (the ordinary heal) while Noxious Decay is active.",
+     "ArchPaladin": "Debuff and mitigate; avoid Hymn of Light (skill 3) during Noxious Decay."
     },
     "refs": [
      [
@@ -3474,6 +3566,10 @@ const approvedUltraGuides={
       "Mechanics and healing",
       "https://sites.google.com/view/aqwg-net/ultra-bosses"
      ]
+    ],
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": [
+     "CAv: Scroll of Enrage and a life-steal setup. Other players need sustain that does not depend on ordinary heals during inversion."
     ]
    },
    {
@@ -3493,8 +3589,8 @@ const approvedUltraGuides={
     },
     "refs": [
      [
-      "Simplified Bosses Guide — Dage",
-      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+      "Simplified Bosses Guide — Dage (G4:G16, A32)",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit#gid=1769924011"
      ],
      [
       "AQW Hub — Ultra Dage",
@@ -3505,9 +3601,17 @@ const approvedUltraGuides={
       "https://aqwwiki.wikidot.com/verus-doomknight-class"
      ]
     ],
-    "note": "Confirm the Decay backup before pulling; the source does not specify a complete coverage schedule for this roster."
+    "note": "Confirm the Decay backup before pulling; the source does not specify a complete coverage schedule for this roster.",
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": [
+     "CAv: Scroll of Enrage and a life-steal setup. Other players need sustain that does not depend on ordinary heals during inversion.",
+     "VDK has a three-second Decay. Agree backup Scroll of Decay coverage before starting; do not rely on a single cast."
+    ]
    }
-  ]
+  ],
+  "access": "4-player encounter; level 80+ and Fail to the King quest completed.",
+  "accessRef": "https://aqwwiki.wikidot.com/ultra-dage",
+  "auditNote": "LDK coverage is source-backed; VDK needs backup because its Decay lasts only three seconds. Verify each player's actual sustain setup."
  },
  "nulgath": {
   "depth": "Strategy",
@@ -3545,8 +3649,8 @@ const approvedUltraGuides={
     },
     "refs": [
      [
-      "Simplified Bosses Guide — Nulgath",
-      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+      "Simplified Bosses Guide — Nulgath (G4:G16, A32)",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit#gid=1978869027"
      ],
      [
       "AQW Hub — Ultra Nulgath",
@@ -3557,7 +3661,11 @@ const approvedUltraGuides={
       "https://sites.google.com/view/aqwg-net/ultra-bosses"
      ]
     ],
-    "note": "Workbook timing: first taunter shortly after the pull, second on the Abyssal Charge cue, first again when the second Focus ends. The charge itself ignores Focus. The AQWG efficient method uses a different opening; do not combine the two. LoO needs sufficient sustain. Agree the method and monitor Frailty."
+    "note": "Workbook method: first taunt 1–2 seconds after the party starts attacking, second on the Abyssal Charge quote, first again when the second Focus expires. The quote synchronizes the next Contracts; Abyssal Charge itself ignores Focus. Do not combine with the separate AQWG opening. Check Frailty and LoO survivability.",
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": [
+     "Both assigned taunters: Scroll of Enrage. Confirm survivability and one timing method before the pull."
+    ]
    },
    {
     "id": "hub-dot",
@@ -3583,9 +3691,16 @@ const approvedUltraGuides={
       "https://sites.google.com/view/aqwg-net/ultra-bosses"
      ]
     ],
-    "note": "AQWG efficient timing example: first taunt six seconds after the team starts attacking; second on the Abyssal Charge quote; first again roughly ten seconds later (about five seconds after their last Frailty faded). Monitor Frailty to preserve the sync. Confirm which of LR/LoO opens. This is distinct from the workbook's earlier opening."
+    "note": "AQWG efficient timing example: first taunt six seconds after the team starts attacking; second on the Abyssal Charge quote; first again roughly ten seconds later (about five seconds after their last Frailty faded). Monitor Frailty to preserve the sync. Confirm which of LR/LoO opens. This is distinct from the workbook's earlier opening.",
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": [
+     "Both assigned taunters: Scroll of Enrage. Confirm survivability and one timing method before the pull."
+    ]
    }
-  ]
+  ],
+  "access": "4-player encounter; level 80+. Speak to Nulgath to enter the fight.",
+  "accessRef": "https://aqwwiki.wikidot.com/ultra-nulgath",
+  "auditNote": "Opening timing differs by source. Frailty and Blade timing need an experienced team; do not merge timing methods."
  },
  "gramiel": {
   "depth": "Advanced",
@@ -3594,7 +3709,7 @@ const approvedUltraGuides={
   "shared": [
    [
     "Crystal pairs",
-    "DPS + Lord of Order take one crystal; LR + healer take the other. Alternate within each pair at the defense-shattering cue; kill both crystals within five seconds."
+    "Shaman + Lord of Order take one crystal; Legion Revenant + StoneCrusher take the other in this roster. Alternate within each pair at the defense-shattering cue; destroy both crystals within five seconds."
    ],
    [
     "Break the guard",
@@ -3620,24 +3735,31 @@ const approvedUltraGuides={
      "Shaman"
     ],
     "roles": {
-     "Lord of Order": "Pair with the assigned DPS and alternate crystal taunts. Follow your assigned Gramiel turn.",
-     "Legion Revenant": "Pair with the assigned healer and alternate crystal taunts. Avoid applying skill 2 Decay to Gramiel during the crystal phase. Follow your assigned Gramiel turn.",
-     "StoneCrusher": "Confirm the healer position and crystal partner; take your assigned Gramiel turn.",
-     "Shaman": "Confirm the DPS position and crystal partner; balance crystal HP and take your assigned Gramiel turn."
+     "Lord of Order": "Pair with Shaman and alternate crystal taunts; follow your assigned Gramiel turn.",
+     "Legion Revenant": "Pair with StoneCrusher and alternate crystal taunts. Avoid applying skill 2 Decay to Gramiel during the crystal phase; follow your assigned Gramiel turn.",
+     "StoneCrusher": "Pair with Legion Revenant and alternate crystal taunts; maintain recovery and take your assigned Gramiel turn.",
+     "Shaman": "Pair with Lord of Order and alternate crystal taunts; balance crystal HP and take your assigned Gramiel turn."
     },
     "refs": [
      [
-      "Simplified Bosses Guide — Gramiel",
-      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit"
+      "Simplified Bosses Guide — Gramiel (G4:G16, A32)",
+      "https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit#gid=1904491860"
      ],
      [
       "Vendetta and protection thresholds",
       "https://aqw.app/monsters/ultragramiel"
      ]
     ],
-    "note": "Confirm the two crystal pairs and the later four-player order before pulling. The source does not prescribe a universal fixed order."
+    "note": "Confirm the two crystal pairs and the later four-player order before pulling. The source does not prescribe a universal fixed order.",
+    "status": "Conditional · source-documented, gameplay unverified",
+    "prep": [
+     "All four players: Scroll of Enrage and an agreed four-player order. Confirm health and protection before each checkpoint."
+    ]
    }
-  ]
+  ],
+  "access": "4-player encounter; level 80+. Access via /ultragramielhub.",
+  "accessRef": "https://aqwwiki.wikidot.com/ultra-gramiel",
+  "auditNote": "Crystal pair and rotation documented; all four need protection at the checkpoints. Confirm exact order and survival before pulling."
  }
 };
 const approvedOtherBossGuides={
@@ -3654,34 +3776,40 @@ const approvedOtherBossGuides={
   ],
   "roles": {},
   "note": "Workbook tab is hidden; availability and current encounter variant should be checked.",
-  "refs": []
+  "refs": [],
+  "access": "Hidden source tab; encounter availability and exact current variant remain unverified.",
+  "status": "Source-documented · gameplay unverified"
  },
  "Void Flibbi": {
   "kind": "Quick",
   "tips": [
-   "Avoid Shaman skill 5; the workbook explicitly warns against it. Maintain group recovery and sustained damage."
+   "Avoid Shaman skill 5 (Elemental Embrace); the workbook warns against it. Avoid the corresponding Elemental Grasp effect on variants. Maintain group recovery."
   ],
   "classes": [],
   "roles": {},
   "note": "Source gives a team example and one class-specific restriction, not a full rotation.",
-  "refs": []
+  "refs": [],
+  "status": "Source-documented · gameplay unverified",
+  "access": "Check the linked map for level, quest and seasonal requirements; current in-game access is not independently verified."
  },
  "Void Nightbane": {
   "kind": "Quick",
   "tips": [
    "Use frequent sustained hits instead of relying on very large nukes.",
    "Avoid Vainglory because incoming healing is heavily reduced.",
-   "The workbook says Decay does not work; the monster wiki identifies Blood Frenzy's 100,000 HP recovery as decayable. Do not rely on Decay to stop every healing effect."
+   "The workbook says Decay does not work. The monster reference distinguishes ordinary healing from other recovery effects; verify the exact Blood Frenzy interaction with your team rather than treating Decay as universally effective."
   ],
   "classes": [],
   "roles": {},
-  "note": "The monster mechanics supersede the workbook's blanket Decay statement.",
+  "note": "Source disagreement remains: do not rely on Decay to stop all healing. Sustained damage and avoiding Vainglory are the shared recommendations.",
   "refs": [
    [
     "Monster mechanics",
     "https://aqwwiki.wikidot.com/nightbane"
    ]
-  ]
+  ],
+  "status": "Source-documented · gameplay unverified",
+  "access": "Check the linked map for level, quest and seasonal requirements; current in-game access is not independently verified."
  },
  "Void Xyfrag": {
   "kind": "Strategy",
@@ -3699,7 +3827,9 @@ const approvedOtherBossGuides={
     "Consume mechanics",
     "https://aqw.app/monsters/voidxyfrag"
    ]
-  ]
+  ],
+  "status": "Source-documented · gameplay unverified",
+  "access": "Check the linked map for level, quest and seasonal requirements; current in-game access is not independently verified."
  },
  "Void NerfKitten": {
   "kind": "Strategy",
@@ -3712,7 +3842,9 @@ const approvedOtherBossGuides={
    "Verus DoomKnight": "Alternate Meow taunts with LR if assigned."
   },
   "note": "",
-  "refs": []
+  "refs": [],
+  "status": "Source-documented · gameplay unverified",
+  "access": "Check the linked map for level, quest and seasonal requirements; current in-game access is not independently verified."
  },
  "Kasuko & Whirlpool": {
   "kind": "Quick",
@@ -3722,11 +3854,15 @@ const approvedOtherBossGuides={
   "classes": [],
   "roles": {},
   "note": "Workbook describes target priority as conditional, not mandatory.",
-  "refs": []
+  "refs": [],
+  "access": "Seasonal level 75+ seven-player room; access may vary.",
+  "accessRef": "https://aqwwiki.wikidot.com/lavarock-shore",
+  "status": "Source-documented · gameplay unverified"
  },
  "Temple Shrine — Left": {
   "kind": "Strategy",
   "tips": [
+   "This specific strategy relies on LR having Praxis and the assigned taunters having Scroll of Enrage; do not apply the Praxis timing to a different enhancement.",
    "Coordinate Lunar Haze and the Moon Converges cast."
   ],
   "classes": [],
@@ -3735,11 +3871,15 @@ const approvedOtherBossGuides={
    "Legion Revenant": "Use Praxis and taunt at The Moon Converges according to the source plan."
   },
   "note": "",
-  "refs": []
+  "refs": [],
+  "access": "/join templeshrine is the Eclipse Ascent hub (20 players); the selected dungeon has a four-player party limit. Choose the Solstice Moon entrance.",
+  "accessRef": "https://aqwwiki.wikidot.com/eclipse-ascent",
+  "status": "Source-documented · gameplay unverified"
  },
  "Temple Shrine — Right": {
   "kind": "Strategy",
   "tips": [
+   "This specific strategy relies on LR having Praxis and the assigned taunters having Scroll of Enrage; do not apply the Praxis timing to a different enhancement.",
    "Coordinate Dawn Knight and the Sun Converges cast."
   ],
   "classes": [],
@@ -3747,11 +3887,15 @@ const approvedOtherBossGuides={
    "Legion Revenant": "Taunt Dawn Knight when You feel the Warmth of the Sun disappears; use Praxis with taunt at The Sun Converges."
   },
   "note": "",
-  "refs": []
+  "refs": [],
+  "access": "/join templeshrine is the Eclipse Ascent hub (20 players); the selected dungeon has a four-player party limit. Choose the Midnight Sun entrance.",
+  "accessRef": "https://aqwwiki.wikidot.com/eclipse-ascent",
+  "status": "Source-documented · gameplay unverified"
  },
  "Temple Shrine — Middle": {
   "kind": "Advanced",
   "tips": [
+   "This specific strategy relies on LR having Praxis and the assigned taunters having Scroll of Enrage; do not apply the Praxis timing to a different enhancement.",
    "Agree each knight assignment and the alternating solar/lunar taunt plan. Follow the same source roster and do not improvise."
   ],
   "classes": [],
@@ -3762,7 +3906,10 @@ const approvedOtherBossGuides={
    "Chrono ShadowHunter": "Alternate Sun Converges taunts with LR; coordinate LR's Praxis timing."
   },
   "note": "",
-  "refs": []
+  "refs": [],
+  "access": "/join templeshrine is the Eclipse Ascent hub (20 players); the selected dungeon has a four-player party limit. The middle challenge requires Rite of Ascension in inventory; enter via the portal.",
+  "accessRef": "https://aqwwiki.wikidot.com/eclipse-ascent",
+  "status": "Source-documented · gameplay unverified"
  },
  "Astral Empyrean": {
   "kind": "Strategy",
@@ -3782,13 +3929,16 @@ const approvedOtherBossGuides={
     "Breath and beam mechanics",
     "https://aqw.app/monsters/astralshrine"
    ]
-  ]
+  ],
+  "access": "Level 95+, seven-player room; complete Hoshiyoru to reach the encounter.",
+  "accessRef": "https://aqwwiki.wikidot.com/astral-shrine",
+  "status": "Source-documented · gameplay unverified"
  },
  "Mechabinky & Raxborg 2.0": {
   "kind": "Advanced",
   "tips": [
    "Assign two taunters; other players equip Vigil in the workbook strategy.",
-   "45M: stop healing during inversion. 40M and 35M: assigned taunts. 30M: recover from the HP drop. 25M and 20M: expect increasing damage and dodge.",
+   "45M: assigned taunt and stop healing during inversion. 40M and 35M: alternate assigned taunts. 30M: recover from the HP drop. 25M and 20M: expect rising damage and dodge.",
    "15M: coordinate Decay and mitigation. 10M: use Vigil on the cue. 5M: finish the damage check."
   ],
   "classes": [],
@@ -3796,7 +3946,9 @@ const approvedOtherBossGuides={
    "ArchPaladin": "Time skill 4 before the 15M damage event."
   },
   "note": "Confirm exact taunt assignments and Vigil exceptions with the team; no exploit or precise undocumented timer recommended.",
-  "refs": []
+  "refs": [],
+  "status": "Source-documented · gameplay unverified",
+  "access": "Check the linked map for level, quest and seasonal requirements; current in-game access is not independently verified."
  },
  "Celestial Arena": {
   "kind": "Quick",
@@ -3813,11 +3965,16 @@ const approvedOtherBossGuides={
    "Legendary Hero",
    "Chrono ShadowHunter",
    "Phantom Chronomancer",
-   "Elemental Warrior"
+   "Elemental Warrior",
+   "Dragonslayer General",
+   "ArchFiend"
   ],
   "roles": {},
   "note": "",
-  "refs": []
+  "refs": [],
+  "access": "Solo quest sequence. Accept the relevant quest and use the appropriate arena entrance; check the linked location for access.",
+  "accessRef": "https://aqwwiki.wikidot.com/celestial-arena",
+  "status": "Source-documented · gameplay unverified"
  },
  "Infernal Arena — early bosses": {
   "kind": "Quick",
@@ -3838,7 +3995,10 @@ const approvedOtherBossGuides={
   ],
   "roles": {},
   "note": "",
-  "refs": []
+  "refs": [],
+  "access": "Solo quest sequence. Accept the relevant quest and use the appropriate arena entrance; check the linked location for access.",
+  "accessRef": "https://aqwwiki.wikidot.com/infernal-arena",
+  "status": "Source-documented · gameplay unverified"
  },
  "Deadly Duo": {
   "kind": "Strategy",
@@ -3860,7 +4020,10 @@ const approvedOtherBossGuides={
   ],
   "roles": {},
   "note": "",
-  "refs": []
+  "refs": [],
+  "access": "Solo quest sequence. Accept the relevant quest and use the appropriate arena entrance; check the linked location for access.",
+  "accessRef": "https://aqwwiki.wikidot.com/infernal-arena",
+  "status": "Source-documented · gameplay unverified"
  },
  "Cervus Malus": {
   "kind": "Strategy",
@@ -3878,7 +4041,10 @@ const approvedOtherBossGuides={
   ],
   "roles": {},
   "note": "",
-  "refs": []
+  "refs": [],
+  "access": "Solo quest sequence. Accept the relevant quest and use the appropriate arena entrance; check the linked location for access.",
+  "accessRef": "https://aqwwiki.wikidot.com/infernal-arena",
+  "status": "Source-documented · gameplay unverified"
  },
  "Key of Sholemoh": {
   "kind": "Quick",
@@ -3900,7 +4066,10 @@ const approvedOtherBossGuides={
   ],
   "roles": {},
   "note": "",
-  "refs": []
+  "refs": [],
+  "access": "Solo quest sequence. Accept the relevant quest and use the appropriate arena entrance; check the linked location for access.",
+  "accessRef": "https://aqwwiki.wikidot.com/infernal-arena",
+  "status": "Source-documented · gameplay unverified"
  },
  "Azalith's Scythe": {
   "kind": "Strategy",
@@ -3915,11 +4084,15 @@ const approvedOtherBossGuides={
    "ArchPaladin",
    "Sentinel",
    "Elemental Warrior",
-   "Dragon Knight"
+   "Dragon Knight",
+   "Shaman"
   ],
   "roles": {},
   "note": "",
-  "refs": []
+  "refs": [],
+  "access": "Solo quest sequence. Accept the relevant quest and use the appropriate arena entrance; check the linked location for access.",
+  "accessRef": "https://aqwwiki.wikidot.com/infernal-arena",
+  "status": "Source-documented · gameplay unverified"
  },
  "Na'al": {
   "kind": "Strategy",
@@ -3935,11 +4108,17 @@ const approvedOtherBossGuides={
    "Sentinel",
    "Chrono ShadowHunter",
    "Phantom Chronomancer",
-   "Dragon Knight"
+   "Dragon Knight",
+   "Legion Revenant",
+   "Hollowborn Vindicator",
+   "Infinity Knight"
   ],
   "roles": {},
   "note": "",
-  "refs": []
+  "refs": [],
+  "access": "Solo quest sequence. Accept the relevant quest and use the appropriate arena entrance; check the linked location for access.",
+  "accessRef": "https://aqwwiki.wikidot.com/infernal-arena",
+  "status": "Source-documented · gameplay unverified"
  },
  "Grimskull?": {
   "kind": "Strategy",
@@ -3958,16 +4137,21 @@ const approvedOtherBossGuides={
    "Phantom Chronomancer",
    "Dragon Knight",
    "Elemental Warrior",
-   "Legendary Hero"
+   "Legendary Hero",
+   "Verus DoomKnight",
+   "Infinity Knight"
   ],
   "roles": {},
   "note": "",
-  "refs": []
+  "refs": [],
+  "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
+  "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
+  "status": "Source-documented · gameplay unverified"
  },
  "Grim Bomb": {
   "kind": "Quick",
   "tips": [
-   "Clear the bombs quickly; the source gives class options rather than a detailed individual rotation."
+   "Clear the three bombs before the one-minute limit. The workbook lists class options rather than an individual rotation."
   ],
   "classes": [
    "Dragon of Time",
@@ -3981,11 +4165,16 @@ const approvedOtherBossGuides={
    "Phantom Chronomancer",
    "Dragon Knight",
    "Elemental Warrior",
-   "Legendary Hero"
+   "Legendary Hero",
+   "Verus DoomKnight",
+   "Infinity Knight"
   ],
   "roles": {},
   "note": "",
-  "refs": []
+  "refs": [],
+  "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
+  "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
+  "status": "Source-documented · gameplay unverified"
  },
  "Empress Angler": {
   "kind": "Quick",
@@ -4004,11 +4193,16 @@ const approvedOtherBossGuides={
    "Phantom Chronomancer",
    "Dragon Knight",
    "Elemental Warrior",
-   "Legendary Hero"
+   "Legendary Hero",
+   "Verus DoomKnight",
+   "Infinity Knight"
   ],
   "roles": {},
   "note": "",
-  "refs": []
+  "refs": [],
+  "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
+  "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
+  "status": "Source-documented · gameplay unverified"
  },
  "Treasure Chest — first": {
   "kind": "Quick",
@@ -4027,16 +4221,21 @@ const approvedOtherBossGuides={
    "Phantom Chronomancer",
    "Dragon Knight",
    "Elemental Warrior",
-   "Legendary Hero"
+   "Legendary Hero",
+   "Verus DoomKnight",
+   "Infinity Knight"
   ],
   "roles": {},
   "note": "",
-  "refs": []
+  "refs": [],
+  "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
+  "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
+  "status": "Source-documented · gameplay unverified"
  },
  "Reinforced Shelleton": {
   "kind": "Strategy",
   "tips": [
-   "Survive until the turtle stuns itself, then attack during the vulnerability. High resistance or strong healing helps; Revitalize Elixir is a source option."
+   "Survive until the turtle crashes and becomes vulnerable; attack in that window, not while it is protected. High resistance or strong healing helps; Revitalize Elixir is a source option."
   ],
   "classes": [
    "Dragon of Time",
@@ -4047,7 +4246,10 @@ const approvedOtherBossGuides={
   ],
   "roles": {},
   "note": "",
-  "refs": []
+  "refs": [],
+  "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
+  "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
+  "status": "Source-documented · gameplay unverified"
  },
  "Fell Statue": {
   "kind": "Strategy",
@@ -4068,7 +4270,10 @@ const approvedOtherBossGuides={
   ],
   "roles": {},
   "note": "",
-  "refs": []
+  "refs": [],
+  "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
+  "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
+  "status": "Source-documented · gameplay unverified"
  },
  "Emperor Angler": {
   "kind": "Strategy",
@@ -4081,13 +4286,14 @@ const approvedOtherBossGuides={
    "King's Echo",
    "Hollowborn Vindicator",
    "Void Highlord",
-   "Lich",
    "Sentinel",
    "Chrono ShadowHunter",
    "Phantom Chronomancer",
    "Dragon Knight",
    "Elemental Warrior",
-   "Legendary Hero"
+   "Legendary Hero",
+   "Verus DoomKnight",
+   "Infinity Knight"
   ],
   "roles": {},
   "note": "",
@@ -4096,7 +4302,10 @@ const approvedOtherBossGuides={
     "Monster mechanics",
     "https://aqwwiki.wikidot.com/emperor-angler"
    ]
-  ]
+  ],
+  "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
+  "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
+  "status": "Source-documented · gameplay unverified"
  },
  "Treasure Chest — second": {
   "kind": "Quick",
@@ -4115,7 +4324,9 @@ const approvedOtherBossGuides={
    "Phantom Chronomancer",
    "Dragon Knight",
    "Elemental Warrior",
-   "Legendary Hero"
+   "Legendary Hero",
+   "Verus DoomKnight",
+   "Infinity Knight"
   ],
   "roles": {},
   "note": "Supplemental mechanics cross-check from the monster reference; no class-specific rotation is established.",
@@ -4124,7 +4335,10 @@ const approvedOtherBossGuides={
     "Dungeon reference",
     "https://aqwwiki.wikidot.com/the-gaol-of-eternal-torment-and-misery"
    ]
-  ]
+  ],
+  "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
+  "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
+  "status": "Source-documented · gameplay unverified"
  },
  "Rick, Grim Soldier": {
   "kind": "Quick",
@@ -4143,7 +4357,9 @@ const approvedOtherBossGuides={
    "Phantom Chronomancer",
    "Dragon Knight",
    "Elemental Warrior",
-   "Legendary Hero"
+   "Legendary Hero",
+   "Verus DoomKnight",
+   "Infinity Knight"
   ],
   "roles": {},
   "note": "",
@@ -4152,7 +4368,10 @@ const approvedOtherBossGuides={
     "Monster mechanics",
     "https://aqwwiki.wikidot.com/rick-grim-soldier"
    ]
-  ]
+  ],
+  "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
+  "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
+  "status": "Source-documented · gameplay unverified"
  },
  "Rampaging Cyborg": {
   "kind": "Strategy",
@@ -4173,12 +4392,15 @@ const approvedOtherBossGuides={
   ],
   "roles": {},
   "note": "",
-  "refs": []
+  "refs": [],
+  "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
+  "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
+  "status": "Source-documented · gameplay unverified"
  },
  "Mechabinky & Raxborg": {
   "kind": "Strategy",
   "tips": [
-   "At 90% HP, wait for healing inversion to expire before using heals or HoTs. The source warns that subsequent effects can vary."
+   "At 90% HP, wait for healing inversion to expire before using heals or HoTs. The source warns that subsequent effects can vary; do not assume this is the same fight as Grim Challenge 2.0."
   ],
   "classes": [
    "Dragon of Time",
@@ -4191,7 +4413,9 @@ const approvedOtherBossGuides={
    "Chrono ShadowHunter",
    "Phantom Chronomancer",
    "Dragon Knight",
-   "Infinity Knight"
+   "Infinity Knight",
+   "Chaos Avenger",
+   "Elemental Warrior"
   ],
   "roles": {},
   "note": "",
@@ -4200,9 +4424,13 @@ const approvedOtherBossGuides={
     "Monster mechanics",
     "https://aqwwiki.wikidot.com/mechabinky-raxborg-2-0"
    ]
-  ]
+  ],
+  "access": "Level 80+; /join gaolcell is the entrance hub. Enter the solo Gaol dungeon via its portal; check Mort's quests. This is not a team encounter.",
+  "accessRef": "https://aqwwiki.wikidot.com/gaol-cell",
+  "status": "Source-documented · gameplay unverified"
  }
 };
+const auditedBossSheetLocations={"Fourth Lynaria":[554509623,"G4:G22, A32"],"Void Bosses":[1827579588,"A32 / A101 / A170 / A239"],"Lavarock Shore":[1817901417,"G4:G28, A32"],"Temple Shrine":[536042830,"A32 / A92 / A152"],"Astral Shrine":[1682548440,"G4:G28, A32"],"Grimchallenge":[1217830111,"G4:G28, A32"],"Celestial Arena":[485533888,"I5:K23"],"Infernal Arena":[282052295,"K5:M163, N4:N144"],"Grim Gaol":[1924778701,"I5:K303, L4:L284"]};
 const approvedClassActivities={"Arcana Invoker":["farm"],"Legion Revenant":["farm"],"Shaman":["solo"],"Verus DoomKnight":["solo"],"Void Highlord":["farm"],"Chaos Avenger":["solo"],"ArchMage":["farm"],"Blaze Binder":["farm"],"Yami no Ronin":["solo"],"King's Echo":["solo"],"Chrono ShadowHunter":["solo"],"Phantasm Chronomancer":["solo"],"Hollowborn Vindicator":["solo"],"Necrotic Chronomancer":["farm"],"ArchFiend":["farm"],"Dark Lord":["solo"]};
 const approvedClassProvenance={"Arcana Invoker":"K57:K74 · Farming","Legion Revenant":"I2:I23 · Farming","Shaman":"M2:M23 · Best Solo","Verus DoomKnight":"K2:K23 · Solo DPS","Void Highlord":"N57:N74 · Low HP Farm","Chaos Avenger":"K57:K74 · Defensive Solo","ArchMage":"H57:H74 · High HP Mobs","Blaze Binder":"K57:K74 · Full Forge (farming class)","Yami no Ronin":"K2:K23 · Solo DPS","King's Echo":"K2:K23 · Solo / Group","Chrono ShadowHunter":"N57:N74 · Solo Full Forge","Phantasm Chronomancer":"M2:M23 · Best Solo","Hollowborn Vindicator":"K2:K23 · Solo DPS","Necrotic Chronomancer":"K2:K23 · High DPS Farming","ArchFiend":"K57:K74 · Farming / Dage","Dark Lord":"Q57:Q74 · Full Pots Solo"};
 function ultraStrategyVariants(b,profile){
@@ -4260,7 +4488,7 @@ function renderUltraDetail(b){
   ultraExplainText(body,content,b.id);card.append(node('small',label),body);return card;
  }
  focus.append(focusCard('YOUR GOAL',evidence.goal,'ultra-focus-good'),focusCard('AVOID',evidence.avoid,'ultra-focus-danger'));
- summary.append(focus);root.append(summary);
+ summary.append(focus);if(evidence.access){const access=node('p',evidence.access,'muted tiny');const link=node('a',' Location / requirements ↗');link.href=evidence.accessRef;link.target='_blank';link.rel='noopener noreferrer';access.append(link);summary.append(access)}root.append(summary);
  const team=node('section',undefined,'ultra-focus-card guide-v2-team');
  team.append(node('h3','Team composition'));
  const pick=node('select',undefined,'guide-v2-team-select');pick.setAttribute('aria-label','Team composition');
@@ -4284,12 +4512,13 @@ function renderUltraDetail(b){
   rating.replaceChildren(node('span',ultraOwned(cls)?'✓ Owned':'Not owned',ultraOwned(cls)?'ultra-owned':'ultra-missing'));
   roleName.textContent=cls;sequence.replaceChildren();
   const personal=variant.roles[cls];
+  if(variant.prep?.length)appendStrategyStep(sequence,'Before pulling',variant.prep.join(' '),b.id);
   if(personal)appendStrategyStep(sequence,'Your responsibility',personal,b.id);
   for(const [label,tip] of evidence.shared)appendStrategyStep(sequence,label,tip,b.id);
   if(variant.note)sequence.append(node('p',variant.note,'muted tiny'));
   if(Number.isInteger(variant.chart))appendConsolidatedSpeakerChart(sequence,variant,cls);
   const details=guideDisclosure('Sources & strategy notes');
-  details.append(node('p','Community documentation, not independently playtested.','muted tiny'));
+  details.append(node('p','Community documentation, not independently playtested. '+(evidence.auditNote||''),'muted tiny'));
   for(const [label,url] of variant.refs){const link=node('a',label+' ↗','muted tiny');link.href=url;link.target='_blank';link.rel='noopener noreferrer';details.append(link)}
   sequence.append(details);
  }
@@ -5182,7 +5411,7 @@ function renderClassBuild(){
   if(meta.canonical!==cls)identity.append(node('span','Same skills as '+meta.canonical,'build-meta-alias'));
   panel.append(identity);
  }
- panel.append(node('p','Community example — current patch / activity review pending. Not a verified best-in-slot loadout.','build-meta-note'));panel.append(node('p','Source configuration: '+approvedClassProvenance[cls],'muted tiny'));
+ panel.append(node('p','Community example — current patch / activity review pending. Not a verified best-in-slot loadout.','build-meta-note'));panel.append(node('p','Source configuration: '+approvedClassProvenance[cls],'muted tiny'));if(cls==='Legion Revenant')panel.append(node('p','Lament is the selected source option; the sheet also lists Vainglory with potions. Do not transfer this farming preset to Ultras.','muted tiny'));if(cls==='Dark Lord')panel.append(node('p','This solo example assumes full consumables; no unpotted performance claim.','muted tiny'));
  const crossRef=node('a','Separate enhancement reference (not this preset) ↗','muted tiny');crossRef.href='https://docs.google.com/spreadsheets/d/1wupDvLuPnRC0fF0aNPc7rzrri7X1YcYy7S2s5Z6o_F4/edit';crossRef.target='_blank';crossRef.rel='noopener noreferrer';panel.append(crossRef);
  const sgRef=simplifiedClassSource(cls);if(sgRef){const a=node('a','Simplified Classes Guide · class-specific reference ↗','muted tiny');a.href=sgRef;a.target='_blank';a.rel='noopener noreferrer';panel.append(a)}
  if(build.note)panel.append(node('p',build.note,'build-meta-note'));

@@ -80,6 +80,31 @@ async function main(){
   assert.ok(await page.locator('#ultradetail .guide-v2-class').isHidden());
   assert.ok((await page.locator('#ultradetail').innerText()).includes('Counter Attack'));
   await page.locator('#ultracards button').filter({hasText:'God of the Depths'}).click();
+  // Audit every published strategy and its class options, not only the sample encounters.
+  const allUltraCards=page.locator('#ultracards button');
+  const totalUltra=await allUltraCards.count();assert.equal(totalUltra,12);let variantsChecked=0;
+  for(let i=0;i<totalUltra;i++){
+   await allUltraCards.nth(i).click();
+   const pick=page.locator('#ultradetail [aria-label="Team composition"]');
+   const options=await pick.count()?await pick.locator('option').evaluateAll(os=>os.map(o=>o.value)):['single'];
+   for(const id of options){
+    if(await pick.count())await pick.selectOption(id);
+    variantsChecked++;
+    assert.ok((await page.locator('#ultradetail').innerText()).includes('Fight instructions'));
+    assert.equal(await page.locator('#ultradetail .ultra-focus-gear').count(),0);
+    if(await classPick.isVisible()){
+     for(const cls of await classPick.locator('option').evaluateAll(os=>os.map(o=>o.value))){
+      await classPick.selectOption(cls);
+      assert.equal(await classPick.inputValue(),cls);
+      assert.ok((await page.locator('#ultradetail .ultra-class-guide').innerText()).includes(cls));
+      assert.ok(await page.locator('#ultradetail .guide-v2-disclosure').count());
+     }
+    }
+   }
+  }
+  assert.equal(variantsChecked,22);
+  await page.locator('#ultrasearch').fill('Frailty');assert.equal(await page.locator('#ultracards button').count(),1);await page.locator('#ultrasearch').fill('');
+  await page.locator('#ultracards button').filter({hasText:'God of the Depths'}).click();
   await page.setViewportSize({width:390,height:844});
   const overflow=await page.locator('#ultradetail').evaluate(e=>e.scrollWidth>e.clientWidth+3);assert.ok(!overflow,'Ultra guide must fit mobile width');
   await page.setViewportSize({width:1360,height:1100});
@@ -90,6 +115,19 @@ async function main(){
   await page.locator('#ultracatalog button').filter({hasText:'Temple Shrine — Middle'}).click();assert.equal(await page.locator('#bossguidedetail .ultra-role-select option').count(),4);
   await page.locator('#bossguidedetail .ultra-role-select').selectOption('Lord of Order');assert.ok((await page.locator('#bossguidedetail').innerText()).includes('Lunar Haze'));
   await page.locator('#ultracatalog button').filter({hasText:'Void Nightbane'}).click();assert.ok((await page.locator('#bossguidedetail').innerText()).includes('100,000 HP'));assert.equal(await page.locator('#bossguidedetail .ultra-role-select').count(),0);
+  const allBossCards=page.locator('#ultracatalog button');assert.equal(await allBossCards.count(),40);let published=0;
+  for(let i=0;i<await allBossCards.count();i++){
+   await allBossCards.nth(i).click();
+   const detail=page.locator('#bossguidedetail');
+   assert.ok(await detail.locator('.ultra-copy-join').count());
+   if((await detail.innerText()).includes('Fight at a glance')){
+    published++;
+    assert.ok(await detail.locator('.guide-v2-disclosure').count());
+    const role=detail.locator('.ultra-role-select');
+    if(await role.count())for(const cls of await role.locator('option').evaluateAll(os=>os.map(o=>o.value))){await role.selectOption(cls);assert.ok((await detail.innerText()).includes(cls))}
+   }
+   assert.equal(await detail.locator('.ultra-focus-gear').count(),0);
+  }assert.equal(published,29);
   await go('builds','forge');
   assert.ok(await page.locator('#builds').isHidden(),'Class Builds view must remain hidden');
   assert.ok(await page.locator('[data-tab="builds"]').isHidden(),'Class Builds navigation must remain hidden');

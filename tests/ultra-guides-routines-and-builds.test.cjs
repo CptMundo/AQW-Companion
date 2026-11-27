@@ -123,7 +123,7 @@ assert.ok(!html.includes("appendSimplifiedProfile(root,simplifiedProfiles[b.id]"
 assert.ok(html.includes("renderBossGuides(root,$(\'bossguidesearch\').value.trim().toLowerCase(),$(\'bossguidecategory\').value)"));
 assert.ok(html.includes("community role"));
 
-const compact=vm.runInNewContext(reviewedCode+"\n({ultraClassOptions,ultraSelectedRating,ultraWorkbookBuild,ultraCompactTips,ultraActionTips,ultraBeginnerActions,ultraBeginnerText,ultraGlossary,ultraTermPattern,ultraTermInfo,ultraSuggestedGear,ultraRecommendedTeam,ultraUnifiedTips,ultraSpeakerRole,ultraSpeakerPersonal,simplifiedSpeakerPatterns,simplifiedProfiles,simplifiedRatings,simplifiedExtraEncounters,sameUltraClass,fillUltraClassSelect,renderUltraSelectedRating,appendUltraGearCells,ultraStrategyVariants,workbookPersonalGuide,workbookSharedGuide,approvedUltraGuides,approvedOtherBossGuides,approvedClassActivities})",{
+const compact=vm.runInNewContext(reviewedCode+"\n({ultraClassOptions,ultraSelectedRating,ultraWorkbookBuild,ultraCompactTips,ultraActionTips,ultraBeginnerActions,ultraBeginnerText,ultraGlossary,ultraTermPattern,ultraTermInfo,ultraSuggestedGear,ultraRecommendedTeam,ultraUnifiedTips,ultraSpeakerRole,ultraSpeakerPersonal,simplifiedSpeakerPatterns,simplifiedProfiles,simplifiedRatings,simplifiedExtraEncounters,sameUltraClass,fillUltraClassSelect,renderUltraSelectedRating,appendUltraGearCells,ultraStrategyVariants,workbookPersonalGuide,workbookSharedGuide,approvedUltraGuides,approvedOtherBossGuides,approvedClassActivities,auditedBossSheetLocations})",{
  node(tag,text,cls){return {tag,text,cls,children:[],append(...x){this.children.push(...x)},replaceChildren(...x){this.children=x}}},
  Option:function(label,value){this.label=label;this.value=value},
  ultraOwned:cls=>['Lord of Order','Void Highlord'].includes(cls)
@@ -681,3 +681,18 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.ok(compact.approvedUltraGuides.nulgath.avoid.includes('ignores taunt'));
  assert.ok(compact.approvedUltraGuides.gramiel.shared.some(x=>x[1].includes('70%, 40% and 10%')));assert.ok(compact.approvedUltraGuides.gramiel.shared.some(x=>x[1].includes('Do not apply Decay')));assert.ok(compact.approvedUltraGuides.darkon.shared.some(x=>x[1].includes('72 seconds')));
  console.log('Consolidated coverage: 12 Ultras, 22 strategy variants, '+compact.simplifiedExtraEncounters.length+' source-backed other encounter guides.');}
+
+// Pre-merge documentary audit: exact chart rows, required prep, source ranges and solo options.
+{const chart=compact.simplifiedSpeakerPatterns[0];const expected=[['Truth','LR',''],['Listen','LoO',''],['Zone 1','DPS',''],['Truth','AP','AP 4'],['Listen','LoO','LoO 5'],['Truth','',''],['Zone 2','LR',''],['Listen','',''],['Truth','','AP 4'],['Truth','LoO',''],['Listen','',''],['Zone 3','AP',''],['Truth','','AP 4'],['Listen','LR',''],['Truth','','LoO 5'],['Zone 4','LoO',''],['Listen','',''],['Truth','','AP 4'],['Truth','LR',''],['Listen','LoO','']];
+ const events=vm.runInNewContext(html.slice(html.indexOf('const simplifiedSpeakerEvents='),html.indexOf('const simplifiedSpeakerPatterns='))+'\n simplifiedSpeakerEvents');
+ assert.deepEqual(Array.from(events,(event,i)=>[event,chart.roles[i],chart.skills[i]||'']),expected);
+ for(const [id,g] of Object.entries(compact.approvedUltraGuides)){assert.ok(g.access&&g.accessRef.startsWith('https://')&&g.auditNote,id);for(const v of g.variants){assert.ok(v.status&&Array.isArray(v.prep));if(['tyndarius','dage','drakath','nulgath','speaker','gramiel','darkon','kathool'].includes(id))assert.ok(v.prep.length,id);}}
+ const other=compact.approvedOtherBossGuides;for(const p of compact.simplifiedExtraEncounters){assert.ok(compact.auditedBossSheetLocations[p.sheet]);assert.ok(other[p.name].access&&other[p.name].status)}
+ assert.ok(other['Emperor Angler'].classes.includes('Verus DoomKnight')&&!other['Emperor Angler'].classes.includes('Lich'));
+ assert.ok(other['Na\'al'].classes.includes('Legion Revenant'));
+ assert.ok(other['Celestial Arena'].classes.includes('ArchFiend'));
+ assert.ok(other['Temple Shrine — Middle'].access.includes('Rite of Ascension'));
+ assert.ok(other['Grim Bomb'].access.includes('Level 80+'));
+ assert.ok(compact.approvedUltraGuides.gramiel.variants[0].roles['Legion Revenant'].includes('StoneCrusher'));
+ assert.ok(html.includes("chronoshadowslayer:'chronoshadowhunter'"));
+ console.log('Pre-merge exact Speaker chart, role preparation, access requirements, and source options checked.');}
