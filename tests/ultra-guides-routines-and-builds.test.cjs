@@ -518,7 +518,11 @@ const bossDetail121=html.slice(html.indexOf("function renderBossGuideDetail(entr
 assert.ok(bossDetail121.includes("fillUltraClassSelect(select,key,profile)"));
 assert.ok(bossDetail121.includes("select.onchange=draw"));
 assert.ok(!bossDetail121.includes("Suggested general enhancements — not verified for this encounter."));
-assert.ok(bossDetail121.includes("Loadout · Review pending"));assert.ok(bossDetail121.includes("Loadout · Community example"));
+assert.ok(html.includes("const publicEncounterLoadouts=false;"));
+assert.ok(detail108.includes("if(publicEncounterLoadouts)setup.append(gear)"));
+assert.ok(bossDetail121.includes("if(publicEncounterLoadouts)setup.append(gear)"));
+assert.ok(bossDetail121.includes("if(publicEncounterLoadouts&&profile.potions?.length)"));
+assert.ok(detail108.includes("Your class"));assert.ok(bossDetail121.includes("Your class"));
 assert.ok(html.includes("if(tip.source!=='Community guide')body.append"));
 assert.ok(bossDetail121.includes("Simplified Bosses Guide — "));
 assert.ok(bossDetail121.includes("Wiki location"));

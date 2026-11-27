@@ -126,6 +126,10 @@ if(typeof document==='undefined'){
    await progress('reading',kind==='inventory'?'Reading Inventory & Bank…':kind==='public'?'Reading public inventory…':kind==='progress'?'Reading visible Progress Badges…':'Reading Character Page badges…');
    const result=await chrome.scripting.executeScript({target:{tabId:source.id},func:kind==='inventory'?captureAccountInventory:kind==='public'?capturePublicInventory:kind==='progress'?captureAccountProgress:captureCharacterBadges,args:kind==='inventory'?[null,job.id]:[]});
    let snapshot=result?.[0]?.result,stageId;
+   if(kind==='inventory'){
+    if(typeof snapshot?.captureError==='string')throw Error('Inventory capture: '+snapshot.captureError.slice(0,240));
+    if(!snapshot||!Array.isArray(snapshot.items))throw Error('Account Manager did not return an inventory snapshot. Refresh the Inventory tab and retry.');
+   }
    await progress('staging','Preparing local snapshot…');
    if(kind==='inventory'){
     snapshot=cleanAccountSnapshot(snapshot);stageId=crypto.randomUUID();
