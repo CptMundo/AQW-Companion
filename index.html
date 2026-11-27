@@ -21,7 +21,7 @@
 
 <link rel="stylesheet" href="css/account-statistics.css?v=97">
 <link rel="stylesheet" href="css/meta-class-builds.css">
-<link rel="stylesheet" href="css/planner-routines.css?v=184">
+<link rel="stylesheet" href="css/planner-routines.css?v=185">
 <link rel="stylesheet" href="css/recipe-coverage.css">
 <link rel="stylesheet" href="css/stack-alerts.css?v=140">
 <link rel="stylesheet" href="css/ultra-quote-actions.css?v=124">
@@ -5184,10 +5184,10 @@ function taskCard(t,pinned){const done=taskDone(t),conflict=routineConflict(t);
  if(pinned&&done){const mark=node('span','✓','planner-art-complete');mark.setAttribute('aria-label','Completed');visual.append(mark)}
  card.append(visual);
  const header=node('div',undefined,'planner-quest-head'),name=node('div',undefined,'planner-quest-name');
- name.append(node('strong',plannerTitle(t),'task-title'),node('small',(t.freq==='daily'?'Daily':'Weekly')+' · '+(t.kind==='activity'?'Activity · ':'')+(t.group||'Custom'),'planner-quest-meta'));
+ const questTitle=node('strong',plannerTitle(t),'task-title'),questMeta=node('small',(t.freq==='daily'?'Daily':'Weekly')+' · '+(t.kind==='activity'?'Activity · ':'')+(t.group||'Custom'),'planner-quest-meta');questTitle.title=plannerTitle(t);questMeta.title=questMeta.textContent||'';name.append(questTitle,questMeta);
  header.append(name);card.append(header);
  const reward=plannerRewardParts(t);
- if(reward.main){const preview=node('div',reward.main,'planner-reward-preview');preview.title=reward.all.join(' · ');card.append(preview)}
+ const preview=node('div',reward.main||'','planner-reward-preview');preview.title=reward.all.join(' · ');card.append(preview);
  const info=taskRoutes[t.id],details=node('details',undefined,'task-route planner-quest-details');details.append(node('summary',t.kind==='activity'?'Activity details':'Quest details'));
  if(reward.all.length){const rewards=node('div',undefined,'planner-quest-rewards');rewards.append(node('small','Rewards','planner-quest-label'));for(const x of reward.all)rewards.append(node('div',x,'planner-reward-item'));details.append(rewards)}
  if(pinned&&Array.isArray(t.sourceProjects)&&t.sourceProjects.length)details.append(node('small','🎯 '+t.sourceProjects.join(' · '),'task-project'));
@@ -5219,7 +5219,7 @@ function taskCard(t,pinned){const done=taskDone(t),conflict=routineConflict(t);
  const wiki=node('a',t.kind==='activity'?'Activity source ↗':'Quest source ↗','task-wiki');wiki.href=info?.wiki||t.wiki||'https://aqwwiki.wikidot.com/daily-quest-board-s-quests';wiki.target='_blank';wiki.rel='noopener noreferrer';details.append(wiki);
  if(art){const credit=node('a','Image: AQWorlds Wiki / Artix ↗','task-wiki');credit.href=art.source;credit.target='_blank';credit.rel='noopener noreferrer';details.append(credit)}
  card.append(details);
- if(conflict)card.append(node('small','Alternative already completed: '+conflict.name,'task-unverified'));
+ if(conflict){const summary=details.querySelector?.('summary')||details.children[0];summary.textContent=(t.kind==='activity'?'Activity':'Quest')+' details · Alt. done';summary.title='Alternative already completed: '+conflict.name;details.append(node('small','Alternative already completed: '+conflict.name,'task-unverified'))}
  const actions=node('div',undefined,'planner-quest-actions');
  const mainJoin=t.acceptJoin||(!t.farmJoin?t.join:'');if(mainJoin){const join=makeCopyJoin(mainJoin);join.title='Copy '+mainJoin+(t.acceptJoin&&t.acceptJoin!==t.join?' · Accept quest':'');actions.append(join)}
  if(pinned){const action=node('button',done?'×':'✓','smallbutton planner-complete-action'+(done?' is-complete':''));
