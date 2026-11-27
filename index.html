@@ -468,8 +468,136 @@ const starterProjects=[
  {name:'Dragon of Time',type:'Class',steps:[{label:'Own Dragon of Time',kind:'owned',item:'Dragon of Time'}]},
  {name:'Legion Revenant',type:'Class',steps:[{label:'Own Legion Revenant',kind:'owned',item:'Legion Revenant'}]}
 ];
+// BLoD final quest and recommended farm route are deliberately separate.
+const blodFinalIngredients=[["Spirit Orb",500],["Loyal Spirit Orb",250],["Bright Aura",125],["Brilliant Aura",75],["Blinding Aura",1],["Ultimate Weapon Kit",1]];
+const blodAcquisition={
+ "name": "Blinding Light of Destiny",
+ "type": "Weapon",
+ "wiki": "https://aqwwiki.wikidot.com/blinding-light-of-destiny-axe",
+ "complete": "questline",
+ "origin": "reviewed",
+ "ingredients": [
+  [
+   "Spirit Orb",
+   500
+  ],
+  [
+   "Loyal Spirit Orb",
+   250
+  ],
+  [
+   "Bright Aura",
+   125
+  ],
+  [
+   "Brilliant Aura",
+   75
+  ],
+  [
+   "Blinding Aura",
+   1
+  ],
+  [
+   "Ultimate Weapon Kit",
+   1
+  ]
+ ],
+ "methods": [
+  {
+   "type": "Unlock",
+   "title": "1 · Artix's opening quests",
+   "npc": "Artix",
+   "join": "/join necropolis",
+   "details": "Complete the opening chain through A Loyal Follower. Farm Undead Essence and Bone Dust at /join battleunderb for Essential Essences and Bust some Dust; A Loyal Follower also requires Ephemerites in /join timevoid. Check the quest page for earlier story and item requirements.",
+   "url": "https://aqwwiki.wikidot.com/artix-s-quests"
+  },
+  {
+   "type": "Daily",
+   "title": "2 · Mine Crafting",
+   "npc": "Artix / Daily Quest Board",
+   "join": "/join necropolis",
+   "details": "Recommended route: choose one Copper, Silver and Barium on separate daily completions. Optional Iron for Scythe. Balboa in /join stalagbite supplies Raw Ore and Axe of the Prospector. Skip metals for weapons you already have.",
+   "url": "https://aqwwiki.wikidot.com/artix-s-quests"
+  },
+  {
+   "type": "Quest / Merge",
+   "title": "3 · Enchant and forge metals",
+   "join": "/join dwarfhold",
+   "details": "Artix's enchantment quests use 25 Undead Energy, 5 Spirit Orbs, 25 Paladaffodils and the raw metal per enchantment. Paladaffodils: Seed Spitter in /join arcangrove. At Geopetal each enchanted metal needs 5 Loyal Spirit Orbs and 2 Bright Auras to forge its Destiny form. Return to Artix for the corresponding Metals of Destiny quest and obtain Forge Key from Albino Bat to unlock weapon kits.",
+   "url": "https://aqwwiki.wikidot.com/forge-metal"
+  },
+  {
+   "type": "Quest",
+   "title": "4 · Weapon Kit Construction",
+   "npc": "Artix",
+   "join": "/join necropolis",
+   "details": "Unlock Basic, Advanced and Ultimate Weapon Kit Construction. For the three-weapon route from scratch, plan 3 Basic, 3 Advanced, 4 Ultimate kits, reserving one Ultimate for the final quest. An optional Scythe requires an extra kit of each tier. These are route totals, not final quest ingredients.",
+   "url": "https://aqwwiki.wikidot.com/artix-s-quests"
+  },
+  {
+   "type": "Merge / Farm",
+   "title": "5 · Copper → Blinding Mace of Destiny",
+   "npc": "Artix",
+   "join": "/join necropolis",
+   "details": "Merge Mace of Destiny, Bright Mace, then Blinding Mace. Finding Fragments with Blinding Mace gives 1 Brilliant Aura per 10 fragments. Farm undead in /join battleunderb; save enough Brilliant Auras for the Bow and Blade upgrades before collecting the final 75.",
+   "url": "https://aqwwiki.wikidot.com/light-merge"
+  },
+  {
+   "type": "Merge / Farm",
+   "title": "6 · Silver → Blinding Bow of Destiny",
+   "npc": "Artix",
+   "join": "/join necropolis",
+   "details": "Merge Bow, Bright Bow, Blinding Bow. Finding Fragments with Blinding Bow gives 5 Bright Auras per 10 fragments. Save Bright Auras for forging Barium before the final 125.",
+   "url": "https://aqwwiki.wikidot.com/blinding-bow-of-destiny"
+  },
+  {
+   "type": "Merge / Farm",
+   "title": "7 · Barium → Blinding Blade of Destiny",
+   "npc": "Artix",
+   "join": "/join necropolis",
+   "details": "Merge Blade, Bright Blade, Blinding Blade. Finding Fragments with Blinding Blade gives 50 Spirit Orbs and 25 Loyal Spirit Orbs per 10 fragments. At zero stock, 10 turn-ins meet both final orb targets. Use current stock to reduce repeats.",
+   "url": "https://aqwwiki.wikidot.com/blinding-blade-of-destiny"
+  },
+  {
+   "type": "Optional route",
+   "title": "8 · Blinding Aura",
+   "npc": "Artix",
+   "join": "/join necropolis",
+   "details": "Keep a Blinding Aura if it drops as a bonus from Finding Fragments. If still missing, forge Immortal Iron of Destiny and the Scythe chain; Finding Fragments with Blinding Scythe guarantees one Blinding Aura per turn-in. Do not craft Scythe if you already have the aura unless you want it.",
+   "url": "https://aqwwiki.wikidot.com/artix-s-quests"
+  },
+  {
+   "type": "Final quest",
+   "title": "9 · The Blinding Light of Destiny",
+   "npc": "Artix",
+   "join": "/join necropolis",
+   "details": "Complete at least one Finding Fragments quest. Turn in the six final ingredients. The reward is Get Your Blinding Light of Destiny, which opens the Destiny is Blinding shop in Book of Lore. Claim the axe for 0 AC.",
+   "url": "https://aqwwiki.wikidot.com/blinding-light-of-destiny-shop"
+  }
+ ]
+};
+const blodRecipe={name:'Blinding Light of Destiny',type:'Weapon',steps:[
+ {label:'Complete the opening Artix quest chain through A Loyal Follower — /join necropolis',kind:'manual'},
+ {label:'Unlock weapon kits and complete at least one Finding Fragments quest — /join necropolis',kind:'manual'},
+ ...blodFinalIngredients.map(([item,target])=>({label:item+' ×'+target,kind:'material',item,target})),
+ {label:'Turn in The Blinding Light of Destiny and claim the axe from Destiny is Blinding in Book of Lore — /join necropolis',kind:'manual'}
+]};
+function isBlodProject(name){return /^blinding light of destiny(?: \(axe\))?$/i.test(String(name||'').trim())}
+function upgradeBlodProject(project,makeStep){
+ if(!isBlodProject(project?.name)||!Array.isArray(project.steps))return false;
+ const legacy=['Collect Spirit Orbs (check actual recipe requirements)','Acquire and craft Destiny metal / weapon chain','Complete final BLoD crafting steps'];
+ // Only replace exact obsolete unknown template steps. Preserve all custom and manually recorded steps.
+ const hasLegacy=project.steps.some(st=>st.kind==='manual'&&legacy.includes(st.label));
+ const blank=project.steps.some(st=>st.kind==='manual'&&st.label==='Acquisition route not yet in the catalog'&&[null,undefined,'unknown'].includes(st.status));
+ if(!hasLegacy&&!blank)return false;
+ const old=project.steps,keep=old.filter(st=>!(st.kind==='manual'&&(legacy.includes(st.label)||st.label==='Acquisition route not yet in the catalog')&&[null,undefined,'unknown'].includes(st.status)));
+ const added=blodRecipe.steps.filter(st=>!keep.some(k=>st.item?k.item&&String(k.item).toLowerCase().replace(/\s*\(misc\)$/i,'')===st.item.toLowerCase():k.label===st.label));
+ if(keep.length===old.length&&!added.length)return false;
+ project.steps=[...added.map(makeStep),...keep];project.type='Weapon';return true;
+}
+
 const catalogExtras=[
- {name:'Blinding Light of Destiny',type:'Weapon',steps:[{label:'Collect Spirit Orbs (check actual recipe requirements)',kind:'manual'},{label:'Acquire and craft Destiny metal / weapon chain',kind:'manual'},{label:'Complete final BLoD crafting steps',kind:'manual'}]},
+ blodRecipe,
 
  {name:'Malgor’s ShadowFlame Blade',type:'Weapon',steps:[{label:'Own ShadowFlame Dragon Blade',kind:'owned',item:'ShadowFlame Dragon Blade'},{label:'Complete 20 Elemental Cores (confirm consumed items manually)',kind:'manual'},{label:'Collect Malgor Insignias through Ultra Speaker',kind:'material',item:'Malgor Insignia',target:20}]},
  {name:'Verus DoomKnight',type:'Class',steps:[{label:'Reach Level 40',kind:'manual'},{label:'Body, Soul and, Domination — /join terminatemple',kind:'manual'},{label:'Of the Same Cloak — Level 50',kind:'manual'},{label:'Refracted Light — Level 60',kind:'manual'},{label:'Life Carve — Level 70 & Evil Rank 10',kind:'manual'},{label:'Soul Fracture — defeat target bosses',kind:'manual'},{label:'Doom Spikes — Level 80',kind:'manual'},{label:'Necrotic Blade — collect required Doom gear',kind:'manual'},{label:'Unleash Doom — final quest',kind:'manual'},{label:'Claim Verus DoomKnight from the shop in /join terminatemple',kind:'manual'}]},
@@ -603,7 +731,7 @@ async function loadPublicCatalog(){
 }
 $('communityfiles').onchange=async e=>{const files=[...e.target.files||[]];if(!files.length)return;try{const parsed=[];for(const f of files){if(f.size>50000000)throw Error(f.name+' exceeds 50 MB limit');parsed.push({name:f.name,data:JSON.parse(await f.text())})}for(const f of parsed)normalizeCommunityData(f.data,f.name);finishCommunityIndexes();await saveCommunity();message('Community database indexed: '+fmt(communityItems.size)+' items. Check individual wiki sources before crafting.','success')}catch(err){message('Community import error: '+err.message,'error')}finally{e.target.value=''}};
 $('clearcommunity').onclick=async()=>{if(!confirm('Clear the community item catalog? Your account snapshots and project lists will not be changed.'))return;communityItems.clear();communityAcquisition.clear();communityLocations.clear();communityMeta={};await saveCommunity();finishCommunityIndexes();message('Community catalog cleared. Personal inventory and projects were preserved.','success')};
-function getRecipe(name){name=canonicalItemName(name);
+function getRecipe(name){name=canonicalItemName(name);if(isBlodProject(name))return {...blodRecipe,name};
  const reviewed=window.AQWCRecipeIntegrity?.getRecipe(name)||window.AQWCRecipeIntegrity?.guidanceRecipe(name);if(reviewed)return reviewed;
  const reference=acquisitionFor(name);
  // An explicitly listed merge takes precedence over a separate quest reward route.
@@ -665,12 +793,13 @@ const acquisitionCatalog = [
 {name:'Corrupt Spirit Orb',type:'Item',wiki:'https://aqwwiki.wikidot.com/vayle-s-quests',methods:[{type:'Quest Reward',title:'Pinpoint the Pieces with Necrotic Bow',join:'/join necropolis',npc:'Vayle',details:'25 Corrupt Spirit Orbs and 50 Dark Spirit Orbs per quest; requires Necrotic Bow of the Shadow and completed DoomKnight Weapon Kit.',url:'https://aqwwiki.wikidot.com/vayle-s-quests'}]},
 {name:'Experimental Dark Item',type:'Item',wiki:'https://aqwwiki.wikidot.com/vayle-s-quests',methods:[{type:'Quest Reward',title:"Sepulchure's Armor",join:'/join necropolis',npc:'Vayle',details:'Quest reward; check required DoomKnight Hood and Dark Spirit Orbs in the wiki.',url:'https://aqwwiki.wikidot.com/vayle-s-quests'}]}
 ];
-function acquisitionFor(name){return window.AQWCRecipeIntegrity?.guidanceAcquisition(name)||window.AQWCRecipeIntegrity?.getAcquisition(name)||acquisitionCatalog.find(x=>normalizedName(x.name)===normalizedName(name))||communityAcquisition.get(communityKey(name))||null}
+function acquisitionFor(name){if(isBlodProject(name))return blodAcquisition;return window.AQWCRecipeIntegrity?.guidanceAcquisition(name)||window.AQWCRecipeIntegrity?.getAcquisition(name)||acquisitionCatalog.find(x=>normalizedName(x.name)===normalizedName(name))||communityAcquisition.get(communityKey(name))||null}
 function catalogToProject(entry){return {name:entry.name,type:entry.type||'Other',steps:(entry.ingredients||[]).map(([item,target])=>({label:`${item} ×${target}`,kind:target===1?'owned':'material',item,target}))}}
 // AQWWiki uses category suffixes like "(Sword)" and an alternate apostrophe in
 // "Elders' Blood". A player's exported inventory need not use those labels.
 const inventoryRecipeKey=name=>String(name||'').toLowerCase().trim()
  .replace(/\s*\((?:sword|class|misc)\)$/i,'')
+ .replace(/^blinding light of destiny \(axe\)$/,'blinding light of destiny')
  .replace(/^elders' blood$/,"elder's blood");
 const stock=item=>items.filter(x=>inventoryRecipeKey(x.Name)===inventoryRecipeKey(item)).reduce((a,b)=>a+Number(b.Count||1),0);
 const owned=item=>items.some(x=>inventoryRecipeKey(x.Name)===inventoryRecipeKey(item));
@@ -684,6 +813,7 @@ function canonicalWishlistType(name,type){
 function newProject(p){return{id:crypto.randomUUID(),name:p.name,type:canonicalWishlistType(p.name,p.type),createdAt:new Date().toISOString(),steps:(p.steps||[]).map(freshStep)}}
 
 function upgradeLegacyRecipes(){let changed=false;for(const p of unlocks){
+ if(upgradeBlodProject(p,freshStep))changed=true;
  // Fix pre-existing saved Wishlist categories (e.g. Necrotic Sword of the Abyss
  // once displayed as Misc despite the reviewed recipe saying Weapon).
  // Leave IDs, requirements and all player progress exactly as they were.
@@ -727,6 +857,16 @@ function projectProgress(project){
 }
 
 function appendWishlistGuidance(card,project){
+ if(isBlodProject(project.name)){
+  const panel=node('details',undefined,'wishlist-acquisition');
+  panel.append(node('summary','Recommended farm route · Mace → Bow → Blade'));
+  panel.append(node('p','The checklist below tracks final quest materials only. These weapons and route materials accelerate farming; they are not mandatory final ingredients. Skip any weapon or unlock you already have.','tiny'));
+  for(const [name,role] of [['Blinding Mace of Destiny','1 Brilliant Aura / 10 fragments'],['Blinding Bow of Destiny','5 Bright Auras / 10 fragments'],['Blinding Blade of Destiny','50 Spirit Orbs + 25 Loyal Spirit Orbs / 10 fragments'],['Blinding Scythe of Destiny','Optional: guaranteed Blinding Aura']]){
+   const row=node('div',undefined,'minirow');const btn=node('button',name,'itemlink');btn.type='button';btn.onclick=()=>openItemDetails(name,project.id);row.append(btn,node('small',(owned(name)?'Owned · ':'')+role,'muted tiny'));panel.append(row)
+  }
+  const how=node('button','Full farm route ↗','smallbutton');how.type='button';how.onclick=()=>openItemDetails(project.name,project.id);panel.append(how);
+  const guide=node('a','AQWG route reference ↗','tiny');guide.href='https://sites.google.com/view/aqwg-net/items/good/blinding-light-of-destiny';guide.target='_blank';guide.rel='noopener noreferrer';panel.append(guide);card.append(panel);return;
+ }
  const api=window.AQWCRecipeIntegrity;
  const info=api?.guidanceFor(project.name,communityItems.get(communityKey(project.name)),acquisitionFor(project.name));
  if(!info)return;
