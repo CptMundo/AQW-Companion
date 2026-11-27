@@ -56,12 +56,18 @@ async function main(){
   await page.setViewportSize({width:390,height:844});const bounds=await tour.boundingBox();assert.ok(bounds.x>=0&&bounds.x+bounds.width<=390&&bounds.y>=0&&bounds.y+bounds.height<=844);await page.locator('#aqwc-tour-skip').click();assert.ok(await tour.isHidden());await page.setViewportSize({width:1360,height:1100});
   await page.evaluate(stamp=>{const api=window.AQWCAccountProgress;if(!api)throw Error('Account progress module not loaded');api.save({section:'summary',capturedAt:stamp,created:'2021-01-01',months:12,purchased:20000,bonus:5000,total:25000});api.save({section:'sagas',capturedAt:stamp,rows:[{name:'Prologue',state:'colored'},{name:'Shadowfall',state:'colored'},{name:'Chiral Valley',state:'unknown'}]});api.save({section:'membership',capturedAt:stamp,rows:[{name:'1 Month',state:'colored',evidence:'threshold'},{name:'12 Months',state:'colored',evidence:'threshold'},{name:'2 Years',state:'gray',evidence:'threshold'}]})},stamp);
   const go=async(group,tab)=>{await page.locator('.primarynav [data-group="'+group+'"]').click();if(tab&&tab!=='overview'){const button=page.locator('.subnav [data-tab="'+tab+'"]');if(!await page.locator('#'+tab+'.active').count())await button.click();await page.locator('#'+tab+'.active').waitFor({state:'visible',timeout:15000})}};
+  await go('builds','forge');
+  assert.ok(await page.locator('#builds').isHidden(),'Class Builds view must remain hidden');
+  assert.ok(await page.locator('[data-tab="builds"]').isHidden(),'Class Builds navigation must remain hidden');
+  await page.locator('[data-tab="builds"]').dispatchEvent('click');
+  assert.ok(await page.locator('#forge.active').isVisible(),'Old builds navigation redirects to Forge');
+  assert.ok(await page.locator('#forge-list').isVisible(),'Forge progress remains accessible');
   await go('planner','planner-discover');
   for(let i=0;i<5;i++){const pin=page.locator('#planner-suggestions .planner-pin-action.is-unpinned').first();await pin.click({timeout:15000})}
   await go('planner','planner');
   await page.locator('#planner-my-tasks .planner-complete-action').first().click({timeout:15000});
   await go('home','overview');await shot(page,'home',page.locator('#dashboard'));
-  for(const [group,tab,name] of [['projects','unlocks','wishlist'],['planner','planner','quests'],['ultras','ultras','ultras'],['builds','builds','builds'],['story','story','story'],['badges','badge-hunter','badges'],['explore','discover','explore'],['inventory','inventory','inventory'],['inventory','account-stats','stats']]){
+  for(const [group,tab,name] of [['projects','unlocks','wishlist'],['planner','planner','quests'],['ultras','ultras','ultras'],['builds','forge','builds'],['story','story','story'],['badges','badge-hunter','badges'],['explore','discover','explore'],['inventory','inventory','inventory'],['inventory','account-stats','stats']]){
    await go(group,tab);await page.waitForTimeout(200);await shot(page,name,page.locator('#'+tab));
   }
   const popup=await context.newPage();await popup.setViewportSize({width:440,height:760});
