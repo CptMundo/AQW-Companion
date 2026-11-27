@@ -1415,10 +1415,10 @@ const starterBuilds={
  "ArchPaladin": {
   "solo": {
    "weapon": "Valiance",
-   "helm": "Vim",
+   "helm": "Forge",
    "cape": "Vainglory",
    "alternative": "Awe Blast for utility",
-   "note": "Tanky debuffs and solo sustain; Vim only if the HP trade-off is safe."
+   "note": "General solo example using base Forge helm to avoid the Vim END penalty. Check activity-specific gear."
   },
   "farm": {
    "weapon": "Valiance",
@@ -1805,7 +1805,7 @@ const simplifiedExtraEncounters=[
  {name:'Temple Shrine — Left',group:'Shrines',join:'/join templeshrine',wiki:'eclipse-ascent',sheet:'Temple Shrine',team:[sgLoO(),sgLR('Praxis'),sgSC(),sgCSH()],tips:['Use the hub to enter the left shrine. LoO taunts Lunar Haze after the gaze message vanishes; LR uses Praxis and taunt at the Moon Converges cue.']},
  {name:'Temple Shrine — Right',group:'Shrines',join:'/join templeshrine',wiki:'eclipse-ascent',sheet:'Temple Shrine',team:[sgLoO(),sgLR('Praxis'),sgVDK(),sgCSH()],tips:['Use the hub to enter the right shrine. LR taunts Dawn Knight after the warmth message vanishes and uses Praxis with taunt on Sun Converges. Check HP when choosing reduced-HP helms.']},
  {name:'Temple Shrine — Middle',group:'Shrines',join:'/join templeshrine',wiki:'eclipse-ascent',sheet:'Temple Shrine',team:[sgLoO(),sgLR('Praxis','Wizard'),sgAP('Arcana Concerto','Vainglory'),sgCSH('Arcana Concerto','Base Forge')],tips:['AP handles Dying Light at Sunlight Gathers with skill 4; LoO handles Lunar Haze; LR handles Dawn Knight. Alternate LR/DPS for Ascended Sunlight, using Praxis; LoO/AP alternate Ascended Moonlight.']},
- {name:'Astral Empyrean',group:'Shrines',join:'/join astralshrine',wiki:'astral-shrine',sheet:'Astral Shrine',team:[sgLoO(),sgLR(),sgVDK('Dauntless','Anima','Penitence'),sgSC(),sgAF('Ravenous','Penitence'),sgGW('Penitence'),sgPhantom()],tips:['Avoid the red zone. The “Behold our starfire!” cue precedes Cosmic Breath, which ignores Focus. Keep the party healthy before it; in phase 2 account for reduced incoming healing. Assigned taunters may redirect Astral Beam instead. Avoid deaths because the boss gains stats. Workbook warns against Vainglory while also listing it for some classes; use a safer cape pending verification.']},
+ {name:'Astral Empyrean',group:'Shrines',join:'/join astralshrine',wiki:'astral-shrine',sheet:'Astral Shrine',team:[sgLoO(),sgLR(),sgVDK('Dauntless','Anima','Penitence'),sgSC(),sgAF('Ravenous','Penitence'),sgGW('Penitence'),sgPhantom()],tips:['Avoid the red zone. The “Behold our starfire!” cue precedes Cosmic Breath, which ignores Focus. Keep the party healthy before it; in phase 2 account for reduced incoming healing. Assigned taunters may alternate after the breath lands to redirect the following Astral Beam autos; the breath itself cannot be redirected. Avoid deaths because the boss gains stats. Workbook warns against Vainglory while also listing it for some classes; use a safer cape pending verification.']},
  {name:'Mechabinky & Raxborg 2.0',group:'Grim Challenge',join:'/join grimchallenge',wiki:'grim-challenge',sheet:'Grimchallenge',team:[sgLoO(),sgLR('Arcana Concerto','Wizard'),sgVDK('Dauntless','Anima'),sgLH('Forge'),sgAP(),sgGW('Penitence'),sgPhantom('Vainglory')],tips:['Assign two taunters; other players equip Vigil. At 45M stop heals during inversion; taunt at 45M, 40M and 35M according to assignment. At 30M heal after HP drops to 1. At 25M damage increases; at 20M dodge rises. At 15M apply Decay and prepare mitigation. At 10M use Vigil on the cue. At 5M finish the DPS check.']},
  {name:'Celestial Arena',group:'Solo arenas',join:'/join celestialarena',wiki:'celestial-arena',sheet:'Celestial Arena',tips:['Solo quest sequence. Bring Awe enhancements and a class with reliable sustain, such as Master Ranger, StoneCrusher or Legion DoomKnight. Accept the corresponding quest before entering the arena.']},
  {name:'Infernal Arena — early bosses',group:'Solo arenas',join:'/join infernalarena',wiki:'infernal-arena',sheet:'Infernal Arena',tips:['For the early level 20–70 bosses, prioritize sustain with Awe enhancements; a damage-boosting weapon and Forge helm when unlocked are optional improvements.']},
@@ -2229,7 +2229,7 @@ function bossGuideRoleTips(profile,cls,role){
   exact('Legion Revenant','Dawn Knight','Handle Dawn Knight; alternate Ascended Sunlight with the assigned DPS using Praxis.');
   if(/DPS/.test(role||''))add('Ascended Sunlight','If assigned to the DPS position, alternate with Legion Revenant using Praxis.');
  }else if(name==='Astral Empyrean'){
-  if(is('Legion Revenant')||is('Verus DoomKnight'))add('Astral Beam assignment','Redirect the tauntable Astral Beam autos only as assigned. Cosmic Breath on the Starfire cue ignores Focus.');
+  if(is('Legion Revenant')||is('Verus DoomKnight'))add('Astral Beam assignment','In the documented timing example, alternate after the Starfire breath lands to intercept the following Astral Beam autos. The breath itself ignores Focus.');
   add('Survival','Cosmic Breath deals 75% of max HP; recover before the next breath, especially after the phase-2 healing reduction. Avoid the red zone and deaths. Prefer a safer cape than Vainglory.','AQW App mechanics');
  }else if(name==='Mechabinky & Raxborg 2.0'){
   add('Before pulling','Agree on two taunters; all other players equip Vigil.');
@@ -3179,7 +3179,7 @@ const enhancementEffects={
  Smite:'Skill 5 proc (15s cooldown): deals 500% hybrid damage.',
  "Arcana's Concerto":'50% auto-attack proc: +2% physical and magical damage taken per stack on the target, up to 11 stacks (+22%) for 22s.',
  'Arcana’s Concerto':'50% auto-attack proc: +2% physical and magical damage taken per stack on the target, up to 11 stacks (+22%) for 22s.',
- Elysium:'Skill 3: 250–1125% magic damage, stronger at low mana, up to two targets; Elysian grants mana regeneration, HoT and outgoing damage. See official trait for stacking details.',
+ Elysium:'Skill 3: magic damage to up to two targets, stronger at low mana; Elysian grants mana regeneration, HoT and outgoing damage. Published sources disagree on the damage coefficient; numerical value pending confirmation.',
  Acheron:'Skill 3 proc: +30% damage and Hit Chance for 6s, but applies a stacking self-DoT.',
  Anima:'Offensive physical Forge helm: +10% Hit Chance; boosts Strength but reduces Endurance/HP (level-dependent).',
  Pneuma:'Offensive magical Forge helm: +10% Hit Chance; boosts Intellect but reduces Endurance/HP (level-dependent).',
@@ -3230,10 +3230,7 @@ const classAlchemy={
 Object.assign(classAlchemy,window.AQWCMetaBuilds?.alchemy||{});
 function suggestedConsumables(cls,role){
  // No class/activity consumable combination has yet passed the evidence gate.
- const selected=null;if(!selected)return [];
- // Reorder to match the actual Tonic, Elixir, Potion categories.
- return [['Tonic',selected[0]],['Elixir',selected[1]],['Potion',selected[2]]]
-  .filter(([,name])=>alchemySources[name]&&alchemyEffects[name]).map(([kind,name])=>({kind,name,effect:alchemyEffects[name],source:'https://aqwwiki.wikidot.com/'+alchemySources[name]}));
+ return []; // Do not present legacy class-specific combinations as confirmed recommendations.
 }
 const enhancementMiniDescriptions={
  Lucky:'Crit-focused base stats',Wizard:'Magic-focused base stats',Fighter:'Physical base stats',Healer:'HP and healing stats',
@@ -3281,7 +3278,7 @@ function renderClassBuild(){
   const slot=node('div',undefined,'build-character-slot build-character-'+label.toLowerCase());
   const baseValue=suggestedBaseEnhancement(cls,role,label.toLowerCase());
   slot.append(node('span',emoji+' '+label,'build-slot-label'));
-  slot.append(node('strong',baseValue===value?value:baseValue+' → '+value));
+  slot.append(node('strong',value));
   slot.append(node('small',shortEnhancementEffect(value),'build-slot-mini'));
   const colorKey=value.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
   slot.dataset.enhancement=colorKey;
@@ -3348,7 +3345,7 @@ function renderClassBuild(){
   const base=suggestedBaseEnhancement(cls,role,label.toLowerCase());
   const group=node('div',undefined,'build-effect-group');
   group.append(node('strong',label,'build-effect-slot-title'));
-  const enchants=base===recommended?[base]:[base,recommended];
+  const enchants=[recommended];
   for(const enchant of enchants){
    const line=node('div',undefined,'build-effect-row build-effect-detail');
    const heading=node('strong',enchant,'build-effect-combo');
@@ -3357,7 +3354,7 @@ function renderClassBuild(){
   }
   expl.append(group);
  }
- expl.append(node('p','Trait effects and loadout suitability are separate; the combinations are not yet validated.','muted tiny'));const traitRef=node('a','Official enhancement traits ↗');traitRef.href='https://www.aq.com/lore/guides/enhancementtraits';traitRef.target='_blank';traitRef.rel='noopener noreferrer';expl.append(traitRef);
+ expl.append(node('p','Standard armor enhancements and fixed Forge patterns are separate. Trait effects do not establish that the combination is optimal.','muted tiny'));const traitRef=node('a','Official enhancement traits ↗');traitRef.href='https://www.aq.com/lore/guides/enhancementtraits';traitRef.target='_blank';traitRef.rel='noopener noreferrer';expl.append(traitRef);
  info.append(expl);
  const pots=node('section',undefined,'build-info-panel build-consumables-panel');
  pots.append(node('h4','Consumables · review pending'),node('p','No verified class/activity combination is available yet. Individual item effects are documented in the combat audit; consult the encounter guide before choosing consumables.','muted tiny'));
@@ -3395,17 +3392,17 @@ const FORGE_QUESTS_URL='https://aqwwiki.wikidot.com/cysero-s-forge-s-quests';
 const forgeCatalog=[
  ['Weapon','Forge','Level 30 · Blacksmithing Rank 4 · Escherion quest','Base Forge weapon enhancement'],
  ['Weapon','Lacerate','Level 40 · Blacksmithing Rank 5 · Hit Job quest','Additional physical damage and hit utility'],
- ['Weapon','Smite','Level 40+ · Blacksmithing progression; check quest page','Extra damage from your fifth skill'],
- ['Weapon','Praxis','Level 40+ · Blacksmithing progression; check quest page','Damage that builds on sustained targets'],
- ['Weapon','Acheron','Level 100 · Blacksmithing Rank 10 · story and item requirements','High-risk damage with a self-DoT'],
+ ['Weapon','Smite','Level 60 · Blacksmithing Rank 6 · Star Light, Star Bright','Extra damage from your fifth skill'],
+ ['Weapon','Praxis','Level 60 · Blacksmithing Rank 6 · Defeat Jaaku!','Damage that builds on sustained targets'],
+ ['Weapon','Acheron','Level 80 · Blacksmithing Rank 8 · Avatar of Fire · Void Lodestone','High-risk damage with a self-DoT'],
  ['Weapon','Valiance','Level 100 · Blacksmithing Rank 10 · The Final Challenge; class/item prerequisites','General-purpose core-stat buff'],
  ['Weapon','Elysium','Level 100 · Blacksmithing Rank 10 · Awe-scention','Mana support and magic damage'],
  ['Weapon',"Arcana's Concerto",'Level 100 · Blacksmithing Rank 10 · Darkon, the Conductor','Teamwide target damage debuff'],
  ['Weapon','Dauntless','Level 100 · Blacksmithing Rank 10 · Malgor progression; Insignias','High physical burst with healing penalty'],
- ['Weapon','Ravenous','Level 100 · The Fiend Shard\'s Finale','Damage against lower-HP targets'],
+ ['Weapon','Ravenous','Level 100 · The Fiend Shard\'s Finale · Gluttonous Maw','Damage against lower-HP targets'],
  ['Cape','Forge','Level 30 · Blacksmithing Rank 4 · Defeat Kitsune quest','Base Forge cape enhancement'],
- ['Cape','Absolution','Level 90 · Blacksmithing Rank 9 · Ascended Paladin gear','Boosts healing output'],
- ['Cape','Vainglory','Level 90 · Blacksmithing Rank 9 · after Absolution; Armor of Awe relics','More damage at the cost of healing'],
+ ['Cape','Absolution','Level 90 · Blacksmithing Rank 9 · five armor relics','Boosts healing output'],
+ ['Cape','Vainglory','Level 90 · Blacksmithing Rank 9 · after Absolution; check quest turn-ins','More damage at the cost of healing'],
  ['Cape','Avarice','Level 90 · Blacksmithing Rank 9 · after Vainglory; Indulgence/Penance','More haste at a defensive cost'],
  ['Cape','Penitence','Level 90 · Blacksmithing Rank 9 · after Avarice; boss materials','Damage resistance and DoT trade-off'],
  ['Cape','Lament','Level 90 · Blacksmithing Rank 9 · after Penitence; boss hearts','Critical chance with lower haste'],
@@ -3413,7 +3410,8 @@ const forgeCatalog=[
  ['Helm','Vim','Level 70 · Blacksmithing Rank 7 · Rogue Rank 10 · Ethereal Essence','Dexterity and mana-cost efficiency'],
  ['Helm','Examen','Level 70 · Blacksmithing Rank 7 · Healer Rank 10 · Ethereal Essence','Wisdom and mana-cost efficiency'],
  ['Helm','Anima','Level 70 · Blacksmithing Rank 7 · Warrior Rank 10 · Ethereal Essence','Physical offense with lower HP'],
- ['Helm','Pneuma','Level 70 · Blacksmithing Rank 7 · Mage Rank 10 · Ethereal Essence','Magic offense with lower HP']
+ ['Helm','Pneuma','Level 70 · Blacksmithing Rank 7 · Mage Rank 10 · Ethereal Essence','Magic offense with lower HP'],
+ ['Helm','Hearty','Level 80+ · Rank 7 Grimskull Trolling · complete the Gaol · Cashfear Shop','High END at the cost of other core stats']
 ].map(([slot,name,requirements,summary])=>({id:slot.toLowerCase()+':'+name.toLowerCase().replace(/[^a-z0-9]/g,''),slot,name,requirements,summary}));
 let forgeUnlocked=new Set();
 function loadForgeUnlocks(){
