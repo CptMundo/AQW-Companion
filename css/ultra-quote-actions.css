@@ -312,3 +312,27 @@ nav.tabs.subnav[aria-label="Section navigation"]:has(button[data-parent="ultras"
 #ultradetail .guide-v2-overview .ultra-focus-item{min-width:0;overflow-wrap:anywhere}
 #ultradetail .guide-v2-overview .guide-v2-focus-role{border-left:2px solid var(--cyan)}
 #ultradetail .guide-v2-overview .guide-v2-focus-prep{border-left:2px solid var(--muted)}
+
+/* Stretch the native class-selection button's hit area across its slot card.
+   The flexible select remains an independent, higher-layer control. */
+#ultradetail .guide-v2-builder .guide-v2-party .ultra-team-chip{position:relative;isolation:isolate;cursor:pointer}
+#ultradetail .guide-v2-builder .guide-v2-play-class{position:static!important;outline:none!important}
+#ultradetail .guide-v2-builder .guide-v2-play-class::after{content:"";position:absolute;inset:0;z-index:1;border-radius:inherit;cursor:pointer}
+#ultradetail .guide-v2-builder .guide-v2-play-class:hover{text-decoration:none;color:var(--txt)!important}
+#ultradetail .guide-v2-builder .ultra-team-chip:hover{border-color:var(--cyan)}
+#ultradetail .guide-v2-builder .ultra-team-chip:has(.guide-v2-play-class:focus-visible){outline:2px solid var(--cyan);outline-offset:2px}
+#ultradetail .guide-v2-builder .guide-v2-slot-select{position:relative;z-index:2;cursor:pointer}
+#ultradetail .guide-v2-builder .guide-v2-builder-controls>.guide-v2-builder-strategy{grid-template-rows:20px 40px}
+
+/* Explicit source-backed encounter cues: action category is also named in text. */
+#bossguidedetail .guide-v2-boss-cue{grid-column:1/-1;display:grid;gap:5px;min-width:0;padding:10px 12px;border:1px solid var(--line);border-left:3px solid var(--cue-color,var(--cyan));border-radius:8px;background:var(--panel2);overflow-wrap:anywhere}
+#bossguidedetail .guide-v2-boss-cue.cue-taunt,#bossguidedetail .guide-v2-boss-cue.cue-avoid{--cue-color:#e9a45c}
+#bossguidedetail .guide-v2-boss-cue.cue-heal{--cue-color:#79b99c}
+#bossguidedetail .guide-v2-boss-cue.cue-move{--cue-color:#e5b26e}
+#bossguidedetail .guide-v2-boss-cue.cue-vigil,#bossguidedetail .guide-v2-boss-cue.cue-mitigate{--cue-color:var(--cyan)}
+#bossguidedetail .guide-v2-cue-meta{display:flex;flex-wrap:wrap;justify-content:space-between;gap:5px;align-items:baseline}
+#bossguidedetail .guide-v2-cue-meta small{font-size:10px;font-weight:700;color:var(--muted)}
+#bossguidedetail .guide-v2-cue-action,#bossguidedetail .guide-v2-cue-signal{font-size:13px;color:var(--cue-color,var(--cyan));font-weight:800}
+#bossguidedetail .guide-v2-boss-cue p{margin:0!important;font-size:12px;line-height:1.45}
+#bossguidedetail .guide-v2-cue-fail{color:var(--muted)}
+#bossguidedetail .guide-v2-cue-unconfirmed{grid-column:1/-1;margin:0}

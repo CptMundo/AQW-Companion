@@ -105,10 +105,13 @@ async function main(){
    assert.equal(await party.getAttribute('data-variant-id'),id);
   };
   await classPick.selectOption('Verus DoomKnight');assert.ok((await detail.locator('.ultra-class-guide').innerText()).includes('Debuff the eyes'));
-  await classPick.selectOption('StoneCrusher');assert.equal(await party.locator('.guide-v2-play-class').count(),7);await party.locator('.guide-v2-play-class').filter({hasText:'Verus DoomKnight'}).click();assert.equal(await classPick.inputValue(),'Verus DoomKnight');assert.ok(await party.locator('.ultra-team-chip.is-you').getAttribute('data-cls')==='Verus DoomKnight');
+  await classPick.selectOption('StoneCrusher');assert.equal(await party.locator('.guide-v2-play-class').count(),7);const targetCard=party.locator('.ultra-team-chip[data-cls="Verus DoomKnight"]');await targetCard.scrollIntoViewIfNeeded();const roleBox=await targetCard.locator('.guide-v2-party-role').boundingBox();assert.ok(roleBox);await page.mouse.click(roleBox.x+Math.min(10,roleBox.width/2),roleBox.y+roleBox.height/2);assert.equal(await classPick.inputValue(),'Verus DoomKnight');assert.ok(await party.locator('.ultra-team-chip.is-you').getAttribute('data-cls')==='Verus DoomKnight');
   await page.locator('#ultracards button').filter({hasText:'Ultra Avatar Tyndarius'}).click();
   await chooseTeam('hub-cav','ArchPaladin');assert.equal(await strategyPick.locator('option').count(),1);assert.ok(await strategyPick.isHidden());assert.ok(await detail.locator('.guide-v2-strategy-static').isVisible());assert.ok(await party.locator('.guide-v2-slot-select').count());
   await chooseTeam('nand-ssot','ArchPaladin');assert.ok((await party.innerText()).includes('ShadowStalker of Time'));
+  const colleagueSlot=party.locator('.ultra-team-chip:not(.is-you) .guide-v2-slot-select');assert.ok(await colleagueSlot.isVisible());const previousClass=await classPick.inputValue();await colleagueSlot.click();assert.equal(await classPick.inputValue(),previousClass);await page.keyboard.press('Escape');await colleagueSlot.selectOption('hub-cav');assert.equal(await classPick.inputValue(),previousClass);assert.equal(await party.getAttribute('data-variant-id'),'hub-cav');
+  const keyboardSlot=party.locator('.guide-v2-play-class').filter({hasText:'Lord of Order'});await keyboardSlot.focus();await page.keyboard.press('Enter');assert.equal(await classPick.inputValue(),'Lord of Order');
+  assert.deepEqual(await detail.locator('.guide-v2-builder h3').allTextContents(),['Your class','Strategy','Team composition']);assert.ok(!(await detail.locator('.guide-v2-builder').innerText()).includes('documented lineup'));assert.equal(await detail.locator('.guide-v2-team-legend').count(),0);
   await chooseTeam('hub-ai','Arcana Invoker');assert.ok((await detail.locator('.ultra-class-guide').innerText()).includes('right orb'));
   const mine=party.locator('.ultra-team-chip.is-you .guide-v2-slot-select');assert.ok(await mine.isVisible());await mine.selectOption('hub-cav');assert.equal(await classPick.inputValue(),'Chaos Avenger');assert.equal(await party.getAttribute('data-variant-id'),'hub-cav');assert.ok((await detail.locator('.guide-v2-focus-role').innerText()).includes('Chaos Avenger'));assert.equal(await detail.locator('.guide-v2-overview .ultra-focus-item').count(),4);assert.equal(await detail.locator('.guide-v2-overview a[href*="location"]').count(),0);
   const fields=await detail.locator('.guide-v2-builder-controls').evaluate(e=>{const a=e.querySelector('.ultra-role-select').getBoundingClientRect(),b=e.querySelector('.guide-v2-strategy-static').getBoundingClientRect();return {dy:Math.abs(a.y-b.y),dh:Math.abs(a.height-b.height)}});assert.ok(fields.dy<2&&fields.dh<2,'Aligned class and strategy fields');
@@ -146,6 +149,10 @@ async function main(){
   await page.locator('#ultracatalog button').filter({hasText:'Celestial Arena'}).click();assert.ok((await page.locator('#bossguidedetail').innerText()).includes('Recommended classes'));assert.equal(await page.locator('#bossguidedetail .ultra-role-select').count(),0);
   await page.locator('#ultracatalog button').filter({hasText:'Temple Shrine — Middle'}).click();assert.equal(await page.locator('#bossguidedetail .ultra-role-select option').count(),4);
   await page.locator('#bossguidedetail .ultra-role-select').selectOption('Lord of Order');assert.ok((await page.locator('#bossguidedetail').innerText()).includes('Lunar Haze'));await assertColumns('#bossguidedetail .guide-v2-fight-columns',true,'Temple Shrine desktop');
+  await page.locator('#ultracatalog button').filter({hasText:'Void Xyfrag'}).click();const xy=page.locator('#bossguidedetail .guide-v2-boss-cue');assert.equal(await xy.count(),1);assert.ok((await xy.innerText()).includes('BLEEEEEEEEEEEECCH'));assert.ok((await xy.innerText()).includes('Taunt Consume'));assert.ok((await xy.innerText()).includes('2-second charge'));
+  await page.locator('#ultracatalog button').filter({hasText:'Void NerfKitten'}).click();assert.ok((await page.locator('#bossguidedetail .cue-taunt').innerText()).includes('Meow'));
+  await page.locator('#ultracatalog button').filter({hasText:'Astral Empyrean'}).click();assert.ok((await page.locator('#bossguidedetail .cue-heal').innerText()).includes('DO NOT TAUNT'));assert.ok((await page.locator('#bossguidedetail .cue-taunt').innerText()).includes('AFTER the hit'));assert.ok((await page.locator('#bossguidedetail .cue-move').innerText()).includes('The stars are ours to command.'));
+  await page.locator('#ultracatalog button').filter({hasText:'Empress Angler'}).click();assert.ok((await page.locator('#bossguidedetail .cue-heal').innerText()).includes('FULL HP'));
   await page.locator('#ultracatalog button').filter({hasText:'Void Nightbane'}).click();assert.ok((await page.locator('#bossguidedetail').innerText()).includes('100,000 HP'));assert.equal(await page.locator('#bossguidedetail .ultra-role-select').count(),0);
   const allBossCards=page.locator('#ultracatalog button');assert.equal(await allBossCards.count(),40);let published=0;
   for(let i=0;i<await allBossCards.count();i++){
@@ -180,11 +187,17 @@ async function main(){
   await page.setViewportSize({width:1360,height:1100});
   console.log('Guide geometry passed: all Ultra variants, all published other boss guides, mobile and desktop, theme samples.');
   await go('builds','forge');
-  assert.ok(await page.locator('#builds').isHidden(),'Class Builds view must remain hidden');
-  assert.ok(await page.locator('[data-tab="builds"]').isHidden(),'Class Builds navigation must remain hidden');
-  await page.locator('[data-tab="builds"]').dispatchEvent('click');
-  assert.ok(await page.locator('#forge.active').isVisible(),'Old builds navigation redirects to Forge');
+  assert.ok(await page.locator('[data-tab="builds"]').isVisible(),'Class Builds navigation restored');
   assert.ok(await page.locator('#forge-list').isVisible(),'Forge progress remains accessible');
+  await go('builds','builds');
+  assert.ok(await page.locator('#builds.active').isVisible());
+  assert.ok(await page.locator('#build-class option').count()>0,'Class options initialized');
+  await page.locator('#build-search').fill('Chrono ShadowHunter');
+  assert.equal(await page.locator('#build-class').inputValue(),'Chrono ShadowHunter');
+  assert.ok((await page.locator('#build-results').innerText()).trim().length>0);
+  await page.locator('#build-search').fill('');
+  await go('builds','forge');
+  assert.ok(await page.locator('#forge-list').isVisible());
   await go('planner','planner-discover');
   for(let i=0;i<5;i++){const pin=page.locator('#planner-suggestions .planner-pin-action.is-unpinned').first();await pin.click({timeout:15000})}
   await go('planner','planner');

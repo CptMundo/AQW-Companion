@@ -9,10 +9,10 @@ const groups=[...html.matchAll(/<button\b[^>]*data-group="([^"]+)"/g)].map(m=>m[
 const tabs=[...html.matchAll(/<button\b[^>]*data-tab="([^"]+)"[^>]*data-parent="([^"]+)"/g)].map(m=>({tab:m[1],group:m[2]}));
 const sections=[...html.matchAll(/<section\s+id="([^"]+)"\s+class="view\b/g)].map(m=>m[1]);
 assert.ok(groups.includes("builds"),"Existing navigation group remains stable");
-assert.ok(html.includes('<button data-group="builds">⚒️ Forge Tracker</button>'));
-assert.match(html,/<button data-tab="builds" data-parent="builds" hidden disabled tabindex="-1" aria-hidden="true" style="display:none!important">/);
-assert.match(html,/<section id="builds" class="view" hidden aria-hidden="true" inert style="display:none!important">/);
-assert.ok(html.includes("if(tab==='builds')tab='forge'"));
+assert.ok(html.includes('<button data-group="builds">⚒️ Builds &amp; Forge</button>'));
+assert.match(html,/<button data-tab="builds" data-parent="builds">/);
+assert.match(html,/<section id="builds" class="view">/);
+assert.ok(!html.includes("if(tab==='builds')tab='forge'"));
 assert.ok(html.includes("e.dataset.parent===group&&!e.hidden"));
 assert.ok(!groups.includes("forge"),"Forge belongs on secondary nav, not main nav");
 assert.equal(tabs.filter(t=>t.tab==="builds"&&t.group==="builds").length,1);
@@ -27,10 +27,11 @@ assert.equal((html.match(/id="forge-progress-label"/g)||[]).length,1,"Forge stat
 assert.ok(html.includes('function initForgeTracker()')&&html.includes('function loadForgeUnlocks()'));
 assert.ok(html.includes('function initClassBuildPlanner()'));
 assert.ok(html.includes("['Forge tracker',()=>{initForgeTracker()}]"));
+assert.ok(html.includes("['Class builds',()=>{initClassBuildPlanner()}]"));
 assert.ok(!html.includes("initClassBuildPlanner();initForgeTracker()"));
 assert.ok(siteCss.includes("#forge .forge-tracker-items"),"Forge CSS must target its own section");
 assert.ok(!siteCss.includes("#builds .forge-tracker-items"),"old selector cannot remain");
-assert.ok(html.includes("groupDefaults={")&&html.includes("builds:'forge'"),"normal tab navigation remains");
+assert.ok(html.includes("groupDefaults={")&&html.includes("builds:'builds'"),"normal tab navigation remains");
 for(const [i,m] of [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].entries()){
  if(m[1].trim())new vm.Script(m[1],{filename:"script-"+i});
 }
