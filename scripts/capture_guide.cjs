@@ -56,6 +56,11 @@ async function main(){
   await page.setViewportSize({width:390,height:844});const bounds=await tour.boundingBox();assert.ok(bounds.x>=0&&bounds.x+bounds.width<=390&&bounds.y>=0&&bounds.y+bounds.height<=844);await page.locator('#aqwc-tour-skip').click();assert.ok(await tour.isHidden());await page.setViewportSize({width:1360,height:1100});
   await page.evaluate(stamp=>{const api=window.AQWCAccountProgress;if(!api)throw Error('Account progress module not loaded');api.save({section:'summary',capturedAt:stamp,created:'2021-01-01',months:12,purchased:20000,bonus:5000,total:25000});api.save({section:'sagas',capturedAt:stamp,rows:[{name:'Prologue',state:'colored'},{name:'Shadowfall',state:'colored'},{name:'Chiral Valley',state:'unknown'}]});api.save({section:'membership',capturedAt:stamp,rows:[{name:'1 Month',state:'colored',evidence:'threshold'},{name:'12 Months',state:'colored',evidence:'threshold'},{name:'2 Years',state:'gray',evidence:'threshold'}]})},stamp);
   const go=async(group,tab)=>{await page.locator('.primarynav [data-group="'+group+'"]').click();if(tab&&tab!=='overview'){const button=page.locator('.subnav [data-tab="'+tab+'"]');if(!await page.locator('#'+tab+'.active').count())await button.click();await page.locator('#'+tab+'.active').waitFor({state:'visible',timeout:15000})}};
+  await go('ultras','ultras');
+  assert.ok(await page.locator('#ultradetail .ultra-role-select').isVisible());
+  assert.equal(await page.locator('#ultradetail .ultra-focus-gear').count(),0);
+  await go('ultras','boss-guides');
+  assert.equal(await page.locator('#bossguidedetail .ultra-focus-gear').count(),0);
   await go('builds','forge');
   assert.ok(await page.locator('#builds').isHidden(),'Class Builds view must remain hidden');
   assert.ok(await page.locator('[data-tab="builds"]').isHidden(),'Class Builds navigation must remain hidden');
