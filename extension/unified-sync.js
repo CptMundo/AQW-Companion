@@ -29,7 +29,11 @@ if(typeof document==='undefined'){
   if(!allowed){await chrome.tabs.create({url,active:true});throw Error(kind==='inventory'?'Source opened. Sign in if needed, then click Sync here.':'Character Page opened. Click Sync here after the inventory loads. No login needed.')}
   const found=await chrome.tabs.query({url:'https://account.aq.com/*'});
   tab=found.find(t=>sourceKind(t.url)===expected&&(kind==='inventory'||new URL(t.url).searchParams.get('id')===new URL(url).searchParams.get('id')));
-  return tab||await chrome.tabs.create({url,active:false});
+  if(tab)return tab;
+  const created=await chrome.tabs.create({url,active:false});
+  // Only a background Inventory tab opened by this job is ours to close.
+  if(kind==='inventory')job.ownedInventoryTabId=created.id;
+  return created;
  }
  async function waitSource(tab,kind){
   for(let i=0;i<50;i++){
@@ -115,6 +119,15 @@ if(typeof document==='undefined'){
   finally{if(tabId!==null)try{await chrome.tabs.remove(tabId)}catch{}}
  }
 
+ async function closeOwnedInventoryTab(){
+  const id=job?.ownedInventoryTabId;
+  if(!Number.isInteger(id))return;
+  try{
+   const tab=await chrome.tabs.get(id);
+   // Leave it open if the user switched to it or navigated away.
+   if(tab.active===false&&sourceKind(tab.url)==='inventory')await chrome.tabs.remove(id);
+  }catch{/* Tab already closed or inaccessible; sync remains successful. */}
+ }
  async function run(kind,tabId){
   if(job)return {ok:false,error:'Another sync is running.'};
   job={kind,id:crypto.randomUUID(),sourceId:null,phase:'opening'};
@@ -155,6 +168,7 @@ if(typeof document==='undefined'){
     let result;try{result=await syncAccountProgress(source,target)}catch{result={completed:[],failed:['progress'],reason:'Progress sync unavailable.'}}
     const count=snapshot.items.length,partial=result.failed.length>0;
     const label='✓ '+count+' inventory records · '+result.completed.length+'/'+(result.completed.length+result.failed.length)+' progress sections'+(partial?' · '+result.failed.length+' not synced'+(result.reason?' · '+result.reason:''):'');
+    if(!partial)await closeOwnedInventoryTab();
     await progress('done',label,count,count);return {ok:true,count,progress:result,partial};
    }
    if(kind==='public')await chrome.storage.local.set({[PUBLIC]:snapshot});
