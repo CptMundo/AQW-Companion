@@ -156,6 +156,29 @@
       milestones:milestoneList.map(m=>({...m,unlocked:m.value>=m.goal,percent:Math.min(100,Math.round(m.value/m.goal*100))}))
     };
   }
+  // Retrospective snapshot evidence only; tracker and catalog edits have no historical unlock timestamps.
+  function homeMilestoneHighlights(stats,snapshots){
+    const milestones=stats?.milestones||[];
+    const next=milestones.filter(m=>!m.unlocked&&m.goal>0).sort((a,b)=>b.value/b.goal-a.value/a.goal||(a.goal-a.value)-(b.goal-b.value)||a.name.localeCompare(b.name))[0]||null;
+    const ordered=(Array.isArray(snapshots)?snapshots:[]).filter(s=>Array.isArray(s?.items)&&captureTime(s)!==null).map((s,i)=>({s,i,time:captureTime(s)})).sort((a,b)=>a.time-b.time||a.i-b.i);
+    const eligible=milestones.filter(m=>m.unlocked&&!['Forge','Wishlist','Collection tags'].includes(m.group));
+    const seenAt=(row,index,m)=>{
+      if(!row)return false;
+      if(m.id==='import'||m.id.startsWith('snapshots'))return index+1>=m.goal;
+      const records=uniqueItems(row.s), type=m.id.match(/^(class|weapon|armor|helm|cape|misc)/)?.[1];
+      if(type)return [...records.values()].filter(x=>key(category(x.Type))===type).length>=m.goal;
+      if(m.id.startsWith('items'))return records.size>=m.goal;
+      return false;
+    };
+    let latest=null;
+    for(let i=ordered.length-1;i>=0;i--){
+      const row=ordered[i],prior=ordered[i-1];
+      if(prior&&prior.time===row.time)continue;
+      const crossed=eligible.filter(m=>seenAt(row,i,m)&&(prior?!seenAt(prior,i-1,m):m.id==='import'));
+      if(crossed.length){crossed.sort((a,b)=>b.goal-a.goal||a.name.localeCompare(b.name));latest={milestone:crossed[0],count:crossed.length,observedAt:row.time};break}
+    }
+    return {latest,next};
+  }
   function element(tag,cls,text){
     const e=document.createElement(tag);
     if(cls)e.className=cls;
@@ -383,5 +406,5 @@
     }
     root.append(element('p','aqwm-footnote','Personal Companion milestones based on your selected inventory and tracker data. These are not official AQWorlds badges.'));
   }
-  return {analyze,timeline,uniqueItems,category,render,renderMilestones};
+  return {analyze,timeline,uniqueItems,category,render,renderMilestones,homeMilestoneHighlights};
 });
