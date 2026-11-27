@@ -336,3 +336,9 @@ nav.tabs.subnav[aria-label="Section navigation"]:has(button[data-parent="ultras"
 #bossguidedetail .guide-v2-boss-cue p{margin:0!important;font-size:12px;line-height:1.45}
 #bossguidedetail .guide-v2-cue-fail{color:var(--muted)}
 #bossguidedetail .guide-v2-cue-unconfirmed{grid-column:1/-1;margin:0}
+
+/* Ownership group headings retain their semantic label; native menus may override colors. */
+#ultradetail .ultra-role-select optgroup.guide-v2-owned-group{color:#8ce6ac}
+#ultradetail .ultra-role-select optgroup.guide-v2-not-owned-group{color:#ff929c}
+#ultradetail .ultra-role-select optgroup:is(.guide-v2-owned-group,.guide-v2-not-owned-group) option{color:#dceaf7;font-weight:400}
+#ultradetail .guide-v2-strategy-select option:disabled{color:#8290a2}
