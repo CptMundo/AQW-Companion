@@ -2433,7 +2433,7 @@ function bossGuideRoleTips(profile,cls,role){
  const name=profile.name,is=n=>sameUltraClass(cls,n),rows=[];
  const add=(title,text,source='Community guide')=>rows.push({title,text,source});
  const exact=(n,title,tip)=>{if(is(n))add(title,tip)};
- if(name==='Void Flibbi')exact('Shaman','Skill restriction','Avoid Elemental Embrace and Elemental Grasp; the boss gains extreme dodge and resistance. Check the skill name for your class variant.');
+ if(name==='Void Flibbi')exact('Shaman','Skill restriction','Avoid Shaman’s skill 5 (Elemental Embrace) and the corresponding Elemental Grasp effect on class variants; the boss gains extreme dodge and resistance.');
  if(name==='Void Nightbane'){
   add('Survival and damage','Avoid Vainglory; favor rapid sustained hits over large individual nukes. Bring a Decay source to block Blood Frenzy’s 100,000 HP recovery; other healing effects may still occur.');
  }else if(name==='Void Xyfrag'){
@@ -2450,10 +2450,10 @@ function bossGuideRoleTips(profile,cls,role){
   exact('Legion Revenant','Dawn Knight / Sun Converges','Taunt after the warmth message vanishes; use Praxis with taunt on Sun Converges.');
   add('Survival','Check HP when using reduced-HP helms.');
  }else if(name==='Temple Shrine — Middle'){
-  exact('ArchPaladin','Dying Light','Use skill 4 at Sunlight Gathers; alternate Ascended Moonlight with Lord of Order.');
-  exact('Lord of Order','Lunar Haze','Handle Lunar Haze and alternate Ascended Moonlight with ArchPaladin.');
+  exact('ArchPaladin','Dying Light','Use skill 4 at Sunlight Gathers; alternate Ascended Midnight with Lord of Order.');
+  exact('Lord of Order','Lunar Haze','Handle Lunar Haze and alternate Ascended Midnight with ArchPaladin.');
   exact('Legion Revenant','Dawn Knight','Handle the assigned knight; alternate Ascended Solstice with the assigned DPS using Praxis.');
-  if(/DPS/.test(role||''))add('Ascended Sunlight','If assigned to the DPS position, alternate with Legion Revenant using Praxis.');
+  if(/DPS/.test(role||''))add('Ascended Solstice','If assigned to the DPS position, alternate with Legion Revenant using Praxis.');
  }else if(name==='Astral Empyrean'){
   if(is('Legion Revenant')||is('Verus DoomKnight'))add('Astral Beam assignment','In the documented timing example, alternate after the Starfire breath lands to intercept the following Astral Beam autos. The breath itself ignores Focus.');
   add('Survival','Stardust Breath deals 75% of max HP; recover before the next breath, especially after the phase-2 healing reduction. Avoid the red zone and deaths. Prefer a safer cape than Vainglory.','AQW App mechanics');
