@@ -29,4 +29,18 @@ Corrected class base recommendations to Wizard for Arcana Invoker, King's Echo, 
 
 Class/activity consumable combinations withheld (individual item effects retained in this audit). Unknown class base no longer defaults to Lucky. Add prominent review-pending wording to regular boss and Ultra guides, and link community templates on class build screen. No claim that all mechanics have been verified.
 
-Outstanding cross-checks: ArchPaladin solo Vim vs Forge; ArchFiend solo/farm Forge vs Anima; Dark Lord weapon/cape differences; ArchMage Astral/Corporeal modes; Dragon of Time Wizard/Healer variants; StoneCrusher general Wizard vs encounter Fighter; VHL farming legacy record is hidden; exact GT/AI and all boss-specific rotations remain pending. The workbook has 12 detailed Ultra profiles, 29 additional boss guide profiles and 11 catalog-only entries according to repository tests; these counts are inventory, not gameplay validation. CI must be checked on latest head, with bot-generated commit separately assessed. No live combat testing.
+ArchPaladin solo helm changed from Vim to Forge as a safer community template (not a tested optimum). Outstanding cross-checks: ArchFiend solo/farm Forge vs Anima; Dark Lord weapon/cape differences; ArchMage Astral/Corporeal modes; Dragon of Time Wizard/Healer variants; StoneCrusher general Wizard vs encounter Fighter; VHL farming legacy record is hidden; exact GT/AI and all boss-specific rotations remain pending. The workbook has 12 detailed Ultra profiles, 29 additional boss guide profiles and 11 catalog-only entries according to repository tests; these counts are inventory, not gameplay validation. CI must be checked on latest head, with bot-generated commit separately assessed. No live combat testing.
+
+## Third pass — mechanics and Forge corrections (2026-11-27)
+
+- Warden: Berserk at 30% (450k HP) is a permanent phase, not a tauntable cast; Celestial Shockwaves occur every 5% HP lost and can reduce affected players to 1 HP. Distinguish attack redirection from phase changes. https://aqw.app/monsters/ultrawarden
+- Ezrajal: 2-second counter charge, 6-second reflect, 40-second cooldown. https://aqw.app/monsters/ultraezrajal
+- Engineer: Defense Drone counter on 20-second interval, 2-second charge and 6-second reflect. https://aqw.app/monsters/ultraengineer
+- Drago: surviving guard heals and gains Ally Boost; boss is invulnerable while guards live; Judgement Day begins after 160 seconds with a 20-second charge and is not tauntable. https://aqw.app/monsters/ultradrago
+- Astral Empyrean: Stardust Breath ignores Focus; alternate taunts after breath lands to redirect following Astral Beam attacks, not the breath. https://aqw.app/monsters/astralshrine and https://aqw.alfian.web.id/astral-empyrean
+- Void Nightbane: remove false blanket Decay immunity; Blood Frenzy's 100,000 HP recovery is Decayable, unlike other heals. https://aqwwiki.wikidot.com/nightbane ; https://solarisaqw.lol/guides/ultra-dailies/originul
+- Void Xyfrag: correct Consume quote and identify role-dependent taunt. https://aqw.app/monsters/voidxyfrag
+- Forge: Smite/Praxis level 60 rank 6, Acheron level 80 rank 8; clarify Absolution relics and Ravenous Gluttonous Maw; add Hearty helm; distinguish standard armor base from fixed Forge patterns. https://aqwwiki.wikidot.com/cysero-s-forge-s-quests ; https://aqwwiki.wikidot.com/forge-helmet-enhancements ; https://aqwwiki.wikidot.com/cashfear-s-shop
+- Elysium: official and wiki coefficients differ; omit disputed coefficient pending validation rather than silently pick one. https://www.aq.com/lore/guides/enhancementtraits ; https://aqwwiki.wikidot.com/forge-weapon-enhancements
+
+These are source-backed corrections and conservative examples, not live-game test results. Other boss strategies, role-specific timings, item effects and rotations still need individual validation. No merge authorized. No extension code modified by these additional passes.
