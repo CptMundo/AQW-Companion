@@ -4784,6 +4784,8 @@ const verifiedRoutineTargets={
 for(const [id,targets] of Object.entries(verifiedRoutineTargets)){
  const t=taskCatalog.find(x=>x.id===id);if(!t)continue;
  taskRoutes[id]={npc:id.startsWith('board-')?'Daily Quest Board · /join yulgar':'Nulgath Challenge Pet · owned pet, no fixed map',targets,wiki:t.wiki};
+ if(id.endsWith('-contender-challenge')){t.note='Owner-only legacy pet quest; requires Lesser Bloodbeacon Polearm. Obtain the polearm from Oblivion in /join tercessuinotlim.';t.rewards=['Diamond of Nulgath ×1–3 OR Unidentified 13 ×1 OR Ultra Bloodbeacon Polearm +10 (one random reward)','2500 Gold','2500 XP']}
+ if(id.endsWith('-tenacity-challenge')){t.note='Owner-only legacy pet quest.';t.rewards=['Tainted Gem ×40 (choice)','Dark Crystal Shard ×40 (choice)','Blood Gem of the Archfiend ×10 (choice)','3000 Gold','3000 XP']}
 }
 for(const t of taskCatalog){const m=t.name.match(/^Daily Exercise ([1-6]):/);if(m&&t.wiki==='https://aqwwiki.wikidot.com/dage-the-evil-s-champion-quests'){const i=Number(m[1])-1;taskRoutes[t.id]={npc:'Dage the Evil · /join underworld',targets:[[legionBossNames[i],legionObjectives[i]+' ×1',legionFarmMaps[i]]],wiki:t.wiki}}}
 for(const boss of ultraGuides){
@@ -5154,6 +5156,24 @@ function plannerRewardParts(t){
  const items=all.filter(x=>!/^([\d,.]+\s*(Gold|XP)|(?:Gold|XP)\s*[:×x])/i.test(x));
  return {main:items.find(x=>/Insignia|Token|Relic/i.test(x))||items[0]||all[0]||'',all};
 }
+// Candidate maps from the existing community monster index. Exact names only;
+ // no fuzzy matching, no assumption that the acceptance map contains the target.
+function plannerObjectiveMapHints(target,lookup){
+ const raw=String(target||'').split(' — ').slice(1).join(' — ').trim();
+ if(!raw||typeof lookup!=='function')return [];
+ const candidates=[raw,...raw.split(/,\s+/)].map(x=>x.trim()).filter(Boolean);
+ const results=[],seen=new Set();
+ for(const monster of [...new Set(candidates)]){
+  const matches=lookup(monster);
+  if(!Array.isArray(matches))continue;
+  for(const loc of matches){
+   const join=typeof loc?.join==='string'&&/^\/join [a-z0-9-]{2,50}$/i.test(loc.join.trim())?loc.join.trim():null;
+   if(!join||seen.has(join))continue;
+   seen.add(join);results.push({monster,join,name:loc.name||''});
+  }
+ }
+ return results.slice(0,4);
+}
 function taskCard(t,pinned){const done=taskDone(t),conflict=routineConflict(t);
  const card=node('article',undefined,'task-card planner-quest-card'+(done?' done':''));
  const category=plannerCategory(t),art=plannerArt(t);
@@ -5172,10 +5192,11 @@ function taskCard(t,pinned){const done=taskDone(t),conflict=routineConflict(t);
  if(reward.all.length){const rewards=node('div',undefined,'planner-quest-rewards');rewards.append(node('small','Rewards','planner-quest-label'));for(const x of reward.all)rewards.append(node('div',x,'planner-reward-item'));details.append(rewards)}
  if(pinned&&Array.isArray(t.sourceProjects)&&t.sourceProjects.length)details.append(node('small','🎯 '+t.sourceProjects.join(' · '),'task-project'));
  if(t.note)details.append(node('small',t.note,'task-unverified'));
+ const unresolvedTargets=[];
  const routes=node('div',undefined,'planner-quest-routes');
  const route=(label,join)=>{const row=node('div',undefined,'planner-quest-route');row.append(node('small',label,'planner-quest-label'),makeCopyJoin(join));routes.append(row)};
  const accept=t.acceptJoin||(!t.farmJoin?t.join:'');
- if(accept)route(t.kind==='activity'?'Activity location':'Accept quest',accept);
+ if(accept)route(t.kind==='activity'?'Activity location':t.id.startsWith('user-')?'Location':'Accept quest',accept);
  const farm=t.farmJoin||(t.acceptJoin&&t.join!==t.acceptJoin?t.join:'');
  if(farm&&!(info?.targets||[]).some(x=>x[2]===farm))route('Farm / boss',farm);
  if(routes.children.length)details.append(routes);
@@ -5184,8 +5205,17 @@ function taskCard(t,pinned){const done=taskDone(t),conflict=routineConflict(t);
  if(info?.targets?.length){
   for(const target of info.targets){const line=node('div',undefined,'task-target');line.append(node('strong',target[0]),node('small',target[1]));if(target[2])line.append(makeCopyJoin(target[2]));else line.append(node('small','Map not yet verified','task-unverified'));details.append(line)}
  }else if(t.targets?.length){
-  for(const target of [...new Set(t.targets)]){const line=node('div',undefined,'task-target');line.append(node('strong',target));const maps=[...new Set(String(target).match(/\/join [a-z0-9-]+\b/gi)||[])];for(const map of maps)line.append(makeCopyJoin(map));if(!maps.length&&t.kind!=='activity')line.append(node('small','Objective location not yet verified','task-unverified'));details.append(line)}
+  for(const target of [...new Set(t.targets)]){const line=node('div',undefined,'task-target');line.append(node('strong',target));const maps=[...new Set(String(target).match(/\/join [a-z0-9-]+\b/gi)||[])];for(const map of maps)line.append(makeCopyJoin(map));if(!maps.length&&t.kind!=='activity'){const hint=node('div',undefined,'planner-objective-hints');line.append(hint);unresolvedTargets.push([target,hint])}details.append(line)}
  }else details.append(node('small','Open the quest in-game to confirm its current objectives.','task-unverified'));
+ const refreshHints=()=>{
+  for(const [target,root] of unresolvedTargets){
+   const hints=plannerObjectiveMapHints(target,typeof communityLocationFor==='function'?communityLocationFor:null);
+   if(typeof root.replaceChildren==='function')root.replaceChildren();else root.children.length=0;
+   if(hints.length){root.append(node('small','Possible maps · community index; verify the quest drop in game','task-unverified'));for(const h of hints){const row=node('div',undefined,'planner-quest-route');row.append(node('small',h.monster,'planner-quest-label'),makeCopyJoin(h.join));root.append(row)}}
+   else root.append(node('small','Objective location not yet verified','task-unverified'));
+  }
+ };
+ refreshHints();details.ontoggle=()=>{if(details.open)refreshHints()};
  const wiki=node('a',t.kind==='activity'?'Activity source ↗':'Quest source ↗','task-wiki');wiki.href=info?.wiki||t.wiki||'https://aqwwiki.wikidot.com/daily-quest-board-s-quests';wiki.target='_blank';wiki.rel='noopener noreferrer';details.append(wiki);
  if(art){const credit=node('a','Image: AQWorlds Wiki / Artix ↗','task-wiki');credit.href=art.source;credit.target='_blank';credit.rel='noopener noreferrer';details.append(credit)}
  card.append(details);
