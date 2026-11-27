@@ -254,7 +254,7 @@ console.log("Beginner tips: rating 3–5, exact sword timing, skill names, gloss
 for(const [key,p] of [...Object.entries(compact.simplifiedProfiles),...compact.simplifiedExtraEncounters.map(p=>[p.name,p])]){
  for(const cls of compact.ultraClassOptions(key,p).flatMap(x=>x.names)){
   const gear=compact.ultraSuggestedGear(key,cls,p),exact=compact.ultraWorkbookBuild(p,cls);
-  const disputed=["greatthief","arcanainvoker"].includes(cls.toLowerCase().replace(/[^a-z0-9]/g,""));
+  const disputed=["greatthief","arcanainvoker"].includes(cls.toLowerCase().replace(/[^a-z0-9]/g,"")) || (key==='Astral Empyrean'&&exact?.cape==='Vainglory');
   if(!exact||disputed){assert.equal(gear,null,key+" / "+cls+" no evidence");continue;}
   assert.equal(gear.estimated,true,key+" / "+cls+" source example is not verified");
   for(const slot of ["weapon","helm","cape","base"])if(gear[slot])assert.equal(gear[slot],exact[slot],key+" / "+cls+" / "+slot+" must not be fabricated");
