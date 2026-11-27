@@ -1232,15 +1232,15 @@ const ultraBossCatalog=[
  {name:'God of the Depths',map:'kathooldepths',group:'Challenge / 7 players',guide:'kathool'},
  {name:'Ultra Alteon',map:'ultraalteon',group:'Legacy / special'},
  {name:'Ultra Brutalcorn',map:'ultrabrutalcorn',group:'Legacy / special'},
- {name:'Ultra Carnax',map:'ultracarnax',group:'Legacy / special'},
+ {name:'Ultra Carnax',map:'ultracarnax',group:'Legacy / special',wiki:'ultra-carnax',availability:'Legend access required; check quest prerequisites.'},
  {name:'Ultra Chairman',map:'ultrachairman',group:'Legacy / special',availability:'Rare member-only location; normal access not confirmed.'},
  {name:'Ultra Dreadfight',map:'ultradread',group:'Legacy / special'},
- {name:'Ultra Franken',map:'ultrafranken',group:'Seasonal'},
+ {name:'Ultra Franken',map:'ultrafranken',group:'Seasonal',availability:'Seasonal Legend location; availability is not guaranteed.'},
  {name:'Ultra Frostfang',map:'ultrafrostfang',group:'Seasonal'},
  {name:'Ultra Iara',map:'ultraiara',group:'Seasonal'},
  {name:'Ultra Kala',map:'ultrakala',group:'Seasonal'},
- {name:'Ultra Phedra',map:'ultraphedra',group:'Legacy / special'},
- {name:'Ultra Lionfang',map:'ultralionfang',group:'Legacy / special'}
+ {name:'Ultra Phedra',map:'ultraphedra',group:'Legacy / special',wiki:'ultra-phedra'},
+ {name:'Ultra Lionfang',map:'ultralionfang',group:'Legacy / special',wiki:'ultra-lionfang',availability:'Legend access required; check quest prerequisites.'}
 ];
 function renderUltraCatalog(){
  const root=$('ultracatalog');if(!root)return;
@@ -1762,7 +1762,7 @@ const ultraReviewedTactics={
 
 // Community workbook, Simplified bosses guide, supplied 2026-11-24.
 // Independent strategy examples; never mix a different party's taunt plan.
-const simplifiedGuideSource='https://www.reddit.com/r/AQW/comments/1u76wrp/aqw_guides_advanced_settings/';
+const simplifiedGuideSource='https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit';
 const sgBuild=(cls,weapon,base,helm,cape)=>({cls,weapon,base,helm,cape});
 const sgLoO=(cape='Penitence')=>sgBuild('Lord of Order','Awe Blast','Lucky','Base Forge',cape);
 const sgLR=(weapon='Arcana Concerto',helm='Pneuma')=>sgBuild('Legion Revenant',weapon,'Wizard',helm,'Lament');
@@ -1805,7 +1805,7 @@ const simplifiedExtraEncounters=[
  {name:'Void Flibbi',group:'Void Bosses',join:'/join voidflibbi',wiki:'void-flibbitiestgibbet',sheet:'Void Bosses',team:sgVoidTeam(),tips:['Workbook warns Shaman users not to use skill 5.']},
  {name:'Void Nightbane',group:'Void Bosses',join:'/join voidnightbane',wiki:'void-nightbane',sheet:'Void Bosses',team:sgVoidTeam(true),tips:['Avoid Vainglory because healing is heavily reduced. Favor rapid sustained hits rather than large individual nukes. Bring a Decay source to block Blood Frenzy’s 100,000 HP recovery; other healing effects may still occur.']},
  {name:'Void Xyfrag',group:'Void Bosses',join:'/join voidxyfrag',wiki:'void-xyfrag',sheet:'Void Bosses',team:sgVoidTeam(false,true),tips:['Assign a durable taunter to redirect Consume on the “BLEEEEEEEEEEEECCH” cue; LR, VDK or Legendary Hero are community options, depending on setup. Favor fast sustained damage. Finish promptly before the encounter becomes invulnerable.']},
- {name:'Void NerfKitten',group:'Void Bosses',join:'/join voidnerfkitten',wiki:'void-nerfkitten',sheet:'Void Bosses',team:sgVoidTeam(),tips:['Taunt the Meow cue; alternate LR and another durable support if possible because taunting applies a debuff. Favor rapid damage.']},
+ {name:'Void NerfKitten',group:'Void Bosses',join:'/join voidnerfkitten',wiki:'void-nerfkitten',sheet:'Void Bosses',team:sgVoidTeam(),tips:['Meow is a two-second warning before a stat-stealing attack. Agree an alternating durable taunt rotation; the debuff lasts 25 seconds and affected players empower the boss. Damage is capped at 20k per hit.']},
  {name:'Kasuko & Whirlpool',group:'Lavarock Shore',join:'/join lavarockshore',wiki:'lavarock-shore',sheet:'Lavarock Shore',team:[sgLoO(),sgLR(),sgVDK(),sgSC(),sgAF(),sgCSH(),sgCSH()],tips:['Seasonal encounter. Kasuko charges for 3 seconds at 90%, 70%, 50%, 30% and 10% HP, then deals 90% of current HP; Focus cannot redirect this attack. Recover immediately. At 60% HP Enrage increases attack frequency and damage. Whirlpool-first is one community strategy, not mandatory.']},
  {name:'Temple Shrine — Left',group:'Shrines',join:'/join templeshrine',wiki:'eclipse-ascent',sheet:'Temple Shrine',team:[sgLoO(),sgLR('Praxis'),sgSC(),sgCSH()],tips:['Use the hub to enter the left shrine. LoO taunts Lunar Haze after the gaze message vanishes; LR uses Praxis and taunt at the Moon Converges cue.']},
  {name:'Temple Shrine — Right',group:'Shrines',join:'/join templeshrine',wiki:'eclipse-ascent',sheet:'Temple Shrine',team:[sgLoO(),sgLR('Praxis'),sgVDK(),sgCSH()],tips:['Use the hub to enter the right shrine. LR taunts Dawn Knight after the warmth message vanishes and uses Praxis with taunt on Sun Converges. Check HP when choosing reduced-HP helms.']},
@@ -2195,7 +2195,7 @@ const bossGuideOrder=["Void Bosses","Shrines","Solo arenas","Grim Challenge","Gr
 let selectedBossGuide='';const selectedBossClasses=new Map();
 function bossGuideEntries(profiles,legacy){
  return [...profiles.map((profile,i)=>({id:'guide-'+i,name:profile.name,group:profile.group,join:profile.join,wiki:profile.wiki,profile})),
-  ...legacy.filter(x=>!x.guide).map(x=>({id:'catalog-'+x.map,name:x.name,group:x.group,join:'/join '+x.map,wiki:x.map,profile:null}))];
+  ...legacy.filter(x=>!x.guide).map(x=>({id:'catalog-'+x.map,name:x.name,group:x.group,join:'/join '+x.map,wiki:x.wiki||x.map,availability:x.availability||'',profile:null}))];
 }
 function filterBossGuides(entries,term,category,classNames){
  const query=String(term||'').trim().toLowerCase();
@@ -2218,7 +2218,7 @@ function bossGuideRoleTips(profile,cls,role){
   if(is('Legion Revenant')||is('Verus DoomKnight'))add('Assigned taunt','Taunt Consume on the “BLEEEEEEEEEEEECCH” cue if assigned.');
   add('Damage window','Favor fast sustained damage; finish before invulnerability.');
  }else if(name==='Void NerfKitten'){
-  if(is('Legion Revenant'))add('Assigned taunt','Coordinate alternating taunts with another durable support on the Meow cue.');
+  if(is('Legion Revenant'))add('Assigned taunt','Coordinate alternating taunts with another durable support on Meow. Avoid repeated exposure to the 25-second stat-steal debuff.');
   else add('Taunt coordination','If assigned as the second durable taunter, alternate with Legion Revenant on the Meow cue.');
   add('Damage window','Favor rapid damage.');
  }else if(name==='Temple Shrine — Left'){
@@ -2277,7 +2277,7 @@ function renderBossGuideDetail(entry){
  const profile=entry.profile,header=node('div',undefined,'boss-guide-heading'),title=node('div',undefined,'boss-guide-title');
  title.append(node('h2',entry.name),node('small',entry.group+' · '+(profile?'Community guide · review pending':'Catalog only'),'muted'));
  header.append(title,makeCopyJoin(entry.join));root.append(header);
- if(!profile){const note=node('div',undefined,'boss-guide-panel');note.append(node('h3','Guide not yet verified'),node('p','This encounter is listed for discovery. No reviewed strategy or loadout is available; verify the location and seasonal availability.','muted'),bossGuideWiki(entry.wiki,'Wiki location ↗'));root.append(note);return}
+ if(!profile){const note=node('div',undefined,'boss-guide-panel');note.append(node('h3','Guide not yet verified'),node('p','This encounter is listed for discovery. No reviewed strategy or loadout is available; verify the location and seasonal availability.','muted'),...(entry.availability?[node('p',entry.availability,'muted')]:[]),bossGuideWiki(entry.wiki,'Wiki location ↗'));root.append(note);return}
  const key=profile.name;
  if(profile.team?.length){const team=node('section',undefined,'boss-guide-panel boss-guide-team');team.append(node('h3','Example team'));const chips=node('div',undefined,'boss-guide-chips');for(const member of profile.team){const owned=ultraOwned(member.cls);const chip=node('span',(owned?'✓ ':'')+member.cls,'boss-guide-chip'+(owned?' is-owned':''));chips.append(chip)}team.append(chips);root.append(team)}
  const layout=node('div',undefined,'boss-guide-layout'),rolePanel=node('section',undefined,'boss-guide-panel boss-guide-role-panel');
