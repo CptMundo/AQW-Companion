@@ -1,4 +1,4 @@
-# AQW Companion — Beta 0.13.0
+# AQW Companion — Beta 0.13.1
 
 Created by **CptMundo**. Unofficial AdventureQuest Worlds fan project, not affiliated with Artix Entertainment.
 
@@ -74,3 +74,7 @@ These modules load after the extracted legacy CSS; recipe/ultra JS is linked bef
 ## Release versioning
 
 The website and browser extension share one release version. `extension/manifest.json` is the canonical source. For each new release, run `python3 scripts/sync_release_version.py --set VERSION` (replace VERSION with the new numeric version); this updates every current release label in the site header/footer, class builds, popup, guide and README in one operation. Running the script without arguments synchronizes from an already edited manifest. CI runs `--check` and refuses inconsistent releases. The public package build validates the same version and embeds the freshly generated guide screenshots and checksum. Release PRs that change the download use a `feat/guide-assets-` branch so the ZIP and screenshots are also committed before merge. Use `0.13.1`, `0.13.2` etc. for maintenance releases, `0.14.0` for the next significant feature release, and `1.0.0` for the first stable release. The browser manifest keeps the numeric version separate from the human-readable Beta label. Local storage schema versions and stylesheet/script cache revisions remain independent.
+
+### Information integrity
+
+Current patch-specific gear rankings, role rotations and class consumable choices require separate evidence. Do not substitute general builds for missing encounter data. See `docs/COMBAT_INFORMATION_AUDIT.md`.

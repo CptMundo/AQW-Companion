@@ -1,4 +1,4 @@
-/* AQW Companion — curated current 2026 endgame builds, not a global tier ranking.
+/* AQW Companion — community build examples; not verified current-patch rankings.
  * Sources: linked community guides + official class wiki. No user/account data.
  * Read-only module; the current app imports this before its legacy inline script.
  */
@@ -48,14 +48,14 @@
     "category": "Meta solo / Ultra DPS · calendar",
     "source": "https://www.reddit.com/r/AQW/comments/1nrkvts",
     "guide": "https://aqwwiki.wikidot.com/phantom-chronomancer-class",
-    "base": "Lucky",
+    "base": "Wizard",
     "modes": {
       "solo": {
         "weapon": "Ravenous",
         "helm": "Examen",
         "cape": "Lament",
-        "alternative": "Valiance or Vainglory depending on boss and critical support",
-        "note": "High damage with debuff/sustain utility. Skill rotation and mana management differ from ShadowHunter."
+        "alternative": "Simplified solo example uses Ravenous / Wizard / Examen / Vainglory; Bootiest also lists Lament.",
+        "note": "Community sources agree on Ravenous / Examen but differ on cape choice. Do not claim current-patch optimality."
       },
       "group": {
         "weapon": "Ravenous",
@@ -73,23 +73,23 @@
   },
   "Kathool Adept": {
     "category": "Meta farmer · recent",
-    "source": "https://www.reddit.com/r/AQW/comments/1xdwz7f/what_are_your_thoughts_on_the_new_kathool_adept/",
+    "source": "https://www.reddit.com/r/AQW/comments/1xe1zgv/kathool_adept_is_the_best_farming_class_in_the/",
     "guide": "https://aqwwiki.wikidot.com/kathool-adept",
-    "base": "Lucky",
+    "base": "Wizard",
     "modes": {
       "solo": {
         "weapon": "Elysium",
         "helm": "Pneuma",
         "cape": "Vainglory",
         "alternative": "Valiance / Examen / Lament when your setup needs more crit or sustain",
-        "note": "Build Madness and maintain buffs. Elysium can help personal survival; match gear to incoming damage."
+        "note": "Madness is applied to enemies; Feeding is accumulated by the caster. Consult the official skill breakdown; this solo loadout is still untested."
       },
       "farm": {
         "weapon": "Valiance",
         "helm": "Pneuma",
-        "cape": "Vainglory",
-        "alternative": "Elysium when sustain is needed; Lament for low crit chance",
-        "note": "Strong room-to-room farmer after the October 2026 class release. Sustained Madness stacks matter; check mob HP."
+        "cape": "Lament",
+        "alternative": "Other cape and weapon combinations require activity-specific testing",
+        "note": "October 2026 community farming example: Wizard / Valiance / Pneuma / Lament. Performance varies by mob HP and latency; not a universal best-in-slot."
       },
       "group": {
         "weapon": "Valiance",
@@ -109,14 +109,14 @@
     "category": "Meta solo / defensive DPS",
     "source": "https://www.reddit.com/r/AQW/comments/1ttv3uq/hollowborn_vindicator/",
     "guide": "https://aqwwiki.wikidot.com/hollowborn-vindicator",
-    "base": "Lucky",
+    "base": "Wizard",
     "modes": {
       "solo": {
         "weapon": "Dauntless",
         "helm": "Forge",
         "cape": "Vainglory",
         "alternative": "Valiance + Pneuma + Lament for stable solo; Ravenous + Penitence for survivability",
-        "note": "Strong shield-based solo damage; skill 3 resets stacks. Dauntless demands careful shield/HP management."
+        "note": "Low-HP magical DPS with lifesteal and defensive effects. Focused Grace (3) consumes Grace Stolen for recovery and defense; the exact Forge combination remains under review."
       },
       "group": {
         "weapon": "Praxis",
@@ -149,8 +149,8 @@
         "weapon": "Dauntless",
         "helm": "Anima",
         "cape": "Vainglory",
-        "alternative": "Health Vamp + Forge helm + Penitence for harder-hitting rooms",
-        "note": "Multi-target chrono farmer; glass-cannon setup is risky with self-damage. Use defense when necessary."
+        "alternative": "Simplified high-DPS example: Ravenous / Lucky / Forge / Vainglory; sustain example uses Dauntless / Vim / Vainglory.",
+        "note": "Bootiest's farming template uses Dauntless / Anima / Vainglory. Different setups depend on survivability and target HP."
       }
     },
     "consumables": [
@@ -176,8 +176,8 @@
         "weapon": "Dauntless",
         "helm": "Forge",
         "cape": "Vainglory",
-        "alternative": "Health Vamp for survivability; Ravenous if a long-target fight favors it",
-        "note": "Very fast two-target farmer for moderate-HP rooms. Use defensive gear if mobs are dangerous."
+        "alternative": "Bootiest lists Anima instead of Forge; compare damage against HP loss.",
+        "note": "Simplified farming example uses Dauntless / Lucky / Forge / Vainglory; two sources differ on the helm. Not a universal optimum."
       },
       "group": {
         "weapon": "Ravenous",
@@ -197,7 +197,7 @@
     "category": "Popular accessible farmer",
     "source": "https://solarisaqw.lol/guides/classes/dark-lord",
     "guide": "https://aqwwiki.wikidot.com/dark-lord",
-    "base": "Lucky",
+    "base": "Wizard",
     "modes": {
       "solo": {
         "weapon": "Valiance",
@@ -207,11 +207,11 @@
         "note": "Can solo routine bosses but is primarily a farmer."
       },
       "farm": {
-        "weapon": "Valiance",
+        "weapon": "Elysium",
         "helm": "Pneuma",
-        "cape": "Lament",
-        "alternative": "Vim / Base Forge and Avarice for riskier speed farming",
-        "note": "Affordable multi-target farming option; is not a universal best-in-slot. Avarice trades defense for haste."
+        "cape": "Avarice",
+        "alternative": "Bootiest's template uses Elysium / Pneuma with Vainglory or Penitence; choose for HP and survival.",
+        "note": "Simplified Classes Guide full Forge farming column. Avarice reduces defense; not a universal optimum."
       }
     },
     "consumables": [
@@ -231,14 +231,14 @@
         "helm": "Vim",
         "cape": "Vainglory",
         "alternative": "Valiance or Lament; Forge helm for safer general use",
-        "note": "Excellent evasive single-target damage. Expensive/special class; short fights and group scaling can change ideal enhancement."
+        "note": "Withheld from public recommendation: community sources disagree about helm, cape and weapon by activity."
       },
       "group": {
         "weapon": "Ravenous",
         "helm": "Forge",
         "cape": "Penitence",
         "alternative": "Vim + Vainglory if boss mechanics permit an offensive setup",
-        "note": "Very strong DPS in coordinated groups. Has limited team utility besides damage; be mindful of mechanics."
+        "note": "Withheld from public recommendation until a matching encounter-specific rotation and build are confirmed."
       }
     },
     "consumables": [
