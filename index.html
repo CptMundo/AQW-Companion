@@ -1027,7 +1027,6 @@ function renderAccountProgressStats(){
   details.append(list);card.append(details,node('small','Imported '+new Date(v.capturedAt).toLocaleString(),'muted tiny'));if(v.rows.some(r=>r.evidence==='threshold'))card.append(node('small','Thresholds use the official summary from this sync; claiming the reward in game is not verified.','muted tiny'));sections.append(card);
  }
  box.append(sections);
- if(Object.values(all).some(v=>v.rows?.some(r=>r.state==='unknown')))box.append(node('p','Badge names were imported successfully. Unconfirmed visual states do not mean locked or incomplete. Review the story badges before marking chapters complete.','account-progress-note'));
  const actions=node('div',undefined,'account-progress-actions');const review=node('button','Review in Story Tracker ↗','smallbutton');review.type='button';review.onclick=()=>{selectTab('story');const d=$('story-evidence-review');if(d){d.open=true;d.scrollIntoView({block:'nearest'})}};actions.append(review);
  if(Object.keys(all).length){const clear=node('button','Clear imported progress snapshots','smallbutton');clear.type='button';clear.onclick=()=>{if(!confirm('Clear local Account Manager snapshots? Previously confirmed manual story statuses will remain.'))return;localStorage.removeItem(api.KEY);renderAccountProgressStats();renderStory()};actions.append(clear)}
  box.append(actions);root.append(box);
@@ -2315,6 +2314,8 @@ function ultraRecommendedTeam(b,profile){
  // Prefer the original guide composition; do not select teams by unverified ratings.
  return (b.team?.length?b.team:source).slice();
 }
+function classInExampleTeam(names,cls){return names.some(name=>sameUltraClass(name,cls))}
+function preferExampleClass(select,names){const options=Array.from(select.options);const match=options.find(o=>classInExampleTeam(names,o.value)&&ultraOwned(o.value))||options.find(o=>classInExampleTeam(names,o.value));if(match)select.value=match.value;}
 function appendUltraRecommendedTeam(root,b,profile){
  const names=ultraRecommendedTeam(b,profile);if(!names.length)return;
  const wrap=node('section',undefined,'ultra-recommended-team');
@@ -2486,6 +2487,8 @@ function bossGuideRoleTips(profile,cls,role){
 function drawBossGuideRoleTips(root,profile,cls){
  root.replaceChildren();root.append(node('h3','Encounter guidance · community example'));root.append(node('p','Not a verified class-specific rotation. Confirm mechanics and assignments with the source guide.','muted tiny'));
  if(!cls){root.append(node('p','No class-specific loadout is documented for this encounter.','muted tiny'));return}
+ const team=(profile.team||[]).map(member=>member.cls);
+ if(team.length&&!classInExampleTeam(team,cls)){root.append(node('p','This class is not in the displayed example team. A compatible strategy has not been established here. Use a matching team guide before attempting the encounter.','muted tiny'));return}
  const role=ultraSelectedRating(profile.name,cls)?.role;
  const context=node('p','Playing as '+cls+(role?' · '+role:''),'boss-guide-role-context');root.append(context);
  const list=node('div',undefined,'boss-guide-steps');
@@ -2509,6 +2512,7 @@ function renderBossGuideDetail(entry){
  if(names.length){
   const setup=node('section',undefined,'boss-guide-panel boss-guide-loadout'),heading=node('h3',publicEncounterLoadouts?'Your Loadout':'Your class');setup.append(heading);
   const select=node('select',undefined,'ultra-role-select');select.setAttribute('aria-label',key+' class');fillUltraClassSelect(select,key,profile);
+  preferExampleClass(select,(profile.team||[]).map(member=>member.cls));
   if(names.includes(selectedBossClasses.get(key)))select.value=selectedBossClasses.get(key);
   const rating=node('div',undefined,'ultra-selected-rating'),gear=node('div',undefined,'ultra-focus-gear');
   const draw=()=>{selectedBossClasses.set(key,select.value);renderUltraSelectedRating(rating,key,select.value);if(publicEncounterLoadouts){gear.replaceChildren();const genericKey=Object.keys(starterBuilds).find(x=>sameUltraClass(x,select.value));const build=ultraSuggestedGear(key,select.value,profile,starterBuilds[genericKey]?.group);appendUltraGearCells(gear,build,key);heading.textContent=build?'Loadout · Community example':'Loadout · Review pending';gear.title='Not a verified best-in-slot recommendation';}drawBossGuideRoleTips(rolePanel,profile,select.value);};
@@ -2673,6 +2677,7 @@ function renderUltraDetail(b){
  const selectorRow=node('div',undefined,'ultra-focus-selector');
  const select=node('select',undefined,'ultra-role-select');
  fillUltraClassSelect(select,b.id,profile,[...b.team,...(b.alternate||[])]);
+ const exampleNames=ultraRecommendedTeam(b,profile);preferExampleClass(select,exampleNames);
  const savedClass=selectedUltraClasses.get(b.id);if(savedClass&&Array.from(select.options).some(o=>o.value===savedClass))select.value=savedClass;
  selectorRow.append(node('span','Class'),select);setup.append(selectorRow);
  const gear=node('div',undefined,'ultra-focus-gear');
@@ -2700,6 +2705,10 @@ function renderUltraDetail(b){
  root.append(mechanics);
  function updateRole(){
   const cls=select.value;selectedUltraClasses.set(b.id,cls);
+  if(exampleNames.length&&!classInExampleTeam(exampleNames,cls)){
+   rating.replaceChildren(node('span',ultraOwned(cls)?'✓ Owned':'Not owned',ultraOwned(cls)?'ultra-owned':'ultra-missing'));
+   roleName.textContent=cls;mechanicsTitle.textContent='👤 Strategy not available for this class';sequence.replaceChildren(node('p','This class is not in the displayed example team. A compatible strategy has not been established here. Select a class in the example team or consult a matching team guide.','muted tiny'));return;
+  }
   const playKey=Object.keys(ultraRolePlaybooks[b.id]||{}).find(x=>sameUltraClass(x,cls)),play=ultraRolePlaybooks[b.id]?.[playKey];
   const roleKey=[...roleMap.keys()].find(x=>sameUltraClass(x,cls)),role=roleMap.get(roleKey);
   const workbook=ultraWorkbookBuild(profile,cls);

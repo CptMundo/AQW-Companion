@@ -33,6 +33,7 @@ function captureAccountProgress(summary=null){
    if(statuses.size>1)return 'unknown';
    if(statuses.size===1)return [...statuses][0];
    if(otherFilter)return 'unknown';
+   if(!img.complete||!img.naturalWidth)return 'unknown';
    const canvas=document.createElement('canvas');canvas.width=32;canvas.height=32;const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,32,32);const pixels=ctx.getImageData(0,0,32,32).data;
    let count=0,colored=0;for(let i=0;i<pixels.length;i+=4){if(pixels[i+3]<200)continue;count++;if(Math.max(pixels[i],pixels[i+1],pixels[i+2])-Math.min(pixels[i],pixels[i+1],pixels[i+2])>40)colored++}
    if(count>300&&colored/count>0.2)state='colored';else if(count>300&&colored/count<0.02)state='gray';
@@ -49,8 +50,14 @@ function captureAccountProgress(summary=null){
    if(labels.length===1){name=labels[0];break}
    const full=normalize(card.innerText);if(names.includes(full)){name=full;break}
   }
-  if(!name||rows.some(r=>r.name===name))continue;
-  const art=allowedArt(img.currentSrc||img.src),state=img.complete&&img.naturalWidth?evidence(img,card):'unknown';
+  // Exact accessible image names support cards with decorative sibling images.
+  const imageNames=[...new Set(['alt','title','aria-label'].map(k=>normalize(img.getAttribute(k))).filter(x=>names.includes(x)))];
+  if(imageNames.length>1||(name&&imageNames.length===1&&imageNames[0]!==name))continue;
+  if(!name&&imageNames.length===1){name=imageNames[0];card=img}
+  if(!name)continue;
+  const art=allowedArt(img.currentSrc||img.src),state=evidence(img,card);
+  const existing=rows.find(r=>r.name===name);
+  if(existing){if(existing.state!==state){existing.state='unknown';delete existing.art}continue}
   rows.push({name,state,...(art?{art}:{})});
  }
  for(const name of names)if(!rows.some(r=>r.name===name)&&lines.includes(name))rows.push({name,state:'unknown'});
