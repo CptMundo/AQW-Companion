@@ -59,7 +59,7 @@ assert.ok(html.includes('mana costs +25% for 35 sec.'));
 assert.ok(!html.includes('Spell Power +25% for 15 min.'));
 assert.ok(!html.includes('Mana Cost +15% for 35 sec.'));
 assert.ok(html.includes('Your default assignment is damage, not taunting.'));
-assert.ok(html.includes('loadout under review'));
+assert.ok(html.includes('loadout under review'));assert.ok(html.includes('May 2026 benchmark'));
 assert.ok(html.includes('Community example — not independently validated'));
 console.log('Information integrity guards passed.');
 

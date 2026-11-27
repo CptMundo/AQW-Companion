@@ -55,7 +55,7 @@ assert.ok(!html.includes('<option value="group">Group / Ultras</option>'),"Class
 assert.ok(html.includes("No recommended "),"Unsupported roles show truthful explanation");
 assert.ok(html.includes("Same skills as "),"Alias explanations available");
 assert.ok(html.includes("Build reference"),"Source links shown in UI");
-assert.ok(html.includes("if(build.note)"),"Read role notes out in the page");
+assert.ok(html.includes("Community example — current patch / activity review pending"),"Do not present unverified legacy notes as fact");assert.ok(html.includes("May 2026 benchmark"),"Show the source and date of the corrected VHL example");
 assert.ok(html.includes("if(build.alternative)"),"Show viable alternatives");
 assert.ok(css.includes(".build-meta-sources"));
 for(const [i,script] of [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].entries()){

@@ -1369,10 +1369,10 @@ const starterBuilds={
  "Void Highlord": {
   "solo": {
    "weapon": "Dauntless",
-   "helm": "Vim",
+   "helm": "Anima",
    "cape": "Vainglory",
-   "alternative": "Valiance or Smite if Dauntless is locked",
-   "note": "High solo DPS; use safer cape on lethal bosses."
+   "alternative": "Lament instead of Vainglory (May 2026 community test)",
+   "note": "Community test from May 2026 used Dauntless / Lucky / Anima with Lament or Vainglory; not a current-patch universal BiS."
   },
   "farm": {
    "weapon": "Dauntless",
@@ -1912,7 +1912,7 @@ function renderUltraSelectedRating(target,key,cls){
  target.replaceChildren();
  target.append(node('span',ultraOwned(cls)?'✓ Owned':'Not owned',ultraOwned(cls)?'ultra-owned':'ultra-missing'));
  const score=ultraSelectedRating(key,cls);
- if(score)target.append(node('span',score.role+' · community role','muted tiny'));
+ if(score)target.append(node('span',(sameUltraClass(cls,'Great Thief')?'DPS':score.role)+' · community role','muted tiny'));
 }
 
 // Small, source-reviewed glossary. No dependency on later Class Builds globals.
@@ -3246,7 +3246,7 @@ function shortEnhancementEffect(name){return enhancementMiniDescriptions[name]||
 function renderClassBuild(){
  const cls=$('build-class')?.value,role=$('build-role')?.value,root=$('build-results');if(!root)return;root.replaceChildren();
  const build=starterBuilds[cls]?.[role],meta=window.AQWCMetaBuilds?.metadata?.[cls];
- const disputed=sameUltraClass(cls,'Great Thief')||(sameUltraClass(cls,'Void Highlord')&&role==='solo')||(sameUltraClass(cls,'Arcana Invoker')&&role!=='farm');
+ const disputed=sameUltraClass(cls,'Great Thief')||(sameUltraClass(cls,'Arcana Invoker')&&role!=='farm');
  if(disputed){const panel=node('div',undefined,'build-empty');panel.append(node('strong',cls+' — loadout under review'),node('p','This preset was flagged by experienced players. It is withdrawn rather than replaced with another untested build.'));const url=sameUltraClass(cls,'Great Thief')?'https://aqwwiki.wikidot.com/great-thief':sameUltraClass(cls,'Void Highlord')?'https://aqwwiki.wikidot.com/void-highlord-class':'https://aqwwiki.wikidot.com/arcana-invoker';const link=node('a','Current class skills ↗');link.href=url;link.target='_blank';link.rel='noopener noreferrer';panel.append(link);root.append(panel);return}
  if(!build){
   const roleName={solo:'Solo / Boss',farm:'Farming',group:'Group / Ultras'}[role]||role;
@@ -3263,7 +3263,8 @@ function renderClassBuild(){
   if(meta.canonical!==cls)identity.append(node('span','Same skills as '+meta.canonical,'build-meta-alias'));
   panel.append(identity);
  }
- panel.append(node('p','Legacy community example — current patch / activity review pending. Not a verified best-in-slot loadout.','build-meta-note'));
+ panel.append(node('p','Community example — current patch / activity review pending. Not a verified best-in-slot loadout.','build-meta-note'));
+ if(sameUltraClass(cls,'Void Highlord')&&role==='solo'){if(build.note)panel.append(node('p',build.note,'build-meta-note'));const refs=node('div',undefined,'build-meta-sources');for(const [label,url] of [['May 2026 benchmark','https://www.reddit.com/r/AQW/comments/1thhrix/tierlist_for_solo_and_farming/'],['Basic Class Guide','https://github.com/Shell1010/AQW-md/blob/main/Other%20Guides/Basic%20Class%20Guide.md']]){const a=node('a',label+' ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';refs.append(a)}panel.append(refs);}
  const layout=node('div',undefined,'build-character-layout');
  const mannequin=node('div',undefined,'build-mannequin');
  mannequin.innerHTML='<img class="build-artix-image" src="assets/artix.png" alt="Artix, AQWorlds paladin" loading="lazy" onerror="this.style.display=\'none\';this.parentElement.classList.add(\'build-artix-missing\')"><span class="build-artix-fallback">Artix artwork pending — add assets/artix.png to this PR.</span>'
