@@ -58,6 +58,17 @@ async function main(){
   const go=async(group,tab)=>{await page.locator('.primarynav [data-group="'+group+'"]').click();if(tab&&tab!=='overview'){const button=page.locator('.subnav [data-tab="'+tab+'"]');if(!await page.locator('#'+tab+'.active').count())await button.click();await page.locator('#'+tab+'.active').waitFor({state:'visible',timeout:15000})}};
   // An overflow-only assertion missed a 28px text track. Verify the actual
   // content box fills its card's usable width, at every tested viewport.
+  const assertColumns=async(selector,sideBySide,label)=>{
+   const m=await page.locator(selector).evaluate(grid=>{
+    const a=grid.querySelector('.guide-v2-personal'),b=grid.querySelector('.guide-v2-shared');
+    if(!a||!b)return null;
+    const x=a.getBoundingClientRect(),y=b.getBoundingClientRect();
+    return {ax:x.left,ay:x.top,ar:x.right,ab:x.bottom,bx:y.left,by:y.top};
+   });
+   assert.ok(m,label+': missing columns');
+   if(sideBySide)assert.ok(Math.abs(m.ay-m.by)<=3&&m.bx>=m.ar-1,label+': columns not side by side '+JSON.stringify(m));
+   else assert.ok(Math.abs(m.ax-m.bx)<=3&&m.by>=m.ab-1,label+': mobile columns not stacked '+JSON.stringify(m));
+  };
   const assertGuideWidth=async(selector,label)=>{
    const metrics=await page.locator(selector+' .guide-v2-step:visible').evaluateAll(steps=>steps.map(step=>{
     const body=step.querySelector('.ultra-role-step-body'),p=body?.querySelector('p'),s=getComputedStyle(step);
@@ -87,10 +98,16 @@ async function main(){
   await classPick.selectOption('Chaos Avenger');assert.ok((await page.locator('#ultradetail .ultra-class-guide').innerText()).includes('right orb'));
   await teamPick.selectOption('hub-ai');assert.ok(!(await classPick.locator('option').allTextContents()).some(x=>x.includes('Chaos Avenger')));
   await classPick.selectOption('Arcana Invoker');assert.ok((await page.locator('#ultradetail .ultra-class-guide').innerText()).includes('right orb'));
+  await page.locator('#ultracards button').filter({hasText:'Champion Drakath'}).click();
+  await assertColumns('#ultradetail .guide-v2-fight-columns',true,'Drakath desktop');
+  const controls=await page.locator('#ultradetail .guide-v2-control-grid').evaluate(e=>Array.from(e.children,x=>{const r=x.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right}}));assert.ok(controls[1].x>=controls[0].right-1&&Math.abs(controls[0].y-controls[1].y)<=3,'Team and class controls should share a row');
   await page.locator('#ultracards button').filter({hasText:'Ultra Speaker'}).click();
   await teamPick.selectOption('three-vhl');await classPick.selectOption('Void Highlord');
   assert.ok((await page.locator('#ultradetail .ultra-class-guide').innerText()).includes('Zone 1'));
   await classPick.selectOption('Lord of Order');assert.ok((await page.locator('#ultradetail .ultra-class-guide').innerText()).includes('Listen'));
+  assert.equal(await page.locator('#ultradetail .guide-v2-timing-table').count(),2);
+  assert.equal(await page.locator('#ultradetail .guide-v2-timing-table').nth(1).locator('tbody tr').count(),20);
+  assert.ok(await page.locator('#ultradetail .guide-v2-timing-table').first().isVisible());
   await page.locator('#ultracards button').filter({hasText:'Ultra Ezrajal'}).click();
   assert.ok(await page.locator('#ultradetail .guide-v2-class').isHidden());
   assert.ok((await page.locator('#ultradetail').innerText()).includes('Counter Attack'));
@@ -129,13 +146,14 @@ async function main(){
    await allUltraCards.nth(i).click();const pick=page.locator('#ultradetail [aria-label="Team composition"]');const opts=await pick.count()?await pick.locator('option').evaluateAll(os=>os.map(o=>o.value)):['single'];
    for(const id of opts){if(await pick.count())await pick.selectOption(id);await assertGuideWidth('#ultradetail','Ultra mobile '+i+' '+id)}
   }
+  await allUltraCards.filter({hasText:'Champion Drakath'}).click();await assertColumns('#ultradetail .guide-v2-fight-columns',false,'Drakath mobile');
   await page.setViewportSize({width:1360,height:1100});
   assert.equal(await page.locator('#ultradetail .ultra-focus-gear').count(),0);
   await go('ultras','boss-guides');
   assert.equal(await page.locator('#bossguidedetail .ultra-focus-gear').count(),0);
   await page.locator('#ultracatalog button').filter({hasText:'Celestial Arena'}).click();assert.ok((await page.locator('#bossguidedetail').innerText()).includes('Recommended classes'));assert.equal(await page.locator('#bossguidedetail .ultra-role-select').count(),0);
   await page.locator('#ultracatalog button').filter({hasText:'Temple Shrine — Middle'}).click();assert.equal(await page.locator('#bossguidedetail .ultra-role-select option').count(),4);
-  await page.locator('#bossguidedetail .ultra-role-select').selectOption('Lord of Order');assert.ok((await page.locator('#bossguidedetail').innerText()).includes('Lunar Haze'));
+  await page.locator('#bossguidedetail .ultra-role-select').selectOption('Lord of Order');assert.ok((await page.locator('#bossguidedetail').innerText()).includes('Lunar Haze'));await assertColumns('#bossguidedetail .guide-v2-fight-columns',true,'Temple Shrine desktop');
   await page.locator('#ultracatalog button').filter({hasText:'Void Nightbane'}).click();assert.ok((await page.locator('#bossguidedetail').innerText()).includes('100,000 HP'));assert.equal(await page.locator('#bossguidedetail .ultra-role-select').count(),0);
   const allBossCards=page.locator('#ultracatalog button');assert.equal(await allBossCards.count(),40);let published=0;
   for(let i=0;i<await allBossCards.count();i++){
@@ -156,6 +174,7 @@ async function main(){
    await allBossCards.nth(i).click();
    if(await page.locator('#bossguidedetail .guide-v2-step:visible').count())await assertGuideWidth('#bossguidedetail','Boss mobile '+i);
   }
+  await allBossCards.filter({hasText:'Temple Shrine — Middle'}).click();await assertColumns('#bossguidedetail .guide-v2-fight-columns',false,'Temple Shrine mobile');
   // Exercise real theme selection event (the options menu may be closed).
   for(const theme of ['dark','light','companion']){
    await page.locator('#aqwc-site-theme').evaluate((e,v)=>{e.value=v;e.dispatchEvent(new Event('change',{bubbles:true}))},theme);
