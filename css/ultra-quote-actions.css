@@ -234,3 +234,18 @@ nav.tabs.subnav[aria-label="Section navigation"]:has(button[data-parent="ultras"
 #ultradetail .guide-v2-timing-table td:first-child{font-weight:750;font-variant-numeric:tabular-nums;color:var(--cyan);width:3ch;white-space:nowrap}
 #ultradetail .guide-v2-timing-table tr:nth-child(even) td{background:var(--panel2)}
 @container(max-width:430px){#ultradetail .guide-v2-timing-table :is(th,td){padding:5px 6px}}
+
+/* Top row: team plus class picker on the left, overview on the right.
+   Combat instructions are full-width rows; only the Speaker chart is tabular. */
+#ultradetail .guide-v2-top-grid{align-items:stretch;grid-template-columns:minmax(0,1fr)}
+#ultradetail .guide-v2-top-grid>.guide-v2-overview{margin:0;min-width:0;padding:12px}
+#ultradetail .guide-v2-top-grid>.guide-v2-team{min-width:0}
+#ultradetail .guide-v2-top-grid .ultra-focus-grid{grid-template-columns:minmax(0,1fr);gap:8px}
+#ultradetail .guide-v2-top-grid .guide-v2-inline-class{border-top:1px solid var(--line);padding-top:10px;margin:4px 0 0;gap:6px;min-width:0}
+#ultradetail .guide-v2-inline-class h3{font-size:13px}
+#ultradetail .guide-v2-instruction-rows{display:grid;grid-template-columns:minmax(0,1fr);gap:7px;min-width:0}
+#ultradetail .guide-v2-instruction-rows>.guide-v2-step{width:100%;min-width:0;box-sizing:border-box}
+@container (min-width:620px){
+ #ultradetail .guide-v2-control-grid.guide-v2-top-grid,
+ #ultradetail .guide-v2-control-grid.guide-v2-top-grid:has(.guide-v2-class:not([hidden])){grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+}

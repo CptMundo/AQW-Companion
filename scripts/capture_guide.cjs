@@ -99,8 +99,10 @@ async function main(){
   await teamPick.selectOption('hub-ai');assert.ok(!(await classPick.locator('option').allTextContents()).some(x=>x.includes('Chaos Avenger')));
   await classPick.selectOption('Arcana Invoker');assert.ok((await page.locator('#ultradetail .ultra-class-guide').innerText()).includes('right orb'));
   await page.locator('#ultracards button').filter({hasText:'Champion Drakath'}).click();
-  await assertColumns('#ultradetail .guide-v2-fight-columns',true,'Drakath desktop');
-  const controls=await page.locator('#ultradetail .guide-v2-control-grid').evaluate(e=>Array.from(e.children,x=>{const r=x.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right}}));assert.ok(controls[1].x>=controls[0].right-1&&Math.abs(controls[0].y-controls[1].y)<=3,'Team and class controls should share a row');
+  assert.ok(await page.locator('#ultradetail .guide-v2-team .guide-v2-inline-class .ultra-role-select').isVisible(),'Your class is inside the team panel');
+  assert.deepEqual(await teamPick.locator('option').allTextContents(),['Chrono ShadowHunter · PCM Support','Void Highlord · LoO Taunts']);
+  assert.ok(await page.locator('#ultradetail .guide-v2-instruction-rows').isVisible());
+  const controls=await page.locator('#ultradetail .guide-v2-control-grid').evaluate(e=>Array.from(e.children,x=>{const r=x.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right}}));assert.ok(controls[1].x>=controls[0].right-1&&Math.abs(controls[0].y-controls[1].y)<=3,'Team and fight overview should share a row');
   await page.locator('#ultracards button').filter({hasText:'Ultra Speaker'}).click();
   await teamPick.selectOption('three-vhl');await classPick.selectOption('Void Highlord');
   assert.ok((await page.locator('#ultradetail .ultra-class-guide').innerText()).includes('Zone 1'));
@@ -125,6 +127,9 @@ async function main(){
     assert.ok((await page.locator('#ultradetail').innerText()).includes('Fight instructions'));
     assert.equal(await page.locator('#ultradetail .ultra-focus-gear').count(),0);
     await assertGuideWidth('#ultradetail','Ultra desktop '+i+' '+id);
+    const rowGeometry=await page.locator('#ultradetail .guide-v2-instruction-rows').evaluate(e=>{const parent=e.getBoundingClientRect();return [...e.children].map(c=>{const r=c.getBoundingClientRect();return {left:r.left,parentLeft:parent.left,width:r.width,parentWidth:parent.width}})});
+    assert.ok(rowGeometry.length&&rowGeometry.every(r=>Math.abs(r.left-r.parentLeft)<=3&&r.width>=r.parentWidth*.97),'Combat instructions must occupy full-width rows');
+    if(await pick.count())assert.ok((await pick.locator('option').allTextContents()).every(x=>!/workbook|accessible DPS|AQW Hub/i.test(x)),'Player-facing strategy names must describe the team');
     if(await classPick.isVisible()){
      for(const cls of await classPick.locator('option').evaluateAll(os=>os.map(o=>o.value))){
       await classPick.selectOption(cls);
@@ -146,7 +151,7 @@ async function main(){
    await allUltraCards.nth(i).click();const pick=page.locator('#ultradetail [aria-label="Team composition"]');const opts=await pick.count()?await pick.locator('option').evaluateAll(os=>os.map(o=>o.value)):['single'];
    for(const id of opts){if(await pick.count())await pick.selectOption(id);await assertGuideWidth('#ultradetail','Ultra mobile '+i+' '+id)}
   }
-  await allUltraCards.filter({hasText:'Champion Drakath'}).click();await assertColumns('#ultradetail .guide-v2-fight-columns',false,'Drakath mobile');
+  await allUltraCards.filter({hasText:'Champion Drakath'}).click();const mobileTop=await page.locator('#ultradetail .guide-v2-top-grid').evaluate(e=>Array.from(e.children,x=>{const r=x.getBoundingClientRect();return {x:r.x,y:r.y,bottom:r.bottom}}));assert.ok(Math.abs(mobileTop[0].x-mobileTop[1].x)<=3&&mobileTop[1].y>=mobileTop[0].bottom-1,'Top panels stack on mobile');
   await page.setViewportSize({width:1360,height:1100});
   assert.equal(await page.locator('#ultradetail .ultra-focus-gear').count(),0);
   await go('ultras','boss-guides');
