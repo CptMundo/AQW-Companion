@@ -100,7 +100,7 @@ assert.ok(!html.includes("Source-reviewed final merge requirements"),"Do not clu
 assert.ok(html.includes("section.append(node(\'h3\',\'Ingredients\'))"),"Recipe details use a short universal label");
 assert.ok(html.includes("Self-dependent quests are later stages"),"Reject self-dependent quest route as recipe");
 assert.ok(!html.includes("Verified merge ingredients")&&!html.includes("Verified final merge requirements"),"Unaudited recipes must not be labelled verified");
-assert.ok(html.indexOf("src=\"js/recipe-integrity.js\"")<html.indexOf("src=\"js/account-statistics.js?v=97\""),"Registry loads before app");
+const registryAt=html.indexOf('src="js/recipe-integrity.js"'),statsAt=html.search(/src="js\/account-statistics\.js\?v=\d+"/);assert.ok(registryAt>=0&&statsAt>registryAt,"Registry loads before app");
 assert.ok(css.includes(".recipe-coverage-line"));
 for(const [i,m] of [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].entries())
  if(!m[1].includes("src=")&&m[2].trim())new vm.Script(m[2],{filename:"index-inline-"+i});
