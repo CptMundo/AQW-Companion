@@ -86,7 +86,9 @@ async function main(){
   await page.locator('#ultracards button').filter({hasText:'God of the Depths'}).click();
   assert.ok(await page.locator('#ultradetail .ultra-role-select').isVisible());
   const detail=page.locator('#ultradetail'),classPick=detail.locator('[aria-label="Your class"]'),strategyPick=detail.locator('[aria-label="Team strategy"]'),party=detail.locator('.guide-v2-party');
-  const sourceLineups=async()=>party.evaluate(e=>ultraTeamFamilies(e.dataset.boss,ultraStrategyVariants({id:e.dataset.boss})).flatMap(f=>f.variants.map(v=>({id:v.id,family:f.id,names:v.names,slots:v.slots}))));
+  const sourceHtml=fs.readFileSync(path.join(root,'index.html'),'utf8'),sourceStart=sourceHtml.indexOf('const approvedUltraGuides='),sourceEnd=sourceHtml.indexOf('const approvedOtherBossGuides=',sourceStart),extraStart=sourceHtml.indexOf('const ultraExtraLineups='),extraEnd=sourceHtml.indexOf('function sourceOtherGuide(',extraStart);
+  const lineupApi=require('node:vm').runInNewContext(sourceHtml.slice(sourceStart,sourceEnd)+sourceHtml.slice(extraStart,extraEnd)+'\n({ultraTeamFamilies,ultraStrategyVariants})');
+  const sourceLineups=async()=>{const id=await party.getAttribute('data-boss');return lineupApi.ultraTeamFamilies(id,lineupApi.ultraStrategyVariants({id})).flatMap(f=>f.variants.map(v=>({id:v.id,family:f.id,names:v.names,slots:v.slots})))};
   const chooseTeam=async(id,cls)=>{
    const target=(await sourceLineups()).find(v=>v.id===id);assert.ok(target&&target.names.includes(cls),id+' '+cls);
    await classPick.selectOption(cls);if(await strategyPick.inputValue()!==target.family)await strategyPick.selectOption(target.family);
