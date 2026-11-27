@@ -651,3 +651,15 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.ok(html.includes("['Helm','Hearty',"));
  console.log('Combat information integrity wording regressions checked.');
 }
+
+// Combat audit: preserve source-specific warnings and no score-driven team swapping.
+{
+ assert.deepEqual(Array.from(compact.ultraRecommendedTeam({id:'drakath',team:['Void Highlord','Lord of Order'],alternate:['Great Thief','Arcana Invoker']},profile)),['Void Highlord','Lord of Order']);
+ const gaol=workbookApi.simplifiedExtraEncounters;
+ assert.ok(gaol.find(x=>x.name==='Treasure Chest — second').tips.join(' ').includes('75% of maximum HP'));
+ assert.ok(gaol.find(x=>x.name==='Reinforced Shelleton').tips.join(' ').includes('15% chance'));
+ assert.ok(gaol.find(x=>x.name==='Rampaging Cyborg').tips.join(' ').includes('invulnerable until all three'));
+ assert.ok(gaol.find(x=>x.name==='Mechabinky & Raxborg').tips.join(' ').includes('Devour was removed'));
+ assert.equal(workbookApi.simplifiedSpeakerPatterns.length,6);
+ assert.deepEqual(Array.from(workbookApi.simplifiedSpeakerPatterns,x=>x.roles.length),[20,20,20,20,31,30]);
+}
