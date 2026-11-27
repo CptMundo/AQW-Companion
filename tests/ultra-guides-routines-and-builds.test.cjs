@@ -21,7 +21,7 @@ const quote=guide.rows({
 assert.ok(quote.some(r=>r.quote==="You shall listen."&&r.text.includes("If assigned")));
 assert.ok(!html.includes("const caution=node('div','⚠ '+warning"),"Warning cards no longer rendered");
 assert.ok(!html.includes("vigil=node('div',undefined,'ultra-focus-timing')"),"No redundant Kathool quote callout card");
-assert.ok(html.includes("const personal=variant.roles[cls]"),"Only source-gated personal rows render");
+assert.ok(html.includes("const personal=matches?variant.roles[cls]:null"),"Only source-gated personal rows render");
 assert.ok(html.includes("ultra-role-mini-title"));
 assert.ok(html.includes("const publicEncounterLoadouts=false;"),"Do not present unverified class loadouts in encounter guides");
 assert.ok(html.includes("function ultraStrategyVariants"),"Keep unsupported substitutions out of active strategies");
@@ -165,7 +165,7 @@ assert.ok(!rating.children.some(x=>x.text.includes("Healer")),"Class change clea
 assert.ok(html.includes("fillStrategyClasses(select,allNames,selectedUltraClasses.get(b.id)"));
 assert.ok(html.includes("function ultraSuggestedGear(key,cls,profile,generic=null,encounter=null)"));
 assert.ok(html.includes("classInExampleTeam(exampleNames,cls)"));
-assert.ok(html.includes("const personal=variant.roles[cls]"));
+assert.ok(html.includes("const personal=matches?variant.roles[cls]:null"));
 assert.ok(html.includes("if(!variants.length)"),"Withhold unresolved strategies");
 assert.ok(!html.includes("Community workbook — suggested strategy"));
 assert.ok(!html.includes("Class suitability by role (community ratings)"));
