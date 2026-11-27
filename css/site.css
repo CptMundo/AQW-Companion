@@ -1368,11 +1368,11 @@ html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-i
 #ultradetail .guide-v2-class[hidden],#ultradetail .ultra-role-selected[hidden],#ultradetail .guide-v2-team-select[hidden]{display:none!important}
 #ultradetail .guide-v2-class-buttons button:disabled{cursor:default;opacity:1}
 
-/* Home: Calendar determines desktop row height, not the inventory feed. */
-#overview .home-main-grid>.home-inventory-changes{box-sizing:border-box;height:auto!important;min-height:0!important;overflow:hidden;gap:9px}
+/* Home: natural-height, compact previews; no nested inventory scrollbar. */
+#overview .home-main-grid>.home-inventory-changes{box-sizing:border-box;height:auto!important;min-height:0!important;overflow:visible;gap:6px}
 #overview .home-inventory-changes>.homehead,#overview .home-badge-discoveries{flex:0 0 auto}
-#overview .home-changes-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-gutter:stable;padding-right:3px}
-#overview .home-changes-scroll .home-delta{margin-top:0;max-height:none!important;overflow:visible!important}
+#overview .home-changes-content{flex:0 0 auto;min-width:0;overflow:visible}
+#overview .home-changes-content .home-delta{margin-top:0;max-height:none!important;overflow:visible!important}
 #overview .home-delta-new-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 #overview .home-delta-new-item{padding:7px 6px;gap:5px}
 #overview .home-delta-metrics-v2{margin-bottom:8px}
@@ -1392,8 +1392,8 @@ html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-i
 #overview .home-badge-discovery-art img{width:100%;height:100%;object-fit:contain}
 #overview .home-badge-discovery-name{display:grid;gap:2px;min-width:0}
 #overview .home-badge-discovery-name strong{font-size:12px;overflow-wrap:anywhere;line-height:1.25}
-@media(min-width:731px){#overview .home-main-grid>.home-inventory-changes{contain:size;align-self:stretch}}
-@media(max-width:730px){#overview .home-main-grid>.home-inventory-changes{max-height:540px}}
+@media(min-width:731px){#overview .home-main-grid>.home-inventory-changes,#overview .home-main-grid>.homeseason{align-self:stretch}}
+@media(max-width:730px){#overview .home-main-grid>.home-inventory-changes{max-height:none}}
 
 /* Privacy notice can be dismissed without hiding its permanent Options link. */
 #aqwc-privacy-notice{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
@@ -1407,3 +1407,41 @@ html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-i
 #overview .home-milestone-tile strong{font-size:12px;overflow-wrap:anywhere;line-height:1.25}
 #overview .home-milestone-tile small{font-size:10px;line-height:1.2}
 #overview .home-milestone-tile progress{width:100%;height:5px;accent-color:var(--green)}
+
+/* Compact Home rhythm: keep all bounded previews visible and both desktop cards aligned. */
+#overview .home-main-grid>.home-inventory-changes{padding:14px 16px}
+#overview .home-badge-discoveries,#overview .home-milestone-highlights{padding:5px 8px}
+#overview .home-badge-discovery-head{margin-bottom:3px;gap:4px}
+#overview .home-badge-discovery-art{width:38px;height:38px;flex-basis:38px}
+#overview .home-badge-discovery-count{gap:0}
+#overview .home-badge-discovery-count strong{font-size:20px}
+#overview .home-milestone-tile{gap:2px}
+#overview .home-delta-caption{margin:0 0 5px}
+#overview .home-delta-metrics-v2{gap:5px;margin:0 0 6px}
+#overview .home-delta-metrics-v2 .home-delta-metric{display:grid;grid-template-columns:auto auto;justify-content:center;align-items:center;column-gap:4px;row-gap:0;padding:4px 3px}
+#overview .home-delta-metrics-v2 .home-delta-metric strong{font-size:17px;line-height:1.1}
+#overview .home-delta-metrics-v2 .home-delta-metric small{grid-column:1/-1;font-size:10px;line-height:1.2}
+#overview .home-delta-highlight-head{margin-bottom:4px}
+#overview .home-quantity-changes{margin-top:5px}
+#overview .home-quantity-list{gap:3px}
+#overview .home-quantity-row{padding:4px 7px;gap:5px;line-height:1.25}
+#overview .home-quantity-more{margin-top:4px;padding:3px 7px}
+#overview .home-delta-new-grid{gap:4px}
+#overview .home-delta-new-item{padding:4px 6px;line-height:1.3}
+#overview .home-delta-footnote{margin:5px 0 0;line-height:1.25}
+#overview .home-inventory-changes .home-wishlist-wins{margin:6px 0;padding:5px 7px;gap:3px}
+#overview .home-inventory-changes .home-wishlist-win{padding:4px 6px;gap:6px;flex-wrap:nowrap}
+#overview .home-wishlist-win strong{font-size:12px;line-height:1.2}
+#overview .home-wishlist-win-details{gap:0;flex:1 1 auto}
+#overview .home-wishlist-win-icon{width:20px;height:20px;flex-basis:20px;font-size:12px}
+#overview .home-wishlist-win-badge{margin:0;padding:2px 5px;font-size:10px}
+#overview .home-wishlist-more{justify-self:end;font-size:10px;padding:2px 5px}
+#overview .home-inventory-changes .home-stack-card{margin:6px 0 0;padding:6px 8px}
+#overview .home-stack-card .home-warning-icon{font-size:16px}
+#overview .home-stack-card .stack-alert-use-title{font-size:12px;gap:5px}
+#overview .home-stack-card #home-stack-summary{margin-top:3px;line-height:1.25}
+.home-quantity-dialog{color:var(--txt);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;width:min(640px,calc(100vw - 24px));max-height:85dvh;overflow:auto}
+.home-quantity-dialog::backdrop{background:rgba(0,0,0,.65)}
+.home-quantity-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
+.home-quantity-dialog-head h3{margin:0;font-size:16px}
+.home-quantity-dialog .home-quantity-list{max-height:none;overflow:visible}
