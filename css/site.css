@@ -1394,3 +1394,8 @@ html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-i
 #overview .home-badge-discovery-name strong{font-size:12px;overflow-wrap:anywhere;line-height:1.25}
 @media(min-width:731px){#overview .home-main-grid>.home-inventory-changes{contain:size;align-self:stretch}}
 @media(max-width:730px){#overview .home-main-grid>.home-inventory-changes{max-height:540px}}
+
+/* Privacy notice can be dismissed without hiding its permanent Options link. */
+#aqwc-privacy-notice{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+#aqwc-privacy-notice[hidden]{display:none!important}
+#aqwc-privacy-notice-close{flex:0 0 auto;min-width:30px;padding:2px 8px;font-size:18px;line-height:1.2}
