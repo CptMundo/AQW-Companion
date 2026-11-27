@@ -63,3 +63,11 @@ for(const [i,script] of [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>
   new vm.Script(script[2],{filename:"index-inline-"+i});
 }
 console.log("Meta Class Builds verified: Chrono ShadowHunter, 9 classes, 3 aliases, honest roles and linked sources.");
+
+// Source-backed general class defaults (not universal encounter BiS).
+for(const name of ['Kathool Adept','Hollowborn Vindicator','Phantasm Chronomancer','Phantom Chronomancer','Dark Lord'])assert.equal(addon.base[name],'Wizard',name);
+assert.equal(addon.builds['Kathool Adept'].farm.cape,'Lament');
+assert.ok(html.includes("'Arcana Invoker':'Wizard'"));
+assert.ok(html.includes(`"King's Echo":'Wizard'`));
+assert.ok(html.includes('No verified class/activity combination is available yet.'));
+assert.ok(html.includes('Community encounter example — mechanics, team and rotation'));
