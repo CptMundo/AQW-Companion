@@ -312,3 +312,14 @@ nav.tabs.subnav[aria-label="Section navigation"]:has(button[data-parent="ultras"
 #ultradetail .guide-v2-overview .ultra-focus-item{min-width:0;overflow-wrap:anywhere}
 #ultradetail .guide-v2-overview .guide-v2-focus-role{border-left:2px solid var(--cyan)}
 #ultradetail .guide-v2-overview .guide-v2-focus-prep{border-left:2px solid var(--muted)}
+
+/* Stretch the native class-selection button's hit area across its slot card.
+   The flexible select remains an independent, higher-layer control. */
+#ultradetail .guide-v2-builder .guide-v2-party .ultra-team-chip{position:relative;isolation:isolate;cursor:pointer}
+#ultradetail .guide-v2-builder .guide-v2-play-class{position:static!important;outline:none!important}
+#ultradetail .guide-v2-builder .guide-v2-play-class::after{content:"";position:absolute;inset:0;z-index:1;border-radius:inherit;cursor:pointer}
+#ultradetail .guide-v2-builder .guide-v2-play-class:hover{text-decoration:none;color:var(--txt)!important}
+#ultradetail .guide-v2-builder .ultra-team-chip:hover{border-color:var(--cyan)}
+#ultradetail .guide-v2-builder .ultra-team-chip:has(.guide-v2-play-class:focus-visible){outline:2px solid var(--cyan);outline-offset:2px}
+#ultradetail .guide-v2-builder .guide-v2-slot-select{position:relative;z-index:2;cursor:pointer}
+#ultradetail .guide-v2-builder .guide-v2-builder-controls>.guide-v2-builder-strategy{grid-template-rows:20px 40px}

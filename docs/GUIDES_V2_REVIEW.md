@@ -53,3 +53,6 @@ Class selector groups Owned / Not owned (Ownership not checked when no inventory
 
 ### Blinding Light of Destiny Wishlist correction
 Replaces three vague placeholders with two unlock checkpoints, six final stock targets and claim checkpoint. Existing unknown legacy placeholders migrate automatically; manually recorded and custom steps remain. Separate expandable recommended Mace/Bow/Blade route includes optional Scythe, per-turn-in rewards, metals, kits, maps and Book of Lore claim. Route gear is not counted as mandatory final materials. Stock targets measure current inventory, not historical spending. Source: https://aqwwiki.wikidot.com/artix-s-quests ; https://sites.google.com/view/aqwg-net/items/good/blinding-light-of-destiny ; https://aqwwiki.wikidot.com/blinding-light-of-destiny-shop. No live gameplay verification.
+
+### Team Builder click target and label cleanup
+Full slot card is the native class-selection button's stretched hit area. Independent flexible dropdown remains above the click layer, keyboard selection stays accessible, focus ring surrounds the card. Removed numbered headings and visible lineup count. Moved Fixed/Flexible explanation into Sources & strategy notes. No evidence or roster changes. Browser regression covers clicking role text, dropdown independence and keyboard selection.
