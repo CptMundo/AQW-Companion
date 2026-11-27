@@ -38,9 +38,10 @@ async function main(){
   // The real app keeps its functions private in an IIFE. Drive its public JSON
   // input and navigation controls rather than reaching into private internals.
   const items=[{ID:'demo1',Name:'Void Aura',Type:'Misc',Count:180,Bank:0},{ID:'demo2',Name:'Diamond of Nulgath',Type:'Misc',Count:500,Bank:0},{ID:'demo3',Name:'Gem of Nulgath',Type:'Misc',Count:75,Bank:1},{ID:'demo4',Name:'Legion Revenant',Type:'Class',Count:1,Bank:0},{ID:'demo5',Name:'ArchPaladin',Type:'Class',Count:1,Bank:0},{ID:'demo6',Name:'Blood Gem of the Archfiend',Type:'Misc',Count:12,Bank:0}];
+  items.push(...Array.from({length:5},(_,i)=>({ID:'new-demo-'+i,Name:'Discovery '+(i+1),Type:'Misc',Count:1,Bank:0})));
   const stamp='2026-01-01T12:00:00Z';
   const material=(item,target)=>({label:item+' ×'+target,kind:'material',item,target,status:'unknown'});
-  const backup={format:'AQW Companion backup v0.9.3',snapshots:[{fileName:'Demo earlier.json',exportedAt:'2025-12-31T12:00:00Z',items:items.map(i=>({...i,Count:i.ID==='demo1'?100:i.Count}))},{fileName:'Demo_Inventory.json',exportedAt:stamp,items}],unlocks:[{name:'Sin of the Abyss',type:'Weapon',steps:[material('Blood Gem of the Archfiend',50),material('Diamond of Nulgath',500),material('Gem of Nulgath',150)]},{name:'Necrotic Sword of Doom',type:'Weapon',steps:[material('Void Aura',800)]},{name:'Legion Revenant',type:'Class',steps:[{label:'Own Legion Revenant',kind:'owned',item:'Legion Revenant',status:'unknown'}]}]};
+  const backup={format:'AQW Companion backup v0.9.3',snapshots:[{fileName:'Demo earlier.json',exportedAt:'2025-12-31T12:00:00Z',items:items.filter(i=>!i.ID.startsWith('new-demo-')).map(i=>({...i,Count:i.Type==='Misc'?Math.max(1,i.Count-5):i.Count}))},{fileName:'Demo_Inventory.json',exportedAt:stamp,items}],unlocks:[{name:'Sin of the Abyss',type:'Weapon',steps:[material('Blood Gem of the Archfiend',50),material('Diamond of Nulgath',500),material('Gem of Nulgath',150)]},{name:'Necrotic Sword of Doom',type:'Weapon',steps:[material('Void Aura',800)]},{name:'Legion Revenant',type:'Class',steps:[{label:'Own Legion Revenant',kind:'owned',item:'Legion Revenant',status:'unknown'}]}]};
   await page.locator('#file').setInputFiles({name:'Demo_Backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});
   await page.locator('#dashboard').waitFor({state:'visible',timeout:45000});
   const tour=page.locator('#aqwc-tour');await tour.waitFor({state:'visible'});assert.ok(await page.locator('#aqwc-getting-started').isHidden());
@@ -49,7 +50,8 @@ async function main(){
   await page.locator('#aqwc-tour-back').click();assert.ok(await page.locator('#overview.active').isVisible());
   await page.keyboard.press('Escape');assert.ok(await tour.isHidden());
   await page.reload({waitUntil:'domcontentloaded'});await page.locator('#dashboard').waitFor({state:'visible',timeout:45000});assert.ok(await tour.isHidden());
-  await page.locator('.inventory-advanced > summary').click();
+  await page.locator('#aqwc-privacy-notice-close').click();assert.ok(await page.locator('#aqwc-privacy-notice').isHidden());await page.reload({waitUntil:'domcontentloaded'});await page.locator('#dashboard').waitFor({state:'visible',timeout:45000});assert.ok(await page.locator('#aqwc-privacy-notice').isHidden());
+  await page.locator('.inventory-advanced > summary').click();assert.ok(await page.locator('.aqwc-options-main a[href="privacy.html"]').isVisible());
   const data=page.locator('#aqwc-data-management'),getExtension=page.locator('#aqwc-get-extension');assert.ok(await getExtension.isVisible());assert.ok(await page.locator('#backup').isHidden());await data.locator('summary').click();assert.ok(await page.locator('#backup').isVisible());assert.ok(await page.locator('#aqwc-account-import').isVisible());await data.locator('summary').click();assert.ok(await page.locator('#backup').isHidden());
   await page.locator('#aqwc-sync-status').evaluate(e=>e.dataset.state='ready');assert.ok(await getExtension.isHidden());await page.locator('#aqwc-sync-status').evaluate(e=>e.dataset.state='error');assert.ok(await getExtension.isVisible());await page.locator('#aqwc-sync-status').evaluate(e=>delete e.dataset.state);
   await page.locator('#aqwc-tour-replay').click();assert.ok(await tour.isVisible());
@@ -217,7 +219,17 @@ async function main(){
   await page.locator('#planner-card-overflow-fixture,#planner-card-empty-fixture').evaluateAll(es=>es.forEach(e=>e.remove()));
   await go('planner','planner-discover');await assertUniformQuestCards('#planner-suggestions .planner-quest-card');await go('planner','planner');
   await page.locator('#planner-my-tasks .planner-complete-action').first().click({timeout:15000});
-  await go('home','overview');await shot(page,'home',page.locator('#dashboard'));
+  await go('home','overview');
+  await page.evaluate(()=>{const api=window.AQWCBadgeHunter,cat=window.AQWCBadgeCatalog;const file=b=>b.image?.split(/[?#]/)[0].split('/').pop().toLowerCase();const matches=cat.filter(b=>!b.placeholder&&file(b)&&/^[a-z0-9_.%()-]{1,220}\.(?:png|jpe?g|gif|webp)$/i.test(file(b))&&cat.filter(c=>!c.placeholder&&file(c)===file(b)).length===1).slice(0,3).map(b=>({file:file(b),label:b.name}));if(matches.length!==3)throw Error('Missing unique demo badge fixtures');for(const [day,badges] of [[1,matches.slice(0,1)],[2,matches]]){const res=api.applyCapture({character:'DemoHero',capturedAt:'2026-01-0'+day+'T12:00:00Z',badges});if(!res.ok)throw Error(res.error||'Demo capture failed')}});
+  const badgeBox=page.locator('#home-badge-discoveries');assert.equal(await badgeBox.locator('.home-badge-discovery-count strong').innerText(),'+2');assert.ok((await badgeBox.innerText()).includes('One of 2 latest detected badges'));assert.ok(await badgeBox.locator('.home-badge-discovery-art').isVisible());
+  assert.equal(await page.locator('#home-milestone-highlights .home-milestone-tile').count(),2);assert.ok(await page.locator('#home-milestone-highlights progress').isVisible());
+  const homeHeights=()=>page.locator('#overview .home-main-grid').evaluate(g=>{const a=g.querySelector('.home-inventory-changes').getBoundingClientRect(),b=g.querySelector('.homeseason').getBoundingClientRect(),c=g.querySelector('.home-changes-scroll');return {left:a.height,right:b.height,scroll:c.clientHeight,content:c.scrollHeight}});
+  const before=await homeHeights();assert.ok(Math.abs(before.left-before.right)<=2&&before.scroll>50,'Calendar aligned: '+JSON.stringify(before));
+  assert.equal(await page.locator('.home-quantity-row').count(),3);assert.equal(await page.locator('.home-delta-new-item').count(),4);
+  const discoveries=await page.locator('.home-delta-new-grid').evaluate(g=>getComputedStyle(g).gridTemplateColumns.split(' ').length);assert.equal(discoveries,2);
+  const more=page.locator('.home-quantity-more');await more.click();assert.equal(await page.locator('.home-quantity-row').count(),4);const expanded=await homeHeights();assert.ok(Math.abs(expanded.left-before.left)<=2&&Math.abs(expanded.right-before.right)<=2);await more.click();assert.equal(await page.locator('.home-quantity-row').count(),3);
+  await page.setViewportSize({width:390,height:844});const mobile=await page.locator('.home-inventory-changes').evaluate(e=>({width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height,scroll:e.querySelector('.home-changes-scroll').clientHeight}));assert.ok(mobile.width<=390&&mobile.height<=542&&mobile.scroll>40,'Mobile compact Home: '+JSON.stringify(mobile));await page.setViewportSize({width:1360,height:1100});
+  await shot(page,'home',page.locator('#dashboard'));
   for(const [group,tab,name] of [['projects','unlocks','wishlist'],['planner','planner','quests'],['ultras','ultras','ultras'],['builds','forge','builds'],['story','story','story'],['badges','badge-hunter','badges'],['explore','discover','explore'],['inventory','inventory','inventory'],['inventory','account-stats','stats']]){
    await go(group,tab);await page.waitForTimeout(200);await shot(page,name,page.locator('#'+tab));
   }

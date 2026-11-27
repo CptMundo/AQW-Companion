@@ -6,13 +6,13 @@ const vm=require("node:vm");
 const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
 const analytics=fs.readFileSync(path.join(__dirname,"../js/umami-analytics.js"),"utf8");
 
-const noticeStart=html.indexOf('<div class="notice"><strong>🔒 Your game data stays in this browser.');
-assert.ok(noticeStart>=0,"Local data notice remains visible");
+const noticeStart=html.indexOf('<div class="notice" id="aqwc-privacy-notice"><div><strong>🔒 Your game data stays in this browser.');
+assert.ok(noticeStart>=0,"Local data notice is available by default");
 const notice=html.slice(noticeStart,html.indexOf("</div>",noticeStart));
 assert.ok(notice.includes("Inventory, Wishlist and progress are stored locally."));
 assert.ok(!/Google Analytics|Backups|Use <b>Backup|Review your export/i.test(notice),"Top notice should be short and not discuss Analytics or backup");
 assert.ok(notice.includes("Cookie-free visit statistics via Umami"));
-assert.ok(notice.includes('href="privacy.html"'));
+assert.ok(notice.includes('href="privacy.html"'));assert.ok(html.includes('id="aqwc-privacy-notice-close"'));assert.ok(html.includes('<a href="privacy.html">🔒 Privacy details</a>'));
 assert.ok(!html.includes('id="aqw-analytics-banner"'));
 assert.ok(html.includes('src="js/umami-analytics.js"'));
 assert.ok(analytics.includes("6991fe97-a5a7-49ab-9619-384710fba182"));
