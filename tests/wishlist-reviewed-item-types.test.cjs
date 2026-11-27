@@ -46,7 +46,7 @@ const migrationContext={
  catalogToProject:()=>{throw Error("Unrelated project should not migrate")},
  acquisitionFor:()=>null
 };
-vm.runInNewContext(migrationSource+"; upgradeLegacyRecipes();",migrationContext);
+vm.runInNewContext(extract("const blodFinalIngredients=","const catalogExtras=")+migrationSource+"; upgradeLegacyRecipes();",migrationContext);
 assert.equal(oldGoal.type,"Weapon","Persisted old goal corrected on load");
 assert.equal(oldGoal.id,"saved-abyss-goal","Keep Wishlist project id");
 assert.deepEqual(oldGoal.steps,originalSteps,"Keep every ingredient, step ID and progress");
