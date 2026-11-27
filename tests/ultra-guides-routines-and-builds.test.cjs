@@ -123,7 +123,7 @@ assert.ok(!html.includes("appendSimplifiedProfile(root,simplifiedProfiles[b.id]"
 assert.ok(html.includes("renderBossGuides(root,$(\'bossguidesearch\').value.trim().toLowerCase(),$(\'bossguidecategory\').value)"));
 assert.ok(html.includes("community role"));
 
-const compact=vm.runInNewContext(reviewedCode+"\n({ultraClassOptions,ultraSelectedRating,ultraWorkbookBuild,ultraCompactTips,ultraActionTips,ultraBeginnerActions,ultraBeginnerText,ultraGlossary,ultraTermPattern,ultraTermInfo,ultraSuggestedGear,ultraRecommendedTeam,ultraUnifiedTips,ultraSpeakerRole,ultraSpeakerPersonal,simplifiedSpeakerPatterns,simplifiedProfiles,simplifiedRatings,simplifiedExtraEncounters,sameUltraClass,fillUltraClassSelect,renderUltraSelectedRating,appendUltraGearCells,ultraStrategyVariants,workbookPersonalGuide,workbookSharedGuide,approvedUltraGuides,approvedOtherBossGuides,approvedClassActivities,auditedBossSheetLocations})",{
+const compact=vm.runInNewContext(reviewedCode+"\n({ultraClassOptions,ultraSelectedRating,ultraWorkbookBuild,ultraCompactTips,ultraActionTips,ultraBeginnerActions,ultraBeginnerText,ultraGlossary,ultraTermPattern,ultraTermInfo,ultraSuggestedGear,ultraRecommendedTeam,ultraUnifiedTips,ultraSpeakerRole,ultraSpeakerPersonal,simplifiedSpeakerPatterns,simplifiedProfiles,simplifiedRatings,simplifiedExtraEncounters,sameUltraClass,fillUltraClassSelect,renderUltraSelectedRating,appendUltraGearCells,ultraStrategyVariants,ultraTeamFamilies,ultraSlotChoices,workbookPersonalGuide,workbookSharedGuide,approvedUltraGuides,approvedOtherBossGuides,approvedClassActivities,auditedBossSheetLocations})",{
  node(tag,text,cls){return {tag,text,cls,children:[],append(...x){this.children.push(...x)},replaceChildren(...x){this.children=x}}},
  Option:function(label,value){this.label=label;this.value=value},
  ultraOwned:cls=>['Lord of Order','Void Highlord'].includes(cls)
@@ -566,7 +566,7 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.ok(homeCheck[0].includes("check.title='Mark complete'"));
  assert.ok(homeCheck[0].includes("check.setAttribute('aria-label','Mark '+task.name+' completed')"));
  assert.ok(homeCheck[0].includes('check.onclick=()=>toggleTask(task,true)'),'Same completion handler');
- assert.ok(html.includes('css/planner-routines.css?v=184'),'Invalidate previously cached stylesheet');
+ assert.ok(html.includes('css/planner-routines.css?v=185'),'Invalidate previously cached stylesheet');
  const rule=plannerCSS.match(/#overview #homeactivities \.home-active-task>button\.home-complete-action\{([^}]+)\}/);
  assert.ok(rule);
  for(const declaration of ['width:32px!important','height:32px!important','font-size:22px!important','border:1px solid #488b70!important','background:transparent!important','color:#75e3a4!important'])assert.ok(rule[1].includes(declaration),declaration);
@@ -675,14 +675,14 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  for(const b of teams){const p=compact.simplifiedProfiles[b.id],vs=compact.ultraStrategyVariants(b,p);assert.ok(vs.length,b.id);total+=vs.length;const evidence=compact.approvedUltraGuides[b.id];assert.ok(['Quick','Strategy','Advanced'].includes(evidence.depth));assert.ok(evidence.shared.length);
   assert.equal(new Set(vs.map(v=>v.id)).size,vs.length);
   for(const v of vs){assert.equal(v.names.length,b.id==='kathool'?7:4,b.id);assert.ok(v.refs.length);assert.ok(v.refs.every(r=>r.length===2&&r[1].startsWith('https://')));for(const cls of Object.keys(v.roles))assert.ok(v.names.includes(cls),b.id+' '+cls);if(v.chart!==undefined){assert.equal(b.id,'speaker');assert.equal(v.chart,0);assert.ok(v.names.includes('Lord of Order')&&v.names.includes('ArchPaladin')&&v.names.includes('Legion Revenant'));}}
- }assert.equal(teams.length,12);assert.equal(total,22);
+ }assert.equal(teams.length,12);assert.equal(total,35);
  for(const p of compact.simplifiedExtraEncounters){const guide=compact.approvedOtherBossGuides[p.name];assert.ok(guide,p.name);assert.ok(guide.tips.length);for(const cls of Object.keys(guide.roles))assert.ok(p.team?.some(x=>x.cls===cls),p.name+' '+cls);}
  assert.equal(Object.keys(compact.approvedOtherBossGuides).length,compact.simplifiedExtraEncounters.length);
  assert.equal(Object.keys(compact.approvedClassActivities).length,16);
  assert.ok(compact.approvedUltraGuides.drakath.shared.some(x=>x[1].includes('10M is a transformation')));
  assert.ok(compact.approvedUltraGuides.nulgath.avoid.includes('ignores taunt'));
  assert.ok(compact.approvedUltraGuides.gramiel.shared.some(x=>x[1].includes('70%, 40% and 10%')));assert.ok(compact.approvedUltraGuides.gramiel.shared.some(x=>x[1].includes('Do not apply Decay')));assert.ok(compact.approvedUltraGuides.darkon.shared.some(x=>x[1].includes('72 seconds')));
- console.log('Consolidated coverage: 12 Ultras, 22 strategy variants, '+compact.simplifiedExtraEncounters.length+' source-backed other encounter guides.');}
+ console.log('Consolidated coverage: 12 Ultras, 35 strategy variants, '+compact.simplifiedExtraEncounters.length+' source-backed other encounter guides.');}
 
 // Pre-merge documentary audit: exact chart rows, required prep, source ranges and solo options.
 {const chart=compact.simplifiedSpeakerPatterns[0];const expected=[['Truth','LR',''],['Listen','LoO',''],['Zone 1','DPS',''],['Truth','AP','AP 4'],['Listen','LoO','LoO 5'],['Truth','',''],['Zone 2','LR',''],['Listen','',''],['Truth','','AP 4'],['Truth','LoO',''],['Listen','',''],['Zone 3','AP',''],['Truth','','AP 4'],['Listen','LR',''],['Truth','','LoO 5'],['Zone 4','LoO',''],['Listen','',''],['Truth','','AP 4'],['Truth','LR',''],['Listen','LoO','']];
@@ -701,3 +701,6 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
 
 // Exact-name community candidates never invent a destination or treat acceptance as farm.
 {const start=html.indexOf('function plannerObjectiveMapHints('),end=html.indexOf('function taskCard(',start);const hints=vm.runInNewContext(html.slice(start,end)+'\nplannerObjectiveMapHints');const lookup=n=>n==='Shadow Creeper'?[{join:'/join bludrut2',name:'Bludrut Keep 2'},{join:'/join bludrut2',name:'Duplicate'},{join:'/join bad map'}]:n==='Baby Trigoras'?[{join:'/join trigoras'}]:[];assert.deepEqual(Array.from(hints('Shadow Canvas ×5 — Shadow Creeper',lookup),x=>x.join),['/join bludrut2']);assert.equal(hints('Shadow Canvas ×5',lookup).length,0);assert.equal(hints('Shadow Canvas ×5 — Shadow Creeper (wrong variant)',lookup).length,0);assert.deepEqual(Array.from(hints('Dragon Heart ×1 — Baby Trigoras, Baby Trigoras',lookup),x=>x.join),['/join trigoras']);assert.equal(hints('Unknown',null).length,0);console.log('Quest target maps: exact-name candidates, safe commands, missing and duplicate targets.');}
+
+// Every displayed slot switch must lead to one exact source lineup and preserve every other slot.
+{let count=0;for(const id of Object.keys(compact.approvedUltraGuides)){const vs=compact.ultraStrategyVariants({id}),fs=compact.ultraTeamFamilies(id,vs);assert.equal(fs.flatMap(f=>f.variants).length,vs.length);for(const f of fs)for(const v of f.variants){count++;assert.deepEqual(Array.from(v.slots).sort(),Array.from(v.names).sort());for(const cls of new Set(v.names))for(let i=0;i<v.slots.length;i++)for(const next of compact.ultraSlotChoices(f,v,i,cls)){assert.ok(vs.some(x=>x.id===next.id));assert.ok(next.names.includes(cls));assert.ok(next.slots.every((n,j)=>j===i||n===v.slots[j]));}}}assert.equal(count,35);const w=compact.ultraTeamFamilies('warden',compact.ultraStrategyVariants({id:'warden'})).find(x=>x.id==='recovery-dps');const cw=w.variants.find(x=>x.id==='workbook');assert.ok(!compact.ultraSlotChoices(w,cw,2,'Lord of Order').some(x=>x.slots[2]==='ArchPaladin'));const ca=w.variants.find(x=>x.id==='hub');assert.ok(compact.ultraSlotChoices(w,ca,2,'Lord of Order').some(x=>x.slots[2]==='ArchPaladin'));console.log('Team builder: all exact lineups, no unsupported cross-product, dependent healer/DPS options checked.');}

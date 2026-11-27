@@ -21,10 +21,10 @@
 
 <link rel="stylesheet" href="css/account-statistics.css?v=97">
 <link rel="stylesheet" href="css/meta-class-builds.css">
-<link rel="stylesheet" href="css/planner-routines.css?v=184">
+<link rel="stylesheet" href="css/planner-routines.css?v=185">
 <link rel="stylesheet" href="css/recipe-coverage.css">
 <link rel="stylesheet" href="css/stack-alerts.css?v=140">
-<link rel="stylesheet" href="css/ultra-quote-actions.css?v=124">
+<link rel="stylesheet" href="css/ultra-quote-actions.css?v=125">
 <link rel="stylesheet" href="css/badge-hunter.css?v=4">
 </head><body><div class="wrap"><header class="top"><div class="brand"><div class="logo"><img src="assets/brand-logo.png" width="52" height="52" alt="AQW Companion Prometheus-inspired helmet logo"></div><div><h1>AQW Companion <span class="aqwc-stars-label" style="display:none">STARS</span> <span class="tag">BETA 0.13.7</span></h1><small>AdventureQuest Worlds Inventory & Farming · Created by CptMundo</small></div></div><div class="actions inventory-header-actions"><div class="inventory-tools" role="group" aria-label="Inventory tools"><a id="aqwc-get-extension" class="primary" href="extension/quick-start.html">🧩 Get extension</a><details class="inventory-advanced"><summary title="Advanced inventory options" aria-label="Advanced inventory options">⚙ <span>Options</span></summary><div class="inventory-advanced-menu"><div class="aqwc-theme-tools aqwc-options-theme"><label for="aqwc-site-theme" class="muted tiny">Theme</label><select id="aqwc-site-theme"><option value="companion">Companion</option><option value="dark">Dark Mode</option><option value="light">Light Mode</option><option value="cas">Cas B Neophyte</option><option value="stars">Stars</option></select></div><div class="aqwc-options-main"><a href="extension/quick-start.html">📘 Guide &amp; Download</a><button id="aqwc-tour-replay" type="button">✦ Quick tour</button></div><details id="aqwc-data-management" class="aqwc-data-management"><summary>📦 Data Management <span aria-hidden="true" class="aqwc-data-chevron">›</span></summary><div class="aqwc-data-actions"><button id="backup" title="Download backup">⬇ Download backup</button><label class="upload" title="Import JSON file">📂 Import JSON / Restore backup<input id="file" type="file" accept=".json,application/json" multiple></label><button id="aqwc-account-import" type="button" title="Import the Account Manager export and automatically sync the extension" disabled>📥 Import &amp; Sync</button><button id="aqwc-sync-inventory" type="button" disabled title="Send selected Companion snapshot to extension only">↻ Sync to extension</button><button id="clear" title="Clear local data">Clear local data…</button></div></details></div></details></div><div class="inventory-header-status"><span id="aqwc-sync-status" role="status" aria-live="polite" class="muted tiny">Extension not detected</span><span id="aqwc-account-status" role="status" aria-live="polite" class="muted tiny">Use Full Sync in the extension.</span></div></div></header><div id="aqwc-unified-progress-panel" class="notice" hidden style="margin:8px 0"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><strong id="aqwc-unified-progress-label" role="status" aria-live="polite">Sync in progress</strong><button id="aqwc-unified-progress-close" type="button" class="smallbutton" aria-label="Dismiss sync notification" title="Dismiss notification" style="flex:none;min-width:30px;padding:2px 8px;font-size:18px;line-height:1.2">×</button></div><progress id="aqwc-unified-progress" aria-label="Companion sync progress" max="1" style="display:block;width:100%;height:9px;accent-color:#59c3e8;margin-top:6px"></progress></div><div id="alert" class="alert"></div><details id="aqwc-public-panel" class="notice" hidden style="margin:8px 0"><summary id="aqwc-public-summary">Public Character Inventory</summary><p class="muted tiny">Separate public snapshot. Bank and unlisted items are unknown. Full account history and farming calculations remain unchanged.</p><input id="aqwc-public-search" type="search" placeholder="Search public inventory" aria-label="Search public inventory"><p id="aqwc-public-count" class="muted tiny"></p><p id="aqwc-public-active-source" class="muted tiny" role="status"></p><div id="aqwc-public-list" style="max-height:320px;overflow:auto"></div></details><div class="notice aqw-storage-diagnostics" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><strong id="inventory-storage-status" aria-live="polite">💾 Inventory: checking browser storage…</strong><button id="inventory-storage-diagnostic" class="smallbutton" type="button">📋 Copy storage diagnostic</button></div><div class="notice"><strong>🔒 Your game data stays in this browser.</strong> Inventory, Wishlist and progress are stored locally. Cookie-free visit statistics via Umami. <a href="privacy.html">Privacy details</a>. <a href="extension/quick-start.html">📘 Visual guide &amp; download ↗</a></div>
 <nav class="primarynav" aria-label="Main navigation"><button class="active" data-group="home">📊 Home</button><button data-group="projects">🎯 Wishlist</button><button data-group="planner">📅 Quest Tracker</button><button data-group="ultras">⚡ Ultras &amp; Bosses</button><button data-group="builds">⚒️ Forge Tracker</button><button data-group="story">📖 Story</button><button data-group="badges">🏆 Badge Hunter</button><button data-group="explore">✨ Explore</button><button data-group="inventory">📦 Inventory</button></nav>
@@ -60,7 +60,7 @@
 <section id="story" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle story-title">📖 Story Tracker</h3><p class="muted tiny">Book of Lore saga names appear first, with Chaos Lord names as search aliases. Adventures are tracked separately. Verified badges and confirmed inventory rewards supplement manual progress. Unknown is not proof that an area is locked.</p></div><span class="pill">Chronological guide · Badge + inventory + manual</span></div><div class="toolbar"><input id="storysearch" type="search" placeholder="Search saga, region, boss or adventure…"><select id="storyfilter"><option value="all">All stories</option><option value="main">Book of Lore & main sagas</option><option value="side">Adventures & other stories</option></select><button id="storyreset">Reset story statuses</button></div><details id="story-evidence-review" style="margin:8px 0 12px"><summary style="cursor:pointer">Story evidence &amp; Book of Lore</summary><div id="story-evidence-review-content" style="padding:10px 0"></div></details><div class="story-controls"><div class="story-status-filters" role="group" aria-label="Saga progress filter"><button type="button" data-story-state="all" aria-pressed="true">All sagas</button><button type="button" data-story-state="progress" aria-pressed="false">In progress</button><button type="button" data-story-state="new" aria-pressed="false">No completions</button><button type="button" data-story-state="done" aria-pressed="false">Completed</button></div><div id="storyoverview" class="story-overview"></div></div>
 <div class="story-gate-panel"><div class="story-gate-heading"><h3 class="sectiontitle">🔐 Verified Farming Access Checks</h3><span class="muted tiny" title="These are specific documented requirements, not claims that entire Adventures are mandatory. Unknown means not checked.">Manual · Verified gates only</span></div><div id="storyaccess"></div></div>
 <div id="storylist" class="sagagrid story-cover-grid"></div><section id="storydetail" class="story-detail" hidden></section><div class="muted tiny" style="margin-top:14px">Sources: <a href="https://www.aq.com/lore/guides/shadowsofwarsaga" target="_blank" rel="noopener noreferrer">Official Shadows of War</a> · <a href="https://aqwwiki.wikidot.com/the-story" target="_blank" rel="noopener noreferrer">AQWWiki Story Index</a> · <a href="https://www.aq.com/gamedesignnotes/date/2026/04" target="_blank" rel="noopener noreferrer">Age of Ruin guide</a>. Not a complete list of every map or quest.</div></div></section>
-<section id="ultras" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle">⚡ Ultra Boss Strategy Guides</h3><p class="muted tiny">Choose a boss with a documented strategy, then a class in its source team. Strategies are community-sourced and may change. Guides are community references, not live combat instructions.</p></div><span class="pill">Source-reviewed strategies · Community references</span></div><div class="toolbar"><input id="ultrasearch" type="search" placeholder="Search bosses, mechanics or classes…"><select id="ultrafilter"><option value="all">All guides</option><option value="ready">All distinct classes owned</option></select></div><div class="ultra-master-detail"><div id="ultracards" class="ultracards"></div><div id="ultradetail" class="ultradetail hidden"></div></div>
+<section id="ultras" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle">⚡ Ultra Boss Strategy Guides</h3><p class="muted tiny">Choose your class, select a documented strategy, then adjust the flexible team slots. Only source-backed combinations are offered. Other combinations may work but are not reviewed here.</p></div><span class="pill">Source-reviewed strategies · Community references</span></div><div class="toolbar"><input id="ultrasearch" type="search" placeholder="Search bosses, mechanics or classes…"><select id="ultrafilter"><option value="all">All guides</option><option value="ready">All distinct classes owned</option></select></div><div class="ultra-master-detail"><div id="ultracards" class="ultracards"></div><div id="ultradetail" class="ultradetail hidden"></div></div>
 </div></section><section id="boss-guides" class="view"><div class="card"><div class="unlocktop"><div><h3 class="sectiontitle">⚔️ Boss Guides</h3><p class="muted tiny">Browse group encounters, solo arenas, dungeons and seasonal bosses. Community strategies and suggested loadouts; not encounter-tested by Companion.</p></div><span id="bossguidecount" class="pill">Boss encounters</span></div><div class="toolbar boss-guide-toolbar"><input id="bossguidesearch" type="search" placeholder="Search bosses, maps or classes…" aria-label="Search boss guides"><select id="bossguidecategory" aria-label="Boss category"><option value="all">All categories</option><option>Void Bosses</option><option>Shrines</option><option>Solo arenas</option><option>Grim Challenge</option><option>Grim Gaol</option><option>Lavarock Shore</option><option>Seasonal challenges</option><option>Seasonal</option><option>Legacy / special</option></select></div><div class="boss-master-detail"><div id="ultracatalog" class="boss-guide-list" aria-label="Boss encounters"></div><div id="bossguidedetail" class="ultradetail boss-guide-detail" aria-live="polite"></div></div></div></section><section id="builds" class="view" hidden aria-hidden="true" inert style="display:none!important">
 
 <div class="card build-planner-card"><div class="unlocktop"><div><h3 class="sectiontitle">🛡️ Class Build Planner</h3><p class="muted tiny">Community build examples under review; individual enhancement and consumable effects have sources.</p></div><span class="pill">Beta · Class builds · 2026 meta</span></div><div class="build-controls"><label>Search class<input id="build-search" type="search" placeholder="Search by class name…" autocomplete="off"></label><label>Class<select id="build-class"></select></label><label>Activity<select id="build-role"></select></label></div><div id="build-results" aria-live="polite"></div></div>
@@ -4435,9 +4435,638 @@ const approvedOtherBossGuides={
 const auditedBossSheetLocations={"Fourth Lynaria":[554509623,"G4:G22, A32"],"Void Bosses":[1827579588,"A32 / A101 / A170 / A239"],"Lavarock Shore":[1817901417,"G4:G28, A32"],"Temple Shrine":[536042830,"A32 / A92 / A152"],"Astral Shrine":[1682548440,"G4:G28, A32"],"Grimchallenge":[1217830111,"G4:G28, A32"],"Celestial Arena":[485533888,"I5:K23"],"Infernal Arena":[282052295,"K5:M163, N4:N144"],"Grim Gaol":[1924778701,"I5:K303, L4:L284"]};
 const approvedClassActivities={"Arcana Invoker":["farm"],"Legion Revenant":["farm"],"Shaman":["solo"],"Verus DoomKnight":["solo"],"Void Highlord":["farm"],"Chaos Avenger":["solo"],"ArchMage":["farm"],"Blaze Binder":["farm"],"Yami no Ronin":["solo"],"King's Echo":["solo"],"Chrono ShadowHunter":["solo"],"Phantasm Chronomancer":["solo"],"Hollowborn Vindicator":["solo"],"Necrotic Chronomancer":["farm"],"ArchFiend":["farm"],"Dark Lord":["solo"]};
 const approvedClassProvenance={"Arcana Invoker":"K57:K74 · Farming","Legion Revenant":"I2:I23 · Farming","Shaman":"M2:M23 · Best Solo","Verus DoomKnight":"K2:K23 · Solo DPS","Void Highlord":"N57:N74 · Low HP Farm","Chaos Avenger":"K57:K74 · Defensive Solo","ArchMage":"H57:H74 · High HP Mobs","Blaze Binder":"K57:K74 · Full Forge (farming class)","Yami no Ronin":"K2:K23 · Solo DPS","King's Echo":"K2:K23 · Solo / Group","Chrono ShadowHunter":"N57:N74 · Solo Full Forge","Phantasm Chronomancer":"M2:M23 · Best Solo","Hollowborn Vindicator":"K2:K23 · Solo DPS","Necrotic Chronomancer":"K2:K23 · High DPS Farming","ArchFiend":"K57:K74 · Farming / Dage","Dark Lord":"Q57:Q74 · Full Pots Solo"};
+
+ // Explicit source-backed additions; original evidence and rotations are kept intact.
+const ultraExtraLineups={
+ "ezrajal": [
+  {
+   "id": "aqwg-fb",
+   "label": "Frostval Barbarian support",
+   "team": [
+    "Lord of Order",
+    "Legion Revenant",
+    "Frostval Barbarian",
+    "Void Highlord"
+   ],
+   "roles": {
+    "Lord of Order": "Keep party buffs and recovery available.",
+    "Legion Revenant": "Maintain party support and follow the shared target and reflection rules.",
+    "Frostval Barbarian": "Provide group support; follow the shared fight instructions.",
+    "Void Highlord": "Deal controlled damage and follow the shared fight instructions."
+   },
+   "refs": [
+    [
+     "AQWG — Exaltia recommended setup",
+     "https://sites.google.com/view/aqwg-net/ultra-bosses"
+    ]
+   ],
+   "prep": [],
+   "status": "Conditional · source-documented, gameplay unverified",
+   "note": "This is the source's complete lineup; do not assume the healer or DPS can be swapped independently."
+  },
+  {
+   "id": "aqwg-lc",
+   "label": "LightCaster support",
+   "team": [
+    "Lord of Order",
+    "Legion Revenant",
+    "LightCaster",
+    "Dragon of Time"
+   ],
+   "roles": {
+    "Lord of Order": "Keep party buffs and recovery available.",
+    "Legion Revenant": "Maintain party support and follow the shared target and reflection rules.",
+    "LightCaster": "Provide support and recovery; coordinate healing with the group.",
+    "Dragon of Time": "Deal damage and follow the shared fight instructions; coordinate any assigned taunt."
+   },
+   "refs": [
+    [
+     "AQWG — Exaltia alternative setup",
+     "https://sites.google.com/view/aqwg-net/ultra-bosses"
+    ]
+   ],
+   "prep": [],
+   "status": "Conditional · source-documented, gameplay unverified",
+   "note": "The source pairs LightCaster with Dragon of Time; this is a separate lineup."
+  }
+ ],
+ "warden": [
+  {
+   "id": "aqwg-fb",
+   "label": "Frostval Barbarian support",
+   "team": [
+    "Lord of Order",
+    "Legion Revenant",
+    "Frostval Barbarian",
+    "Void Highlord"
+   ],
+   "roles": {
+    "Lord of Order": "Keep party buffs and recovery available.",
+    "Legion Revenant": "Use Scroll of Enrage near 450k HP; coordinate healing and survivability.",
+    "Frostval Barbarian": "Provide group support; follow the shared fight instructions.",
+    "Void Highlord": "Deal controlled damage and follow the shared fight instructions."
+   },
+   "refs": [
+    [
+     "AQWG — Exaltia recommended setup",
+     "https://sites.google.com/view/aqwg-net/ultra-bosses"
+    ]
+   ],
+   "prep": [
+    "Legion Revenant: Scroll of Enrage. Confirm buffs, recovery and survival before the Berserk phase."
+   ],
+   "status": "Conditional · source-documented, gameplay unverified",
+   "note": "This is the source's complete lineup; do not assume the healer or DPS can be swapped independently."
+  },
+  {
+   "id": "aqwg-lc",
+   "label": "LightCaster support",
+   "team": [
+    "Lord of Order",
+    "Legion Revenant",
+    "LightCaster",
+    "Dragon of Time"
+   ],
+   "roles": {
+    "Lord of Order": "Keep party buffs and recovery available.",
+    "Legion Revenant": "Use Scroll of Enrage near 450k HP; coordinate healing and survivability.",
+    "LightCaster": "Provide support and recovery; coordinate healing with the group.",
+    "Dragon of Time": "Deal damage and follow the shared fight instructions; coordinate any assigned taunt."
+   },
+   "refs": [
+    [
+     "AQWG — Exaltia alternative setup",
+     "https://sites.google.com/view/aqwg-net/ultra-bosses"
+    ]
+   ],
+   "prep": [
+    "Legion Revenant: Scroll of Enrage. Confirm buffs, recovery and survival before the Berserk phase."
+   ],
+   "status": "Conditional · source-documented, gameplay unverified",
+   "note": "The source pairs LightCaster with Dragon of Time; this is a separate lineup."
+  },
+  {
+   "id": "hub-ap",
+   "label": "ArchPaladin support · Chaos Avenger",
+   "team": [
+    "Lord of Order",
+    "Legion Revenant",
+    "ArchPaladin",
+    "Chaos Avenger"
+   ],
+   "roles": {
+    "Lord of Order": "Coordinate healing and skill 5 for eligible damage near Berserk.",
+    "Legion Revenant": "Use assigned taunts near Berserk; coordinate recovery.",
+    "ArchPaladin": "Maintain mitigation and time heals after the fixed HP drop.",
+    "Chaos Avenger": "Control damage at the Berserk threshold until recovery is ready."
+   },
+   "refs": [
+    [
+     "AQW Hub — Warden lineup and healer alternatives",
+     "https://github.com/Shell1010/AQW-md/blob/main/Ultra%20Guides/Timeinn%20Ultras.md"
+    ]
+   ],
+   "prep": [
+    "Assigned taunter: Scroll of Enrage. Agree who handles sudden HP drops."
+   ],
+   "status": "Conditional · source-documented, gameplay unverified"
+  }
+ ],
+ "engineer": [
+  {
+   "id": "aqwg-fb",
+   "label": "Frostval Barbarian support",
+   "team": [
+    "Lord of Order",
+    "Legion Revenant",
+    "Frostval Barbarian",
+    "Void Highlord"
+   ],
+   "roles": {
+    "Lord of Order": "Keep party buffs and recovery available.",
+    "Legion Revenant": "Maintain party support and follow the shared target and reflection rules.",
+    "Frostval Barbarian": "Provide group support; follow the shared fight instructions.",
+    "Void Highlord": "Deal controlled damage and follow the shared fight instructions."
+   },
+   "refs": [
+    [
+     "AQWG — Exaltia recommended setup",
+     "https://sites.google.com/view/aqwg-net/ultra-bosses"
+    ]
+   ],
+   "prep": [],
+   "status": "Conditional · source-documented, gameplay unverified",
+   "note": "This is the source's complete lineup; do not assume the healer or DPS can be swapped independently."
+  },
+  {
+   "id": "aqwg-lc",
+   "label": "LightCaster support",
+   "team": [
+    "Lord of Order",
+    "Legion Revenant",
+    "LightCaster",
+    "Dragon of Time"
+   ],
+   "roles": {
+    "Lord of Order": "Keep party buffs and recovery available.",
+    "Legion Revenant": "Maintain party support and follow the shared target and reflection rules.",
+    "LightCaster": "Provide support and recovery; coordinate healing with the group.",
+    "Dragon of Time": "Deal damage and follow the shared fight instructions; coordinate any assigned taunt."
+   },
+   "refs": [
+    [
+     "AQWG — Exaltia alternative setup",
+     "https://sites.google.com/view/aqwg-net/ultra-bosses"
+    ]
+   ],
+   "prep": [],
+   "status": "Conditional · source-documented, gameplay unverified",
+   "note": "The source pairs LightCaster with Dragon of Time; this is a separate lineup."
+  }
+ ],
+ "tyndarius": [
+  {
+   "id": "nand-ssot",
+   "label": "ShadowStalker of Time · Three Taunters",
+   "team": [
+    "Lord of Order",
+    "Legion Revenant",
+    "ArchPaladin",
+    "ShadowStalker of Time"
+   ],
+   "roles": {
+    "Lord of Order": "Maintain buffs and attack Tyndarius.",
+    "Legion Revenant": "Taunt the assigned left orb and help the other orb when yours dies.",
+    "ArchPaladin": "Enter first, mitigate and taunt Tyndarius.",
+    "ShadowStalker of Time": "Bring Scroll of Enrage and control the assigned right orb; return to it on respawn."
+   },
+   "refs": [
+    [
+     "Nandixer — three-target strategy and alternative DPS",
+     "https://nandixer.github.io/tyndarius/"
+    ]
+   ],
+   "prep": [
+    "All players except Lord of Order: Scroll of Enrage. Agree left/right orb assignments."
+   ],
+   "status": "Conditional · source-documented, gameplay unverified"
+  }
+ ],
+ "drakath": [
+  {
+   "id": "aqwg-dragon-of-time",
+   "label": "Dragon of Time · Lord of Order Taunts",
+   "team": [
+    "Dragon of Time",
+    "StoneCrusher",
+    "Lord of Order",
+    "ArchPaladin"
+   ],
+   "roles": {
+    "Dragon of Time": "Deal controlled damage; wait for the assigned taunter before HP blasts.",
+    "StoneCrusher": "Maintain group support and recovery.",
+    "Lord of Order": "Taunt all seven eligible HP blasts just before their thresholds; bring at least seven Scrolls of Enrage and confirm survivability.",
+    "ArchPaladin": "Maintain mitigation and coordinate heals."
+   },
+   "refs": [
+    [
+     "AQWG — Drakath alternative lineup and HP thresholds",
+     "https://sites.google.com/view/aqwg-net/ultra-bosses"
+    ]
+   ],
+   "prep": [
+    "Lord of Order: at least seven Scrolls of Enrage if taking every blast. Confirm health, mitigation and damage for the final phase."
+   ],
+   "status": "Conditional · source-documented, gameplay unverified"
+  },
+  {
+   "id": "aqwg-chaos-avenger",
+   "label": "Chaos Avenger · Lord of Order Taunts",
+   "team": [
+    "Chaos Avenger",
+    "StoneCrusher",
+    "Lord of Order",
+    "ArchPaladin"
+   ],
+   "roles": {
+    "Chaos Avenger": "Deal controlled damage; wait for the assigned taunter before HP blasts.",
+    "StoneCrusher": "Maintain group support and recovery.",
+    "Lord of Order": "Taunt all seven eligible HP blasts just before their thresholds; bring at least seven Scrolls of Enrage and confirm survivability.",
+    "ArchPaladin": "Maintain mitigation and coordinate heals."
+   },
+   "refs": [
+    [
+     "AQWG — Drakath alternative lineup and HP thresholds",
+     "https://sites.google.com/view/aqwg-net/ultra-bosses"
+    ]
+   ],
+   "prep": [
+    "Lord of Order: at least seven Scrolls of Enrage if taking every blast. Confirm health, mitigation and damage for the final phase."
+   ],
+   "status": "Conditional · source-documented, gameplay unverified"
+  },
+  {
+   "id": "aqwg-shaman",
+   "label": "Shaman · Lord of Order Taunts",
+   "team": [
+    "Shaman",
+    "StoneCrusher",
+    "Lord of Order",
+    "ArchPaladin"
+   ],
+   "roles": {
+    "Shaman": "Deal controlled damage; wait for the assigned taunter before HP blasts.",
+    "StoneCrusher": "Maintain group support and recovery.",
+    "Lord of Order": "Taunt all seven eligible HP blasts just before their thresholds; bring at least seven Scrolls of Enrage and confirm survivability.",
+    "ArchPaladin": "Maintain mitigation and coordinate heals."
+   },
+   "refs": [
+    [
+     "AQWG — Drakath alternative lineup and HP thresholds",
+     "https://sites.google.com/view/aqwg-net/ultra-bosses"
+    ]
+   ],
+   "prep": [
+    "Lord of Order: at least seven Scrolls of Enrage if taking every blast. Confirm health, mitigation and damage for the final phase."
+   ],
+   "status": "Conditional · source-documented, gameplay unverified"
+  },
+  {
+   "id": "aqwg-continuum-chronomancer",
+   "label": "Continuum Chronomancer · Lord of Order Taunts",
+   "team": [
+    "Continuum Chronomancer",
+    "Legion Revenant",
+    "Lord of Order",
+    "ArchPaladin"
+   ],
+   "roles": {
+    "Continuum Chronomancer": "Deal controlled damage; wait for the assigned taunter before HP blasts.",
+    "Legion Revenant": "Maintain group support and recovery.",
+    "Lord of Order": "Taunt all seven eligible HP blasts just before their thresholds; bring at least seven Scrolls of Enrage and confirm survivability.",
+    "ArchPaladin": "Maintain mitigation and coordinate heals."
+   },
+   "refs": [
+    [
+     "AQWG — Drakath alternative lineup and HP thresholds",
+     "https://sites.google.com/view/aqwg-net/ultra-bosses"
+    ]
+   ],
+   "prep": [
+    "Lord of Order: at least seven Scrolls of Enrage if taking every blast. Confirm health, mitigation and damage for the final phase."
+   ],
+   "status": "Conditional · source-documented, gameplay unverified"
+  },
+  {
+   "id": "aqwg-chaos-shaper",
+   "label": "Chaos Shaper · Lord of Order Taunts",
+   "team": [
+    "Chaos Shaper",
+    "Legion Revenant",
+    "Lord of Order",
+    "ArchPaladin"
+   ],
+   "roles": {
+    "Chaos Shaper": "Deal controlled damage; wait for the assigned taunter before HP blasts.",
+    "Legion Revenant": "Maintain group support and recovery.",
+    "Lord of Order": "Taunt all seven eligible HP blasts just before their thresholds; bring at least seven Scrolls of Enrage and confirm survivability.",
+    "ArchPaladin": "Maintain mitigation and coordinate heals."
+   },
+   "refs": [
+    [
+     "AQWG — Drakath alternative lineup and HP thresholds",
+     "https://sites.google.com/view/aqwg-net/ultra-bosses"
+    ]
+   ],
+   "prep": [
+    "Lord of Order: at least seven Scrolls of Enrage if taking every blast. Confirm health, mitigation and damage for the final phase."
+   ],
+   "status": "Conditional · source-documented, gameplay unverified"
+  }
+ ]
+};
+const ultraLineupFamilySpecs={
+ "ezrajal": [
+  {
+   "id": "ap-dps",
+   "label": "ArchPaladin support",
+   "ids": [
+    "workbook",
+    "hub"
+   ],
+   "slots": [
+    [
+     "Lord of Order"
+    ],
+    [
+     "Legion Revenant"
+    ],
+    [
+     "ArchPaladin"
+    ],
+    [
+     "Chrono ShadowHunter",
+     "Chaos Avenger"
+    ]
+   ],
+   "names": [
+    "Support",
+    "Support",
+    "Mitigation & healing",
+    "Damage"
+   ]
+  }
+ ],
+ "warden": [
+  {
+   "id": "recovery-dps",
+   "label": "Recovery & damage",
+   "ids": [
+    "workbook",
+    "hub",
+    "hub-ap"
+   ],
+   "slots": [
+    [
+     "Lord of Order"
+    ],
+    [
+     "Legion Revenant"
+    ],
+    [
+     "StoneCrusher",
+     "ArchPaladin"
+    ],
+    [
+     "Chrono ShadowHunter",
+     "Chaos Avenger"
+    ]
+   ],
+   "names": [
+    "Buffs & recovery",
+    "Assigned taunter",
+    "Recovery / mitigation",
+    "Damage"
+   ]
+  }
+ ],
+ "tyndarius": [
+  {
+   "id": "three-targets",
+   "label": "Three taunters",
+   "ids": [
+    "hub-dot",
+    "hub-cav",
+    "hub-ai",
+    "nand-ssot"
+   ],
+   "slots": [
+    [
+     "Lord of Order"
+    ],
+    [
+     "Legion Revenant"
+    ],
+    [
+     "ArchPaladin"
+    ],
+    [
+     "Dragon of Time",
+     "Chaos Avenger",
+     "Arcana Invoker",
+     "ShadowStalker of Time"
+    ]
+   ],
+   "names": [
+    "Buffs",
+    "Left orb · Taunt",
+    "Boss · Taunt",
+    "Right orb · DPS & taunt"
+   ]
+  }
+ ],
+ "speaker": [
+  {
+   "id": "three-taunters",
+   "label": "Three-taunter rotation",
+   "ids": [
+    "three-vhl",
+    "three-csh"
+   ],
+   "slots": [
+    [
+     "Lord of Order"
+    ],
+    [
+     "Legion Revenant"
+    ],
+    [
+     "ArchPaladin"
+    ],
+    [
+     "Void Highlord",
+     "Chrono ShadowHunter"
+    ]
+   ],
+   "names": [
+    "Taunt & Zone",
+    "Taunt & Zone",
+    "Taunt & Zone",
+    "Damage & Zone 1"
+   ]
+  }
+ ],
+ "drakath": [
+  {
+   "id": "sc-loo-taunt",
+   "label": "Lord of Order taunts · StoneCrusher support",
+   "ids": [
+    "aqwg",
+    "aqwg-dragon-of-time",
+    "aqwg-chaos-avenger",
+    "aqwg-shaman"
+   ],
+   "slots": [
+    [
+     "Lord of Order"
+    ],
+    [
+     "ArchPaladin"
+    ],
+    [
+     "StoneCrusher"
+    ],
+    [
+     "Void Highlord",
+     "Dragon of Time",
+     "Chaos Avenger",
+     "Shaman"
+    ]
+   ],
+   "names": [
+    "HP blast taunter",
+    "Mitigation & healing",
+    "Support",
+    "Damage"
+   ]
+  },
+  {
+   "id": "lr-loo-taunt",
+   "label": "Lord of Order taunts · Legion Revenant support",
+   "ids": [
+    "aqwg-continuum-chronomancer",
+    "aqwg-chaos-shaper"
+   ],
+   "slots": [
+    [
+     "Lord of Order"
+    ],
+    [
+     "ArchPaladin"
+    ],
+    [
+     "Legion Revenant"
+    ],
+    [
+     "Continuum Chronomancer",
+     "Chaos Shaper"
+    ]
+   ],
+   "names": [
+    "HP blast taunter",
+    "Mitigation & healing",
+    "Support",
+    "Damage / support"
+   ]
+  }
+ ]
+};
+const ultraSlotLabels={
+ "engineer": {
+  "Lord of Order": "Support",
+  "Legion Revenant": "Support",
+  "StoneCrusher": "Support",
+  "ArchPaladin": "Mitigation",
+  "Chaos Avenger": "Damage",
+  "Chrono ShadowHunter": "Damage",
+  "Void Highlord": "Damage",
+  "Dragon of Time": "Damage",
+  "Frostval Barbarian": "Support",
+  "LightCaster": "Support"
+ },
+ "ezrajal": {
+  "Lord of Order": "Support",
+  "Legion Revenant": "Support",
+  "ArchPaladin": "Mitigation",
+  "Void Highlord": "Damage",
+  "Dragon of Time": "Damage",
+  "Frostval Barbarian": "Support",
+  "LightCaster": "Support"
+ },
+ "warden": {
+  "Lord of Order": "Support",
+  "Legion Revenant": "Assigned taunter",
+  "Void Highlord": "Damage",
+  "Dragon of Time": "Damage",
+  "Frostval Barbarian": "Support",
+  "LightCaster": "Support"
+ },
+ "dage": {
+  "Chaos Avenger": "Taunt & damage",
+  "Legion DoomKnight": "Decay",
+  "Verus DoomKnight": "Decay + backup",
+  "Lord of Order": "Support",
+  "ArchPaladin": "Mitigation",
+  "ArchFiend": "Damage support",
+  "Chrono ShadowHunter": "Damage"
+ },
+ "darkon": {
+  "Lord of Order": "Support / recovery",
+  "Legion Revenant": "Assigned taunter",
+  "StoneCrusher": "Assigned taunter",
+  "LightCaster": "Damage & healing",
+  "Paladin Chronomancer": "Healing",
+  "Chrono ShadowHunter": "Damage"
+ },
+ "nulgath": {
+  "Lord of Order": "Contracts taunter",
+  "Legion Revenant": "Contracts taunter",
+  "StoneCrusher": "Support",
+  "Guardian": "Damage",
+  "Dragon of Time": "Damage"
+ },
+ "gramiel": {
+  "Lord of Order": "Crystal pair / taunt",
+  "Legion Revenant": "Crystal pair / taunt",
+  "StoneCrusher": "Crystal pair / taunt",
+  "Shaman": "Crystal pair / taunt"
+ },
+ "drago": {
+  "Lord of Order": "Support",
+  "ArchPaladin": "Executioner taunt",
+  "Chaos Avenger": "Bowmaster taunt",
+  "Legion Revenant": "Support & damage"
+ }
+};
+function ultraTeamFamilies(bossId,variants){
+ const assigned=new Set(),out=[];
+ for(const spec of ultraLineupFamilySpecs[bossId]||[]){
+  const members=spec.ids.map(id=>variants.find(v=>v.id===id)).filter(Boolean);
+  if(members.length!==spec.ids.length)continue;
+  const aligned=members.map(v=>{const left=v.names.slice();const slots=spec.slots.map(allowed=>{const i=left.findIndex(n=>allowed.includes(n));return i<0?null:left.splice(i,1)[0]});return slots.some(x=>!x)||left.length?null:{...v,slots}});
+  if(aligned.some(x=>!x))continue;
+  members.forEach(v=>assigned.add(v.id));out.push({id:spec.id,label:spec.label,variants:aligned,slotNames:spec.names});
+ }
+ for(const v of variants)if(!assigned.has(v.id))out.push({id:v.id,label:v.label,variants:[{...v,slots:v.names.slice()}],slotNames:v.names.map(n=>ultraSlotLabels[bossId]?.[n]||'Assigned class')});
+ return out;
+}
+function ultraSlotChoices(family,variant,index,cls){
+ return family.variants.filter(v=>v.slots.every((name,i)=>i===index||name===variant.slots[i])&&v.names.includes(cls));
+}
+
 function ultraStrategyVariants(b,profile){
  const evidence=approvedUltraGuides[b.id];
- return (evidence?.variants||[]).filter(v=>v.team.length&&v.refs.length).map(v=>({...v,names:v.team}));
+ return [...(evidence?.variants||[]),...(ultraExtraLineups[b.id]||[])].filter(v=>v.team.length&&v.refs.length).map(v=>({...v,names:v.team}));
 }
 function sourceOtherGuide(profile){return profile&&approvedOtherBossGuides[profile.name]||null}
 function fillStrategyClasses(select,names,selected){
@@ -4499,23 +5128,25 @@ function renderUltraDetail(b){
  }
  focus.append(focusCard('YOUR GOAL',evidence.goal,'ultra-focus-good'),focusCard('AVOID',evidence.avoid,'ultra-focus-danger'));
  summary.append(focus);if(evidence.access){const access=node('p',evidence.access,'muted tiny');const link=node('a',' Location / requirements ↗');link.href=evidence.accessRef;link.target='_blank';link.rel='noopener noreferrer';access.append(link);summary.append(access)}
- const team=node('section',undefined,'ultra-focus-card guide-v2-team');
- const setup=node('section',undefined,'guide-v2-class guide-v2-inline-class');
- setup.append(node('h3','1. Choose your class'));
+ const controls=node('section',undefined,'ultra-focus-card guide-v2-builder guide-v2-top-grid');
+ const settings=node('div',undefined,'guide-v2-builder-controls');
+ const setup=node('div',undefined,'guide-v2-class guide-v2-inline-class');
+ setup.append(node('h3','1. Your class'));
  const select=node('select',undefined,'ultra-role-select');select.setAttribute('aria-label','Your class');
  const rating=node('div',undefined,'ultra-selected-rating');setup.append(select,rating);
- team.append(setup,node('h3','2. Choose your team'));
- const teamInfo=node('p',undefined,'muted tiny'),choices=node('div',undefined,'guide-v2-team-choices');
- team.append(teamInfo,choices);
- const party=node('section',undefined,'ultra-focus-card guide-v2-party');
- party.append(node('h3','3. Your party'));
+ const strategy=node('div',undefined,'guide-v2-builder-strategy');strategy.append(node('h3','2. Strategy'));
+ const strategySelect=node('select',undefined,'guide-v2-strategy-select');strategySelect.setAttribute('aria-label','Team strategy');
+ const teamInfo=node('p',undefined,'muted tiny');strategy.append(strategySelect,teamInfo);settings.append(setup,strategy);
+ const party=node('section',undefined,'guide-v2-party');party.dataset.boss=b.id;
+ const partyHead=node('div',undefined,'guide-v2-builder-partyhead');partyHead.append(node('h3','3. Team composition'));
+ const copyTeam=makeCopyJoin('');copyTeam.classList.add('guide-v2-copy-team');partyHead.append(copyTeam);
  const chips=node('div',undefined,'ultra-recommended-classes guide-v2-class-buttons');
- party.append(chips);
- const copyTeam=makeCopyJoin('');copyTeam.classList.add('guide-v2-copy-team');party.append(copyTeam);
- const controls=node('div',undefined,'guide-v2-control-grid guide-v2-top-grid');controls.append(team,party);root.append(controls,summary);
+ party.append(partyHead,chips,node('p','Fixed = fixed for this strategy, not for the boss. Flexible = a documented alternative; other slots may constrain the choice.','muted tiny guide-v2-team-legend'));
+ controls.append(settings,party);root.append(controls,summary);
  const allNames=[...new Set(variants.flatMap(v=>v.names))].sort((a,b)=>Number(ultraOwned(b))-Number(ultraOwned(a)));
  fillStrategyClasses(select,allNames,selectedUltraClasses.get(b.id));
- let chosen=variants.find(v=>v.id===selectedUltraStrategies.get(b.id)&&classInExampleTeam(v.names,select.value))||variants.find(v=>classInExampleTeam(v.names,select.value))||variants[0];
+ const families=ultraTeamFamilies(b.id,variants),lineups=families.flatMap(f=>f.variants);
+ let chosen=lineups.find(v=>v.id===selectedUltraStrategies.get(b.id)&&classInExampleTeam(v.names,select.value))||lineups.find(v=>classInExampleTeam(v.names,select.value))||lineups[0];
  function friendlyTeamName(v){return v.label.replace(/\bPCM\b/g,'Paladin Chronomancer').replace(/\bLoO\b/g,'Lord of Order').replace(/\bLR\b/g,'Legion Revenant').replace(/\bSC\b/g,'StoneCrusher').replace(/\bLDK\b/g,'Legion DoomKnight').replace(/\bVDK\b/g,'Verus DoomKnight').replace(/\bDPS\b/g,'Damage')}
  const mechanics=node('section',undefined,'ultra-focus-card ultra-mechanics ultra-class-guide');
  const mechanicsTitle=node('h3','Fight instructions');mechanics.append(mechanicsTitle);
@@ -4545,24 +5176,35 @@ function renderUltraDetail(b){
   const v=active();selectedUltraStrategies.set(b.id,v.id);
   if(!classInExampleTeam(v.names,select.value))preferExampleClass(select,v.names);
   const compatible=variants.filter(t=>classInExampleTeam(t.names,select.value));
-  teamInfo.textContent=compatible.length+' compatible '+(compatible.length===1?'team':'teams');
-  choices.replaceChildren();
-  for(const option of compatible){
-   const button=node(compatible.length===1?'div':'button',undefined,'guide-v2-team-option');button.dataset.strategy=option.id;button.classList.toggle('is-selected',option.id===v.id);if(compatible.length>1){button.type='button';button.setAttribute('aria-pressed',String(option.id===v.id));button.onclick=()=>{chosen=option;updateStrategy()}}
-   button.append(node('strong',friendlyTeamName(option)),node('small',option.names.length+' players'+(option.partial?' · Partial strategy':''),'muted tiny'));
-   choices.append(button);
-  }
+  const available=families.filter(f=>f.variants.some(t=>classInExampleTeam(t.names,select.value)));
+  const family=families.find(f=>f.variants.some(t=>t.id===v.id));
+  strategySelect.replaceChildren();
+  for(const f of available){const option=new Option(friendlyTeamName(f),f.id);option.dataset.variants=f.variants.map(t=>t.id).join(' ');strategySelect.append(option)}
+  strategySelect.value=family.id;strategySelect.disabled=available.length===1;
+  teamInfo.textContent=compatible.length+' documented '+(compatible.length===1?'lineup':'lineups')+' · '+available.length+' '+(available.length===1?'strategy':'strategies');
+  party.dataset.variantId=v.id;party.dataset.familyId=family.id;
   chips.replaceChildren();
-  for(const name of v.names){
-   const chip=node('div',undefined,'ultra-team-chip');chip.dataset.cls=name;
+  let ownSlot=-1;
+  for(const [index,name] of v.slots.entries()){
+   const chip=node('div',undefined,'ultra-team-chip');chip.dataset.cls=name;chip.dataset.slot=String(index);
+   const slotNames=[...new Set(family.variants.map(t=>t.slots[index]))],mine=ownSlot<0&&sameUltraClass(name,select.value);
+   if(mine)ownSlot=index;
+   const meta=node('div',undefined,'guide-v2-slot-meta');meta.append(node('small',family.slotNames[index]||'Assigned class','guide-v2-slot-label'),node('small',slotNames.length>1?'Flexible':'Fixed','guide-v2-slot-kind'+(slotNames.length>1?' is-flexible':'')));chip.append(meta);
    const heading=node('span',undefined,'guide-v2-party-heading'),you=node('small','YOU','guide-v2-you');you.hidden=true;heading.append(node('strong',name),you);chip.append(heading);
-   const role=v.roles[name];if(role){const desc=node('span',role,'guide-v2-party-role');chip.append(desc)}
+   const role=v.roles[name];if(role)chip.append(node('span',role,'guide-v2-party-role'));else chip.append(node('span','Follow the shared fight instructions.','guide-v2-party-role'));
+   const possible=ultraSlotChoices(family,v,index,select.value);
+   if(!mine&&new Set(possible.map(t=>t.slots[index])).size>1){
+    const slotPick=node('select',undefined,'guide-v2-slot-select');slotPick.setAttribute('aria-label','Alternative class for slot '+(index+1));slotPick.dataset.slot=String(index);
+    const seen=new Set();for(const candidate of possible){const n=candidate.slots[index];if(seen.has(n))continue;seen.add(n);const option=new Option(n,candidate.id);slotPick.append(option)}
+    slotPick.value=v.id;slotPick.onchange=()=>{const next=possible.find(t=>t.id===slotPick.value);if(next){chosen=next;updateStrategy()}};chip.append(slotPick);
+   }else if(slotNames.length>1){chip.append(node('small',mine?'Change your class above to use another option.':'Other documented options require a different class or team setup.','muted tiny'))}
    chips.append(chip);
   }
-  const replacement=makeCopyJoin(v.names.join(' / '));replacement.classList.add('guide-v2-copy-team');replacement.querySelector('.ultra-copy-command').textContent='Copy team';party.querySelector('.guide-v2-copy-team').replaceWith(replacement);
+  const replacement=makeCopyJoin(v.slots.join(' / '));replacement.classList.add('guide-v2-copy-team');replacement.querySelector('.ultra-copy-command').textContent='Copy team';party.querySelector('.guide-v2-copy-team').replaceWith(replacement);
   updateRole();
  }
- select.onchange=()=>{if(!classInExampleTeam(chosen.names,select.value))chosen=variants.find(v=>classInExampleTeam(v.names,select.value))||variants[0];updateStrategy()};updateStrategy();
+ strategySelect.onchange=()=>{const f=families.find(t=>t.id===strategySelect.value);const next=f?.variants.find(v=>classInExampleTeam(v.names,select.value));if(next){chosen=next;updateStrategy()}};
+ select.onchange=()=>{if(!classInExampleTeam(chosen.names,select.value)){const f=families.find(t=>t.variants.some(v=>v.id===chosen.id));chosen=f?.variants.find(v=>classInExampleTeam(v.names,select.value))||lineups.find(v=>classInExampleTeam(v.names,select.value))||lineups[0]}updateStrategy()};updateStrategy();
 }
 $('ultrasearch').addEventListener('input',renderUltras);$('ultrafilter').addEventListener('change',renderUltras);$('bossguidesearch').addEventListener('input',renderUltraCatalog);$('bossguidecategory').addEventListener('change',renderUltraCatalog);
 
@@ -5184,10 +5826,10 @@ function taskCard(t,pinned){const done=taskDone(t),conflict=routineConflict(t);
  if(pinned&&done){const mark=node('span','✓','planner-art-complete');mark.setAttribute('aria-label','Completed');visual.append(mark)}
  card.append(visual);
  const header=node('div',undefined,'planner-quest-head'),name=node('div',undefined,'planner-quest-name');
- name.append(node('strong',plannerTitle(t),'task-title'),node('small',(t.freq==='daily'?'Daily':'Weekly')+' · '+(t.kind==='activity'?'Activity · ':'')+(t.group||'Custom'),'planner-quest-meta'));
+ const questTitle=node('strong',plannerTitle(t),'task-title'),questMeta=node('small',(t.freq==='daily'?'Daily':'Weekly')+' · '+(t.kind==='activity'?'Activity · ':'')+(t.group||'Custom'),'planner-quest-meta');questTitle.title=plannerTitle(t);questMeta.title=questMeta.textContent||'';name.append(questTitle,questMeta);
  header.append(name);card.append(header);
  const reward=plannerRewardParts(t);
- if(reward.main){const preview=node('div',reward.main,'planner-reward-preview');preview.title=reward.all.join(' · ');card.append(preview)}
+ const preview=node('div',reward.main||'','planner-reward-preview');preview.title=reward.all.join(' · ');card.append(preview);
  const info=taskRoutes[t.id],details=node('details',undefined,'task-route planner-quest-details');details.append(node('summary',t.kind==='activity'?'Activity details':'Quest details'));
  if(reward.all.length){const rewards=node('div',undefined,'planner-quest-rewards');rewards.append(node('small','Rewards','planner-quest-label'));for(const x of reward.all)rewards.append(node('div',x,'planner-reward-item'));details.append(rewards)}
  if(pinned&&Array.isArray(t.sourceProjects)&&t.sourceProjects.length)details.append(node('small','🎯 '+t.sourceProjects.join(' · '),'task-project'));
@@ -5219,7 +5861,7 @@ function taskCard(t,pinned){const done=taskDone(t),conflict=routineConflict(t);
  const wiki=node('a',t.kind==='activity'?'Activity source ↗':'Quest source ↗','task-wiki');wiki.href=info?.wiki||t.wiki||'https://aqwwiki.wikidot.com/daily-quest-board-s-quests';wiki.target='_blank';wiki.rel='noopener noreferrer';details.append(wiki);
  if(art){const credit=node('a','Image: AQWorlds Wiki / Artix ↗','task-wiki');credit.href=art.source;credit.target='_blank';credit.rel='noopener noreferrer';details.append(credit)}
  card.append(details);
- if(conflict)card.append(node('small','Alternative already completed: '+conflict.name,'task-unverified'));
+ if(conflict){const summary=details.querySelector?.('summary')||details.children[0];summary.textContent=(t.kind==='activity'?'Activity':'Quest')+' details · Alt. done';summary.title='Alternative already completed: '+conflict.name;details.append(node('small','Alternative already completed: '+conflict.name,'task-unverified'))}
  const actions=node('div',undefined,'planner-quest-actions');
  const mainJoin=t.acceptJoin||(!t.farmJoin?t.join:'');if(mainJoin){const join=makeCopyJoin(mainJoin);join.title='Copy '+mainJoin+(t.acceptJoin&&t.acceptJoin!==t.join?' · Accept quest':'');actions.append(join)}
  if(pinned){const action=node('button',done?'×':'✓','smallbutton planner-complete-action'+(done?' is-complete':''));

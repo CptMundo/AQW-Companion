@@ -174,3 +174,16 @@ nav.tabs.subnav[aria-label="Section navigation"]:has(button[data-parent="planner
 #planner .planner-my-search input::-webkit-search-cancel-button{display:none}
 #planner .planner-my-search button[hidden]{display:none!important}
 @media(max-width:480px){#planner .planner-my-search{grid-column:1/-1}}
+
+/* Uniform compact quest cards. Each closed card reserves identical text slots.
+   Details remain in normal document flow and can expand without clipping. */
+:is(#planner,#planner-discover) .planner-quest-card .planner-quest-head{flex:none;height:49px;min-height:49px;max-height:49px;overflow:hidden}
+:is(#planner,#planner-discover) .planner-quest-card .planner-quest-name{min-width:0;width:100%;gap:1px}
+:is(#planner,#planner-discover) .planner-quest-card .task-title{display:-webkit-box!important;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;line-height:1.25!important;max-height:32.5px;min-width:0;margin:0!important}
+:is(#planner,#planner-discover) .planner-quest-card .planner-quest-meta{display:block;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;line-height:15px!important;min-width:0}
+:is(#planner,#planner-discover) .planner-quest-card .planner-reward-preview{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;flex:0 0 30px;height:30px;min-height:30px;max-height:30px;line-height:15px;min-width:0}
+:is(#planner,#planner-discover) .planner-quest-card .planner-quest-details:not([open]){flex:none;height:20px;min-height:20px;max-height:20px;box-sizing:border-box}
+:is(#planner,#planner-discover) .planner-quest-card .planner-quest-details:not([open]) summary{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:16px}
+:is(#planner,#planner-discover) .planner-quest-card .planner-quest-actions{height:27px;min-height:27px;flex:0 0 27px}
+:is(#planner,#planner-discover) .planner-quest-card .planner-quest-actions .ultra-copy-join{height:27px;max-height:27px;box-sizing:border-box;overflow:hidden}
+:is(#planner,#planner-discover) .planner-quest-card .planner-quest-actions .ultra-copy-command{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
