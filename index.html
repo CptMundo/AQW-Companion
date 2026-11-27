@@ -5196,7 +5196,7 @@ function taskCard(t,pinned){const done=taskDone(t),conflict=routineConflict(t);
  const routes=node('div',undefined,'planner-quest-routes');
  const route=(label,join)=>{const row=node('div',undefined,'planner-quest-route');row.append(node('small',label,'planner-quest-label'),makeCopyJoin(join));routes.append(row)};
  const accept=t.acceptJoin||(!t.farmJoin?t.join:'');
- if(accept)route(t.kind==='activity'?'Activity location':t.id.startsWith('user-')?'Location':'Accept quest',accept);
+ if(accept)route(t.kind==='activity'?'Activity location':String(t.id||'').startsWith('user-')?'Location':'Accept quest',accept);
  const farm=t.farmJoin||(t.acceptJoin&&t.join!==t.acceptJoin?t.join:'');
  if(farm&&!(info?.targets||[]).some(x=>x[2]===farm))route('Farm / boss',farm);
  if(routes.children.length)details.append(routes);
