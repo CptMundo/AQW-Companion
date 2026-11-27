@@ -204,3 +204,33 @@ nav.tabs.subnav[aria-label="Section navigation"]:has(button[data-parent="ultras"
  #ultradetail .ultra-role-step.guide-v2-step,
  #bossguidedetail .ultra-role-step.guide-v2-step{padding:10px 11px;grid-template-columns:minmax(0,1fr)}
 }
+
+/* Compact guide workspace: separate personal duties from shared mechanics. */
+#ultradetail .guide-v2-control-grid,#ultradetail .guide-v2-fight-columns,#bossguidedetail .guide-v2-fight-columns{display:grid;grid-template-columns:minmax(0,1fr);align-items:start;gap:12px;min-width:0}
+#ultradetail .guide-v2-control-grid{margin-bottom:12px}
+#ultradetail .guide-v2-control-grid>.guide-v2-team,#ultradetail .guide-v2-control-grid>.guide-v2-class{margin:0;align-content:start;padding:12px}
+#ultradetail .guide-v2-control-grid h3{margin:0 0 2px!important}
+#ultradetail .guide-v2-control-grid .guide-v2-class-buttons{justify-content:flex-start}
+#ultradetail .guide-v2-control-grid .ultra-role-select{width:100%!important;max-width:none!important;min-width:0;margin:0!important}
+#ultradetail .guide-v2-control-grid .ultra-selected-rating{margin:0}
+#ultradetail .guide-v2-instruction-column{min-width:0;display:grid;align-content:start;gap:7px}
+#ultradetail .guide-v2-column-heading,#bossguidedetail .guide-v2-column-heading{margin:0 0 3px;color:var(--muted);font-size:12px;font-weight:750;line-height:1.4}
+#ultradetail .guide-v2-shared-steps,#bossguidedetail .guide-v2-shared-steps{display:grid;grid-template-columns:minmax(0,1fr);gap:7px;min-width:0}
+#ultradetail .ultra-role-step.guide-v2-step,#bossguidedetail .ultra-role-step.guide-v2-step{margin:0;padding:10px 12px}
+#ultradetail .guide-v2-strategy-note{border-left:2px solid var(--gold);padding:8px 10px;margin:2px 0;background:var(--panel2);border-radius:5px}
+#bossguidedetail .guide-v2-boss-columns .boss-guide-panel{margin:0;padding:12px}
+#bossguidedetail .guide-v2-boss-columns .boss-guide-panel h3{text-align:left;margin:0 0 10px}
+#bossguidedetail .guide-v2-boss-role{display:grid;gap:6px}
+@container (min-width:620px){
+ #ultradetail .guide-v2-control-grid:has(.guide-v2-class:not([hidden])){grid-template-columns:minmax(0,1.55fr) minmax(0,1fr)}
+ #ultradetail .guide-v2-fight-columns:has(.guide-v2-personal),#bossguidedetail .guide-v2-fight-columns:has(.guide-v2-personal){grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)}
+ #ultradetail .guide-v2-shared-only .guide-v2-shared-steps,#bossguidedetail .guide-v2-shared-only .guide-v2-shared-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #ultradetail .guide-v2-shared-only .guide-v2-shared-steps>.guide-v2-step:only-child,#bossguidedetail .guide-v2-shared-only .guide-v2-shared-steps>.guide-v2-step:only-child{grid-column:1/-1}
+}
+#ultradetail .guide-v2-timing-wrap{max-width:100%;overflow-x:auto;min-width:0;margin:8px 0}
+#ultradetail .guide-v2-timing-table{width:100%;border-collapse:collapse;table-layout:auto;font-size:12px;text-align:left}
+#ultradetail .guide-v2-timing-table :is(th,td){padding:7px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;white-space:normal;overflow-wrap:break-word;color:var(--txt);line-height:1.45}
+#ultradetail .guide-v2-timing-table th{background:var(--panel2);font-weight:750;color:var(--cyan)}
+#ultradetail .guide-v2-timing-table td:first-child{font-weight:750;font-variant-numeric:tabular-nums;color:var(--cyan);width:3ch;white-space:nowrap}
+#ultradetail .guide-v2-timing-table tr:nth-child(even) td{background:var(--panel2)}
+@container(max-width:430px){#ultradetail .guide-v2-timing-table :is(th,td){padding:5px 6px}}
