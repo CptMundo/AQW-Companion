@@ -23,7 +23,7 @@ assert.ok(!html.includes("const caution=node('div','⚠ '+warning"),"Warning car
 assert.ok(!html.includes("vigil=node('div',undefined,'ultra-focus-timing')"),"No redundant Kathool quote callout card");
 assert.ok(html.includes("const rows=ultraUnifiedTips(b.id,cls,baseTips)"),"New unified class-specific role rows");
 assert.ok(html.includes("ultra-role-mini-title"));
-assert.ok(html.includes("bardSupport={weapon:'Awe Blast',helm:'Forge',cape:'Absolution'"),"Bard has documented support equipment");
+assert.ok(html.includes("const publicEncounterLoadouts=false;"),"Do not present unverified class loadouts in encounter guides");
 assert.ok(html.includes("function ultraStrategyVariants"),"Keep unsupported substitutions out of active strategies");
 assert.ok(ultraCSS.includes(".ultra-role-mini-title"));
 assert.ok(html.includes('id="build-search"'));
