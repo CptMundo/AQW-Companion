@@ -103,7 +103,8 @@ async function main(){
    }
   }
   assert.equal(variantsChecked,22);
-  await page.locator('#ultrasearch').fill('Frailty');assert.equal(await page.locator('#ultracards button').count(),1);await page.locator('#ultrasearch').fill('');
+  // The old Ultra search toolbar is intentionally hidden by the existing compact layout. Test its event handler without exposing a control the user previously hid.
+  await page.locator('#ultrasearch').evaluate(e=>{e.value='Frailty';e.dispatchEvent(new Event('input',{bubbles:true}))});assert.equal(await page.locator('#ultracards button').count(),1);await page.locator('#ultrasearch').evaluate(e=>{e.value='';e.dispatchEvent(new Event('input',{bubbles:true}))});
   await page.locator('#ultracards button').filter({hasText:'God of the Depths'}).click();
   await page.setViewportSize({width:390,height:844});
   const overflow=await page.locator('#ultradetail').evaluate(e=>e.scrollWidth>e.clientWidth+3);assert.ok(!overflow,'Ultra guide must fit mobile width');

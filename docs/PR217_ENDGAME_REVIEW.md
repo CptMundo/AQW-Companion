@@ -3,7 +3,7 @@
 27 November 2026 | Beta 0.13.3 | Review candidate, not gameplay-certified.
 
 ## Review instructions and gate
-Review the exact text and teams below. Mark incorrect/conditional/unresolved/playtested, supply a corrected source or recording. No merge until owner approval. Source-documented does not mean verified on the live patch. No universal BiS claims; all Class Builds remain hidden. Full live access, all recent patches, and every linked page could not be certified; several Wikidot/AQW App/Solaris pages returned redirect/cache failures. Search extracts and workbook cells were accessible. Bootiest's latest recorded edit is October 2025, so its templates are historical cross-checks. Do not silently combine them with newer presets. The previously reviewed The List farming benchmarks depend on exact gear, mob HP, pots and setup; no KPM published. The patch-note endpoint returned an old full cached page despite newer search excerpts: current-patch review remains open. Specialist validation has not been performed.
+Review the exact text and teams below. Mark incorrect/conditional/unresolved/playtested, supply a corrected source or recording. No merge until owner approval. Source-documented does not mean verified on the live patch. No universal BiS claims; all Class Builds remain hidden. Full live access, all recent patches, and every linked page could not be certified; several Wikidot/AQW App/Solaris pages returned redirect/cache failures. Search extracts and workbook cells were accessible. Bootiest's latest recorded edit is October 2025, so its templates are historical cross-checks. Do not silently combine them with newer presets. The List(1).xlsx was reopened: Farming KPM rows 2, 3, 10 and 16 use distinct gear (ArchMage Corporeal Acheron/Wizard/Penitence/Pneuma; AI Elysium/Wizard/Lament/Pneuma; LR Valiance/Wizard/Avarice/Pneuma; AF Dauntless/Lucky/Vainglory/Anima). Introduction specifies 51% boosted weapon without pots. These benchmarks cannot be attached to different presets; no KPM published. The patch-note endpoint returned an old full cached page despite newer search excerpts: current-patch review remains open. Specialist validation has not been performed.
 
 ## Source and reliability matrix
 | Area | Evidence | Status |
@@ -453,8 +453,8 @@ Source: https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e
 Team: Lord of Order / Legion Revenant / Verus DoomKnight / Legendary Hero / ArchFiend / Chrono ShadowHunter / Chrono ShadowHunter
 - Use frequent sustained hits instead of relying on very large nukes.
 - Avoid Vainglory because incoming healing is heavily reduced.
-- The workbook says Decay does not work. The monster reference distinguishes ordinary healing from other recovery effects; verify the exact Blood Frenzy interaction with your team rather than treating Decay as universally effective.
-Condition: Source disagreement remains: do not rely on Decay to stop all healing. Sustained damage and avoiding Vainglory are the shared recommendations.
+- The workbook says Decay does not work, but the Level 100 monster reference explicitly marks Blood Frenzy's 100,000 HP recovery as Decayable. Other attacks also recover HP. Do not assume Decay stops all healing; verify this interaction in-game.
+Condition: Source disagreement remains: the specific Blood Frenzy recovery is documented as Decayable in the monster reference; the workbook disagrees. Sustained damage and avoiding Vainglory are the shared recommendations.
 - Source: [Monster mechanics](https://aqwwiki.wikidot.com/nightbane)
 Reviewer verdict: [ ] correct [ ] conditional [ ] correction needed [ ] playtested; notes: __________
 
@@ -707,6 +707,9 @@ Reviewer verdict: [ ] correct [ ] conditional [ ] correction needed [ ] playtest
 | Dark Lord | solo | Wizard | Elysium | Pneuma | Lament | [Q57:Q74 · Full Pots Solo](https://docs.google.com/spreadsheets/d/1WMSUlDwKUSnpg6x0ueP_6pDwxMzMM3Mc5ox3oHqK6OU/edit#gid=804225218) |
 
 Legion Revenant's source cape cell lists Lament or Vainglory with potions. We selected Lament. Dark Lord solo explicitly assumes full pots. Arcana Invoker and several other classes differ from Bootiest's 2025 templates; no hybrid configurations or claims of universal optimality.
+
+## Consumables verification
+All ten currently curated alchemy triples for approved class activities match the source cells: VHL (M82), CAv (J82), ArchMage (G82), CSS (M82), AF (J82), King's Echo/VDK/Yami/HV/Necrotic (D6/D9/D12). These are source examples, not universal recommendations. The other six source columns were also checked: AI (J82), LR/Shaman/Phantom (D6/D9/D12), BlazeBinder (J82), Dark Lord (P82). No new triple has been exposed: alternatives and individual item effects need validation; Dark Lord's source explicitly uses full pots (Sage Tonic, Velocity Elixir, Felicitous Philtre). Class Builds remain hidden. Guardian/LightCaster are historical records not approved for public class activities. Never transplant these triples into Ultra encounters.
 
 ## Release blockers
 - Obtain expert gameplay review of high-risk encounters; resolve Darkon phase timing, Nulgath opening and VDK Dage backup. Verify current patch and in-game access for unresolved catalog maps. Verify any source links that returned cache or redirect errors.

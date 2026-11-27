@@ -21,3 +21,6 @@ Class Builds remain hidden, but the exact activity-specific whitelist expands to
 
 ## Pre-merge audit — 27 Nov 2026
 Added exact source tabs, access notes, explicit preparation, reconciled named solo class options, corrected source-specific role details, limited tooltip claims, and inventory alias compatibility. Exact 20-event Speaker chart regression and full browser traversal of all 22 variants and 40 other/catalog entries added. All 16 class presets compared with original cells: 15 exact + LR Lament as documented conditional option. See `docs/PR217_ENDGAME_REVIEW.md` for complete review pack and remaining source/live gameplay blockers. Do not merge based solely on software tests.
+
+### Final audit follow-up
+Rechecked ten existing approved alchemy triples against the source cells; six additional source potion columns reviewed without adding unverified public prescriptions. Nightbane wiki Level 100 Blood Frenzy explicitly marks its 100,000 HP recovery Decayable; workbook disagrees, and other recovery is not guaranteed stoppable. Existing hidden Ultra toolbar stays hidden; test its event handler programmatically rather than forcing visible UI. First audit CI: 13/14 passed; preview failed on hidden search field after traversing 22 strategies. This follow-up corrects that test and retains explicit source disagreement.
