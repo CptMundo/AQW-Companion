@@ -5647,7 +5647,7 @@ function fillStrategyClasses(select,names,selected,grouped=false){
  select.replaceChildren();
  if(grouped){
   const groups=items.length?[['Owned',names.filter(ultraOwned)],['Not owned',names.filter(n=>!ultraOwned(n))]]:[['Ownership not checked',names]];
-  for(const [label,classes] of groups){if(!classes.length)continue;const group=node('optgroup');group.label=label;for(const name of classes.slice().sort((a,b)=>a.localeCompare(b)))group.append(new Option(name,name));select.append(group)}
+  for(const [label,classes] of groups){if(!classes.length)continue;const group=node('optgroup');group.label=label;group.className=label==='Owned'?'guide-v2-owned-group':label==='Not owned'?'guide-v2-not-owned-group':'guide-v2-unknown-group';for(const name of classes.slice().sort((a,b)=>a.localeCompare(b)))group.append(new Option(name,name));select.append(group)}
  }else for(const name of names)select.append(new Option((ultraOwned(name)?'✓ ':'')+name,name));
  if(names.some(n=>sameUltraClass(n,selected)))select.value=names.find(n=>sameUltraClass(n,selected));
  else preferExampleClass(select,names);
@@ -5766,8 +5766,8 @@ function renderUltraDetail(b){
   const available=families.filter(f=>f.variants.some(t=>classInExampleTeam(t.names,select.value)));
   const family=families.find(f=>f.variants.some(t=>t.id===v.id));
   strategySelect.replaceChildren();
-  for(const f of available){const option=new Option(friendlyTeamName(f),f.id);option.dataset.variants=f.variants.map(t=>t.id).join(' ');strategySelect.append(option)}
-  strategySelect.value=family.id;strategySelect.disabled=available.length===1;strategySelect.hidden=available.length===1;strategyStatic.hidden=available.length!==1;strategyStatic.textContent=friendlyTeamName(family);
+  for(const f of families){const compatible=available.includes(f);const option=new Option(friendlyTeamName(f)+(compatible?'':' — Incompatible with your class'),f.id);option.disabled=!compatible;option.dataset.variants=f.variants.map(t=>t.id).join(' ');strategySelect.append(option)}
+  strategySelect.value=family.id;strategySelect.disabled=families.length===1;strategySelect.hidden=families.length===1;strategyStatic.hidden=families.length!==1;strategyStatic.textContent=friendlyTeamName(family);
   party.dataset.variantId=v.id;party.dataset.familyId=family.id;
   chips.replaceChildren();
   selectedSlot=ownSlotFor(v,select.value);
