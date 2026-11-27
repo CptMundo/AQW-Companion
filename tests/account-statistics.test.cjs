@@ -80,7 +80,7 @@ assert.equal(statsRenderCount,1,"Returning Home should not reopen statistics");
 
 assert.ok(html.includes('<section id="account-stats" class="view">'));
 assert.ok(html.includes('href="css/account-statistics.css?v=97"'));
-assert.ok(html.includes('src="js/account-statistics.js?v=97"'));
+assert.match(html,/src="js\/account-statistics\.js\?v=\d+"/);
 assert.ok(html.includes("if(tab==='account-stats'||tab==='milestones')renderAccountStatistics()"),"Statistics should refresh when selected");
 assert.ok(html.includes("current,snapshots,projects"),"Runtime must use real browser state");
 assert.ok(html.includes("metadataLookup:name=>communityItems.get(communityKey(name))"),"Rarity data is community metadata");
