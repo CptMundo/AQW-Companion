@@ -1376,10 +1376,11 @@ const starterBuilds={
   },
   "farm": {
    "weapon": "Dauntless",
-   "helm": "Anima",
-   "cape": "Vainglory",
-   "alternative": "Valiance and Vim for sustained farming",
-   "note": "Good multi-target option after its 2026 range adjustment."
+   "helm": "Forge",
+   "cape": "Lament",
+   "alternative": "Simplified high-HP farming example: Lucky / Ravenous / Vim / Vainglory; check HP requirements.",
+   "note": "Simplified low-HP farming example. All skills became infinite range on 17 July 2026; performance depends on monster HP and gear.",
+   "base": "Lucky"
   },
   "group": {
    "weapon": "Valiance",
@@ -1516,8 +1517,9 @@ const starterBuilds={
    "weapon": "Elysium",
    "helm": "Pneuma",
    "cape": "Vainglory",
-   "alternative": "Acheron + Penitence in specialized builds",
-   "note": "Excellent AoE class; performance depends heavily on rotation and mob HP."
+   "alternative": "Simplified low-HP example: Wizard / Valiance / Pneuma / Vainglory. The class has Astral and Corporeal modes; match the rotation to the weapon.",
+   "note": "Simplified high-HP mob farming example, not a universal setup for both Ascensions.",
+   "base": "Wizard"
   },
   "group": {
    "weapon": "Valiance",
@@ -1537,10 +1539,11 @@ const starterBuilds={
   },
   "farm": {
    "weapon": "Valiance",
-   "helm": "Examen",
+   "helm": "Forge",
    "cape": "Vainglory",
-   "alternative": "Base Forge helm for safer farming",
-   "note": "Community 2026 tests favor Valiance with Examen on efficient farming routes."
+   "alternative": "Bootiest’s general template instead uses Wizard/Pneuma with several weapons; do not mix the two without testing.",
+   "note": "Simplified Classes Guide, Farming column: Lucky / Valiance / Forge / Vainglory. The official class description recommends Wizard; the difference is a documented build choice, not a universal error.",
+   "base": "Lucky"
   },
   "group": {
    "weapon": "Valiance",
@@ -1575,11 +1578,12 @@ const starterBuilds={
  },
  "Shaman": {
   "solo": {
-   "weapon": "Elysium",
-   "helm": "Pneuma",
+   "weapon": "Ravenous",
+   "helm": "Examen",
    "cape": "Vainglory",
-   "alternative": "Mana Vamp before Forge",
-   "note": "Mana-hungry class that improves significantly with Elysium."
+   "alternative": "Elysium / Pneuma is a documented farming alternative; solo and farming are distinct.",
+   "note": "Simplified Best Solo column; use skill 5 to establish the debuff and maintain it.",
+   "base": "Wizard"
   },
   "farm": {
    "weapon": "Elysium",
@@ -1667,11 +1671,12 @@ const starterBuilds={
  },
  "King's Echo": {
   "solo": {
-   "weapon": "Valiance",
-   "helm": "Forge",
+   "weapon": "Ravenous",
+   "helm": "Examen",
    "cape": "Vainglory",
-   "alternative": "Spiral Carve before Forge; test Ravenous",
-   "note": "2026 endgame solo contender. Gameplay and boost uptime affect comparisons."
+   "alternative": "Bootiest lists Wizard with Ravenous/Valiance/Elysium and Examen/Pneuma as general options.",
+   "note": "Simplified Classes Guide, Solo / Group column. The class scales with Spell Power but deals both physical and magical damage; Lucky is a community build choice, not a replacement for the official Wizard class recommendation.",
+   "base": "Lucky"
   },
   "farm": {
    "weapon": "Valiance",
@@ -1970,7 +1975,7 @@ const ultraGlossary={
  'Arcana’s Concerto':{text:'Forge weapon enhancement that increases damage taken by the target. Coordinate one carrier.'},
  "Arcana's Concerto":{text:'Forge weapon enhancement that increases damage taken by the target. Coordinate one carrier.'},
  'Elysium':{text:'Forge weapon enhancement for magic damage and mana sustain.'},
- 'Lacerate':{text:'Forge weapon enhancement triggered by skill 2; reduces enemy hit and dodge.'},
+ 'Lacerate':{text:'Forge weapon enhancement triggered by skill 2; reduces enemy hit, dodge and haste.'},
  'Smite':{text:'Forge weapon enhancement triggered by skill 5 for extra damage.'},
  'Spiral Carve':{text:'Awe weapon enhancement that increases critical chance.'},
  'Forge':{text:'Base Forge helm has balanced stats without the special reduced-HP helm trade-off.'},
@@ -2057,7 +2062,7 @@ function ultraBeginnerActions(key,cls,existing){
  'If assigned Decay: use Unleash Doom (5) on “I possess the full power of the Legion at my disposal.”; coordinate another Decay source if necessary.'
  ];
  if(key==='dage'){
-  const decay=sameUltraClass(cls,'Legion DoomKnight')?'Use Imminent Doom (5) on “I possess the full power of the Legion at my disposal.” if assigned to prevent regeneration.':sameUltraClass(cls,'Legion Revenant')?'Use Atramentous Shade (2) on “I possess the full power of the Legion at my disposal.” only if assigned to prevent regeneration.': 'If your team has no Decay source, bring Scroll of Decay as backup. Use it on “I possess the full power of the Legion at my disposal.” only if assigned.';
+  const decay=sameUltraClass(cls,'Legion DoomKnight')?'Use Imminent Doom (5) on “I possess the full power of the Legion at my disposal.” if assigned to prevent regeneration.':sameUltraClass(cls,'Legion Revenant')?'If assigned, use Atramentous Shade (2) to block healing during Legion Mages; Decay lasts only two seconds, so coordinate coverage of the regeneration window.': 'If your team has no Decay source, bring Scroll of Decay as backup. Use it on “I possess the full power of the Legion at my disposal.” only if assigned.';
   const tips=['Equip Health Vamp or Dauntless for life steal. Avoid normal healing and HoTs during Noxious Decay.','“Cower behind your meager protection spells!” — reach the glowing blue platform within 3 seconds.',decay];
   if(sameUltraClass(cls,'Chaos Avenger'))tips.push('If assigned loop taunt, open with Scroll of Enrage and use Flux (3) just before the taunt expires. In the Flux timing variant, watch the second opening auto, the first auto after Noxious Decay and the first auto after each safe zone.');
   return tips;
@@ -2330,8 +2335,9 @@ function ultraUnifiedTips(key,cls,previous=[]){
   add('Prepare','Equip Vigil before pulling; all seven players need it.');
   if(healer)add('Mana & healing','Maintain mana support and recovery as Kathool’s Glare doubles mana costs. Heal through Migraine.');
   else if(support)add('Debuffs','Keep debuffs on the called target; help clear spawned Sacrosanct Tendrils.');
+  add('Peer · every 10 seconds','Peer applies either doubled mana costs or reduced hit chance to the party for five seconds. Neither effect is redirected by a taunt.');
   add('Tendril priority','Focus the called Sacrosanct Tendril together. Below 30% HP it enrages; finish it quickly before returning to Kathool.');
-  add('Nightmare · 3 seconds','Activate Vigil immediately, then resume your role. Taunt cannot replace Vigil.','You cannot resist.');
+  add('Nightmare · 3 seconds','Activate Vigil immediately. It replaces the 60-second Nightmare stun/healing block/DoT with a 10-second Migraine DoT. The attack recurs every 25 seconds and ignores Focus.','You cannot resist.');
  }else if(key==='ezrajal'){
   add('Prepare','Aim for at least 3,175 HP before pulling.');
   add('Counter Cast → Counter Attack','A 2-second charge precedes a 6-second reflection window (40-second cooldown). Stop damage and untarget at the charge; resume only after the buff expires.');
@@ -2348,7 +2354,9 @@ function ultraUnifiedTips(key,cls,previous=[]){
   add('Engineer',healer?'Keep recovery ready for the periodic heavy attack; finish before the drones respawn.':support?'Maintain mitigation during the periodic heavy attack; finish before drones respawn.':'Burst Engineer only after both drones die; finish before they respawn.');
  }else if(key==='tyndarius'){
   add('Orb assignment','If assigned to taunt an Orb, agree which one before pulling. Do not improvise an additional taunt rotation.');
-  add('Target order','Focus Left Orb → Right Orb → Tyndarius; switch back when Orbs respawn.');
+  add('Target order','One common strategy is Left Orb → Right Orb → Tyndarius; coordinate target changes if Orbs return.');
+  add('Orb charge','Fire Orbs charge for three seconds on a 20-second cycle. They take increased damage while charging, and the hit increases damage taken by players.');
+  add('Boss buffs','Tyndarius periodically gains damage, dodge/hit or crit buffs; keep defensive support and recovery ready.');
   if(healer)add('Recovery','Time recovery around Orb transitions and keep the assigned taunter alive.');
   else if(support)add('Mitigation','Keep defensive support active during Orb transitions.');
  }else if(key==='drago'){
@@ -2367,8 +2375,8 @@ function ultraUnifiedTips(key,cls,previous=[]){
   if(is('Legion Revenant'))add('Avoid Decay','Do not use Atramentous Shade (2) during the crystal phase; Decay can strengthen Gramiel.');
   add('Guard break','On the drain cue, switch to Gramiel to break his guard, then return to your crystal.');
   add('Crystal balance','Keep both crystal HP close; kill them within five seconds of each other.');
-  add('Vendetta','After the crystals, follow your assigned turn in the four-player rotation. In the standard displayed-team variant, order is DPS → LoO → SC → LR; confirm the order before pulling. Five stacks are fatal.');
-  add('70% / 40% / 10% HP','Hold damage until everyone has the required Vendetta or Death’s Door protection.');
+  add('Vendetta','After the crystals, follow your assigned turn in the four-player rotation. In the standard displayed-team variant, order is DPS → LoO → SC → LR; confirm the order before pulling. Five Vendetta stacks cause instant death when Grace Unleashed lands, not merely on gaining the fifth stack.');
+  add('70% / 40% / 10% HP','Before crossing each threshold, ensure every player has Vendetta or Death’s Door; that grants five-second invulnerability against Celestial Vanquish, which ignores Focus. The threshold consumes both effects.');
  }else if(key==='dage'){
   for(const text of ultraBeginnerActions(key,cls,previous)){
    const quote=text.match(/“([^”]+)”/)?.[1]||'';
@@ -2382,8 +2390,8 @@ function ultraUnifiedTips(key,cls,previous=[]){
   if(support)add('Optional taunt variant','Abyssal Charge cannot be taunted. Only the designated taunters alternate Contracts of the Abyss on the agreed 7-second cycle. Do not treat this quote as a universal scroll instruction.','Behold the power of the Abyss!');
  }else if(key==='speaker'){
   add('Before pulling','Choose one rotation below with your team. Equip Scroll of Enrage if your rotation assigns you scroll taunts.');
-  add('Zone safety','Enter only your own assigned Zone. Stay out when affected by Magia Burn, Stasis or Sanctity.','All stand equal beneath the eyes of the Eternal.');
-  if(is('Legion Revenant'))add('Regeneration','Use Atramentous Shade (2) when the Zone appears to counter regeneration.');
+  add('Zone safety','Enter only your assigned Zone. Magia Burn (18s), Stasis (6s) or Sanctity (45s) makes entering lethal; never take one while those debuffs are active.','All stand equal beneath the eyes of the Eternal.');
+  if(is('Legion Revenant'))add('Regeneration','If your rotation uses the LR Decay timing, Atramentous Shade (2) applies Decay for only two seconds; time it around the healing, not just anywhere in the Zone.');
   if(is('ArchPaladin'))add('Mitigation','Use Righteous Seal (4) and Sacred Magic: Eden (5) only at your chosen rotation’s mitigation timings.');
   if(is('Lord of Order'))add('Mitigation','Maintain buffs and use Blessing of Order (5) on the chosen rotation’s mitigation timings.');
  }else for(const text of previous)add('Your action',text);
@@ -3160,7 +3168,7 @@ const baseClassEnhancement={
 };
 Object.assign(baseClassEnhancement,window.AQWCMetaBuilds?.base||{});
 function suggestedBaseEnhancement(cls,role,slot){
- const base=baseClassEnhancement[cls]||'Not reviewed';
+ const base=starterBuilds[cls]?.[role]?.base||baseClassEnhancement[cls]||'Not reviewed';
  return base;
 }
 const enhancementEffects={
@@ -3168,19 +3176,22 @@ const enhancementEffects={
  Wizard:'Adds Intellect and spell-oriented stats; the exact bonus depends on level.',
  Fighter:'Adds Strength and Endurance; the exact bonus depends on level.',
  Healer:'Adds health and healing-oriented stats; the exact bonus depends on level.',
- Forge:'Base Forge helm: strong core stats, with no special passive or HP penalty.',
+ Forge:'Base Forge pattern; no special trait. The stats depend on the equipment slot and enhancement level.',
  'Awe Blast':'30% auto-attack proc: 100% hybrid damage; enemy -15% Crit Chance and -15% Defense for 10s.',
  'Spiral Carve':'15% auto-attack proc: 200% hybrid damage; +25% Crit Chance for 10s.',
  'Mana Vamp':'80% auto-attack proc: 50% true hybrid damage and +10 mana.',
- Valiance:'Auto-attack proc (15s cooldown): +30% STR/DEX/INT/WIS/END and +15% Luck for 20s.',
- Dauntless:'Skill 2 (3s cooldown): 190–570% physical damage, stronger at low HP; lifesteal, +15% Crit Chance, +25% Haste, -50% mana costs for 12s; self-Decay for 6s.',
+ 'Health Vamp':'50% auto-attack proc: 80% hybrid true damage; heal based on 125% of the pre-stat base damage.',
+ 'Powerword Die':'0.3% auto-attack proc: 999,999 true damage before encounter-specific limitations.',
+ Lacerate:'Skill 2 (2s cooldown): 80% physical damage, always hits and crits; enemy Dodge, Hit and Haste reduced by 10% for 15s.',
+ Valiance:'Auto-attack proc (15s cooldown): +30% STR/DEX/INT/WIS/END and +15% Luck for 20s; multiplicative with other core-stat increases.',
+ Dauntless:'Skill 2 (3s cooldown): 190–570% physical damage, stronger at low HP, always hits and crits; lifesteal, +15% Crit Chance, +25% Haste, -50% mana costs for 12s; self-Decay for 6s.',
  Ravenous:'Skill 3: 75–338% hybrid damage depending on target HP; +10% outgoing damage and +25% crit chance for 10s. Consumed reduces target damage and crit chance by 10%, plus 1% per stack up to 30%.',
  Praxis:'Skill 2 (4s cooldown): 70% hybrid damage, increasing by 10% per consecutive hit to the same target; -5% target Dodge for 8s. Spinning Dragon blocks the next hit when available.',
  Smite:'Skill 5 proc (15s cooldown): deals 500% hybrid damage.',
- "Arcana's Concerto":'50% auto-attack proc: +2% physical and magical damage taken per stack on the target, up to 11 stacks (+22%) for 22s.',
- 'Arcana’s Concerto':'50% auto-attack proc: +2% physical and magical damage taken per stack on the target, up to 11 stacks (+22%) for 22s.',
- Elysium:'Skill 3: magic damage to up to two targets, stronger at low mana; Elysian grants mana regeneration, HoT and outgoing damage. Published sources disagree on the damage coefficient; numerical value pending confirmation.',
- Acheron:'Skill 3 proc: +30% damage and Hit Chance for 6s, but applies a stacking self-DoT.',
+ "Arcana's Concerto":'50% auto-attack proc: 50% hybrid damage and +2% physical/magical damage taken per stack (11 stacks, 22s).',
+ 'Arcana’s Concerto':'50% auto-attack proc: 50% hybrid damage and +2% physical/magical damage taken per stack (11 stacks, 22s).',
+ Elysium:'Skill 3: magic damage to up to two targets, stronger at low mana; Elysian stacks healing up to 3, restores 4 mana per second and grants +10% outgoing damage for 8s. The hit cannot crit. Published sources disagree on the damage coefficient; numerical value pending confirmation.',
+ Acheron:'Skill 3: 80% magic damage to up to 2 targets, always hits and crits; Stygian stacks up to 30, causes max-HP-based self-DoT, grants damage and hit chance, and prevents Arcane Shield/Safeguard.',
  Anima:'Offensive physical Forge helm: +10% Hit Chance; boosts Strength but reduces Endurance/HP (level-dependent).',
  Pneuma:'Offensive magical Forge helm: +10% Hit Chance; boosts Intellect but reduces Endurance/HP (level-dependent).',
  Vim:'Forge helm: -33% mana consumption; boosts Dexterity but reduces Endurance/HP (level-dependent).',
@@ -3244,11 +3255,13 @@ const enhancementMiniDescriptions={
  Absolution:'Stronger healing',Penitence:'More damage resistance',Lament:'Critical chance boost'
 };
 function shortEnhancementEffect(name){return enhancementMiniDescriptions[name]||'Situational enhancement'}
+const simplifiedClassSheetIds={"Void Highlord":635766736,"Legion Revenant":1736750363,"ArchPaladin":2032789316,"StoneCrusher":321365871,"Lord of Order":0,"Chaos Avenger":767000667,"ArchMage":127988848,"Arcana Invoker":131086391,"Dragon of Time":39728149,"Shaman":959414055,"Blaze Binder":1663164517,"Verus DoomKnight":2003346436,"Yami no Ronin":780573242,"King's Echo":1518536070,"LightCaster":574016196,"Chrono ShadowHunter":1197397455,"Chrono ShadowSlayer":1197397455,"Phantasm Chronomancer":1393874757,"Phantom Chronomancer":1393874757,"Hollowborn Vindicator":1518180684,"Necrotic Chronomancer":217725654,"Nechronomancer":217725654,"ArchFiend":51480788,"Dark Lord":804225218,"Great Thief":2056232859,"Guardian":929691226};
+function simplifiedClassSource(cls){const gid=simplifiedClassSheetIds[cls];return Number.isInteger(gid)?'https://docs.google.com/spreadsheets/d/1WMSUlDwKUSnpg6x0ueP_6pDwxMzMM3Mc5ox3oHqK6OU/edit#gid='+gid:null}
 function renderClassBuild(){
  const cls=$('build-class')?.value,role=$('build-role')?.value,root=$('build-results');if(!root)return;root.replaceChildren();
  const build=starterBuilds[cls]?.[role],meta=window.AQWCMetaBuilds?.metadata?.[cls];
  const disputed=sameUltraClass(cls,'Great Thief')||(sameUltraClass(cls,'Arcana Invoker')&&role!=='farm');
- if(disputed){const panel=node('div',undefined,'build-empty');panel.append(node('strong',cls+' — loadout under review'),node('p','This preset was flagged by experienced players. It is withdrawn rather than replaced with another untested build.'));const url=sameUltraClass(cls,'Great Thief')?'https://aqwwiki.wikidot.com/great-thief':sameUltraClass(cls,'Void Highlord')?'https://aqwwiki.wikidot.com/void-highlord-class':'https://aqwwiki.wikidot.com/arcana-invoker';const link=node('a','Current class skills ↗');link.href=url;link.target='_blank';link.rel='noopener noreferrer';panel.append(link);root.append(panel);return}
+ if(disputed){const panel=node('div',undefined,'build-empty');panel.append(node('strong',cls+' — loadout under review'),node('p','This preset was flagged by experienced players. It is withdrawn rather than replaced with another untested build.'));const url=sameUltraClass(cls,'Great Thief')?'https://aqwwiki.wikidot.com/great-thief':sameUltraClass(cls,'Void Highlord')?'https://aqwwiki.wikidot.com/void-highlord-class':'https://aqwwiki.wikidot.com/arcana-invoker';const link=node('a','Current class skills ↗');link.href=url;link.target='_blank';link.rel='noopener noreferrer';panel.append(link);const src=simplifiedClassSource(cls);if(src){const a=node('a','Community class guide ↗');a.href=src;a.target='_blank';a.rel='noopener noreferrer';panel.append(a)}root.append(panel);return}
  if(!build){
   const roleName={solo:'Solo / Boss',farm:'Farming',group:'Group / Ultras'}[role]||role;
   const alternatives=role==='farm'?'Kathool Adept, ArchMage or Arcana Invoker':
@@ -3266,7 +3279,9 @@ function renderClassBuild(){
  }
  panel.append(node('p','Community example — current patch / activity review pending. Not a verified best-in-slot loadout.','build-meta-note'));
  const crossRef=node('a','Community enhancement reference (2025 templates) ↗','muted tiny');crossRef.href='https://docs.google.com/spreadsheets/d/1wupDvLuPnRC0fF0aNPc7rzrri7X1YcYy7S2s5Z6o_F4/edit';crossRef.target='_blank';crossRef.rel='noopener noreferrer';panel.append(crossRef);
- if(sameUltraClass(cls,'Void Highlord')&&role==='solo'){if(build.note)panel.append(node('p',build.note,'build-meta-note'));const refs=node('div',undefined,'build-meta-sources');for(const [label,url] of [['May 2026 benchmark','https://www.reddit.com/r/AQW/comments/1thhrix/tierlist_for_solo_and_farming/'],['Basic Class Guide','https://github.com/Shell1010/AQW-md/blob/main/Other%20Guides/Basic%20Class%20Guide.md']]){const a=node('a',label+' ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';refs.append(a)}panel.append(refs);}
+ const sgRef=simplifiedClassSource(cls);if(sgRef){const a=node('a','Simplified Classes Guide · class-specific reference ↗','muted tiny');a.href=sgRef;a.target='_blank';a.rel='noopener noreferrer';panel.append(a)}
+ if(build.note)panel.append(node('p',build.note,'build-meta-note'));
+ if(sameUltraClass(cls,'Void Highlord')&&role==='solo'){const refs=node('div',undefined,'build-meta-sources');for(const [label,url] of [['May 2026 benchmark','https://www.reddit.com/r/AQW/comments/1thhrix/tierlist_for_solo_and_farming/'],['Basic Class Guide','https://github.com/Shell1010/AQW-md/blob/main/Other%20Guides/Basic%20Class%20Guide.md']]){const a=node('a',label+' ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';refs.append(a)}panel.append(refs);}
  const layout=node('div',undefined,'build-character-layout');
  const mannequin=node('div',undefined,'build-mannequin');
  mannequin.innerHTML='<img class="build-artix-image" src="assets/artix.png" alt="Artix, AQWorlds paladin" loading="lazy" onerror="this.style.display=\'none\';this.parentElement.classList.add(\'build-artix-missing\')"><span class="build-artix-fallback">Artix artwork pending — add assets/artix.png to this PR.</span>'
@@ -3395,22 +3410,22 @@ const forgeCatalog=[
  ['Weapon','Smite','Level 60 · Blacksmithing Rank 6 · Star Light, Star Bright','Extra damage from your fifth skill'],
  ['Weapon','Praxis','Level 60 · Blacksmithing Rank 6 · Defeat Jaaku!','Damage that builds on sustained targets'],
  ['Weapon','Acheron','Level 80 · Blacksmithing Rank 8 · Avatar of Fire · Void Lodestone','High-risk damage with a self-DoT'],
- ['Weapon','Valiance','Level 100 · Blacksmithing Rank 10 · The Final Challenge; class/item prerequisites','General-purpose core-stat buff'],
- ['Weapon','Elysium','Level 100 · Blacksmithing Rank 10 · Awe-scention','Mana support and magic damage'],
- ['Weapon',"Arcana's Concerto",'Level 100 · Blacksmithing Rank 10 · Darkon, the Conductor','Teamwide target damage debuff'],
- ['Weapon','Dauntless','Level 100 · Blacksmithing Rank 10 · Malgor progression; Insignias','High physical burst with healing penalty'],
- ['Weapon','Ravenous','Level 100 · The Fiend Shard\'s Finale · Gluttonous Maw','Damage against lower-HP targets'],
+ ['Weapon','Valiance','Level 100 · Blacksmithing Rank 10 · The Final Challenge; Fire Champion’s Armor, Dragon of Time, Drakath the Eternal and Eternity Blade in inventory','General-purpose core-stat buff'],
+ ['Weapon','Elysium','Level 100 · Blacksmithing Rank 10 · Awe-scention; 15 Bones from the Void Realm, 3 Archfiend Essence Fragments, The Divine Will, Blademaster Sword Scroll','Mana support and magic damage'],
+ ['Weapon',"Arcana's Concerto",'Level 100 · Blacksmithing Rank 10 · Darkon, the Conductor; Prince Darkon’s Poleaxe and Darkon’s Debris 2 (Reconstructed); 5 Drago and 5 Darkon insignias','Teamwide target damage debuff'],
+ ['Weapon','Dauntless','Level 100 · Blacksmithing Rank 10 · Build Malgor’s Armor Set OR Malgor, The First Speaker; Infernal Flame Pyromancer, Malgor’s ShadowFlame Blade, Malgor the ShadowLord, ShadowLord’s Helm; 5 Malgor and 10 Tyndarius insignias','High physical burst with healing penalty'],
+ ['Weapon','Ravenous','Level 100 · The Fiend Shard\'s Finale','Damage against lower-HP targets'],
  ['Cape','Forge','Level 30 · Blacksmithing Rank 4 · Defeat Kitsune quest','Base Forge cape enhancement'],
- ['Cape','Absolution','Level 90 · Blacksmithing Rank 9 · five armor relics','Boosts healing output'],
- ['Cape','Vainglory','Level 90 · Blacksmithing Rank 9 · after Absolution; check quest turn-ins','More damage at the cost of healing'],
- ['Cape','Avarice','Level 90 · Blacksmithing Rank 9 · after Vainglory; Indulgence/Penance','More haste at a defensive cost'],
- ['Cape','Penitence','Level 90 · Blacksmithing Rank 9 · after Avarice; boss materials','Damage resistance and DoT trade-off'],
- ['Cape','Lament','Level 90 · Blacksmithing Rank 9 · after Penitence; boss hearts','Critical chance with lower haste'],
- ['Helm','Forge','Level 30 · Blacksmithing Rank 4','Base Forge helm enhancement'],
- ['Helm','Vim','Level 70 · Blacksmithing Rank 7 · Rogue Rank 10 · Ethereal Essence','Dexterity and mana-cost efficiency'],
- ['Helm','Examen','Level 70 · Blacksmithing Rank 7 · Healer Rank 10 · Ethereal Essence','Wisdom and mana-cost efficiency'],
- ['Helm','Anima','Level 70 · Blacksmithing Rank 7 · Warrior Rank 10 · Ethereal Essence','Physical offense with lower HP'],
- ['Helm','Pneuma','Level 70 · Blacksmithing Rank 7 · Mage Rank 10 · Ethereal Essence','Magic offense with lower HP'],
+ ['Cape','Absolution','Level 90 · Blacksmithing Rank 9 · Ascended Paladin and Ascended Paladin Sword','Boosts healing output'],
+ ['Cape','Vainglory','Level 90 · Blacksmithing Rank 9 · after Absolution; five Armor of Awe relics','More damage at the cost of healing'],
+ ['Cape','Avarice','Level 90 · Blacksmithing Rank 9 · after Vainglory; 50 Indulgence and 50 Penance','More haste at a defensive cost'],
+ ['Cape','Penitence','Level 90 · Blacksmithing Rank 9 · after Avarice; Night Mare Scythe, 100 Sapphire Orbs, Boreal Cavalier Bardiche, 13 Void Scales','Damage resistance and DoT trade-off'],
+ ['Cape','Lament','Level 90 · Blacksmithing Rank 9 · after Penitence; Doom Heart, Heart of the Sun, 10 Flame Hearts, 3 Bloodless Hearts','Critical chance with lower haste'],
+ ['Helm','Forge','Level 30 · Blacksmithing Rank 4 · four Chaos Lord weapons','Base Forge helm enhancement'],
+ ['Helm','Vim','Level 70 · Blacksmithing Rank 7 · Rogue Rank 10 in inventory · 250 Ethereal Essence · after Forge Helm','Dexterity and mana-cost efficiency'],
+ ['Helm','Examen','Level 70 · Blacksmithing Rank 7 · Healer Rank 10 in inventory · 250 Ethereal Essence · after Vim','Wisdom and mana-cost efficiency'],
+ ['Helm','Anima','Level 70 · Blacksmithing Rank 7 · Warrior Rank 10 in inventory · 650 Ethereal Essence · after Examen','Physical offense with lower HP'],
+ ['Helm','Pneuma','Level 70 · Blacksmithing Rank 7 · Mage Rank 10 in inventory · 650 Ethereal Essence · after Anima','Magic offense with lower HP'],
  ['Helm','Hearty','Level 80+ · Rank 7 Grimskull Trolling · complete the Gaol · Cashfear Shop','High END at the cost of other core stats']
 ].map(([slot,name,requirements,summary])=>({id:slot.toLowerCase()+':'+name.toLowerCase().replace(/[^a-z0-9]/g,''),slot,name,requirements,summary}));
 let forgeUnlocked=new Set();
@@ -3453,11 +3468,11 @@ function renderForgeTracker(){
     renderForgeTracker()
    };
    heading.append(state);card.append(heading);
-   const effect=typeof buildEnhancementEffect==='function'?buildEnhancementEffect(forge.name):forge.summary;
+   const effect=forge.name==='Forge'?forge.summary:typeof buildEnhancementEffect==='function'?buildEnhancementEffect(forge.name):forge.summary;
    card.append(node('p',effect||forge.summary,'forge-item-effect'));
    const req=node('p',undefined,'forge-item-requirements');
    req.append(node('strong','Unlock: '),node('span',forge.requirements));card.append(req);
-   const source=node('a','View full quest ↗');source.href=FORGE_QUESTS_URL;source.target='_blank';source.rel='noopener noreferrer';
+   const source=node('a','View full quest ↗');source.href=forge.name==='Hearty'?'https://aqwwiki.wikidot.com/forge-helmet-enhancements':FORGE_QUESTS_URL;source.target='_blank';source.rel='noopener noreferrer';
    card.append(source);cards.append(card);
   }
   group.append(cards);list.append(group);
@@ -3480,7 +3495,7 @@ function initForgeTracker(){
 // The 2026 meta is role-specific. Old templates can contain a placeholder
 // farming preset even for classes whose actual specialty is boss/support.
 const classNoFarming=new Set([
- 'Void Highlord','ArchPaladin','StoneCrusher','Lord of Order','Chaos Avenger',
+ 'ArchPaladin','StoneCrusher','Lord of Order','Chaos Avenger',
  'Verus DoomKnight','Yami no Ronin',"King's Echo",'LightCaster',
  'Chrono ShadowHunter','Chrono ShadowSlayer','Phantasm Chronomancer',
  'Phantom Chronomancer','Hollowborn Vindicator','Great Thief','Guardian'
