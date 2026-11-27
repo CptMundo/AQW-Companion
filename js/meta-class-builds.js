@@ -48,7 +48,7 @@
     "category": "Meta solo / Ultra DPS · calendar",
     "source": "https://www.reddit.com/r/AQW/comments/1nrkvts",
     "guide": "https://aqwwiki.wikidot.com/phantom-chronomancer-class",
-    "base": "Lucky",
+    "base": "Wizard",
     "modes": {
       "solo": {
         "weapon": "Ravenous",
@@ -73,23 +73,23 @@
   },
   "Kathool Adept": {
     "category": "Meta farmer · recent",
-    "source": "https://www.reddit.com/r/AQW/comments/1xdwz7f/what_are_your_thoughts_on_the_new_kathool_adept/",
+    "source": "https://www.reddit.com/r/AQW/comments/1xe1zgv/kathool_adept_is_the_best_farming_class_in_the/",
     "guide": "https://aqwwiki.wikidot.com/kathool-adept",
-    "base": "Lucky",
+    "base": "Wizard",
     "modes": {
       "solo": {
         "weapon": "Elysium",
         "helm": "Pneuma",
         "cape": "Vainglory",
         "alternative": "Valiance / Examen / Lament when your setup needs more crit or sustain",
-        "note": "Build Madness and maintain buffs. Elysium can help personal survival; match gear to incoming damage."
+        "note": "Madness is applied to enemies; Feeding is accumulated by the caster. Consult the official skill breakdown; this solo loadout is still untested."
       },
       "farm": {
         "weapon": "Valiance",
         "helm": "Pneuma",
-        "cape": "Vainglory",
-        "alternative": "Elysium when sustain is needed; Lament for low crit chance",
-        "note": "Strong room-to-room farmer after the October 2026 class release. Sustained Madness stacks matter; check mob HP."
+        "cape": "Lament",
+        "alternative": "Other cape and weapon combinations require activity-specific testing",
+        "note": "October 2026 community farming example: Wizard / Valiance / Pneuma / Lament. Performance varies by mob HP and latency; not a universal best-in-slot."
       },
       "group": {
         "weapon": "Valiance",
@@ -109,14 +109,14 @@
     "category": "Meta solo / defensive DPS",
     "source": "https://www.reddit.com/r/AQW/comments/1ttv3uq/hollowborn_vindicator/",
     "guide": "https://aqwwiki.wikidot.com/hollowborn-vindicator",
-    "base": "Lucky",
+    "base": "Wizard",
     "modes": {
       "solo": {
         "weapon": "Dauntless",
         "helm": "Forge",
         "cape": "Vainglory",
         "alternative": "Valiance + Pneuma + Lament for stable solo; Ravenous + Penitence for survivability",
-        "note": "Strong shield-based solo damage; skill 3 resets stacks. Dauntless demands careful shield/HP management."
+        "note": "Low-HP magical DPS with lifesteal and defensive effects. Focused Grace (3) consumes Grace Stolen for recovery and defense; the exact Forge combination remains under review."
       },
       "group": {
         "weapon": "Praxis",
@@ -197,7 +197,7 @@
     "category": "Popular accessible farmer",
     "source": "https://solarisaqw.lol/guides/classes/dark-lord",
     "guide": "https://aqwwiki.wikidot.com/dark-lord",
-    "base": "Lucky",
+    "base": "Wizard",
     "modes": {
       "solo": {
         "weapon": "Valiance",
