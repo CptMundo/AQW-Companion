@@ -399,7 +399,22 @@ function storyInventoryEvidence(rows,source='full',allowVerified=false){
  return {verified,hints};
 }
 function storyBookSelection(names){if(!Array.isArray(names))return [];const selected=new Set(names.map(storyItemKey));return [...new Set(STORY_BOOK_RULES.filter(r=>selected.has(storyItemKey(r.name))).map(r=>r.chapter))]}
-const api={KEY,serverDay,availability,clean,update,opportunities,filterBadges,matchCapture,storyEvidence,storyHints,storyRules:STORY_BADGES,storyHintRules:STORY_HINTS,storyInventoryEvidence,storyItemRules:STORY_ITEM_RULES,storyBookRules:STORY_BOOK_RULES,storyBookSelection};
+// Compare positive observations for the same character only. Capture order is not unlock order.
+function badgeSyncDelta(previous,next){
+ const before=previous&&previous.character.toLowerCase()===next.character.toLowerCase()&&Number.isFinite(Date.parse(previous.capturedAt))?previous:null;
+ const prior=before?.discovery;
+ if(!before)return {newIds:null,latestIds:[],latestAt:null};
+ const old=new Set(before.ids);
+ const validLatest=Array.isArray(prior?.latestIds)?[...new Set(prior.latestIds.filter(id=>old.has(id)))]:[];
+ const latestAt=validLatest.length&&Number.isFinite(Date.parse(prior?.latestAt))?prior.latestAt:null;
+ if(Date.parse(next.capturedAt)<=Date.parse(before.capturedAt)){
+  if(Date.parse(next.capturedAt)<Date.parse(before.capturedAt)||next.ids.some(id=>!old.has(id)))throw Error('Older or conflicting badge capture. Capture the Character Page again; previous progress preserved.');
+  return {newIds:Array.isArray(prior?.newIds)?[...new Set(prior.newIds.filter(id=>old.has(id)))]:null,latestIds:latestAt?validLatest:[],latestAt};
+ }
+ const newIds=[...new Set(next.ids.filter(id=>!old.has(id)))];
+ return {newIds,latestIds:newIds.length?newIds:latestAt?validLatest:[],latestAt:newIds.length?next.capturedAt:latestAt};
+}
+const api={KEY,serverDay,availability,clean,update,opportunities,filterBadges,matchCapture,badgeSyncDelta,storyEvidence,storyHints,storyRules:STORY_BADGES,storyHintRules:STORY_HINTS,storyInventoryEvidence,storyItemRules:STORY_ITEM_RULES,storyBookRules:STORY_BOOK_RULES,storyBookSelection};
 if(typeof module==='object'&&module.exports){module.exports=api;return}
 root.AQWCBadgeHunter=api;
 const d=root.document, catalog=root.AQWCBadgeCatalog||[];
@@ -412,7 +427,24 @@ function el(tag,txt,cls){const n=d.createElement(tag);if(txt!=null)n.textContent
 function link(url,label){const a=el('a',label);a.href=url;a.target='_blank';a.rel='noopener noreferrer';return a}
 function button(label,cb,cls='smallbutton'){const b=el('button',label,cls);b.type='button';b.addEventListener('click',cb);return b}
 function save(id,value){try{const raw=JSON.parse(root.localStorage.getItem(KEY)||'{}');const next=update(raw,id,value,catalog);root.localStorage.setItem(KEY,JSON.stringify(next));manual=next;storageOK=true;render();const sel=$('badge-hunter-list').querySelector('[data-badge-id="'+id+'"] select');if(sel)sel.focus()}catch{$('badge-hunter-message').textContent='Could not save badge progress. Existing saved progress was not changed.'}}
+function renderHomeBadges(){
+ const box=$('home-badge-discoveries');if(!box)return;
+ const delta=capture?.discovery,known=Array.isArray(delta?.newIds),count=known?delta.newIds.length:null;
+ const head=el('div',null,'home-badge-discovery-head');
+ head.append(el('strong','🏆 Badge discoveries'),button('Badge Hunter ↗',()=>d.querySelector('[data-group="badges"]')?.click()));
+ const body=el('div',null,'home-badge-discovery-body');
+ const metric=el('div',null,'home-badge-discovery-count');metric.append(el('strong',count===null?'—':(count?'+'+count:'0')),el('small','New since last badge sync'));
+ const latest=el('div',null,'home-badge-discovery-latest');
+ const ids=new Set(Array.isArray(delta?.latestIds)?delta.latestIds:[]),badges=catalog.filter(b=>ids.has(b.id)&&capture?.ids.includes(b.id)).sort((a,b)=>a.name.localeCompare(b.name));
+ if(badges.length&&Number.isFinite(Date.parse(delta.latestAt))){
+  const b=badges[0],art=el('div',null,'home-badge-discovery-art'),fallback=el('span','🏅');art.append(fallback);
+  if(b.image){const img=el('img');img.src=b.image;img.alt=b.name+' badge';img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';fallback.hidden=true;img.addEventListener('error',()=>{img.remove();fallback.hidden=false});art.prepend(img)}
+  const desc=el('div',null,'home-badge-discovery-name');desc.append(el('small',badges.length===1?'Latest detected badge':'One of '+badges.length+' latest detected badges'),el('strong',b.name),el('small','First seen '+new Date(delta.latestAt).toLocaleDateString()));latest.append(art,desc);
+ }else{latest.append(el('p',capture?'New badges appear after a later sync detects them.':'Sync your Character Page badges to start tracking.','muted tiny'))}
+ body.append(metric,latest);box.replaceChildren(head,body);
+}
 function renderAlert(){
+ renderHomeBadges();
  const alert=$('badge-hunter-home'),list=opportunities(catalog,state);if(!alert)return;
  alert.classList.toggle('hidden',!list.length);const content=$('badge-hunter-home-text');content.replaceChildren();for(const b of list){const row=el('span',undefined,'calendar-badge-entry');const name=el('strong',b.name);const end=el('time',b.window.end);end.dateTime=b.window.end;row.append(name,end);content.append(row)}
 }
@@ -466,6 +498,7 @@ function applyCapture(snapshot,ask=false){
  if(capture&&capture.character.toLowerCase()!==next.character.toLowerCase())throw Error('Different character. Clear Character Page matches before switching.');
  const count=next.ids.length;
  if(ask&&!confirm('Import '+count+' matched badges for '+next.character+'? '+next.ambiguous+' ambiguous and '+next.unknown+' unrecognized image references will not be marked owned. Your manual states are preserved.'))return {ok:false,saved:false,error:'Import cancelled'};
+ next.discovery=badgeSyncDelta(capture,next);
  if(capture?.character.toLowerCase()===next.character.toLowerCase()){next.ids=[...new Set([...capture.ids,...next.ids])];next.storyGroups=[...new Set([...(Array.isArray(capture.storyGroups)?capture.storyGroups:[]),...next.storyGroups])].filter(x=>x==='champion-of-chaos');}
  root.localStorage.setItem(CAPTURE_KEY,JSON.stringify(next));
  try{render();root.dispatchEvent(new Event('aqwc-story-badges-changed'))}catch(err){return {ok:false,saved:true,error:'Badge data saved, but redraw failed: '+String(err?.message||err)}}
