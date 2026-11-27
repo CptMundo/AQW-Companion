@@ -86,38 +86,40 @@ async function main(){
   await page.locator('#ultracards button').filter({hasText:'God of the Depths'}).click();
   assert.ok(await page.locator('#ultradetail .ultra-role-select').isVisible());
   const detail=page.locator('#ultradetail'),classPick=detail.locator('[aria-label="Your class"]'),teamOptions=detail.locator('.guide-v2-team-option');
-  const chooseTeam=async id=>{const toggle=detail.locator('.guide-v2-show-teams');if(await toggle.count()&&await toggle.getAttribute('aria-pressed')!=='true')await toggle.click();await detail.locator('[data-strategy="'+id+'"]').click()};
+  const chooseTeam=async (id,cls)=>{await classPick.selectOption(cls);const choice=detail.locator('[data-strategy="'+id+'"]');if(await choice.evaluate(e=>e.tagName==='BUTTON'))await choice.click();assert.equal(await detail.locator('.guide-v2-team-option.is-selected').getAttribute('data-strategy'),id)};
   await classPick.selectOption('Verus DoomKnight');
   assert.ok((await detail.locator('.ultra-class-guide').innerText()).includes('Debuff the eyes'));
-  await detail.locator('.guide-v2-class-buttons button').filter({hasText:'StoneCrusher'}).click();assert.equal(await classPick.inputValue(),'StoneCrusher');
+  await classPick.selectOption('StoneCrusher');assert.equal(await classPick.inputValue(),'StoneCrusher');assert.equal(await detail.locator('.guide-v2-party .ultra-team-chip:is(button,a,[tabindex])').count(),0);assert.equal(await detail.locator('.guide-v2-show-teams').count(),0);
   await page.locator('#ultracards button').filter({hasText:'Ultra Avatar Tyndarius'}).click();
   await classPick.selectOption('Chaos Avenger');assert.ok(await detail.locator('[data-strategy="hub-cav"]').count());assert.equal(await detail.locator('[data-strategy="hub-ai"]').count(),0);
   assert.ok((await detail.locator('.ultra-class-guide').innerText()).includes('right orb'));
-  await chooseTeam('hub-ai');await classPick.selectOption('Arcana Invoker');assert.ok((await detail.locator('.ultra-class-guide').innerText()).includes('right orb'));
+  await chooseTeam('hub-ai','Arcana Invoker');assert.ok((await detail.locator('.ultra-class-guide').innerText()).includes('right orb'));
   await page.locator('#ultracards button').filter({hasText:'Champion Drakath'}).click();await classPick.selectOption('Lord of Order');
   assert.equal(await teamOptions.count(),2);assert.ok(await detail.locator('.guide-v2-team .guide-v2-inline-class .ultra-role-select').isVisible());
   assert.ok((await teamOptions.allTextContents()).some(x=>x.includes('Paladin Chronomancer')));
   const controls=await detail.locator('.guide-v2-control-grid').evaluate(e=>Array.from(e.children,x=>{const r=x.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right}}));assert.ok(controls[1].x>=controls[0].right-1&&Math.abs(controls[0].y-controls[1].y)<=3,'Team controls and party share a row');
   const ordered=await detail.evaluate(e=>{const top=e.querySelector('.guide-v2-top-grid').getBoundingClientRect(),overview=e.querySelector('.guide-v2-overview').getBoundingClientRect(),fight=e.querySelector('.ultra-class-guide').getBoundingClientRect();return top.bottom<=overview.top+1&&overview.bottom<=fight.top+1});assert.ok(ordered,'Overview below party, above instructions');
-  await page.locator('#ultracards button').filter({hasText:'Ultra Speaker'}).click();await chooseTeam('three-vhl');await classPick.selectOption('Void Highlord');
+  await page.locator('#ultracards button').filter({hasText:'Ultra Speaker'}).click();await chooseTeam('three-vhl','Void Highlord');
   assert.ok((await detail.locator('.ultra-class-guide').innerText()).includes('Zone 1'));await classPick.selectOption('Lord of Order');assert.ok((await detail.locator('.ultra-class-guide').innerText()).includes('Listen'));
   assert.equal(await detail.locator('.guide-v2-timing-table').count(),2);assert.equal(await detail.locator('.guide-v2-timing-table').nth(1).locator('tbody tr').count(),20);assert.ok(await detail.locator('.guide-v2-timing-table').first().isVisible());
   await page.locator('#ultracards button').filter({hasText:'Ultra Ezrajal'}).click();assert.ok((await detail.innerText()).includes('Counter Attack'));
   const allUltraCards=page.locator('#ultracards button');const totalUltra=await allUltraCards.count();assert.equal(totalUltra,12);let variantsChecked=0;
+  const enumerateTeams=async()=>{const ids=new Map();for(const cls of await classPick.locator('option').evaluateAll(os=>os.map(o=>o.value))){await classPick.selectOption(cls);for(const id of await teamOptions.evaluateAll(os=>os.map(o=>o.dataset.strategy)))if(!ids.has(id))ids.set(id,cls)}return ids};
   for(let i=0;i<totalUltra;i++){
-   await allUltraCards.nth(i).click();const toggle=detail.locator('.guide-v2-show-teams');if(await toggle.count())await toggle.click();
-   const ids=await teamOptions.evaluateAll(os=>os.map(o=>o.dataset.strategy));
-   for(const id of ids){
-    await detail.locator('[data-strategy="'+id+'"]').click();variantsChecked++;
+   await allUltraCards.nth(i).click();const ids=await enumerateTeams();
+   for(const [id,firstClass] of ids){
+    await chooseTeam(id,firstClass);variantsChecked++;
     assert.ok((await detail.innerText()).includes('Fight instructions'));assert.equal(await detail.locator('.ultra-focus-gear').count(),0);
     await assertGuideWidth('#ultradetail','Ultra desktop '+i+' '+id);
-    const rowGeometry=await detail.locator('.guide-v2-instruction-rows').evaluate(e=>{const parent=e.getBoundingClientRect();return [...e.children].map(c=>{const r=c.getBoundingClientRect();return {left:r.left,parentLeft:parent.left,width:r.width,parentWidth:parent.width}})});
-    assert.ok(rowGeometry.length&&rowGeometry.every(r=>Math.abs(r.left-r.parentLeft)<=3&&r.width>=r.parentWidth*.97),'Combat instructions must occupy full-width rows');
-    for(const cls of await detail.locator('.guide-v2-class-buttons button').evaluateAll(os=>[...new Set(os.map(o=>o.dataset.cls))])){
+    const rowGeometry=await detail.locator('.guide-v2-instruction-rows').evaluate(e=>{const p=e.getBoundingClientRect();return [...e.children].map(c=>{const r=c.getBoundingClientRect();return {left:r.left,parentLeft:p.left,width:r.width,parentWidth:p.width}})});
+    assert.ok(rowGeometry.length&&rowGeometry.every(r=>Math.abs(r.left-r.parentLeft)<=3&&r.width>=r.parentWidth*.97));
+    const alignment=await detail.locator('.guide-v2-party .ultra-team-chip').evaluateAll(os=>os.map(o=>{const h=o.querySelector('.guide-v2-party-heading'),r=o.querySelector('.guide-v2-party-role');return !r||Math.abs(h.getBoundingClientRect().left-r.getBoundingClientRect().left)<=2}));assert.ok(alignment.every(Boolean),'Party labels align left');
+    for(const cls of await detail.locator('.guide-v2-party .ultra-team-chip').evaluateAll(os=>[...new Set(os.map(o=>o.dataset.cls))])){
      await classPick.selectOption(cls);assert.equal(await classPick.inputValue(),cls);
-     assert.equal(await detail.locator('.guide-v2-class-buttons button[aria-pressed="true"]').first().getAttribute('data-cls'),cls);
+     assert.equal(await detail.locator('.guide-v2-party .ultra-team-chip.is-you').count(),1);
+     assert.equal(await detail.locator('.guide-v2-party .ultra-team-chip.is-you').getAttribute('data-cls'),cls);
      assert.ok((await detail.locator('.ultra-class-guide').innerText()).includes(cls));assert.ok(await detail.locator('.guide-v2-disclosure').count());
-     assert.equal(await detail.locator('.guide-v2-team-option[aria-pressed="true"]').getAttribute('data-strategy'),id);
+     assert.equal(await detail.locator('.guide-v2-team-option.is-selected').getAttribute('data-strategy'),id);
      await assertGuideWidth('#ultradetail','Ultra desktop '+i+' '+id+' '+cls);
     }
    }
@@ -125,10 +127,7 @@ async function main(){
   assert.equal(variantsChecked,22);
   await page.locator('#ultrasearch').evaluate(e=>{e.value='Frailty';e.dispatchEvent(new Event('input',{bubbles:true}))});assert.equal(await allUltraCards.count(),1);await page.locator('#ultrasearch').evaluate(e=>{e.value='';e.dispatchEvent(new Event('input',{bubbles:true}))});
   await page.setViewportSize({width:390,height:844});
-  for(let i=0;i<totalUltra;i++){
-   await allUltraCards.nth(i).click();const toggle=detail.locator('.guide-v2-show-teams');if(await toggle.count())await toggle.click();
-   for(const id of await teamOptions.evaluateAll(os=>os.map(o=>o.dataset.strategy))){await detail.locator('[data-strategy="'+id+'"]').click();await assertGuideWidth('#ultradetail','Ultra mobile '+i+' '+id)}
-  }
+  for(let i=0;i<totalUltra;i++){await allUltraCards.nth(i).click();for(const [id,cls] of await enumerateTeams()){await chooseTeam(id,cls);await assertGuideWidth('#ultradetail','Ultra mobile '+i+' '+id)}}
   await allUltraCards.filter({hasText:'Champion Drakath'}).click();const mobileTop=await detail.locator('.guide-v2-top-grid').evaluate(e=>Array.from(e.children,x=>{const r=x.getBoundingClientRect();return {x:r.x,y:r.y,bottom:r.bottom}}));assert.ok(Math.abs(mobileTop[0].x-mobileTop[1].x)<=3&&mobileTop[1].y>=mobileTop[0].bottom-1,'Top panels stack on mobile');
   await page.setViewportSize({width:1360,height:1100});
   assert.equal(await page.locator('#ultradetail .ultra-focus-gear').count(),0);
@@ -179,6 +178,9 @@ async function main(){
   await go('planner','planner-discover');
   for(let i=0;i<5;i++){const pin=page.locator('#planner-suggestions .planner-pin-action.is-unpinned').first();await pin.click({timeout:15000})}
   await go('planner','planner');
+  const mySearch=page.locator('#planner-my-search'),myCards=page.locator('#planner-my-tasks .planner-quest-card');const beforeSearch=await myCards.count();assert.ok(beforeSearch>0);
+  const firstQuest=await myCards.first().locator('.task-title').innerText();await mySearch.fill(firstQuest);assert.ok(await myCards.count()>0);assert.ok((await myCards.allTextContents()).every(x=>x.toLowerCase().includes(firstQuest.toLowerCase())));
+  await mySearch.fill('zzzznonexistentquest');assert.equal(await myCards.count(),0);await page.locator('#planner-my-search-clear').click();assert.equal(await myCards.count(),beforeSearch);
   await page.locator('#planner-my-tasks .planner-complete-action').first().click({timeout:15000});
   await go('home','overview');await shot(page,'home',page.locator('#dashboard'));
   for(const [group,tab,name] of [['projects','unlocks','wishlist'],['planner','planner','quests'],['ultras','ultras','ultras'],['builds','forge','builds'],['story','story','story'],['badges','badge-hunter','badges'],['explore','discover','explore'],['inventory','inventory','inventory'],['inventory','account-stats','stats']]){
