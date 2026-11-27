@@ -187,11 +187,17 @@ async function main(){
   await page.setViewportSize({width:1360,height:1100});
   console.log('Guide geometry passed: all Ultra variants, all published other boss guides, mobile and desktop, theme samples.');
   await go('builds','forge');
-  assert.ok(await page.locator('#builds').isHidden(),'Class Builds view must remain hidden');
-  assert.ok(await page.locator('[data-tab="builds"]').isHidden(),'Class Builds navigation must remain hidden');
-  await page.locator('[data-tab="builds"]').dispatchEvent('click');
-  assert.ok(await page.locator('#forge.active').isVisible(),'Old builds navigation redirects to Forge');
+  assert.ok(await page.locator('[data-tab="builds"]').isVisible(),'Class Builds navigation restored');
   assert.ok(await page.locator('#forge-list').isVisible(),'Forge progress remains accessible');
+  await go('builds','builds');
+  assert.ok(await page.locator('#builds.active').isVisible());
+  assert.ok(await page.locator('#build-class option').count()>0,'Class options initialized');
+  await page.locator('#build-search').fill('Chrono ShadowHunter');
+  assert.equal(await page.locator('#build-class').inputValue(),'Chrono ShadowHunter');
+  assert.ok((await page.locator('#build-results').innerText()).trim().length>0);
+  await page.locator('#build-search').fill('');
+  await go('builds','forge');
+  assert.ok(await page.locator('#forge-list').isVisible());
   await go('planner','planner-discover');
   for(let i=0;i<5;i++){const pin=page.locator('#planner-suggestions .planner-pin-action.is-unpinned').first();await pin.click({timeout:15000})}
   await go('planner','planner');
