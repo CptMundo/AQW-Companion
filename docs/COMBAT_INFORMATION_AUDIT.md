@@ -92,3 +92,30 @@ All 24 canonical class names in scope, including the 3 aliases through inheritan
 - Legacy catalog: 11 entries screened for identity and availability, not full strategies. Rare Chairman and member/seasonal access flags where established. Some location-page opens failed; do not claim that all map commands/access conditions are verified.
 - Still open: full independent mechanic validation for every Shrine/void/seasonal challenge and some solo rooms, current patch confirmation of each group composition, gear, rotation and potion combination, and live combat testing. All 52 cataloged encounter records were screened, not all attacks or viable team combinations independently confirmed. No release or merge authorized.
 
+
+
+## Fifth pass — exact source rows and conservative display gates (2026-11-27)
+
+**Authorization:** owner explicitly requires completion of the review and a subsequent affirmative green light before any merge. No merge, deployment or public release in this pass.
+
+### Source fidelity
+
+- Read the 23 matching canonical class worksheets again, including activity columns, class base, weapon, helm, cape and consumables. Kathool Adept has a separate October 2026 community reference. 24 canonical classes / 27 selectable names including aliases; 66 canonical legacy activity records screened.
+- Replaced helper-generated group equipment with 112 exact roster/equipment positions from the 22 group encounter worksheets (12 Ultra + 10 other group encounters). Keep the source roster visible alongside its gear; the main strategy roster can be different, and their rotations must not be combined. Source: https://docs.google.com/spreadsheets/d/1yytxo6x0XlvbTIYLLD6TCEF_v1EKV59e_N-gas9Fi8Y/edit
+- Source explicitly contains Vainglory for Verus DoomKnight and Glaceran Warlord at Astral Empyrean despite its own survival warning; suppress these recommendations pending resolution. Great Thief and Arcana Invoker disputed encounter presets remain withheld.
+- Only 22 complete documented class/activity configurations are enabled by the new evidence gate (including the dated VHL solo and Kathool farm examples); other legacy configurations stay internal and are not presented as reviewed recommendations. General DPS source columns shown for Dragon of Time, Guardian and LightCaster explicitly do not imply a solo test. Great Thief remains withheld. Arcana Invoker farm is a source transcription, not verified after balance changes. Source: https://docs.google.com/spreadsheets/d/1WMSUlDwKUSnpg6x0ueP_6pDwxMzMM3Mc5ox3oHqK6OU/edit
+- Corrected base/weapon/cape combinations: Shaman Lucky/Ravenous/Examen/Vainglory; Phantom Chronomancer Lucky/Ravenous/Examen/Vainglory; Hollowborn Vindicator Lucky/Dauntless/Forge/Penitence; Yami no Ronin Lucky/Valiance/Vim/Vainglory; Verus DoomKnight Lucky/Dauntless/Anima/Lament; CSH Lucky/Valiance/Examen/Vainglory; CAv defensive solo Lucky/Valiance/Forge/Penitence; LR farm Lucky/Valiance/Pneuma/Lament; Blaze Binder Wizard/Elysium/Pneuma/Vainglory; Necrotic Chronomancer Lucky/Ravenous/Forge/Vainglory; Dark Lord Wizard/Elysium/Pneuma/Lament (source assumes potions) and Avarice farming; dated VHL solo uses Lament. Class default stat descriptions are not automatic build prescriptions.
+- 12 source-listed consumable combinations enabled only when all four equipment fields match. The ordinary Battle Elixir is +20% physical damage for 15 min, not Potent (+25%); Destruction is +30% critical damage for 15 min; Divine is +35% healing potential for 15 min. No implicit upgrade of potion variants. Required encounter scroll overrides the active item. Sources: https://aqwwiki.wikidot.com/battle-elixir ; https://aqwwiki.wikidot.com/destruction-elixir ; https://aqwwiki.wikidot.com/divine-elixir . Other combinations withheld where evidence or item effects are insufficient.
+
+### Mechanic corrections
+- Flibbitiestgibbet: Elemental Embrace / Elemental Grasp activate extreme dodge and resistance; the Shaman skill-5 warning includes the effect names. https://aqwwiki.wikidot.com/flibbitiestgibbet
+- Emperor Angler: distinguish threshold Feeding Frenzy (60% max HP, subsequent attacks lethal below half HP for the next 10 seconds) from Fish Breath (40% max HP; healing reduced by 75% for 12 seconds). https://aqwwiki.wikidot.com/emperor-angler
+- Gramiel: five stacks of Vendetta are lethal when Grace Unleashed lands, not instant death on obtaining the fifth stack.
+- Temple Shrine middle: Ascended Solstice and Ascended Midnight naming, 15-second convergence effects, overlapping effects dangerous. Source strategy assignments are conditional. https://aqwwiki.wikidot.com/temple-shrine
+- Mechabinky & Raxborg 2.0: self-destruct cue retained, exact timing withheld where the warning text and charge duration conflict. https://aqwwiki.wikidot.com/grim-challenge
+
+### Validation and release gate
+- Source transcriptions and UI evidence checks are documentary validation only; no live gameplay run or exhaustive current-patch performance benchmark was performed.
+- Previous authored revision 1e53fc7 had 14 successful workflows. Auto-generated assets commit e053923 returned action_required, not a pass. Intermediate revision 1a41ea2 had four failed workflows from a legacy test assuming an exact source gear row must always render. The test now explicitly checks withholding contradictory Astral gear. Further failures revealed the Flibbi skill-5 wording regression; the role tip now retains both the skill number and effect names.
+- New regression coverage checks full class gear tuples, inherited aliases, ordinary vs Potent consumables, mismatched-gear suppression. Recheck all workflows for final authored AND generated revisions before calling release ready.
+- Remaining blockers: independent current-patch confirmation of disputed presets and precise boss timings; individually verify currently unconfirmed legacy access/monster pages and any remaining unsupported claims before re-enabling them; gameplay tests for party rotations and potion performance. All 52 catalog records screened, not all independently confirmed. A source example is not a guarantee. No merge authorization.
