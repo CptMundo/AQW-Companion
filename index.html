@@ -2511,9 +2511,9 @@ function renderBossGuideDetail(entry){
  title.replaceChildren(node('h2',entry.name),node('small',entry.group+' · '+guide.kind+' guide','muted'));
  if(teamNames.length||recommendations.length){
   const team=node('section',undefined,'boss-guide-panel boss-guide-team');
-  team.append(node('h3',teamNames.length?'Workbook example team':'Recommended classes'));
+  team.append(node('h3',teamNames.length?'Workbook example team':entry.name==='Fourth Lynaria'?'Workbook recommended group':'Recommended classes'));
   const chips=node('div',undefined,'boss-guide-chips');for(const cls of teamNames.length?teamNames:recommendations){const owned=ultraOwned(cls);chips.append(node('span',(owned?'✓ ':'')+cls,'boss-guide-chip'+(owned?' is-owned':'')))}team.append(chips);root.append(team);
-  if(recommendations.length&&!teamNames.length)team.append(node('p','Choose one class for a solo encounter; these are source options, not a ranked build list.','muted tiny'));
+  if(recommendations.length&&!teamNames.length)team.append(node('p',entry.name==='Fourth Lynaria'?'The workbook suggests these group roles; this is not a solo encounter.':'Choose one class for a solo encounter; these are source options, not a ranked build list.','muted tiny'));
  }
  const fight=node('section',undefined,'boss-guide-panel boss-guide-fight');fight.append(node('h3','Fight at a glance'));
  for(const [i,tip] of guide.tips.entries())appendStrategyStep(fight,guide.tips.length>1?'Step '+(i+1):'Key mechanic',tip,entry.name);root.append(fight);
@@ -3152,6 +3152,10 @@ const approvedUltraGuides={
   "avoid": "Avoid consecutive Elegy exposure and Vainglory during healing reduction.",
   "shared": [
    [
+    "Phase 1 DPS check",
+    "Reach the transition near 15.56M HP within 72 seconds. Then respect the alternating Elegy and healing plan."
+   ],
+   [
     "Healing",
     "Alternate major heals rather than using them together. Avoid Vainglory during the severe healing reduction."
    ],
@@ -3176,7 +3180,7 @@ const approvedUltraGuides={
     ],
     "roles": {
      "Lord of Order": "Alternate taunts with LR, coordinate heals with PCM; reserve skill 5 for the nuke around 4.6–4.5M HP as described by the source.",
-     "Legion Revenant": "Alternate Elegy taunts with LoO on the agreed timing, then follow the agreed post-refill loop.",
+     "Legion Revenant": "Alternate Elegy taunts with LoO according to the agreed phase timing. Confirm the post-refill plan instead of automatically continuing the opening loop.",
      "Paladin Chronomancer": "Alternate major heals with LoO; keep recovery for the final phase.",
      "Chrono ShadowHunter": "Sustain DPS while respecting the team's healing and taunt plan."
     },
@@ -3188,9 +3192,13 @@ const approvedUltraGuides={
      [
       "Monster mechanics",
       "https://aqwwiki.wikidot.com/darkon-the-conductor"
+     ],
+     [
+      "Phase thresholds",
+      "https://solarisaqw.lol/guides/ultra-weeklies/ultradarkon"
      ]
     ],
-    "note": "Workbook rotation: first taunter on pull, next on tentacle/mouth animation, repeat until refill. Source does not specify a full individual skill schedule; confirm exact post-refill timing with the group."
+    "note": "Workbook rotation: first taunter on pull, next on the tentacle/mouth animation, repeat until the HP refill. The workbook and other community guides differ on post-refill loop timing; follow the agreed phase-specific plan, not the opening loop automatically."
    },
    {
     "id": "hub",
@@ -3434,7 +3442,7 @@ const approvedUltraGuides={
    ],
    [
     "Safe zones",
-    "Move immediately to the illuminated platform when the protection cue appears."
+    "On the protection-spells cue, move to the illuminated platform within three seconds; the zone check recurs throughout the fight."
    ],
    [
     "Regeneration",
@@ -3442,6 +3450,32 @@ const approvedUltraGuides={
    ]
   ],
   "variants": [
+   {
+    "id": "hub-ldk",
+    "label": "Sustain team · LDK Decay",
+    "team": [
+     "Chaos Avenger",
+     "Legion DoomKnight",
+     "Lord of Order",
+     "ArchPaladin"
+    ],
+    "roles": {
+     "Chaos Avenger": "Loop taunt with skill 3 and Scroll of Enrage; avoid ordinary HoT during inversion.",
+     "Legion DoomKnight": "Maintain Decay with skill 5 during the boss recovery; use your life steal.",
+     "Lord of Order": "Maintain buffs and avoid your healing skill during inversion; coordinate mitigation.",
+     "ArchPaladin": "Debuff and mitigate; avoid healing during inversion."
+    },
+    "refs": [
+     [
+      "AQW Hub — Ultra Dage",
+      "https://github.com/Shell1010/AQW-md/blob/main/Ultra%20Guides/Ultra%20Dage.md"
+     ],
+     [
+      "Mechanics and healing",
+      "https://sites.google.com/view/aqwg-net/ultra-bosses"
+     ]
+    ]
+   },
    {
     "id": "workbook",
     "label": "Workbook · VDK Decay",
@@ -3472,32 +3506,6 @@ const approvedUltraGuides={
      ]
     ],
     "note": "Confirm the Decay backup before pulling; the source does not specify a complete coverage schedule for this roster."
-   },
-   {
-    "id": "hub-ldk",
-    "label": "Sustain team · LDK Decay",
-    "team": [
-     "Chaos Avenger",
-     "Legion DoomKnight",
-     "Lord of Order",
-     "ArchPaladin"
-    ],
-    "roles": {
-     "Chaos Avenger": "Loop taunt with skill 3 and Scroll of Enrage; avoid ordinary HoT during inversion.",
-     "Legion DoomKnight": "Maintain Decay with skill 5 during the boss recovery; use your life steal.",
-     "Lord of Order": "Maintain buffs and avoid your healing skill during inversion; coordinate mitigation.",
-     "ArchPaladin": "Debuff and mitigate; avoid healing during inversion."
-    },
-    "refs": [
-     [
-      "AQW Hub — Ultra Dage",
-      "https://github.com/Shell1010/AQW-md/blob/main/Ultra%20Guides/Ultra%20Dage.md"
-     ],
-     [
-      "Mechanics and healing",
-      "https://sites.google.com/view/aqwg-net/ultra-bosses"
-     ]
-    ]
    }
   ]
  },
@@ -3549,7 +3557,7 @@ const approvedUltraGuides={
       "https://sites.google.com/view/aqwg-net/ultra-bosses"
      ]
     ],
-    "note": "The sources differ on the first taunt timing (workbook shortly after pull; AQWG efficient method at six seconds). Do not combine them. For this roster use the source-linked timing plan the team has agreed and practiced; LoO requires sufficient sustain."
+    "note": "Workbook timing: first taunter shortly after the pull, second on the Abyssal Charge cue, first again when the second Focus ends. The charge itself ignores Focus. The AQWG efficient method uses a different opening; do not combine the two. LoO needs sufficient sustain. Agree the method and monitor Frailty."
    },
    {
     "id": "hub-dot",
@@ -3563,7 +3571,7 @@ const approvedUltraGuides={
     "roles": {
      "Lord of Order": "Alternate Contracts taunts with LR; agree a survivable setup and one timing method.",
      "Legion Revenant": "Alternate Contracts taunts with LoO.",
-     "Dragon of Time": "Damage Nulgath; agree which DPS checks the sword if it is still alive around 30 seconds."
+     "Dragon of Time": "Both DPS slots attack Nulgath. If he will not die before the Blade nuke, agree which DPS switches around 30 seconds; avoid unnecessary Blade kills."
     },
     "refs": [
      [
@@ -3575,7 +3583,7 @@ const approvedUltraGuides={
       "https://sites.google.com/view/aqwg-net/ultra-bosses"
      ]
     ],
-    "note": "Both DPS slots share guidance; agree the sword assignment between them."
+    "note": "AQWG efficient timing example: first taunt six seconds after the team starts attacking; second on the Abyssal Charge quote; first again roughly ten seconds later (about five seconds after their last Frailty faded). Monitor Frailty to preserve the sync. Confirm which of LR/LoO opens. This is distinct from the workbook's earlier opening."
    }
   ]
  },
@@ -3587,6 +3595,10 @@ const approvedUltraGuides={
    [
     "Crystal pairs",
     "DPS + Lord of Order take one crystal; LR + healer take the other. Alternate within each pair at the defense-shattering cue; kill both crystals within five seconds."
+   ],
+   [
+    "Break the guard",
+    "When Gramiel attempts to drain your power, attack him to break the guard, then return to the crystals. Do not apply Decay to Gramiel during the crystal phase; it increases his damage."
    ],
    [
     "After crystals",
@@ -3609,7 +3621,7 @@ const approvedUltraGuides={
     ],
     "roles": {
      "Lord of Order": "Pair with the assigned DPS and alternate crystal taunts. Follow your assigned Gramiel turn.",
-     "Legion Revenant": "Pair with the assigned healer and alternate crystal taunts. Follow your assigned Gramiel turn.",
+     "Legion Revenant": "Pair with the assigned healer and alternate crystal taunts. Avoid applying skill 2 Decay to Gramiel during the crystal phase. Follow your assigned Gramiel turn.",
      "StoneCrusher": "Confirm the healer position and crystal partner; take your assigned Gramiel turn.",
      "Shaman": "Confirm the DPS position and crystal partner; balance crystal HP and take your assigned Gramiel turn."
     },
@@ -4191,7 +4203,8 @@ const approvedOtherBossGuides={
   ]
  }
 };
-const approvedClassActivities={"Arcana Invoker":["farm"],"Legion Revenant":["farm"],"Shaman":["solo"],"Verus DoomKnight":["solo"]};
+const approvedClassActivities={"Arcana Invoker":["farm"],"Legion Revenant":["farm"],"Shaman":["solo"],"Verus DoomKnight":["solo"],"Void Highlord":["farm"],"Chaos Avenger":["solo"],"ArchMage":["farm"],"Blaze Binder":["farm"],"Yami no Ronin":["solo"],"King's Echo":["solo"],"Chrono ShadowHunter":["solo"],"Phantasm Chronomancer":["solo"],"Hollowborn Vindicator":["solo"],"Necrotic Chronomancer":["farm"],"ArchFiend":["farm"],"Dark Lord":["solo"]};
+const approvedClassProvenance={"Arcana Invoker":"K57:K74 · Farming","Legion Revenant":"I2:I23 · Farming","Shaman":"M2:M23 · Best Solo","Verus DoomKnight":"K2:K23 · Solo DPS","Void Highlord":"N57:N74 · Low HP Farm","Chaos Avenger":"K57:K74 · Defensive Solo","ArchMage":"H57:H74 · High HP Mobs","Blaze Binder":"K57:K74 · Full Forge (farming class)","Yami no Ronin":"K2:K23 · Solo DPS","King's Echo":"K2:K23 · Solo / Group","Chrono ShadowHunter":"N57:N74 · Solo Full Forge","Phantasm Chronomancer":"M2:M23 · Best Solo","Hollowborn Vindicator":"K2:K23 · Solo DPS","Necrotic Chronomancer":"K2:K23 · High DPS Farming","ArchFiend":"K57:K74 · Farming / Dage","Dark Lord":"Q57:Q74 · Full Pots Solo"};
 function ultraStrategyVariants(b,profile){
  const evidence=approvedUltraGuides[b.id];
  return (evidence?.variants||[]).filter(v=>v.team.length&&v.refs.length).map(v=>({...v,names:v.team}));
@@ -4282,7 +4295,7 @@ function renderUltraDetail(b){
  }
  function updateStrategy(){
   const v=active();selectedUltraStrategies.set(b.id,v.id);
-  teamInfo.textContent=v.names.length+' players · '+v.names.filter(ultraOwned).length+' owned'+(v.partial?' · Partial strategy':'');
+  teamInfo.textContent=v.names.length+' players · '+[...new Set(v.names)].filter(ultraOwned).length+'/'+new Set(v.names).size+' distinct classes owned'+(v.partial?' · Partial strategy':'');
   fillStrategyClasses(select,[...new Set(v.names)],selectedUltraClasses.get(b.id));chips.replaceChildren();
   const personalAvailable=Object.keys(v.roles).length>0||Number.isInteger(v.chart);setup.hidden=!personalAvailable;roleName.hidden=!personalAvailable;
   for(const name of v.names){
@@ -5169,8 +5182,8 @@ function renderClassBuild(){
   if(meta.canonical!==cls)identity.append(node('span','Same skills as '+meta.canonical,'build-meta-alias'));
   panel.append(identity);
  }
- panel.append(node('p','Community example — current patch / activity review pending. Not a verified best-in-slot loadout.','build-meta-note'));panel.append(node('p','Source configuration: '+build.evidence,'muted tiny'));
- const crossRef=node('a','Community enhancement reference (2025 templates) ↗','muted tiny');crossRef.href='https://docs.google.com/spreadsheets/d/1wupDvLuPnRC0fF0aNPc7rzrri7X1YcYy7S2s5Z6o_F4/edit';crossRef.target='_blank';crossRef.rel='noopener noreferrer';panel.append(crossRef);
+ panel.append(node('p','Community example — current patch / activity review pending. Not a verified best-in-slot loadout.','build-meta-note'));panel.append(node('p','Source configuration: '+approvedClassProvenance[cls],'muted tiny'));
+ const crossRef=node('a','Separate enhancement reference (not this preset) ↗','muted tiny');crossRef.href='https://docs.google.com/spreadsheets/d/1wupDvLuPnRC0fF0aNPc7rzrri7X1YcYy7S2s5Z6o_F4/edit';crossRef.target='_blank';crossRef.rel='noopener noreferrer';panel.append(crossRef);
  const sgRef=simplifiedClassSource(cls);if(sgRef){const a=node('a','Simplified Classes Guide · class-specific reference ↗','muted tiny');a.href=sgRef;a.target='_blank';a.rel='noopener noreferrer';panel.append(a)}
  if(build.note)panel.append(node('p',build.note,'build-meta-note'));
  if(sameUltraClass(cls,'Void Highlord')&&role==='solo'){const refs=node('div',undefined,'build-meta-sources');for(const [label,url] of [['May 2026 benchmark','https://www.reddit.com/r/AQW/comments/1thhrix/tierlist_for_solo_and_farming/'],['Basic Class Guide','https://github.com/Shell1010/AQW-md/blob/main/Other%20Guides/Basic%20Class%20Guide.md']]){const a=node('a',label+' ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';refs.append(a)}panel.append(refs);}
@@ -5275,16 +5288,12 @@ function renderClassBuild(){
  }
  info.append(pots);
  layout.append(mannequin,info);panel.append(layout);
- if(build.alternative){
-  const alt=node('p',undefined,'build-meta-alternatives');
-  alt.append(node('strong','Unreviewed alternative: '),document.createTextNode(build.alternative));
-  panel.append(alt);
- }
+ // Unreviewed alternative presets are kept in source data but not displayed.
  const baseRefs={'Arcana Invoker':'https://aqwwiki.wikidot.com/arcana-invoker',"King's Echo":'https://aqwwiki.wikidot.com/king-s-echo','Dark Lord':'https://aqwwiki.wikidot.com/dark-lord','Phantasm Chronomancer':'https://www.aq.com/gamedesignnotes/aqw-29nov24-2024calendarclassskills-9776','Phantom Chronomancer':'https://www.aq.com/gamedesignnotes/aqw-29nov24-2024calendarclassskills-9776','Kathool Adept':'https://www.artix.com/posts/aqw-kathoolclasspreview-17oct26','Hollowborn Vindicator':'https://www.aq.com/gamedesignnotes/aqw-update-20june25-10026'};
  if(baseRefs[cls]){const a=node('a','Class stat / skill reference ↗','muted tiny');a.href=baseRefs[cls];a.target='_blank';a.rel='noopener noreferrer';panel.append(a)}
  if(meta){
   const references=node('div',undefined,'build-meta-sources');
-  for(const [label,url] of [['Class information',meta.guide],['Build reference',meta.source]]){
+  for(const [label,url] of [['Class information',meta.guide],['Historical Build reference (not this preset)',meta.source]]){
    if(!/^https:\/\//i.test(url||''))continue;
    const a=document.createElement('a');a.textContent=label+' ↗';a.href=url;
    a.target='_blank';a.rel='noopener noreferrer';references.append(a);

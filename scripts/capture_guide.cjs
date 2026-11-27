@@ -67,7 +67,7 @@ async function main(){
   assert.ok((await page.locator('#ultradetail .ultra-class-guide').innerText()).includes('Debuff the eyes'));
   await page.locator('#ultradetail .guide-v2-class-buttons button').filter({hasText:'StoneCrusher'}).click();
   assert.equal(await classPick.inputValue(),'StoneCrusher');
-  await page.locator('#ultracards button').filter({hasText:'Ultra Tyndarius'}).click();
+  await page.locator('#ultracards button').filter({hasText:'Ultra Avatar Tyndarius'}).click();
   await teamPick.selectOption('hub-cav');assert.ok((await classPick.locator('option').allTextContents()).some(x=>x.includes('Chaos Avenger')));
   await classPick.selectOption('Chaos Avenger');assert.ok((await page.locator('#ultradetail .ultra-class-guide').innerText()).includes('right orb'));
   await teamPick.selectOption('hub-ai');assert.ok(!(await classPick.locator('option').allTextContents()).some(x=>x.includes('Chaos Avenger')));
@@ -86,6 +86,10 @@ async function main(){
   assert.equal(await page.locator('#ultradetail .ultra-focus-gear').count(),0);
   await go('ultras','boss-guides');
   assert.equal(await page.locator('#bossguidedetail .ultra-focus-gear').count(),0);
+  await page.locator('#ultracatalog button').filter({hasText:'Celestial Arena'}).click();assert.ok((await page.locator('#bossguidedetail').innerText()).includes('Recommended classes'));assert.equal(await page.locator('#bossguidedetail .ultra-role-select').count(),0);
+  await page.locator('#ultracatalog button').filter({hasText:'Temple Shrine — Middle'}).click();assert.equal(await page.locator('#bossguidedetail .ultra-role-select option').count(),4);
+  await page.locator('#bossguidedetail .ultra-role-select').selectOption('Lord of Order');assert.ok((await page.locator('#bossguidedetail').innerText()).includes('Lunar Haze'));
+  await page.locator('#ultracatalog button').filter({hasText:'Void Nightbane'}).click();assert.ok((await page.locator('#bossguidedetail').innerText()).includes('100,000 HP'));assert.equal(await page.locator('#bossguidedetail .ultra-role-select').count(),0);
   await go('builds','forge');
   assert.ok(await page.locator('#builds').isHidden(),'Class Builds view must remain hidden');
   assert.ok(await page.locator('[data-tab="builds"]').isHidden(),'Class Builds navigation must remain hidden');

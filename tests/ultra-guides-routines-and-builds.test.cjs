@@ -522,7 +522,7 @@ assert.ok(html.includes("const publicEncounterLoadouts=false;"));
 assert.ok(!detail108.includes("ultra-focus-gear"),"Public Ultra guide must not render gear");
 assert.ok(!bossDetail121.includes("ultra-focus-gear"));
 assert.ok(!bossDetail121.includes("profile.potions"));
-assert.ok(detail108.includes("Your class"));assert.ok(bossDetail121.includes("Your class"));
+assert.ok(detail108.includes("Your class"));assert.ok(bossDetail121.includes("Class-specific responsibilities"));
 assert.ok(html.includes("if(tip.source!=='Community guide')body.append"));
 assert.ok(bossDetail121.includes("Simplified Bosses Guide — "));
 assert.ok(bossDetail121.includes("Wiki location"));
@@ -672,12 +672,12 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
 {const src=html.slice(html.indexOf('const ultraGuides=['),html.indexOf('const ultraRolePlaybooks'));const teams=vm.runInNewContext(src+'\n ultraGuides');let total=0;
  for(const b of teams){const p=compact.simplifiedProfiles[b.id],vs=compact.ultraStrategyVariants(b,p);assert.ok(vs.length,b.id);total+=vs.length;const evidence=compact.approvedUltraGuides[b.id];assert.ok(['Quick','Strategy','Advanced'].includes(evidence.depth));assert.ok(evidence.shared.length);
   assert.equal(new Set(vs.map(v=>v.id)).size,vs.length);
-  for(const v of vs){assert.equal(v.names.length,b.id==='kathool'?7:4,b.id);assert.ok(v.refs.length);for(const cls of Object.keys(v.roles))assert.ok(v.names.includes(cls),b.id+' '+cls);if(v.chart!==undefined){assert.equal(b.id,'speaker');assert.equal(v.chart,0);assert.ok(v.names.includes('Lord of Order')&&v.names.includes('ArchPaladin')&&v.names.includes('Legion Revenant'));}}
+  for(const v of vs){assert.equal(v.names.length,b.id==='kathool'?7:4,b.id);assert.ok(v.refs.length);assert.ok(v.refs.every(r=>r.length===2&&r[1].startsWith('https://')));for(const cls of Object.keys(v.roles))assert.ok(v.names.includes(cls),b.id+' '+cls);if(v.chart!==undefined){assert.equal(b.id,'speaker');assert.equal(v.chart,0);assert.ok(v.names.includes('Lord of Order')&&v.names.includes('ArchPaladin')&&v.names.includes('Legion Revenant'));}}
  }assert.equal(teams.length,12);assert.equal(total,22);
  for(const p of compact.simplifiedExtraEncounters){const guide=compact.approvedOtherBossGuides[p.name];assert.ok(guide,p.name);assert.ok(guide.tips.length);for(const cls of Object.keys(guide.roles))assert.ok(p.team?.some(x=>x.cls===cls),p.name+' '+cls);}
  assert.equal(Object.keys(compact.approvedOtherBossGuides).length,compact.simplifiedExtraEncounters.length);
- assert.equal(Object.keys(compact.approvedClassActivities).length,4);
+ assert.equal(Object.keys(compact.approvedClassActivities).length,16);
  assert.ok(compact.approvedUltraGuides.drakath.shared.some(x=>x[1].includes('10M is a transformation')));
  assert.ok(compact.approvedUltraGuides.nulgath.avoid.includes('ignores taunt'));
- assert.ok(compact.approvedUltraGuides.gramiel.shared.some(x=>x[1].includes('70%, 40% and 10%')));
+ assert.ok(compact.approvedUltraGuides.gramiel.shared.some(x=>x[1].includes('70%, 40% and 10%')));assert.ok(compact.approvedUltraGuides.gramiel.shared.some(x=>x[1].includes('Do not apply Decay')));assert.ok(compact.approvedUltraGuides.darkon.shared.some(x=>x[1].includes('72 seconds')));
  console.log('Consolidated coverage: 12 Ultras, 22 strategy variants, '+compact.simplifiedExtraEncounters.length+' source-backed other encounter guides.');}
