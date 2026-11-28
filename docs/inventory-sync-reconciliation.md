@@ -1,4 +1,4 @@
-# AQW Companion — Inventory sources and safe reconciliation (design, not yet enabled)
+# AQW Companion — Inventory sources and safe reconciliation
 
 ## Sources
 
@@ -6,7 +6,7 @@
 - **Public Character Page partial view**: public-facing subset. May omit bank, resources, quantities, item IDs, and items unavailable publicly. Do not interpret absence as item deletion. Automated access requires separate policy clearance and an approved delivery path.
 - **Community item catalog**: reference names/IDs/recipes. **Never** treat catalog data as proof of player ownership.
 
-## Reconciliation rules (to implement and test)
+## Reconciliation rules (design invariants; implementation coverage varies)
 
 1. Keep each imported or synchronized dataset separate and immutable, tagged `source`, `character`, `observedAt`, `scope`, `complete`, `idReliability`.
 2. Do not combine data from different characters. Ask player to select a character if ambiguous.
@@ -37,4 +37,4 @@
 - Ranked class labels e.g. “ArchPaladin (Rank 10)” ⇒ parse rank separately, normalize name, then require unique item match before using it.
 - Multiple characters, name collisions, outdated exports, missing IDs ⇒ quarantine rather than silently merge.
 
-**Status:** architecture plan only. No Character Page sync or browser connector has been enabled. Await Artix policy clarification.
+**Current status (2026-11-28, Beta 0.13.10):** the optional extension implements user-initiated full inventory capture, public Character Page inventory/badge capture and official progress snapshots. `extension/unified-sync.js` requires optional Account Manager origin permission for authenticated capture, uses the existing browser session, stages data locally, and checks the Companion save acknowledgment. Public Sync warns when a full snapshot exists and saves separately; bank and quantities may be unknown. Account progress eligibility thresholds are not proof of claimed rewards; Saga state uses explicit evidence (the owner confirmed the unlocked capture works, locked markup still needs live confirmation). No background polling or cloud account system is enabled. The original reconciliation rules above remain design safeguards; this is not a claim that every proposed matching/conflict UI is implemented or that Artix has approved the integration.

@@ -32,9 +32,12 @@ async function main(){
   await context.route('**/*',r=>r.request().url().startsWith(origin+'/')?r.continue():r.abort());
   const page=await context.newPage();
   page.on('pageerror',e=>console.error('Guide page:',e.message));
+  const metrics={environment:'isolated Chromium, local HTTP, external requests blocked; routing disables HTTP cache',viewport:'1360x1100',fixture:'synthetic demo'};
+  const readyMs=()=>page.evaluate(()=>Math.round(performance.now()));
   await page.goto(origin+'/',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.querySelector('#overview')&&!document.querySelector('#overview').hasAttribute('data-inventory-booting'),null,{timeout:45000});
   await page.locator('#aqwc-getting-started').waitFor({state:'visible'});
+  metrics.coldHomeReadyMs=await readyMs();
   // The real app keeps its functions private in an IIFE. Drive its public JSON
   // input and navigation controls rather than reaching into private internals.
   const items=[{ID:'demo1',Name:'Void Aura',Type:'Misc',Count:180,Bank:0},{ID:'demo2',Name:'Diamond of Nulgath',Type:'Misc',Count:1000,Bank:0},{ID:'demo3',Name:'Gem of Nulgath',Type:'Misc',Count:75,Bank:1},{ID:'demo4',Name:'Legion Revenant',Type:'Class',Count:1,Bank:0},{ID:'demo5',Name:'ArchPaladin',Type:'Class',Count:1,Bank:0},{ID:'demo6',Name:'Blood Gem of the Archfiend',Type:'Misc',Count:12,Bank:0}];
@@ -42,14 +45,16 @@ async function main(){
   const stamp='2026-01-01T12:00:00Z';
   const material=(item,target)=>({label:item+' ×'+target,kind:'material',item,target,status:'unknown'});
   const backup={format:'AQW Companion backup v0.9.3',snapshots:[{fileName:'Demo earlier.json',exportedAt:'2025-12-31T12:00:00Z',items:items.filter(i=>!i.ID.startsWith('new-demo-')&&i.ID!=='demo4').map(i=>({...i,Count:i.Type==='Misc'?Math.max(1,i.Count-5):i.Count}))},{fileName:'Demo_Inventory.json',exportedAt:stamp,items}],unlocks:[{name:'Sin of the Abyss',type:'Weapon',steps:[material('Blood Gem of the Archfiend',50),material('Diamond of Nulgath',500),material('Gem of Nulgath',150)]},{name:'Necrotic Sword of Doom',type:'Weapon',steps:[material('Void Aura',800)]},{name:'Legion Revenant',type:'Class',steps:[{label:'Own Legion Revenant',kind:'owned',item:'Legion Revenant',status:'unknown'}]}]};
+  const importStarted=Date.now();
   await page.locator('#file').setInputFiles({name:'Demo_Backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});
   await page.locator('#dashboard').waitFor({state:'visible',timeout:45000});
+  metrics.demoBackupDashboardVisibleMs=Date.now()-importStarted;
   const tour=page.locator('#aqwc-tour');await tour.waitFor({state:'visible'});assert.ok(await page.locator('#aqwc-getting-started').isHidden());
   await shot(page,'tour',tour,true);
   await page.locator('#aqwc-tour-next').click();assert.ok(await page.locator('#unlocks.active').isVisible());
   await page.locator('#aqwc-tour-back').click();assert.ok(await page.locator('#overview.active').isVisible());
   await page.keyboard.press('Escape');assert.ok(await tour.isHidden());
-  await page.reload({waitUntil:'domcontentloaded'});await page.locator('#dashboard').waitFor({state:'visible',timeout:45000});assert.ok(await tour.isHidden());
+  await page.reload({waitUntil:'domcontentloaded'});await page.locator('#dashboard').waitFor({state:'visible',timeout:45000});metrics.savedHomeVisibleMs=await readyMs();assert.ok(await tour.isHidden());
   await page.locator('#aqwc-privacy-notice-close').click();assert.ok(await page.locator('#aqwc-privacy-notice').isHidden());await page.reload({waitUntil:'domcontentloaded'});await page.locator('#dashboard').waitFor({state:'visible',timeout:45000});assert.ok(await page.locator('#aqwc-privacy-notice').isHidden());
   await page.locator('.inventory-advanced > summary').click();assert.ok(await page.locator('.aqwc-options-main a[href="privacy.html"]').isVisible());
   const data=page.locator('#aqwc-data-management'),getExtension=page.locator('#aqwc-get-extension');assert.ok(await getExtension.isVisible());assert.ok(await page.locator('#backup').isHidden());await data.locator('summary').click();assert.ok(await page.locator('#backup').isVisible());assert.ok(await page.locator('#aqwc-account-import').isVisible());await data.locator('summary').click();assert.ok(await page.locator('#backup').isHidden());
@@ -273,6 +278,8 @@ async function main(){
   await wiki.evaluate(version=>{const attach=Element.prototype.attachShadow;Element.prototype.attachShadow=function(o){return attach.call(this,{...o,mode:'open'})};const data={ok:true,comparison:{synced:true,boost:{all:15},best:{all:{name:'Example Sword',slug:'example-sword',value:15}}},goals:{rows:[]},hub:{recipeCount:1,recipes:[{name:'Example Upgrade',source:'https://aqwwiki.wikidot.com/example-shop',owned:'not-found',ready:1,total:2,required:1,materials:[{name:'Void Aura',missing:20}]}],related:[{name:'Related Sword',slug:'related-sword',kind:'related',state:'not-found'}],loadouts:{all:{percent:15,gear:[{name:'Example Sword',slug:'example-sword',category:'weapons'}]}},spending:[],goalsSynced:true}};globalThis.chrome={runtime:{getManifest:()=>({version}),sendMessage(m,cb){const r=m.type==='wiki-item-assistant'?data:m.type==='wiki-item-lookup'?{ok:true,state:'owned',inventory:1,bank:0,total:1,syncedAt:Date.parse('2026-01-01T12:00:00Z')}:m.type==='hub-note-read'?{ok:true,note:{text:'',priority:'normal'}}:m.type==='goal-status-read'?{ok:true,state:'absent',at:1}:{ok:false};if(cb){cb(r);return}return Promise.resolve(r)}}}},version);
   for(const name of ['companion-theme.js','bridge.js','wishlist-link.js','wiki-materials.js','wiki-items.js'])await wiki.addScriptTag({path:path.join(ext,name)});
   const hub=wiki.locator('#aqwc-item-status');await hub.getByText('Used in recipes (1)').waitFor({timeout:15000});await shot(wiki,'wiki',hub,true);await wc.close();
+  metrics.filesBytes=Object.fromEntries(['index.html','css/site.css','data/companion_database.json'].map(p=>[p,fs.statSync(path.join(root,p)).size]));
+  console.log('CONSOLIDATION_BASELINE '+JSON.stringify(metrics));
   console.log('Generated all guide screenshots');
  }finally{await browser.close();server.close()}
 }
