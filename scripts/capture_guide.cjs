@@ -291,7 +291,12 @@ async function main(){
   await shared.locator('input[data-goal="void highlord"]').check();await shared.locator('input[data-goal="necrotic sword of the abyss"]').check();
   const crystals=shared.locator('[data-material="void crystal a"]');assert.ok(await crystals.getByText('Void Crystal A ×2',{exact:true}).isVisible());
   assert.ok(await shared.locator('[data-material="roentgenium of nulgath"]').getByText('Roentgenium of Nulgath ×17',{exact:true}).isVisible());
-  await shared.locator('input[data-goal="void highlord"]').uncheck();assert.ok(await crystals.getByText('Void Crystal A ×1',{exact:true}).isVisible());
+  const farmRoute=shared.locator('.shared-farm-route');await farmRoute.locator(':scope > summary').click();
+  const farmStop=farmRoute.locator('[data-join="/join tercessuinotlim"]');
+  assert.equal(await farmStop.locator('[data-kind="goal"]').count(),2);
+  assert.ok(await farmStop.getByRole('link',{name:'Source ↗'}).first().isVisible());
+  assert.ok(await farmRoute.getByText('Missing items without a reviewed destination').isVisible());
+  await shared.locator('input[data-goal="void highlord"]').uncheck();assert.equal(await farmStop.locator('[data-kind="goal"]').count(),1);assert.ok(await farmRoute.evaluate(e=>e.open));assert.ok(await crystals.getByText('Void Crystal A ×1',{exact:true}).isVisible());
   await page.setViewportSize({width:390,height:844});assert.ok(await shared.evaluate(e=>e.scrollWidth<=e.clientWidth+1));await page.setViewportSize({width:1360,height:1100});
   await shared.getByRole('button',{name:'Clear selection',exact:true}).click();assert.equal(await shared.locator('.shared-plan-row').count(),0);
   // Add a reviewed recipe whose existing catalog includes a quantified weekly reward.
