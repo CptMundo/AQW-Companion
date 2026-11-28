@@ -53,3 +53,8 @@ Classify existing source-reviewed merge ingredient rows as consumed at all quant
 ### 0.14 A3 — Shared Wishlist Requirements
 
 Opt-in, collapsed panel for combining selected reviewed direct recipes across incomplete goals. Sum consumables, max reusable possession gates, deduct current stock once, show per-goal contribution and flag output/consumption conflicts. Unsupported and owned goals excluded explicitly, VDK remains stage-based, no auto-expansion of intermediate items or custom checklist steps, no persisted selection or storage changes. Unknown stock stays unknown. Source-reviewed coverage is not gameplay validation. Next: What's Next using explicit coverage and manual/unknown prerequisite states; Smart Farming Route later. Merge A1/A2/A3 sequentially after tests.
+
+
+### 0.14 B1 — What's Next? personal goals
+
+Replace Nearly Finished Projects in Home, preserving its existing position and saved checklist progress as context. Source-reviewed direct requirements and the VDK questline provide independent, read-only suggestions using the selected full snapshot; stock-available, missing, unknown and pending-review categories are explicitly distinguished. Order by action category, then name, not estimated farming time. VDK uses the first unconfirmed quest, manual eligibility, and existing reviewed joins only. Unsupported routes stay pending review. Shared stock allocation, automatic intermediate expansion, task/calendar recommendations and Smart Farming Route are outside this first slice. No new storage, extension runtime or version changes. Browser and regression tests must pass before owner-approved merge.
