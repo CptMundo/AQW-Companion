@@ -282,10 +282,18 @@ async function main(){
   await page.reload({waitUntil:'domcontentloaded'});await page.locator('#dashboard').waitFor({state:'visible'});await go('projects','unlocks');const vdk=page.locator('.unlockcard').filter({hasText:'Verus DoomKnight'});await vdk.locator('.dependency-stage').first().waitFor();assert.equal(await vdk.locator('.dependency-stage').count(),8);assert.ok(await vdk.locator('.dependency-stage[data-stage=body]').getByText('Titanic Spine ×13').isVisible());assert.ok(!await vdk.getByText('Acquisition not verified').count());
   await page.setViewportSize({width:390,height:844});assert.ok(await vdk.locator('.dependency-panel').evaluate(e=>e.scrollWidth<=e.clientWidth+1));await page.setViewportSize({width:1360,height:1100});
   // Check reviewed merge and gate requirements against synthetic Wishlist entries.
-  await page.evaluate(()=>{const key='aqw-companion-unlocks',all=JSON.parse(localStorage.getItem(key)||'[]');for(const name of ['Void Highlord','Drakath the Eternal'])if(!all.some(p=>p.name===name))all.push({id:'dep-'+name,name,type:name==='Void Highlord'?'Class':'Armor',steps:[]});localStorage.setItem(key,JSON.stringify(all))});
+  await page.evaluate(()=>{const key='aqw-companion-unlocks',all=JSON.parse(localStorage.getItem(key)||'[]');for(const name of ['Void Highlord','Drakath the Eternal','Necrotic Sword of the Abyss'])if(!all.some(p=>p.name===name))all.push({id:'dep-'+name,name,type:name==='Void Highlord'?'Class':'Armor',steps:[]});localStorage.setItem(key,JSON.stringify(all))});
   await page.reload({waitUntil:'domcontentloaded'});await page.locator('#dashboard').waitFor({state:'visible'});await go('projects','unlocks');
   const reviewedVhl=page.locator('.unlockcard').filter({has:page.locator('h3').filter({hasText:/^\s*Void Highlord\s*$/})});await reviewedVhl.locator('.reviewed-merge-plan > summary').click();assert.ok(await reviewedVhl.getByText('Void Crystal A ×1',{exact:true}).first().isVisible());await reviewedVhl.locator('.nested-merge-plan > summary').click();assert.ok(await reviewedVhl.getByText('Inputs for this selected route',{exact:true}).isVisible());
   const reviewedDrakath=page.locator('.unlockcard').filter({has:page.locator('h3').filter({hasText:/^\s*Drakath the Eternal\s*$/})});await reviewedDrakath.locator('.reviewed-merge-plan > summary').click();assert.ok(await reviewedDrakath.getByText('Possession requirements (not counted as ingredients)',{exact:true}).isVisible());
+  // Combined requirements are opt-in and direct-only.
+  const shared=page.locator('#shared-wishlist-plan');await shared.locator(':scope > summary').click();
+  await shared.locator('input[data-goal="void highlord"]').check();await shared.locator('input[data-goal="necrotic sword of the abyss"]').check();
+  const crystals=shared.locator('[data-material="void crystal a"]');assert.ok(await crystals.getByText('Void Crystal A ×2',{exact:true}).isVisible());
+  assert.ok(await shared.locator('[data-material="roentgenium of nulgath"]').getByText('Roentgenium of Nulgath ×17',{exact:true}).isVisible());
+  await shared.locator('input[data-goal="void highlord"]').uncheck();assert.ok(await crystals.getByText('Void Crystal A ×1',{exact:true}).isVisible());
+  await page.setViewportSize({width:390,height:844});assert.ok(await shared.evaluate(e=>e.scrollWidth<=e.clientWidth+1));await page.setViewportSize({width:1360,height:1100});
+  await shared.getByRole('button',{name:'Clear selection',exact:true}).click();assert.equal(await shared.locator('.shared-plan-row').count(),0);
   // Actual download -> fresh isolated profile -> restore, with synthetic progress only.
   const expectedProgress=await page.evaluate(stamp=>{
    const badge=window.AQWCBadgeCatalog.find(b=>!b.placeholder&&b.image).id;
