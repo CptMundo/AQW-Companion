@@ -1563,11 +1563,12 @@ html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-i
 #overview #homeactivities .home-quest-done-mark{left:4px;color:var(--aqwc-success-text);background:var(--aqwc-success-bg)}
 #overview #homeactivities .home-quest-info{display:grid;align-content:start;gap:3px;min-width:0}
 #overview #homeactivities .home-quest-name{font-size:12px;line-height:1.25;overflow-wrap:anywhere;align-self:start;margin:0}
-#overview #homeactivities .home-quest-joins{display:grid;gap:4px;justify-items:center;min-width:0}
-#overview #homeactivities .home-quest-joins .ultra-copy-join{width:100%!important;justify-content:space-between!important;padding:5px 6px!important;gap:4px;font-size:10px}
-#overview #homeactivities .home-quest-extra-joins{width:100%;min-width:0;font-size:10px;text-align:left}
-#overview #homeactivities .home-quest-extra-joins summary{cursor:pointer;text-align:center;color:var(--cyan)}
-#overview #homeactivities .home-quest-extra-route{display:grid;gap:3px;margin-top:4px;overflow-wrap:anywhere}
+#overview #homeactivities .home-quest-joins{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px;min-width:0;width:100%;align-items:center}
+#overview #homeactivities .home-quest-joins.has-multiple{grid-auto-columns:minmax(70px,1fr);overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+#overview #homeactivities .home-quest-joins .ultra-copy-join{width:100%!important;justify-content:space-between!important;padding:5px 6px!important;gap:4px!important;font-size:10px}
+#overview #homeactivities .home-quest-joins.has-multiple .ultra-copy-join{padding:5px 3px!important;gap:2px!important;font-size:10px}
+#overview #homeactivities .home-quest-joins .ultra-copy-command{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#overview #homeactivities .home-quest-joins .ultra-copy-icon{flex:none}
 #overview #homeactivities .home-quest-action{width:100%;min-width:0;white-space:normal;font-size:10px;padding:5px 3px;align-self:end}
 #overview #homeactivities .home-quest-tile.is-complete{background:var(--aqwc-success-bg);border-color:var(--aqwc-success-border)}
 #overview #homeactivities .home-quest-tile.is-complete .home-quest-action{color:var(--aqwc-success-text);border-color:var(--aqwc-success-border)}
