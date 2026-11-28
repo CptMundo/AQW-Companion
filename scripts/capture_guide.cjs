@@ -307,6 +307,13 @@ async function main(){
   assert.ok(await stageRoute.locator('[data-join="/join terminatemple"]').getByText('Accept / turn in stage',{exact:false}).isVisible());
   await page.setViewportSize({width:390,height:844});assert.ok(await stageRoute.evaluate(e=>e.scrollWidth<=e.clientWidth+1));await page.setViewportSize({width:1360,height:1100});
   await shared.getByRole('button',{name:'Clear selection',exact:true}).click();
+  // Owned gear: add synthetic inventory fixture via existing backup input, not live account.
+  await go('explore','boost-finder');
+  const ownedGear=page.locator('.bf-owned-gear');await ownedGear.locator('.bf-gear-slot').first().waitFor({state:'visible'});
+  assert.equal(await ownedGear.locator('.bf-gear-slot').count(),5);
+  await ownedGear.getByRole('combobox',{name:'Compare owned gear by boost'}).selectOption('xp');
+  assert.ok(await ownedGear.getByText('Percentages are individual',{exact:false}).isVisible());
+  await page.setViewportSize({width:390,height:844});assert.ok(await ownedGear.evaluate(e=>e.scrollWidth<=e.clientWidth+1));await page.setViewportSize({width:1360,height:1100});
   // Add a reviewed recipe whose existing catalog includes a quantified weekly reward.
   await page.evaluate(()=>{const k='aqw-companion-unlocks',all=JSON.parse(localStorage.getItem(k)||'[]');if(!all.some(p=>p.name==='Sin of the Abyss'))all.push({id:'next-routine-sin',name:'Sin of the Abyss',type:'Weapon',steps:[]});localStorage.setItem(k,JSON.stringify(all))});
   await page.reload({waitUntil:'domcontentloaded'});await page.locator('#dashboard').waitFor({state:'visible'});
