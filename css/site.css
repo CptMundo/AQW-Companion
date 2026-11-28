@@ -1459,3 +1459,20 @@ html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-i
 #overview .home-next-milestone-label{display:flex;gap:5px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 #overview #home-next-milestone .home-milestone-art{width:28px;height:32px;flex-basis:28px}
 @media(max-width:420px){#overview .home-achievement-grid{gap:4px}#overview .home-achievement-grid>section{padding:5px}#overview .home-achievement-grid .home-badge-discovery-body{grid-template-columns:1fr}#overview .home-achievement-grid .home-badge-discovery-count{border:0;padding:0;max-width:none;flex-direction:row;align-items:center;justify-content:flex-start;gap:4px}#overview .home-badge-discovery-art{width:30px;height:30px;flex-basis:30px}}
+
+/* Home: achievements and stack warnings occupy one compact row, without empty space. */
+#overview .home-alert-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;align-items:stretch}
+#overview .home-alert-grid:not(:has(> :not(.hidden))){display:none}
+#overview .home-alert-grid> :not(.hidden):only-child,
+#overview .home-alert-grid:has(> .hidden)> :not(.hidden){grid-column:1/-1}
+#overview .home-inventory-changes .home-alert-grid>.home-wishlist-wins,
+#overview .home-inventory-changes .home-alert-grid>.home-stack-card{min-width:0;margin:0;padding:5px 7px;align-content:start}
+#overview .home-alert-grid .home-delta-highlight-head,#overview .home-alert-grid .homehead{flex-wrap:wrap;gap:3px 6px;margin:0;align-items:center}
+#overview .home-alert-grid .home-delta-highlight-head strong{font-size:11px}
+#overview .home-alert-grid .wishlist-win-count{font-size:10px}
+#overview .home-alert-grid .home-wishlist-win{padding:3px 5px;gap:4px}
+#overview .home-alert-grid .home-wishlist-win-badge{display:none}
+#overview .home-alert-grid .home-wishlist-win-details strong{overflow-wrap:anywhere}
+#overview .home-alert-grid .home-stack-card .smallbutton{font-size:10px;padding:3px 5px;white-space:normal}
+#overview .home-alert-grid #home-stack-summary{font-size:11px;overflow-wrap:anywhere}
+@media(max-width:420px){#overview .home-alert-grid{gap:4px}#overview .home-inventory-changes .home-alert-grid>.home-wishlist-wins,#overview .home-inventory-changes .home-alert-grid>.home-stack-card{padding:5px}}
