@@ -55,6 +55,12 @@ async function main(){
   await page.locator('#aqwc-tour-back').click();assert.ok(await page.locator('#overview.active').isVisible());
   await page.keyboard.press('Escape');assert.ok(await tour.isHidden());
   await page.reload({waitUntil:'domcontentloaded'});await page.locator('#dashboard').waitFor({state:'visible',timeout:45000});metrics.savedHomeVisibleMs=await readyMs();assert.ok(await tour.isHidden());
+  // Restore the same two dated snapshots again: no duplicate history.
+  await page.locator('#file').setInputFiles({name:'Demo_Backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});
+  await page.waitForFunction(()=>document.querySelector('#alert')?.textContent.includes('Imported 1 file(s)'));
+  assert.equal(await page.locator('#historylist .historyitem').count(),2);
+  await page.reload({waitUntil:'domcontentloaded'});await page.locator('#dashboard').waitFor({state:'visible',timeout:45000});
+  assert.equal(await page.locator('#historylist .historyitem').count(),2);
   await page.locator('#aqwc-privacy-notice-close').click();assert.ok(await page.locator('#aqwc-privacy-notice').isHidden());await page.reload({waitUntil:'domcontentloaded'});await page.locator('#dashboard').waitFor({state:'visible',timeout:45000});assert.ok(await page.locator('#aqwc-privacy-notice').isHidden());
   await page.locator('.inventory-advanced > summary').click();assert.ok(await page.locator('.aqwc-options-main a[href="privacy.html"]').isVisible());
   const data=page.locator('#aqwc-data-management'),getExtension=page.locator('#aqwc-get-extension');assert.ok(await getExtension.isVisible());assert.ok(await page.locator('#backup').isHidden());await data.locator('summary').click();assert.ok(await page.locator('#backup').isVisible());assert.ok(await page.locator('#aqwc-account-import').isVisible());await data.locator('summary').click();assert.ok(await page.locator('#backup').isHidden());

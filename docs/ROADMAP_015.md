@@ -33,3 +33,7 @@ Use three independent states: **Community Verified** only with documented actual
 
 ## Source
 Owner-approved ordering from the 28 November product discussion and the attached AQW Companion product audit; current repository README, architecture, combat audit and build report. This plan is not a completed audit or benchmark. Review current source on every stage.
+
+### Consolidation B1: history safety
+
+PR stacked on Consolidation A while it awaits owner approval. Restore snapshot history in a single IndexedDB transaction, deduplicate only identical dated/name-matched normalized observations, preserve explicit selected snapshot in new compatible exports, and compact JSON. Multi-snapshot recovery-only mode is rejected rather than pretending all records persisted. This does not yet make localStorage sections transactional or add omitted capture data. Oversized exports still require a later compatible format; warn and preserve all data. Next B2: complete validated portable progress coverage and a lossless large-backup format, then source-quality/dependency stages.

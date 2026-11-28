@@ -714,14 +714,28 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
 // Boss quote coverage is explicit: exact quotes, uncertain community wording, or non-quote mechanic cues.
 {const a=html.indexOf('const approvedOtherBossGuides='),b=html.indexOf('\n};',a)+2;const g=JSON.parse(html.slice(a+'const approvedOtherBossGuides='.length,b));assert.equal(Object.keys(g).length,29);for(const [name,x] of Object.entries(g)){assert.ok(Array.isArray(x.cues),name);assert.equal(x.cueCoverage,x.cues.length?'reviewed-cues':'no-specific-cue-confirmed',name);for(const c of x.cues){assert.ok(['quote','event','source-cue'].includes(c.type),name);assert.ok(c.signal&&c.action&&c.who&&c.when&&c.fail&&/^https:\/\//.test(c.source),name)}}assert.equal(g['Void Xyfrag'].cues[0].signal,'BLEEEEEEEEEEEECCH');assert.equal(g['Void NerfKitten'].cues[0].signal,'Meow');assert.ok(g['Astral Empyrean'].cues[0].action.includes('DO NOT TAUNT'));assert.equal(g['Astral Empyrean'].cues[1].type,'event');assert.ok(g['Temple Shrine — Middle'].cues.some(c=>c.type==='source-cue'));assert.ok(html.includes('appendBossReactionCues(sharedSteps,guide,entry.name)'));console.log('All 29 reviewed Other Boss Guides have explicit cue coverage; quote and action metadata checked.');}
 
-// Consolidation: validate every backup snapshot before the first persistent write;
-// a local reference catalog must not fetch a hosted catalog it cannot use.
+// Consolidation: validate before writing, restore unique snapshots atomically,
+ // preserve active selection, and skip unused hosted catalog downloads.
 {const src=html.slice(html.indexOf('function validate(json)'),html.indexOf('async function refresh()'));
- const makeImport=()=>{const writes=[];const state={current:null,window:{},crypto:{randomUUID:()=>String(writes.length+1)},saveInventorySnapshot:async x=>{writes.push(x)},saveActiveSnapshotId:()=>{}};const run=new Function('state','with(state){'+src+';return importFile;}')(state);return {writes,run}};
- const item={ID:'demo',Name:'Demo',Type:'Misc',Count:1};const file=payload=>({size:100,name:'Demo.json',text:async()=>JSON.stringify(payload)});
- const run=async()=>{const invalid=makeImport();await assert.rejects(invalid.run(file({format:'AQW Companion backup v0.9.3',snapshots:[{items:[item]},{items:[{Name:'Broken'}]}]})),/invalid fields/);assert.equal(invalid.writes.length,0);
- const valid=makeImport();await valid.run(file({format:'AQW Companion backup v0.9.3',snapshots:[{items:[item]},{items:[item]}]}));assert.equal(valid.writes.length,2);
- const normal=makeImport();await normal.run(file({items:[item]}));assert.equal(normal.writes.length,1);
- const body=html.slice(html.indexOf('async function loadPublicCatalog()'),html.indexOf("$('communityfiles').onchange"));
- let fetches=0;const env={location:{protocol:'https:'},communityItems:new Map([['x',{}]]),communityMeta:{__sourceType:'compiled-local'},fetch:async()=>{fetches++;return {ok:false}}};const load=new Function('env','with(env){'+body+';return loadPublicCatalog;}')(env);await load();assert.equal(fetches,0);env.communityMeta.__sourceType='hosted';await load();assert.equal(fetches,1);env.communityItems.clear();env.communityMeta.__sourceType='compiled-local';await load();assert.equal(fetches,2);
- console.log('Consolidation: backup preflight and local catalog fetch guard passed.');};run().catch(e=>{console.error(e);process.exitCode=1});}
+ const makeImport=(initial=[],fail=false,available=true)=>{
+  let seq=0;const writes=[],state={snapshots:[...initial],current:null,window:{},STORE:'snapshots',crypto:{randomUUID:()=>String(++seq)},saveActiveSnapshotId:()=>{},saveInventoryRecoveryCopy:()=>{},updateInventoryStorageStatus:()=>{},inventoryStorageMode:'',inventoryStorageError:'',saveInventorySnapshot:async x=>{writes.push(x);state.snapshots.push(x)}};
+  state.db=available?{transaction(){const staged=[];const tx={objectStore:()=>({add:x=>{staged.push(x);if(staged.length===1)queueMicrotask(()=>{if(fail){tx.error=Error('simulated quota');tx.onabort()}else{writes.push(...staged);tx.oncomplete()}})}})};return tx}}:null;
+  return {writes,state,run:new Function('state','with(state){'+src+';return importFile;}')(state)};
+ };
+ const item={ID:'demo',Name:'Demo',Type:'Misc',Count:1},date='2026-01-01T00:00:00Z';
+ const raw=(uid,Count=1)=>({uid,fileName:'Demo.json',exportedAt:date,items:[{...item,Count}]});
+ const file=payload=>({size:100,name:'Demo.json',text:async()=>JSON.stringify(payload)});
+ const backup=(snapshots,activeSnapshotUid)=>file({format:'AQW Companion backup v0.9.3',snapshots,activeSnapshotUid});
+ const run=async()=>{
+  const invalid=makeImport();await assert.rejects(invalid.run(backup([raw('a'),{items:[{Name:'Broken'}]}])),/invalid fields/);assert.equal(invalid.writes.length,0);
+  const valid=makeImport();await valid.run(backup([raw('a'),raw('b',2)],'a'));assert.equal(valid.writes.length,2);assert.equal(valid.state.current.items[0].Count,1);
+  await valid.run(backup([raw('a'),raw('b',2)],'b'));assert.equal(valid.writes.length,2);assert.equal(valid.state.current.items[0].Count,2);
+  const duplicate=makeImport();await duplicate.run(backup([raw('a'),raw('b')],'b'));assert.equal(duplicate.writes.length,1);
+  const historical=makeImport();await historical.run(backup([raw('a'),{...raw('b'),exportedAt:'2026-01-02T00:00:00Z'}]));assert.equal(historical.writes.length,2);
+  const failed=makeImport([],true);await assert.rejects(failed.run(backup([raw('a'),raw('b',2)])),/quota/);assert.equal(failed.writes.length,0);assert.equal(failed.state.current,null);
+  const unavailable=makeImport([],false,false);await assert.rejects(unavailable.run(backup([raw('a'),raw('b',2)])),/IndexedDB is required/);assert.equal(unavailable.writes.length,0);
+  const normal=makeImport();await normal.run(file({items:[item]}));assert.equal(normal.writes.length,1);
+  const body=html.slice(html.indexOf('async function loadPublicCatalog()'),html.indexOf("$('communityfiles').onchange"));
+  let fetches=0;const env={location:{protocol:'https:'},communityItems:new Map([['x',{}]]),communityMeta:{__sourceType:'compiled-local'},fetch:async()=>{fetches++;return {ok:false}}};const load=new Function('env','with(env){'+body+';return loadPublicCatalog;}')(env);await load();assert.equal(fetches,0);env.communityMeta.__sourceType='hosted';await load();assert.equal(fetches,1);env.communityItems.clear();env.communityMeta.__sourceType='compiled-local';await load();assert.equal(fetches,2);
+  console.log('Consolidation: backup preflight, deduplication, selected snapshot, batch failure, and local catalog guard passed.');
+ };run().catch(e=>{console.error(e);process.exitCode=1});}
