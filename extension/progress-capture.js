@@ -60,6 +60,40 @@ function captureAccountProgress(summary=null){
   if(existing){if(existing.state!==state){existing.state='unknown';delete existing.art}continue}
   rows.push({name,state,...(art?{art}:{})});
  }
+ // Official Saga Progress uses <li id="sagas10"> with a CSS sprite, not <img>.
+ // Accept only the exact same-origin sprite path, a matching numbered ID and label.
+ // A query-string cache version does not change the meaning of the sprite.
+ if(section==='sagas'&&typeof document.querySelectorAll==='function'){
+  const spriteRows=new Map();
+  for(const el of document.querySelectorAll('li[id^="sagas"]')){
+   if(!el.getClientRects().length)continue;
+   const id=String(el.id||''),name=normalize(el.innerText);
+   const match=/^sagas([1-9]|1[0-5])$/.exec(id);
+   if(!match||names[Number(match[1])-1]!==name)continue;
+   const states=new Set();let uncertain=false;
+   for(const bg of [el.style?.backgroundImage,getComputedStyle(el).backgroundImage]){
+    if(!bg||bg==='none')continue;
+    const m=/^url\(\s*["']?([^"'()]+)["']?\s*\)$/i.exec(bg.trim());
+    if(!m){uncertain=true;continue}
+    try{
+     const u=new URL(m[1].trim(),location.origin);
+     if(u.origin!=='https://account.aq.com'||u.username||u.password||u.hash){uncertain=true;continue}
+     if(u.pathname==='/images/aqw/progress/sagas-unlocked.png')states.add('colored');
+     else if(u.pathname==='/images/aqw/progress/sagas-locked.png')states.add('gray');
+     else uncertain=true;
+    }catch{uncertain=true}
+   }
+   const state=!uncertain&&states.size===1?[...states][0]:'unknown';
+   if(spriteRows.has(name)&&spriteRows.get(name)!==state)spriteRows.set(name,'unknown');
+   else spriteRows.set(name,state);
+  }
+  for(const [name,state] of spriteRows){
+   const prior=rows.find(r=>r.name===name);
+   if(!prior)rows.push({name,state});
+   else if(prior.state==='unknown')prior.state=state;
+   else if(prior.state!==state){prior.state='unknown';delete prior.art}
+  }
+ }
  for(const name of names)if(!rows.some(r=>r.name===name)&&lines.includes(name))rows.push({name,state:'unknown'});
  // Exact milestones from the official summary captured in this same signed-in run.
  // Threshold eligibility is distinct from observing a claimed badge. Never infer saga status.
