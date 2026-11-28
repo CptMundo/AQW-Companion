@@ -1602,3 +1602,13 @@ html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-i
 #homeprojectslist .home-next-more>summary{cursor:pointer;padding:8px;color:var(--txt);border:1px solid var(--line);border-radius:8px}
 #homeprojectslist .home-next-extra{margin-top:8px}
 @media(max-width:620px){#homeprojectslist .home-next-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* Shared selection: Smart Farming Route, reviewed destinations only. */
+.shared-farm-route{min-width:0;overflow-wrap:anywhere;margin-top:12px}
+.shared-farm-stop,.shared-farm-unmapped{border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:10px;margin-top:8px;min-width:0}
+.shared-farm-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+.shared-farm-entry{display:grid;gap:4px;border-top:1px solid var(--line);padding:8px 0;min-width:0}
+.shared-farm-entry .itemlink{justify-self:start;text-align:left;white-space:normal;overflow-wrap:anywhere;max-width:100%}
+.shared-farm-entry small,.shared-farm-unmapped small{display:block;color:var(--muted)}
+.shared-farm-entry a{justify-self:start}

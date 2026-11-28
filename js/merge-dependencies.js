@@ -180,6 +180,45 @@ function recurringOpportunities(rows,tasks,{isRecurring=()=>false,isDone=()=>fal
  // be completed. The UI explicitly labels exclusive groups.
  return [...found.values()].sort((a,b)=>Number(b.task.freq==='daily')-Number(a.task.freq==='daily')||Number(a.pinned)-Number(b.pinned)||a.task.name.localeCompare(b.task.name)||a.id.localeCompare(b.id));
 }
-const api={key,describe,direct,selectedRoute,plan,combine,stockIndex,recommend,rankRecommendations,recommendationCounts,recurringOpportunities};
+
+// A destination is a reviewed acquisition/turn-in location, NOT necessarily
+// the map where ingredients drop. No extra recipe expansion or stock allocation.
+function farmingDestinations(combined,integrity){
+ const groups=new Map(),unmapped=[],deferred=[];
+ const all=[...combined.rows,...combined.possession];
+ const conflicts=new Set(all.filter(r=>r.overlap||r.outputConflict).map(r=>key(r.item)));
+ function destination(name){
+  const route=describe(name,integrity);if(!route)return null;
+  const acquisition=route.kind==='merge'?integrity.getAcquisition(name):integrity.guidanceAcquisition(name);
+  const methods=acquisition?.methods||[];
+  if(methods.length!==1||!integrity.sourceUrl(route.source))return null;
+  const method=methods[0];
+  if(method.url!==route.source||!/^\/join [a-z0-9-]+$/i.test(method.join||''))return null;
+  return {join:method.join.toLowerCase(),source:route.source,role:route.kind==='merge'?'Merge':'Quest turn-in',title:method.title};
+ }
+ function add(dest,entry){
+  if(!groups.has(dest.join))groups.set(dest.join,{join:dest.join,entries:[]});
+  groups.get(dest.join).entries.push({...entry,...dest});
+ }
+ for(const row of all){
+  if(row.missing===null||conflicts.has(key(row.item))){
+   deferred.push({item:row.item,kind:row.kind,reason:conflicts.has(key(row.item))?'Verify stock allocation / ordering':'Stock unknown'});continue;
+  }
+  if(!row.missing)continue;
+  const dest=destination(row.item);
+  const entry={item:row.item,kind:row.kind,count:row.missing,goals:row.goals.map(g=>g.name)};
+  if(dest)add(dest,{...entry,type:'material'});
+  else unmapped.push(entry);
+ }
+ for(const goal of combined.goals){
+  const dest=destination(goal.name);
+  const relevant=all.filter(r=>r.goals.some(g=>key(g.name)===key(goal.name)));
+  const state=relevant.some(r=>r.missing===null||conflicts.has(key(r.item)))?'Verify allocation / stock':relevant.some(r=>r.missing>0)?'Ingredients or gates missing':'Check access and turn in';
+  if(dest)add(dest,{item:goal.name,type:'goal',state});
+  else deferred.push({item:goal.name,kind:'goal',reason:'Destination not reviewed'});
+ }
+ return {groups:[...groups.values()].sort((a,b)=>a.join.localeCompare(b.join)),unmapped,deferred};
+}
+const api={key,describe,direct,selectedRoute,plan,combine,stockIndex,recommend,rankRecommendations,recommendationCounts,recurringOpportunities,farmingDestinations};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.AQWCMergeDependencies=api;
 })(typeof globalThis==='object'?globalThis:this);

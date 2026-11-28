@@ -573,7 +573,7 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.ok(homeTile.includes('makeCopyJoin(route.join)'));
  assert.ok(homeTile.includes("joinBox.classList.toggle('has-multiple',joins.length>1)"));
  assert.ok(!homeTile.includes('home-quest-extra-joins'));
- assert.ok(html.includes('css/site.css?v=158'),'Invalidate previously cached stylesheet');
+ assert.ok(html.includes('css/site.css?v=159'),'Invalidate previously cached stylesheet');
  assert.ok(html.includes("grid.dataset.frequency=freq"));
  console.log('Home quest gallery: shared artwork, copyable joins, accessible reversible completion and conflict guard verified.');
 }
@@ -834,3 +834,32 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.deepEqual(api.rankRecommendations(rows).map(x=>x.project.name),['Ready','Z farm','B farm','Gate missing','A unknown','Z review']);
  assert.deepEqual(api.recommendationCounts([]),[0,0,0,0]);
  console.log("What's Next polish: category totals and deterministic missing-type priority passed.");}
+
+
+// Destination grouping uses combined stock once, does not recursively expand.
+{const api=require('../js/merge-dependencies.js'),integrity=require('../js/recipe-integrity.js');
+ const routes=['Void Highlord','Necrotic Sword of the Abyss'].map(n=>api.describe(n,integrity));
+ const result=api.combine(routes,n=>api.key(n)==='void crystal a'?1:0);
+ const plan=api.farmingDestinations(result,integrity);
+ const stop=plan.groups.find(g=>g.join==='/join tercessuinotlim');
+ assert.equal(plan.groups.length,1);
+ assert.equal(stop.entries.filter(e=>e.type==='goal').length,2);
+ assert.equal(stop.entries.filter(e=>e.type==='material'&&e.item==='Void Crystal A').length,1);
+ assert.equal(stop.entries.find(e=>e.item==='Void Crystal A').count,1);
+ assert.equal(stop.entries.find(e=>e.item==='Void Crystal A').goals.length,2);
+ assert.equal(plan.unmapped.find(e=>e.item==='Roentgenium of Nulgath').count,17);
+ assert.ok(!stop.entries.some(e=>e.item==='Unidentified 10'));
+ const noStock=api.farmingDestinations(api.combine(routes,null),integrity);
+ assert.ok(noStock.groups.every(g=>g.entries.every(e=>e.type==='goal'&&e.state==='Verify allocation / stock')));
+ assert.ok(noStock.deferred.some(e=>e.item==='Void Crystal A'));
+ const conflicting=api.farmingDestinations(api.combine([...routes,api.describe('Void Crystal A',integrity)],()=>0),integrity);
+ assert.ok(conflicting.deferred.some(e=>e.item==='Void Crystal A'&&e.reason.includes('ordering')));
+ assert.ok(!conflicting.groups.flatMap(g=>g.entries).some(e=>e.item==='Void Crystal A'&&e.type==='material'));
+ const drakath=api.farmingDestinations(api.combine([api.describe('Drakath the Eternal',integrity)],()=>0),integrity);
+ assert.ok(drakath.groups.some(g=>g.join==='/join eternalchaos'&&g.entries.some(e=>e.role==='Quest turn-in')));
+ assert.equal(drakath.unmapped.find(e=>e.item==="Drakath's Sword (Free Player)").kind,'possess');
+ const overlap=api.farmingDestinations(api.combine([{name:'Synthetic consume',kind:'merge',rows:[{item:'Void Crystal A',kind:'consume',count:2}]},{name:'Synthetic gate',kind:'quest',rows:[{item:'Void Crystal A',kind:'possess',count:1}]}],()=>1),integrity);
+ assert.equal(overlap.deferred.filter(e=>e.item==='Void Crystal A').length,2);
+ assert.ok(!overlap.groups.flatMap(g=>g.entries).some(e=>e.item==='Void Crystal A'));
+ assert.deepEqual(api.farmingDestinations(api.combine([],()=>0),integrity),{groups:[],unmapped:[],deferred:[]});
+ console.log("Smart Farming Route C1: grouped reviewed destinations, shared shortage, no expansion, unknown stock, conflicts and gates passed.");}
