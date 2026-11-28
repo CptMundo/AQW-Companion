@@ -324,12 +324,13 @@ console.log("Ultra layout: right gutter removed, four enhancement slots, respons
 
 const plannerCardCode=html.slice(html.indexOf("const plannerBossArt="),html.indexOf("let plannerShowAll=",html.indexOf("const plannerBossArt=")));
 let completed=false,unpins=0,pins=0,toggles=0,conflict=null;
-const makeNode=(tag,text,cls)=>({tag,text,cls,children:[],append(...nodes){this.children.push(...nodes)},setAttribute(k,v){this[k]=v}});
+const makeNode=(tag,text,cls)=>({tag,text,cls,dataset:{},children:[],append(...nodes){this.children.push(...nodes)},setAttribute(k,v){this[k]=v}});
 const status={value:"all"};
 const renderCard=vm.runInNewContext(plannerCardCode+"\ntaskCard",{node:makeNode,taskDone:()=>completed,routineConflict:()=>conflict,taskRoutes:{},taskCategories:()=>["Materials"],makeCopyJoin:join=>makeNode("button",join),unpinTask:()=>unpins++,pinTask:()=>pins++,toggleTask:(t,done)=>{completed=done;toggles++},$:()=>status});
 const task109={id:"test",name:"Test Quest",freq:"daily",group:"Legion",rewards:["Material ×1","50000 Gold","50000 XP"],join:"/join farm",acceptJoin:"/join accept",note:"Requires an unlock",targets:["Defeat the monster"]};
 const flatten109=n=>[n,...n.children.flatMap(flatten109)];
 let tree109=flatten109(renderCard(task109,true));
+assert.equal(tree109[0].dataset.questId,task109.id);
 assert.ok(tree109.some(n=>n.text==="Material ×1"));
 assert.ok(tree109.some(n=>n.text==="50000 Gold"));assert.ok(tree109.some(n=>n.text==="50000 XP"));
 assert.ok(tree109.some(n=>n.text==="/join accept"));
