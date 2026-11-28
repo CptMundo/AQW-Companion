@@ -41,3 +41,7 @@ PR stacked on Consolidation A while it awaits owner approval. Restore snapshot h
 ### Consolidation B2: portable progress
 
 Compatible optional progressV1 covers seven explicitly allowed local sections. Test real download/restore into an isolated profile, cancellation, reload and source validation. Excludes extension-only preferences, consent/permissions, trust decisions, and custom community catalog; no credential data. Legacy backups remain supported. Keep large-backup compression/splitting and full cross-storage atomicity as a separate follow-up; no silent removal or history trimming. Three dependent PRs is the cap: validate/merge in order before new feature work.
+
+### 0.14 A1 — Dependency foundations (VDK pilot)
+
+Ordered quest graph, validated prerequisite links, explicit manual quest state and separate turn-in stock. First supported route is Verus DoomKnight, including wiki class suffix aliases, eight steps and source-reviewed quantities. Existing player checks/custom steps retained. Completed quests do not require reacquiring turned-in stock. Unconfirmed prerequisites remain unknown; no automatic eligibility from item stock. No global recipe graph or Smart Farming Route yet. See docs/DEPENDENCY_VDK.md.
