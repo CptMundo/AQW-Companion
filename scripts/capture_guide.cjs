@@ -277,6 +277,10 @@ async function main(){
   },version);
   await popup.goto(origin+'/extension/popup.html',{waitUntil:'domcontentloaded'});await popup.locator('#one-click-inventory').waitFor({state:'visible'});await popup.waitForTimeout(300);await shot(popup,'popup-home');
   await popup.locator('[data-view=settings]').click();await popup.locator('#appearance-background').waitFor({state:'visible'});await shot(popup,'popup-settings');
+  // Verify existing Wishlist alias upgrade in an isolated fixture without modifying the guide captures.
+  await page.evaluate(()=>{const key='aqw-companion-unlocks',all=JSON.parse(localStorage.getItem(key)||'[]');all.push({id:'vdk-demo',name:'Verus DoomKnight (Class)',type:'Class',steps:[{id:'vdk-old',kind:'owned',item:'Verus DoomKnight (Class)',label:'Own Verus DoomKnight (Class)',target:1,status:'unknown'}]});localStorage.setItem(key,JSON.stringify(all))});
+  await page.reload({waitUntil:'domcontentloaded'});await page.locator('#dashboard').waitFor({state:'visible'});await go('projects','unlocks');const vdk=page.locator('.unlockcard').filter({hasText:'Verus DoomKnight'});await vdk.locator('.dependency-stage').first().waitFor();assert.equal(await vdk.locator('.dependency-stage').count(),8);assert.ok(await vdk.locator('.dependency-stage[data-stage=body]').getByText('Titanic Spine ×13').isVisible());assert.ok(!await vdk.getByText('Acquisition not verified').count());
+  await page.setViewportSize({width:390,height:844});assert.ok(await vdk.locator('.dependency-panel').evaluate(e=>e.scrollWidth<=e.clientWidth+1));await page.setViewportSize({width:1360,height:1100});
   // Actual download -> fresh isolated profile -> restore, with synthetic progress only.
   const expectedProgress=await page.evaluate(stamp=>{
    const badge=window.AQWCBadgeCatalog.find(b=>!b.placeholder&&b.image).id;
