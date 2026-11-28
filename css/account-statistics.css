@@ -97,3 +97,6 @@
 
 #milestones .aqwm-group-title{margin:18px 0 10px;color:#9ed5ef;font-size:13px;font-weight:700}
 #milestones .aqwm-group-title:first-of-type{margin-top:4px}
+
+#milestones .aqwm-art{width:50px;height:57px;object-fit:contain;flex:none}
+#milestones .aqwm-card:not(.is-unlocked) .aqwm-art{filter:saturate(.65);opacity:.78}

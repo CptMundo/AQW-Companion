@@ -79,7 +79,7 @@ assert.equal(activeView(),"overview");
 assert.equal(statsRenderCount,1,"Returning Home should not reopen statistics");
 
 assert.ok(html.includes('<section id="account-stats" class="view">'));
-assert.ok(html.includes('href="css/account-statistics.css?v=97"'));
+assert.match(html,/href="css\/account-statistics\.css\?v=\d+"/);
 assert.match(html,/src="js\/account-statistics\.js\?v=\d+"/);
 assert.ok(html.includes("if(tab==='account-stats'||tab==='milestones')renderAccountStatistics()"),"Statistics should refresh when selected");
 assert.ok(html.includes("current,snapshots,projects"),"Runtime must use real browser state");
@@ -226,3 +226,5 @@ assert.equal(data.milestones.find(m=>m.id==="rare25").value,1);
 assert.equal(data.milestones.find(m=>m.id==="class75").value,1);
 assert.ok(data.milestones.every(m=>m.group&&m.percent>=0&&m.percent<=100));
 assert.ok(data.milestones.find(m=>m.id==="forge-all").goal===21);
+
+{const full=api.analyze({current:{items:[]},snapshots:[],forgeTotal:21});const artworks=full.milestones.map(m=>api.milestoneArtwork(m));assert.equal(new Set(artworks).size,full.milestones.length);assert.ok(artworks.every(a=>a.startsWith('data:image/svg+xml;charset=utf-8,')&&decodeURIComponent(a).includes('<svg')));console.log('Distinct local vector artwork for '+artworks.length+' milestones checked.');}

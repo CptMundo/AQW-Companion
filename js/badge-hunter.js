@@ -431,9 +431,9 @@ function renderHomeBadges(){
  const box=$('home-badge-discoveries');if(!box)return;
  const delta=capture?.discovery,known=Array.isArray(delta?.newIds),count=known?delta.newIds.length:null;
  const head=el('div',null,'home-badge-discovery-head');
- head.append(el('strong','🏆 Badge discoveries'),button('Badge Hunter ↗',()=>d.querySelector('[data-group="badges"]')?.click()));
+ head.append(el('strong','Latest badge'),button('Badge Hunter ↗',()=>d.querySelector('[data-group="badges"]')?.click()));
  const body=el('div',null,'home-badge-discovery-body');
- const metric=el('div',null,'home-badge-discovery-count');metric.append(el('strong',count===null?'—':(count?'+'+count:'0')),el('small','New since last badge sync'));
+ const metric=el('div',null,'home-badge-discovery-count');metric.append(el('strong',count===null?'—':(count?'+'+count:'0')),el('small','New since sync'));
  const latest=el('div',null,'home-badge-discovery-latest');
  const ids=new Set(Array.isArray(delta?.latestIds)?delta.latestIds:[]),badges=catalog.filter(b=>ids.has(b.id)&&capture?.ids.includes(b.id)).sort((a,b)=>a.name.localeCompare(b.name));
  if(badges.length&&Number.isFinite(Date.parse(delta.latestAt))){
@@ -441,7 +441,7 @@ function renderHomeBadges(){
   if(b.image){const img=el('img');img.src=b.image;img.alt=b.name+' badge';img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';fallback.hidden=true;img.addEventListener('error',()=>{img.remove();fallback.hidden=false});art.prepend(img)}
   const desc=el('div',null,'home-badge-discovery-name');desc.append(el('small',badges.length===1?'Latest detected badge':'One of '+badges.length+' latest detected badges'),el('strong',b.name),el('small','First seen '+new Date(delta.latestAt).toLocaleDateString()));latest.append(art,desc);
  }else{latest.append(el('p',capture?'New badges appear after a later sync detects them.':'Sync your Character Page badges to start tracking.','muted tiny'))}
- body.append(metric,latest);box.replaceChildren(head,body);
+ body.append(latest,metric);box.replaceChildren(head,body);
 }
 function renderAlert(){
  renderHomeBadges();

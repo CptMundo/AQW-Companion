@@ -375,6 +375,36 @@
     root.append(wins);
 
   }
+  // Original Companion achievement artwork: category-specific vector emblems and tier numerals.
+  function milestoneArtwork(m){
+    const id=String(m?.id||'');
+    const kind=id.match(/^(class|items|weapon|armor|helm|cape|misc|rare|seasonal|ac|legend|pseudo|snapshots|forge|wishlist|import)/)?.[1]||'import';
+    const designs={
+      class:['#60dbf4','M32 13L47 19V33Q47 43 32 49Q17 43 17 33V19Z M32 23V39M24 31H40'],
+      items:['#6bd9b0','M16 26L24 17H40L48 26L32 47Z M16 26H48M24 17L32 47L40 17'],
+      weapon:['#f2b86f','M17 46L43 20L49 15L48 26L23 51M20 35L29 44M33 29L39 35'],
+      armor:['#78a9fa','M23 18L17 23L12 33L21 38L23 48H41L43 38L52 33L47 23L41 18L32 24Z'],
+      helm:['#e8b875','M17 32Q17 16 32 16Q47 16 47 32V46L38 42L32 49L26 42L17 46Z M21 30H43M32 31V41'],
+      cape:['#b4a0fa','M24 17H40L47 45Q32 51 17 45Z M24 17L32 26L40 17M32 26V44'],
+      misc:['#7ad8b6','M16 24L32 16L48 24V43L32 51L16 43Z M16 24L32 32L48 24M32 32V51M24 20L40 28'],
+      rare:['#ed9be0','M32 13L36 26L50 32L36 36L32 49L28 36L14 32L28 26Z'],
+      seasonal:['#8ed6ff','M32 15V49M17 23L47 41M17 41L47 23M26 20L32 26L38 20M26 44L32 38L38 44'],
+      ac:['#f5c968','M32 15L46 22L48 37L40 48H24L16 37L18 22Z M26 40L32 23L38 40M28 34H36'],
+      legend:['#f7db91','M15 25L24 32L32 17L40 32L49 25L43 45H21Z M22 49H42'],
+      pseudo:['#bfa0fb','M32 16L46 30L32 46L18 30Z M32 25L39 32L32 39L25 32Z'],
+      snapshots:['#94c9f2','M13 19Q25 17 32 24Q39 17 51 19V44Q39 42 32 49Q25 42 13 44Z M32 24V49M19 28L26 30M38 30L45 28'],
+      forge:['#efae75','M16 38H48L42 45H22Z M32 38V29M22 17L39 25L34 35L17 27Z M36 31L47 20'],
+      wishlist:['#f3a4b0','M32 46L18 33Q11 21 22 19Q29 18 32 26Q35 18 42 19Q53 21 46 33Z'],
+      import:['#78d8ed','M17 18H41L47 24V46H17Z M41 18V24H47M32 25V40M25 33L32 40L39 33']
+    };
+    const [accent,motif]=designs[kind],goal=Math.max(0,Math.floor(Number(m?.goal)||0));
+    const tier=id==='forge-all'?'ALL':goal>=1000?(goal/1000)+'K':String(goal);
+    const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 82"><path d="M36 2 65 14 70 45 58 66 36 80 14 66 2 45 7 14Z" fill="#101e30" stroke="'+accent+'" stroke-width="2.5"/><path d="M36 8 60 18 64 43 53 61 36 72 19 61 8 43 12 18Z" fill="#20364c" stroke="'+accent+'" stroke-opacity=".5"/><g transform="translate(4 0)" fill="none" stroke="'+accent+'" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="'+motif+'"/></g><path d="M14 53H58L54 69H18Z" fill="#101b29" stroke="'+accent+'"/><text x="36" y="65" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="'+(tier.length>3?'9':'12')+'" fill="'+accent+'">'+tier+'</text></svg>';
+    return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+  }
+  function milestoneImage(m,cls='aqwm-art'){
+    const img=element('img',cls);img.src=milestoneArtwork(m);img.alt='';img.width=72;img.height=82;img.decoding='async';return img;
+  }
   function renderMilestones(root,stats,handlers={}){
     if(!root)return;
     root.replaceChildren();
@@ -388,7 +418,6 @@
     score.append(element('strong','',fmt(completed)+' / '+fmt(milestones.length)),element('span','','Milestones unlocked'));
     const meter=element('div','aqws-bar-track');const fill=element('div','aqws-bar-fill');fill.style.width=(milestones.length?Math.round(completed/milestones.length*100):0)+'%';meter.append(fill);score.append(meter);hero.append(score);root.append(hero);
     if(!stats.available){const empty=section('Begin your journey','Import your inventory to discover your collection milestones.');empty.append(button('Import JSON export',()=>handlers.onImport?.()));root.append(empty);return}
-    const icons={import:'📖',class25:'🛡️',class50:'⚔️',items1000:'💎',items2000:'👑',wishlist5:'🎯',forge5:'🔨'};
     for(const [title,list] of [['Unlocked milestones',milestones.filter(m=>m.unlocked)],['Next milestones',milestones.filter(m=>!m.unlocked)]]){
       const panel=element('section','aqwm-section');
       const heading=element('div','aqwm-section-head');heading.append(element('h3','',title),element('span','aqwm-count',fmt(list.length)));panel.append(heading);
@@ -401,7 +430,7 @@
       for(const m of members){
         const card=element('article','aqwm-card'+(m.unlocked?' is-unlocked':''));
         const top=element('div','aqwm-card-top');
-        top.append(element('span','aqwm-icon',m.icon||icons[m.id]||'🏆'),element('span','aqwm-status',m.unlocked?'✓ Unlocked':'In progress'));card.append(top);
+        top.append(milestoneImage(m),element('span','aqwm-status',m.unlocked?'✓ Unlocked':'In progress'));card.append(top);
         card.append(element('h4','',m.name),element('p','aqws-note',m.detail));
         const line=element('div','aqwm-progress');line.append(element('span','',fmt(Math.min(m.value,m.goal))+' / '+fmt(m.goal)),element('strong','',m.percent+'%'));card.append(line);
         const track=element('div','aqws-bar-track');const bar=element('div','aqws-bar-fill');bar.style.width=m.percent+'%';track.append(bar);card.append(track);grid.append(card);
@@ -411,5 +440,5 @@
     }
     root.append(element('p','aqwm-footnote','Personal Companion milestones based on your selected inventory and tracker data. These are not official AQWorlds badges.'));
   }
-  return {analyze,timeline,uniqueItems,category,render,renderMilestones,homeMilestoneHighlights};
+  return {analyze,timeline,uniqueItems,category,render,renderMilestones,homeMilestoneHighlights,milestoneArtwork,milestoneImage};
 });
