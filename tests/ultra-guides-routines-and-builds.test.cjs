@@ -572,7 +572,7 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.ok(homeTile.includes('makeCopyJoin(route.join)'));
  assert.ok(homeTile.includes("joinBox.classList.toggle('has-multiple',joins.length>1)"));
  assert.ok(!homeTile.includes('home-quest-extra-joins'));
- assert.ok(html.includes('css/site.css?v=156'),'Invalidate previously cached stylesheet');
+ assert.ok(html.includes('css/site.css?v=157'),'Invalidate previously cached stylesheet');
  assert.ok(html.includes("grid.dataset.frequency=freq"));
  console.log('Home quest gallery: shared artwork, copyable joins, accessible reversible completion and conflict guard verified.');
 }
@@ -777,3 +777,15 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  const overlap=api.plan({name:'target',rows:[row('Tool',1),row('Tool',1,'possess')]},{},()=>1);assert.equal(overlap.possession[0].overlap,true);
  assert.throws(()=>api.plan(r,{a:{name:'A',yield:1,rows:[row('A',1)]}},()=>0),/Cyclic/);assert.throws(()=>api.plan(r,{a:{name:'A',rows:[row('C',1)]}},()=>0),/Unknown recipe yield/);assert.equal(api.plan(r,recipes,null),null);
  console.log('Merge dependencies: consumption, gates, owned intermediate stock, shared branches, yield and cycle checks passed.');}
+
+// Cross-goal direct requirements: one stock allocation, alias deduplication, unknown stock, possession and conflicts.
+{const api=require('../js/merge-dependencies.js'),integrity=require('../js/recipe-integrity.js');
+ const vhl=api.describe('Void Highlord',integrity),nsoa=api.describe('Necrotic Sword of the Abyss',integrity);
+ let calls=0;const result=api.combine([vhl,nsoa,vhl],name=>{if(api.key(name)==='roentgenium of nulgath'){calls++;return 10}return api.key(name)==='void crystal a'?1:0});
+ assert.equal(result.goals.length,2);assert.equal(calls,1);
+ const roent=result.rows.find(r=>api.key(r.item)==='roentgenium of nulgath');assert.equal(roent.count,17);assert.equal(roent.missing,7);assert.equal(roent.goals.length,2);
+ assert.equal(result.rows.find(r=>api.key(r.item)==='void crystal a').missing,1);assert.equal(api.combine([vhl],null).rows[0].missing,null);
+ const row=(item,count,kind)=>({item,count,kind}),a={name:'A',kind:'merge',rows:[row('B',1,'consume'),row('Tool',1,'possess')]},b={name:'B',kind:'quest',rows:[row('Tool',2,'possess'),row('Tool',1,'consume')]};
+ const shared=api.combine([a,b],()=>2);assert.equal(shared.possession[0].count,2);assert.equal(shared.possession[0].overlap,true);assert.equal(shared.rows.find(r=>r.item==='B').outputConflict,true);
+ assert.equal(api.combine([],()=>0).rows.length,0);assert.throws(()=>api.combine([null],()=>0),/Unreviewed/);
+ console.log('Shared Wishlist: combined demand, single stock deduction, separate gates, conflicts and unknown stock passed.');}

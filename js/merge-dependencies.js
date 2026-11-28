@@ -74,6 +74,27 @@ function plan(route,recipes,stock){
  const possession=[...gates.entries()].map(([k,g])=>{const have=read(g.item),reserved=allocated.get(k)||0;return {...g,have,missing:Math.max(0,g.count-have),overlap:reserved>0&&have-reserved<g.count}});
  return {outputs,leaves,possession};
 }
-const api={key,describe,direct,selectedRoute,plan};
+// Direct-only, opt-in combined plan. Never subtract inventory separately per goal.
+// An output needed by another goal must be reserved separately; flag this
+// dependency rather than silently choosing a route or counting a planned output.
+function combine(routes,stock=null){
+ const goals=new Map(),consumed=new Map(),gates=new Map();
+ for(const route of routes){
+  if(!route||!key(route.name)||!['merge','quest'].includes(route.kind))throw Error('Unreviewed goal route');
+  const k=key(route.name);if(goals.has(k))continue;goals.set(k,route);
+  for(const r of direct(route)){
+   const map=r.kind==='consume'?consumed:gates,ik=key(r.item),previous=map.get(ik);
+   const count=r.kind==='consume'?(previous?.count||0)+r.count:Math.max(previous?.count||0,r.count);
+   if(!pos(count))throw Error('Combined requirement exceeds safe count');
+   map.set(ik,{item:previous?.item||r.item,count,kind:r.kind,goals:[...(previous?.goals||[]),{name:route.name,count:r.count}]});
+  }
+ }
+ const cache=new Map();
+ const read=item=>{const k=key(item);if(!cache.has(k)){const n=typeof stock==='function'?stock(item):null;cache.set(k,Number.isSafeInteger(n)&&n>=0?n:null)}return cache.get(k)};
+ const rows=[...consumed.values()].map(r=>{const have=read(r.item);return {...r,have,missing:have===null?null:Math.max(0,r.count-have),outputConflict:goals.has(key(r.item))}});
+ const possession=[...gates.values()].map(r=>{const have=read(r.item),used=consumed.get(key(r.item))?.count||0;return {...r,have,missing:have===null?null:Math.max(0,r.count-have),overlap:used>0&&(have===null||have-Math.min(have,used)<r.count),outputConflict:goals.has(key(r.item))}});
+ return {goals:[...goals.values()].map(r=>({name:r.name,source:r.source,kind:r.kind})),rows,possession};
+}
+const api={key,describe,direct,selectedRoute,plan,combine};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.AQWCMergeDependencies=api;
 })(typeof globalThis==='object'?globalThis:this);

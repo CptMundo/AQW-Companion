@@ -49,3 +49,7 @@ Ordered quest graph, validated prerequisite links, explicit manual quest state a
 ### 0.14 A2 — Typed merge dependencies
 
 Classify existing source-reviewed merge ingredient rows as consumed at all quantities, and Eternal Drakath Set possession gates separately. Add read-only direct shortages and an optional Void Crystal A/B crafting route using shared-stock allocation, explicit yield and topological aggregation. Do not combine alternative routes or treat unknown stock as zero. Other recipes remain direct-only; cross-project allocation and What's Next are not implemented yet. Preserve saved checklist schema. Stack on A1 until all three PRs are ready.
+
+### 0.14 A3 — Shared Wishlist Requirements
+
+Opt-in, collapsed panel for combining selected reviewed direct recipes across incomplete goals. Sum consumables, max reusable possession gates, deduct current stock once, show per-goal contribution and flag output/consumption conflicts. Unsupported and owned goals excluded explicitly, VDK remains stage-based, no auto-expansion of intermediate items or custom checklist steps, no persisted selection or storage changes. Unknown stock stays unknown. Source-reviewed coverage is not gameplay validation. Next: What's Next using explicit coverage and manual/unknown prerequisite states; Smart Farming Route later. Merge A1/A2/A3 sequentially after tests.
