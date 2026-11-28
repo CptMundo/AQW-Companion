@@ -87,7 +87,7 @@
 </section><section id="planner-history" class="view"><div class="card"><div class="planner-my-toolbar"><h3 class="sectiontitle">Task History</h3><button id="plannerbackfromhistory" class="smallbutton" type="button">← Daily / Weekly</button></div><div id="planner-task-history"></div></div></section><section id="compare" class="view"><div class="card"><h3 class="sectiontitle">Compare two snapshots</h3><p class="muted" style="font-size:13px">Import both snapshots into the same browser. Comparison uses <b>ID</b> and quantity; moving items between inventory and bank does not count as a new item.</p><div class="comparecontrols"><label>Older <select id="oldselect"></select></label><label>Newer <select id="newselect"></select></label><button id="comparebtn" class="primary">Compare</button></div><div id="compareresult" class="muted">Import at least two snapshots to get started.</div></div></section>
 <section id="history" class="view"><div class="card"><h3 class="sectiontitle">Local import history</h3><div id="historylist"></div><p class="muted" style="font-size:12px">Each imported file is validated and saved in your browser's IndexedDB. The Backup button downloads a JSON file you can import later to restore your data. Clear data removes snapshots, farming goals and unlock projects.</p></div></section><div class="foot">Created by <strong>CptMundo</strong> for the AQWorlds community · Unofficial fan project · Not affiliated with Artix Entertainment · v0.13.10 Beta</div></div>
 <div id="itemdetails" class="detailoverlay hidden" role="dialog" aria-modal="true" aria-label="Item acquisition details"><div class="detailpanel"><div class="detailhead"><div><small style="color:#7da5d1;font-weight:700">AQW COMPANION · ACQUISITION EXPLORER</small><h2 id="detailname"></h2></div><button type="button" class="smallbutton" id="closedetails" aria-label="Close details">✕ Close</button></div><div id="detailcontent"></div></div></div><aside id="aqwc-tour" class="aqwc-tour" role="region" aria-labelledby="aqwc-tour-title" hidden><div class="aqwc-tour-top"><span>QUICK TOUR <span id="aqwc-tour-count">1 / 6</span></span><button id="aqwc-tour-close" type="button" aria-label="Close quick tour">×</button></div><progress id="aqwc-tour-progress" aria-label="Tour progress" max="6" value="1"></progress><div class="aqwc-tour-content" aria-live="polite"><span id="aqwc-tour-icon" aria-hidden="true">📊</span><div><h3 id="aqwc-tour-title" tabindex="-1">Your adventure starts here</h3><p id="aqwc-tour-body"></p></div></div><div class="aqwc-tour-actions"><button id="aqwc-tour-skip" type="button">Skip tour</button><div><button id="aqwc-tour-back" type="button">Back</button><button id="aqwc-tour-next" type="button">Next →</button></div></div><a href="extension/quick-start.html" class="aqwc-tour-guide">Full visual guide ↗</a></aside><script src="js/meta-class-builds.js"></script>
-<script src="js/recipe-integrity.js"></script><script src="js/quest-dependencies.js?v=1"></script>
+<script src="js/recipe-integrity.js"></script><script src="js/quest-dependencies.js?v=1"></script><script src="js/merge-dependencies.js?v=1"></script>
 <script src="extension/wishlist-link.js?v=126"></script>
 <script src="extension/wiki-boosts.js?v=51"></script>
 <script src="js/boost-finder.js?v=3"></script>
@@ -951,8 +951,48 @@ function appendDependencyStages(card,project){
  }
  const links=node('div',undefined,'methodbuttons');for(const [label,url] of [['Quest source ↗',api.wiki],['Class shop ↗',api.shop]]){const a=node('a',label,'tiny');a.href=url;a.target='_blank';a.rel='noopener noreferrer';links.append(a)}panel.append(links);card.append(panel);
 }
+function reviewedDependencyRoute(name){
+ const api=window.AQWCMergeDependencies,integrity=window.AQWCRecipeIntegrity;
+ return api&&integrity?api.describe(name,integrity):null;
+}
+function appendReviewedMergePlan(card,project,route){
+ const api=window.AQWCMergeDependencies,integrity=window.AQWCRecipeIntegrity,rows=api.direct(route,current?stock:null);
+ const panel=node('details',undefined,'wishlist-acquisition dependency-panel reviewed-merge-plan');
+ panel.append(node('summary','Requirements · Source reviewed'));
+ panel.append(node('p','Merge and quest turn-in ingredients are consumed, even at quantity 1. Possession requirements are separate. Stock comes from the last full inventory & bank import; move required items into inventory before accepting or turning in.','muted tiny'));
+ const renderRows=(parent,entries,heading)=>{
+  if(!entries.length)return;
+  parent.append(node('strong',heading));
+  for(const r of entries){
+   const line=node('div',undefined,'dependency-material'),meta=node('div',undefined,'dependency-material-meta');
+   const item=node('button',r.item+' ×'+fmt(r.count),'itemlink');item.type='button';item.onclick=()=>openItemDetails(r.item,project.id);
+   meta.append(item,node('small',r.have===null?'Stock unknown':fmt(r.have)+' / '+fmt(r.count)+' · '+fmt(r.missing)+' remaining','muted tiny'));line.append(meta);
+   if(r.overlap)line.append(node('small','Shared with consumables — verify order','muted tiny'));
+   parent.append(line);
+  }
+ };
+ renderRows(panel,rows.filter(r=>r.kind==='consume'),'Consumed ingredients');
+ renderRows(panel,rows.filter(r=>r.kind==='possess'),'Possession requirements (not counted as ingredients)');
+ if(route.kind==='quest')panel.append(node('p','Quest completion and access still require confirmation in game.','muted tiny'));
+ const source=node('a','AQWWiki source ↗','tiny');source.href=route.source;source.target='_blank';source.rel='noopener noreferrer';panel.append(source);
+ const nested=api.selectedRoute(route,integrity);
+ if(nested){
+  const plan=node('details',undefined,'dependency-stage nested-merge-plan');plan.append(node('summary','Optional route · Craft missing Void Crystals'));
+  plan.append(node('p','One selected crafting route, not a fastest-farm recommendation. Existing crystal stock is allocated once. Other acquisition methods may be available; access and additional gates are not inferred.','muted tiny'));
+  if(!current)plan.append(node('p','Import a full inventory to calculate quantities.','muted tiny'));
+  else try{
+   const result=api.plan(route,nested,stock);
+   renderRows(plan,result.outputs,'Intermediate items');
+   renderRows(plan,result.leaves,'Inputs for this selected route');
+   renderRows(plan,result.possession,'Possession requirements');
+  }catch(error){plan.append(node('p','Route unavailable: '+error.message,'muted tiny'))}
+  panel.append(plan);
+ }
+ card.append(panel);
+}
 function appendWishlistGuidance(card,project){
  if(window.AQWCDependencies?.matches(project.name)){appendDependencyStages(card,project);return}
+ const reviewedRoute=reviewedDependencyRoute(project.name);if(reviewedRoute)appendReviewedMergePlan(card,project,reviewedRoute);
  if(isBlodProject(project.name)){
   const panel=node('details',undefined,'wishlist-acquisition');
   panel.append(node('summary','Recommended farm route · Mace → Bow → Blade'));
@@ -1043,13 +1083,14 @@ function renderUnlocks(){const list=$('unlocklist');wishlistMasonryObserver?.dis
      collectMaterials(child,depth+1)
    }
  };
- collectMaterials(project);
- const materials=[...totalMaterials.values()].map(m=>({...m,have:stock(m.item),missing:Math.max(0,m.target-stock(m.item))})).filter(m=>m.missing>0).sort((a,b)=>b.missing-a.missing||a.item.localeCompare(b.item));
+ const reviewedMaterials=reviewedDependencyRoute(project.name);
+ if(reviewedMaterials){for(const r of window.AQWCMergeDependencies.direct(reviewedMaterials,current?stock:null).filter(r=>r.kind==='consume'))totalMaterials.set(normalizedName(r.item),{item:r.item,target:r.count})}else collectMaterials(project);
+ const materials=current?[...totalMaterials.values()].map(m=>({...m,have:stock(m.item),missing:Math.max(0,m.target-stock(m.item))})).filter(m=>m.missing>0).sort((a,b)=>b.missing-a.missing||a.item.localeCompare(b.item)):[];
  let materialsSummary=null;
  if(materials.length){
    const summary=node('div',undefined,'wishlist-missing-summary');
    const heading=node('div',undefined,'wishlist-missing-heading');
-   heading.append(node('strong','Total materials to farm'),node('span',materials.length+' types','muted tiny'));summary.append(heading);
+   heading.append(node('strong',reviewedMaterials?'Direct ingredients to obtain':'Total materials to farm'),node('span',materials.length+' types','muted tiny'));summary.append(heading);
    const entries=node('div',undefined,'wishlist-missing-entries');
    for(const material of materials){
      const line=node('div',undefined,'wishlist-missing-line');
@@ -1057,7 +1098,7 @@ function renderUnlocks(){const list=$('unlocklist');wishlistMasonryObserver?.dis
      line.append(item,node('span',fmt(material.missing)+' left · '+fmt(material.have)+'/'+fmt(material.target),'muted tiny'));entries.append(line)
    }
    summary.append(entries);
-   summary.append(node('div','Totals combine repeated material steps and linked Wishlist sub-projects. Other recipe branches may be missing; inventory stock is counted once per material.','muted tiny wishlist-missing-disclaimer'));
+   summary.append(node('div',reviewedMaterials?'Direct reviewed recipe only; includes consumed single items, excludes possession gates and alternative routes. See Requirements for optional expanded routes.':'Totals combine repeated material steps and linked Wishlist sub-projects. Other recipe branches may be missing; inventory stock is counted once per material.','muted tiny wishlist-missing-disclaimer'));
    materialsSummary=summary;
  }
  const steps=node('div',undefined,'unlocksteps');for(const step of project.steps){if(step.kind==='manual'&&step.label==='Acquisition route not yet in the catalog'&&['unknown',null,undefined].includes(step.status))continue;const row=node('div',undefined,'unlockstep');let status=stepStatus(step),line=node('div',undefined,'steprow');row.classList.toggle('wishlist-step-complete',status==='done');let label=step.item?node('button',step.label,'itemlink'):node('span',step.label.replace(/\s*[—-]?\s*\/join\s+[a-z0-9-]+/gi,''),'steptext');if(step.item){label.type='button';label.title='View item acquisition methods and linked recipes';label.onclick=()=>openItemDetails(step.item,project.id)}const chip=node('span',status==='done'?'✓ Completed':status==='todo'?'◯ To do':'? Unknown','status '+status);line.classList.add('farming-step-header');line.append(label,chip);row.append(line);if(!step.item){const joined=String(step.label||'').match(/\/join\s+[a-z0-9-]+/i);if(joined)row.append(makeCopyJoin(joined[0]))}if(step.item){const actions=node('div',undefined,'farming-step-actions');if(step.kind==='owned'&&normalizedName(step.item)!==normalizedName(project.name)){const alreadyTracked=unlocks.some(u=>normalizedName(u.name)===normalizedName(step.item));let link=node('button',alreadyTracked?'↗ View in Wishlist':'+ Add to Wishlist','smallbutton');link.title=alreadyTracked?'View this item in your Wishlist':'Track this item separately in your Wishlist';link.onclick=()=>addProjectByName(step.item);actions.append(link)}let details=node('button','How to get ↗','smallbutton');details.onclick=()=>openItemDetails(step.item,project.id);actions.append(details);row.append(actions)}if(step.kind==='material'){
