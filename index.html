@@ -14,7 +14,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="AQW Companion | AQWorlds Inventory & Farming Tracker">
 <meta name="twitter:description" content="A free unofficial AdventureQuest Worlds companion with inventory, Wishlist, farming and Forge tracking."><link rel="icon" type="image/png" href="assets/brand-favicon.png">
-<link rel="stylesheet" href="css/site.css?v=159"><link rel="stylesheet" href="css/boost-finder.css?v=3">
+<link rel="stylesheet" href="css/site.css?v=160"><link rel="stylesheet" href="css/boost-finder.css?v=3">
 
 
 <link rel="stylesheet" href="css/item-icons.css">
@@ -87,7 +87,7 @@
 </section><section id="planner-history" class="view"><div class="card"><div class="planner-my-toolbar"><h3 class="sectiontitle">Task History</h3><button id="plannerbackfromhistory" class="smallbutton" type="button">← Daily / Weekly</button></div><div id="planner-task-history"></div></div></section><section id="compare" class="view"><div class="card"><h3 class="sectiontitle">Compare two snapshots</h3><p class="muted" style="font-size:13px">Import both snapshots into the same browser. Comparison uses <b>ID</b> and quantity; moving items between inventory and bank does not count as a new item.</p><div class="comparecontrols"><label>Older <select id="oldselect"></select></label><label>Newer <select id="newselect"></select></label><button id="comparebtn" class="primary">Compare</button></div><div id="compareresult" class="muted">Import at least two snapshots to get started.</div></div></section>
 <section id="history" class="view"><div class="card"><h3 class="sectiontitle">Local import history</h3><div id="historylist"></div><p class="muted" style="font-size:12px">Each imported file is validated and saved in your browser's IndexedDB. The Backup button downloads a JSON file you can import later to restore your data. Clear data removes snapshots, farming goals and unlock projects.</p></div></section><div class="foot">Created by <strong>CptMundo</strong> for the AQWorlds community · Unofficial fan project · Not affiliated with Artix Entertainment · v0.13.10 Beta</div></div>
 <div id="itemdetails" class="detailoverlay hidden" role="dialog" aria-modal="true" aria-label="Item acquisition details"><div class="detailpanel"><div class="detailhead"><div><small style="color:#7da5d1;font-weight:700">AQW COMPANION · ACQUISITION EXPLORER</small><h2 id="detailname"></h2></div><button type="button" class="smallbutton" id="closedetails" aria-label="Close details">✕ Close</button></div><div id="detailcontent"></div></div></div><aside id="aqwc-tour" class="aqwc-tour" role="region" aria-labelledby="aqwc-tour-title" hidden><div class="aqwc-tour-top"><span>QUICK TOUR <span id="aqwc-tour-count">1 / 6</span></span><button id="aqwc-tour-close" type="button" aria-label="Close quick tour">×</button></div><progress id="aqwc-tour-progress" aria-label="Tour progress" max="6" value="1"></progress><div class="aqwc-tour-content" aria-live="polite"><span id="aqwc-tour-icon" aria-hidden="true">📊</span><div><h3 id="aqwc-tour-title" tabindex="-1">Your adventure starts here</h3><p id="aqwc-tour-body"></p></div></div><div class="aqwc-tour-actions"><button id="aqwc-tour-skip" type="button">Skip tour</button><div><button id="aqwc-tour-back" type="button">Back</button><button id="aqwc-tour-next" type="button">Next →</button></div></div><a href="extension/quick-start.html" class="aqwc-tour-guide">Full visual guide ↗</a></aside><script src="js/meta-class-builds.js"></script>
-<script src="js/recipe-integrity.js"></script><script src="js/quest-dependencies.js?v=1"></script><script src="js/merge-dependencies.js?v=6"></script>
+<script src="js/recipe-integrity.js"></script><script src="js/quest-dependencies.js?v=1"></script><script src="js/merge-dependencies.js?v=7"></script>
 <script src="extension/wishlist-link.js?v=126"></script>
 <script src="extension/wiki-boosts.js?v=51"></script>
 <script src="js/boost-finder.js?v=3"></script>
@@ -1104,10 +1104,19 @@ function appendSharedFarmRoute(body,result,expanded){
  const api=window.AQWCMergeDependencies,integrity=window.AQWCRecipeIntegrity;
  if(!api?.farmingDestinations||!integrity)return;
  const route=api.farmingDestinations(result,integrity);
+ const routines=api.farmingRoutineRoutes(result,taskCatalog,{
+  isRecurring:routineIsRecurring,isDone:taskDone,isBlocked:routineConflict,
+  canonicalId:routineCanonicalId,isPinned:id=>pinnedTasks.some(t=>routineCanonicalId(t.id)===id),
+  routeFor:id=>taskRoutes[id],capFor:name=>sharedFarmCap(name)
+ });
+ const stops=new Map(route.groups.map(g=>[g.join,{...g,routines:[]}]));
+ for(const g of routines.groups){if(!stops.has(g.join))stops.set(g.join,{join:g.join,entries:[],routines:[]});stops.get(g.join).routines=g.entries}
+ const groups=[...stops.values()].sort((a,b)=>a.join.localeCompare(b.join));
  const panel=node('details',undefined,'dependency-panel shared-farm-route');panel.open=expanded;
- panel.append(node('summary','Smart Farming Route · '+route.groups.length+' reviewed destination(s)'));
+ panel.append(node('summary','Smart Farming Route · '+groups.length+' destination(s) · '+routines.quests.length+' quest(s)'));
  panel.append(node('p','Selected goals only. Locations are grouped alphabetically, not a fastest route or a travel order. Merge / quest locations are not drop maps. Confirm access, availability, caps and prerequisites in game.','muted tiny'));
- for(const group of route.groups){
+ if(routines.quests.length)panel.append(node('p','Recurring opportunities: '+routines.quests.length+' distinct quests across these maps. A quest listed at several stops is still one completion per tracking period. Rewards are not deducted until imported. Check eligibility and alternatives in game.','muted tiny'));
+ for(const group of groups){
   const box=node('section',undefined,'shared-farm-stop');box.dataset.join=group.join;
   const header=node('div',undefined,'shared-farm-head');header.append(node('strong',group.join.slice(6)),makeCopyJoin(group.join));box.append(header);
   for(const entry of group.entries){
@@ -1117,15 +1126,40 @@ function appendSharedFarmRoute(body,result,expanded){
    line.append(button,node('small',entry.role+' · '+(entry.type==='goal'?entry.state:'Missing '+(entry.kind==='possess'?'possession requirement':'ingredient')+' · '+entry.goals.join(' / ')),'muted tiny'));
    const source=node('a','Source ↗','tiny');source.href=entry.source;source.target='_blank';source.rel='noopener noreferrer';line.append(source);box.append(line);
   }
+  for(const quest of group.routines)appendSharedFarmQuest(box,quest);
   panel.append(box);
  }
+ if(routines.unmapped.length){const unknown=node('div',undefined,'shared-farm-unmapped');unknown.append(node('strong','Related quests without a documented map'));for(const quest of routines.unmapped)appendSharedFarmQuest(unknown,quest);panel.append(unknown)}
  if(route.unmapped.length){
   const unknown=node('div',undefined,'shared-farm-unmapped');unknown.append(node('strong','Missing items without a reviewed destination'));
   for(const r of route.unmapped){const line=node('div',undefined,'shared-farm-entry');const item=node('button',r.item+' ×'+fmt(r.count),'itemlink');item.type='button';item.onclick=()=>openItemDetails(r.item);line.append(item,node('small',r.goals.join(' / ')+' · '+(r.kind==='possess'?'Possession gate':'Ingredient')+' · Check acquisition separately','muted tiny'));unknown.append(line)}
   panel.append(unknown);
  }
  if(route.deferred.length){const deferred=node('div',undefined,'shared-farm-unmapped');deferred.append(node('strong','Verify before planning'));for(const r of route.deferred)deferred.append(node('small',r.item+' · '+r.reason,'muted tiny'));panel.append(deferred)}
- panel.append(node('p','No extra recipes expanded or new items reserved. The combined totals above deduct stock once. Recurring quest reward routes and multi-stage farms are not covered in this first version.','muted tiny'));body.append(panel);
+ panel.append(node('p','No extra recipes expanded or new items reserved. The combined totals above deduct stock once. Only exact quantified recurring rewards are included; conditional rewards and multi-stage farms are outside these totals.','muted tiny'));body.append(panel);
+}
+function sharedFarmCap(name){
+ const api=window.AQWCStackAlerts;if(!api)return null;
+ const k=api.normalize(name),manual=api.validCap(userStackCaps[k]);
+ if(manual)return {value:manual,label:'Player limit'};
+ const exported=new Set(items.filter(x=>api.normalize(x.Name)===k).map(x=>api.validCap(x.MaxStack)).filter(Boolean));
+ if(exported.size===1)return {value:[...exported][0],label:'Export metadata'};
+ if(exported.size>1)return null;
+ const known=api.knownCaps.find(x=>api.normalize(x.name)===k);
+ return known?{value:known.cap,label:'AQWWiki',url:known.url}:null;
+}
+function appendSharedFarmQuest(box,quest){
+ const line=node('div',undefined,'shared-farm-entry shared-farm-quest');line.dataset.questId=quest.id;
+ const title=node('strong',quest.name);line.append(title,node('small',(quest.freq==='daily'?'Daily':'Weekly')+' · '+(quest.pinned?'Pinned':'Not pinned')+' · Not checked complete'+(quest.exclusiveGroup?' · Alternative quest — choose one':''),'muted tiny'));
+ for(const role of quest.roles||[]){const row=node('div',undefined,'shared-farm-role');row.append(node('small',role.role+' · '+role.detail,'muted tiny'));const source=node('a','Route source ↗','tiny');source.href=role.source;source.target='_blank';source.rel='noopener noreferrer';row.append(source);line.append(row)}
+ for(const match of quest.matches){
+  line.append(node('small',match.reward+' · '+fmt(match.missing)+' combined missing · '+match.goals.join(' / '),'muted tiny'));
+  const cap=match.cap;if(cap){const note=node('small','Stack limit: '+fmt(cap.value)+' ('+cap.label+'). Check free space in bag; bank stock is not capacity.','muted tiny');if(cap.url){const source=node('a',' Cap source ↗','tiny');source.href=cap.url;source.target='_blank';source.rel='noopener noreferrer';note.append(source)}line.append(note)}
+  else line.append(node('small','Stack limit unknown — check space in game.','muted tiny'));
+ }
+ if(quest.note)line.append(node('small',quest.note,'muted tiny'));
+ const actions=node('div',undefined,'methodbuttons'),open=node('button','View quest ↗','smallbutton');open.type='button';open.onclick=()=>{const t=taskCatalog.find(t=>routineCanonicalId(t.id)===quest.id);if(t)openNextRoutine(t)};actions.append(open);
+ const source=node('a','Quest source ↗','tiny');source.href=quest.source;source.target='_blank';source.rel='noopener noreferrer';actions.append(source);line.append(actions);box.append(line);
 }
 function renderUnlocks(){renderSharedWishlist();const list=$('unlocklist');wishlistMasonryObserver?.disconnect();list.classList.remove('wishlist-masonry');list.replaceChildren();const columnCount=1;const columns=columnCount>1?Array.from({length:columnCount},()=>node('div',undefined,'unlock-column')):[];if(columns.length)list.append(...columns);const q=$('unlocksearch').value.toLowerCase().trim(),filter=$('unlockfilter').value;let projects=unlocks.filter(u=>u.name.toLowerCase().includes(q)).filter(u=>filter==='all'||(filter==='owned')===owned(u.name));if(!projects.length){let p=node('div',undefined,'placeholder');p.append(node('h2',unlocks.length?'No matching projects':'Start your first unlock project'),node('p','Click “Add starter projects” or create your own class, weapon or saga.'));list.append(p);return}for(const [projectIndex,project] of projects.entries()){const card=node('div',undefined,'unlockcard'),top=node('div',undefined,'unlockhead'),title=node('div');card.dataset.projectId=String(project.id);const heading=node('h3');heading.append(itemTypeNode(canonicalWishlistType(project.name,project.type)),document.createTextNode(' '+project.name));title.append(heading,node('small',itemTypeLabel(canonicalWishlistType(project.name,project.type)),'muted'));const rm=node('button','×','smallbutton wishlist-dismiss');rm.type='button';rm.title='Remove '+project.name+' from Wishlist';rm.setAttribute('aria-label','Remove '+project.name+' from Wishlist');rm.onclick=()=>{if(confirm('Remove this unlock project?')){unlocks=unlocks.filter(u=>u.id!==project.id);saveUnlocks();renderUnlocks()}};const identity=node('div',undefined,'wishlist-item-identity');identity.append(title,wishlistItemArt(project));top.append(identity,rm);card.append(top);
  if(owned(project.name)){
@@ -6858,7 +6892,7 @@ function renderPlanner(){const suggested=$('planner-suggestions'),my=$('planner-
 function nextPlannerReset(freq,now=new Date()){const day=aqwServerDay(now);const d=new Date(day+'T05:00:00Z');if(freq==='daily')d.setUTCDate(d.getUTCDate()+1);else{d.setUTCMinutes(1);d.setUTCDate(d.getUTCDate()+(5-d.getUTCDay()+7)%7);if(d<=now)d.setUTCDate(d.getUTCDate()+7)}return d}
 function updatePlannerTimers(){const now=new Date();for(const freq of ['daily','weekly']){const next=nextPlannerReset(freq,now),seconds=Math.max(0,Math.ceil((next-now)/1000)),days=Math.floor(seconds/86400),hours=Math.floor(seconds/3600)%24,minutes=Math.floor(seconds/60)%60,sec=seconds%60;$(freq+'reset').textContent=(days?days+'d ':'')+[hours,minutes,sec].map(n=>String(n).padStart(2,'0')).join(':');$(freq+'resetlocal').textContent='Next reset: '+next.toLocaleString()}}
 let lastPlannerPeriod=taskPeriod('daily')+'|'+taskPeriod('weekly');
-function refreshPlannerClock(){const key=taskPeriod('daily')+'|'+taskPeriod('weekly');if(lastPlannerPeriod&&key!==lastPlannerPeriod){renderPlanner();renderHomeInsights()}lastPlannerPeriod=key;updatePlannerTimers()}
+function refreshPlannerClock(){const key=taskPeriod('daily')+'|'+taskPeriod('weekly');if(lastPlannerPeriod&&key!==lastPlannerPeriod){renderPlanner();renderHomeInsights();if($('unlocks')?.classList.contains('active'))renderSharedWishlist()}lastPlannerPeriod=key;updatePlannerTimers()}
 setInterval(refreshPlannerClock,1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshPlannerClock()});
 $('plannersearch').addEventListener('input',renderPlanner);const myQuestSearch=$('planner-my-search'),myQuestClear=$('planner-my-search-clear');myQuestSearch.addEventListener('input',()=>{myQuestClear.hidden=!myQuestSearch.value;renderPlanner()});myQuestClear.onclick=()=>{myQuestSearch.value='';myQuestClear.hidden=true;renderPlanner();myQuestSearch.focus()};for(const id of ['plannerfilter','plannercategory','plannerpinfilter','plannerstatus'])$(id).addEventListener('change',renderPlanner);function openPlannerLibrary(freq='all',pin='all'){$('plannerfilter').value=freq;$('plannerpinfilter').value=pin;$('plannersearch').value='';$('plannercategory').value='all';selectTab('planner-discover');renderPlanner()}
 $('plannerbrowse').onclick=()=>openPlannerLibrary(plannerMyFrequency);
@@ -6880,6 +6914,7 @@ function activateTab(tab){const b=document.querySelector('[data-tab="'+tab+'"]')
  if(tab==='badge-hunter')window.AQWCBadgeHunter?.render?.();
  if(tab==='boost-finder')renderBoostFinder();
  if(tab==='overview'&&typeof renderNextProjects==='function')renderNextProjects();
+ if(tab==='unlocks'&&typeof renderSharedWishlist==='function')renderSharedWishlist();
 }
 document.querySelectorAll('[data-group]').forEach(b=>b.addEventListener('click',()=>activateTab(b.dataset.group==='planner'?'planner':lastTabByGroup[b.dataset.group]||groupDefaults[b.dataset.group])));
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>activateTab(b.dataset.tab)));

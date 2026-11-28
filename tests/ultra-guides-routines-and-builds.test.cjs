@@ -573,7 +573,7 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.ok(homeTile.includes('makeCopyJoin(route.join)'));
  assert.ok(homeTile.includes("joinBox.classList.toggle('has-multiple',joins.length>1)"));
  assert.ok(!homeTile.includes('home-quest-extra-joins'));
- assert.ok(html.includes('css/site.css?v=159'),'Invalidate previously cached stylesheet');
+ assert.ok(html.includes('css/site.css?v=160'),'Invalidate previously cached stylesheet');
  assert.ok(html.includes("grid.dataset.frequency=freq"));
  console.log('Home quest gallery: shared artwork, copyable joins, accessible reversible completion and conflict guard verified.');
 }
@@ -863,3 +863,21 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.ok(!overlap.groups.flatMap(g=>g.entries).some(e=>e.item==='Void Crystal A'));
  assert.deepEqual(api.farmingDestinations(api.combine([],()=>0),integrity),{groups:[],unmapped:[],deferred:[]});
  console.log("Smart Farming Route C1: grouped reviewed destinations, shared shortage, no expansion, unknown stock, conflicts and gates passed.");}
+
+
+// C2: one combined reward opportunity, multiple explicit map roles, no reward credit.
+{const api=require('../js/merge-dependencies.js'),integrity=require('../js/recipe-integrity.js');
+ const combined=api.combine([api.describe('Sin of the Abyss',integrity),api.describe('Void Crystal A',integrity)],n=>api.key(n)==='tainted gem'?100:0);
+ const task=(id,reward,extra={})=>({id,name:id,freq:'weekly',wiki:'https://aqwwiki.wikidot.com/nulgath-s-quests',rewards:[reward],acceptJoin:'/join originul',...extra});
+ const tasks=[task('weekly','Nulgath Insignia ×5',{acceptJoin:'/join ultranulgath',join:'/join ultranulgath'}),task('daily','Tainted Gem ×5',{freq:'daily',farmJoin:'/join voidflibbi',exclusiveGroup:'alt'}),task('alias','Tainted Gem ×5',{freq:'daily'}),task('done','Tainted Gem ×5'),task('blocked','Tainted Gem ×5'),task('random','Tainted Gem ×5 (choice)'),task('badmap','Gem of Nulgath ×1',{acceptJoin:'bad map'}),task('retired','Tainted Gem ×5')];
+ const opts={isRecurring:t=>t.id!=='retired',isDone:t=>t.id==='done',isBlocked:t=>t.id==='blocked',isPinned:id=>id==='daily',canonicalId:id=>id==='alias'?'daily':id,routeFor:id=>id==='daily'?{wiki:'https://aqwwiki.wikidot.com/memory-of-nulgath-s-quests',targets:[['Boss','Drop ×1','/join voidflibbi'],['Other','Check current rewards','/join invented']]}:null,capFor:name=>api.key(name)==='tainted gem'?{value:1000,label:'AQWWiki'}:null};
+ const before=JSON.stringify(combined),plan=api.farmingRoutineRoutes(combined,tasks,opts);
+ assert.deepEqual(plan.quests.map(q=>q.id),['daily','badmap','weekly']);
+ const daily=plan.quests[0];assert.equal(daily.matches[0].missing,400);assert.equal(daily.matches[0].goals.length,2);assert.equal(daily.matches[0].cap.value,1000);assert.equal(daily.exclusiveGroup,'alt');assert.equal(daily.pinned,true);
+ assert.equal(plan.groups.find(g=>g.join==='/join voidflibbi').entries.length,1);
+ assert.ok(plan.groups.find(g=>g.join==='/join originul').entries[0].roles.some(r=>r.role==='Accept / check turn-in'));
+ assert.ok(!plan.groups.some(g=>g.join==='/join invented'));assert.ok(plan.unmapped.some(q=>q.id==='badmap'));
+ assert.ok(!plan.groups.flatMap(g=>g.entries).flatMap(e=>e.roles).some(r=>r.role==='Turn in'));
+ assert.equal(JSON.stringify(combined),before);
+ assert.equal(api.farmingRoutineRoutes(api.combine([api.describe('Sin of the Abyss',integrity)],null),tasks,opts).quests.length,0);
+ console.log('Smart Farming Route C2: exact combined reward matching, aliases, map roles, local checks, alternatives and caps passed.');}

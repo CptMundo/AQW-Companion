@@ -219,6 +219,50 @@ function farmingDestinations(combined,integrity){
  }
  return {groups:[...groups.values()].sort((a,b)=>a.join.localeCompare(b.join)),unmapped,deferred};
 }
-const api={key,describe,direct,selectedRoute,plan,combine,stockIndex,recommend,rankRecommendations,recommendationCounts,recurringOpportunities,farmingDestinations};
+
+// Match recurring quest rewards against the combined, not per-project, shortage.
+// The same quest is only one opportunity per period, regardless of map count.
+function farmingRoutineRoutes(combined,tasks,options={}){
+ const all=[...combined.rows,...combined.possession],conflicts=new Set(all.filter(r=>r.overlap||r.outputConflict).map(r=>key(r.item)));
+ const needed=new Map(combined.rows.filter(r=>Number.isSafeInteger(r.missing)&&r.missing>0&&!conflicts.has(key(r.item))).map(r=>[key(r.item),r]));
+ const rows=combined.goals.map(project=>({project,recommendation:{needs:[...needed.values()].filter(r=>r.goals.some(g=>key(g.name)===key(project.name))).map(r=>({item:r.item,missing:r.missing}))}}));
+ const opportunities=recurringOpportunities(rows,tasks,options),groups=new Map(),unmapped=[],quests=[];
+ const safeJoin=v=>typeof v==='string'&&/^\/join [a-z0-9-]+$/i.test(v)?v.toLowerCase():null;
+ const safeSource=v=>typeof v==='string'&&/^https:\/\/aqwwiki\.wikidot\.com\/[a-z0-9-]+$/i.test(v)?v:null;
+ for(const o of opportunities){
+  const t=o.task,locations=new Map(),info=options.routeFor?.(t.id);
+  const matchRows=o.matches.map(m=>{
+   const row=needed.get(key(m.reward.replace(/\s+×[1-9][0-9,]*$/,'')));
+   const cap=options.capFor?.(row.item);
+   return {item:row.item,reward:m.reward,missing:row.missing,goals:row.goals.map(g=>g.name),cap:cap||null};
+  });
+  const entry={id:o.id,name:t.name,freq:t.freq,pinned:o.pinned,exclusiveGroup:t.exclusiveGroup||null,source:t.wiki,note:t.note||'',matches:matchRows};
+  quests.push(entry);
+  function add(join,role,detail,source){
+   join=safeJoin(join);source=safeSource(source);if(!join||!source)return;
+   if(!locations.has(join))locations.set(join,[]);
+   const list=locations.get(join);if(!list.some(x=>x.role===role&&x.detail===detail&&x.source===source))list.push({role,detail,source});
+  }
+  // The catalog distinguishes acceptance from farm location. Never infer
+  // a turn-in map from the farm map, or guess a pet owner's location.
+  add(t.acceptJoin||(!t.farmJoin?t.join:null),'Accept / check turn-in',t.npc||'Quest acceptance location',t.wiki);
+  add(t.farmJoin||(t.acceptJoin&&t.join!==t.acceptJoin?t.join:null),'Farm / boss','Catalog farm location',t.wiki);
+  if(safeSource(info?.wiki)){
+   for(const target of info.targets||[]){
+    if(!Array.isArray(target)||!target[0]||!target[1]||/check (?:challenge|the current|current)|\?\?\?/i.test(target[1]))continue;
+    add(target[2],'Farm / boss',target[0]+' · '+target[1],info.wiki);
+   }
+  }
+  // Turn-in is only an independently documented field, not a guess.
+  add(t.turnInJoin,'Turn in','Documented turn-in location',t.wiki);
+  if(!locations.size)unmapped.push(entry);
+  for(const [join,roles] of locations){
+   if(!groups.has(join))groups.set(join,{join,entries:[]});
+   groups.get(join).entries.push({...entry,roles});
+  }
+ }
+ return {quests,groups:[...groups.values()].sort((a,b)=>a.join.localeCompare(b.join)),unmapped};
+}
+const api={key,describe,direct,selectedRoute,plan,combine,stockIndex,recommend,rankRecommendations,recommendationCounts,recurringOpportunities,farmingDestinations,farmingRoutineRoutes};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.AQWCMergeDependencies=api;
 })(typeof globalThis==='object'?globalThis:this);

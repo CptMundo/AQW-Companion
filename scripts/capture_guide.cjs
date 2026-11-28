@@ -302,6 +302,18 @@ async function main(){
   // Add a reviewed recipe whose existing catalog includes a quantified weekly reward.
   await page.evaluate(()=>{const k='aqw-companion-unlocks',all=JSON.parse(localStorage.getItem(k)||'[]');if(!all.some(p=>p.name==='Sin of the Abyss'))all.push({id:'next-routine-sin',name:'Sin of the Abyss',type:'Weapon',steps:[]});localStorage.setItem(k,JSON.stringify(all))});
   await page.reload({waitUntil:'domcontentloaded'});await page.locator('#dashboard').waitFor({state:'visible'});
+  // Select Sin of the Abyss and verify the actual catalog-backed Ultra Nulgath opportunity.
+  await go('projects','unlocks');
+  const recurringShared=page.locator('#shared-wishlist-plan');if(!await recurringShared.evaluate(e=>e.open))await recurringShared.locator(':scope > summary').click();
+  await recurringShared.locator('input[data-goal="sin of the abyss"]').check();
+  const recurringRoute=recurringShared.locator('.shared-farm-route');if(!await recurringRoute.evaluate(e=>e.open))await recurringRoute.locator(':scope > summary').click();
+  const ultraRoute=recurringRoute.locator('[data-join="/join ultranulgath"] .shared-farm-quest[data-quest-id="ultra-nulgath"]');
+  assert.equal(await ultraRoute.count(),1);assert.ok(await ultraRoute.getByText('Nulgath Insignia ×5',{exact:false}).isVisible());
+  assert.ok(await ultraRoute.getByText('Stack limit:',{exact:false}).isVisible());
+  await page.setViewportSize({width:390,height:844});assert.ok(await recurringRoute.evaluate(e=>e.scrollWidth<=e.clientWidth+1));await page.setViewportSize({width:1360,height:1100});
+  await ultraRoute.getByRole('button',{name:'View quest ↗'}).click();assert.ok(await page.locator('#planner-discover').isVisible());
+  assert.equal(await page.locator('#planner-suggestions .planner-quest-card:focus').getAttribute('data-quest-id'),'ultra-nulgath');
+  await page.locator('#plannersearch').fill('');
   // What's Next uses the same Home card and reviewed stage evidence.
   await go('home','overview');
   const next=page.locator('#homeprojectslist');assert.ok(await page.getByRole('heading',{name:"🎯 What's Next?",exact:true}).isVisible());
