@@ -233,7 +233,7 @@ async function commitBackupSnapshots(plan){
     for(const entry of pending)store.add(entry);
    }catch(err){try{tx?.abort()}catch{}reject(err)}
   });
-  snapshots.push(...pending);
+  for(const entry of pending)snapshots.push(entry);
  }
  current=selected;saveActiveSnapshotId(selected.uid);
  if(db){try{saveInventoryRecoveryCopy(selected);inventoryStorageMode='IndexedDB + recovery copy';inventoryStorageError=''}catch(err){inventoryStorageMode='IndexedDB only';inventoryStorageError=String(err?.message||err)}}
