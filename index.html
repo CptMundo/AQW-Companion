@@ -14,7 +14,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="AQW Companion | AQWorlds Inventory & Farming Tracker">
 <meta name="twitter:description" content="A free unofficial AdventureQuest Worlds companion with inventory, Wishlist, farming and Forge tracking."><link rel="icon" type="image/png" href="assets/brand-favicon.png">
-<link rel="stylesheet" href="css/site.css?v=155"><link rel="stylesheet" href="css/boost-finder.css?v=3">
+<link rel="stylesheet" href="css/site.css?v=156"><link rel="stylesheet" href="css/boost-finder.css?v=3">
 
 
 <link rel="stylesheet" href="css/item-icons.css">
@@ -87,7 +87,7 @@
 </section><section id="planner-history" class="view"><div class="card"><div class="planner-my-toolbar"><h3 class="sectiontitle">Task History</h3><button id="plannerbackfromhistory" class="smallbutton" type="button">← Daily / Weekly</button></div><div id="planner-task-history"></div></div></section><section id="compare" class="view"><div class="card"><h3 class="sectiontitle">Compare two snapshots</h3><p class="muted" style="font-size:13px">Import both snapshots into the same browser. Comparison uses <b>ID</b> and quantity; moving items between inventory and bank does not count as a new item.</p><div class="comparecontrols"><label>Older <select id="oldselect"></select></label><label>Newer <select id="newselect"></select></label><button id="comparebtn" class="primary">Compare</button></div><div id="compareresult" class="muted">Import at least two snapshots to get started.</div></div></section>
 <section id="history" class="view"><div class="card"><h3 class="sectiontitle">Local import history</h3><div id="historylist"></div><p class="muted" style="font-size:12px">Each imported file is validated and saved in your browser's IndexedDB. The Backup button downloads a JSON file you can import later to restore your data. Clear data removes snapshots, farming goals and unlock projects.</p></div></section><div class="foot">Created by <strong>CptMundo</strong> for the AQWorlds community · Unofficial fan project · Not affiliated with Artix Entertainment · v0.13.10 Beta</div></div>
 <div id="itemdetails" class="detailoverlay hidden" role="dialog" aria-modal="true" aria-label="Item acquisition details"><div class="detailpanel"><div class="detailhead"><div><small style="color:#7da5d1;font-weight:700">AQW COMPANION · ACQUISITION EXPLORER</small><h2 id="detailname"></h2></div><button type="button" class="smallbutton" id="closedetails" aria-label="Close details">✕ Close</button></div><div id="detailcontent"></div></div></div><aside id="aqwc-tour" class="aqwc-tour" role="region" aria-labelledby="aqwc-tour-title" hidden><div class="aqwc-tour-top"><span>QUICK TOUR <span id="aqwc-tour-count">1 / 6</span></span><button id="aqwc-tour-close" type="button" aria-label="Close quick tour">×</button></div><progress id="aqwc-tour-progress" aria-label="Tour progress" max="6" value="1"></progress><div class="aqwc-tour-content" aria-live="polite"><span id="aqwc-tour-icon" aria-hidden="true">📊</span><div><h3 id="aqwc-tour-title" tabindex="-1">Your adventure starts here</h3><p id="aqwc-tour-body"></p></div></div><div class="aqwc-tour-actions"><button id="aqwc-tour-skip" type="button">Skip tour</button><div><button id="aqwc-tour-back" type="button">Back</button><button id="aqwc-tour-next" type="button">Next →</button></div></div><a href="extension/quick-start.html" class="aqwc-tour-guide">Full visual guide ↗</a></aside><script src="js/meta-class-builds.js"></script>
-<script src="js/recipe-integrity.js"></script>
+<script src="js/recipe-integrity.js"></script><script src="js/quest-dependencies.js?v=1"></script>
 <script src="extension/wishlist-link.js?v=126"></script>
 <script src="extension/wiki-boosts.js?v=51"></script>
 <script src="js/boost-finder.js?v=3"></script>
@@ -681,7 +681,7 @@ const soulForgeRecipe={name:'SoulForge Hammer',type:'Weapon',steps:[
  {label:'Turn in The Soul Forge Hammer (Unlock Soul Forge) at the Soul Forge in /join underworld',kind:'manual',source:'https://aqwwiki.wikidot.com/soul-forge-s-quest'},
  {label:'Own SoulForge Hammer',kind:'owned',item:'SoulForge Hammer'}
 ]};
-function canonicalItemName(name){return normalizedName(name)==='soul forge hammer'?'SoulForge Hammer':name}
+function canonicalItemName(name){return window.AQWCDependencies?.matches(name)?'Verus DoomKnight':normalizedName(name)==='soul forge hammer'?'SoulForge Hammer':name}
 const catalog= [...starterProjects,...catalogExtras,soulForgeRecipe];
 function normalizedName(value){return String(value||'').trim().toLowerCase().replace(/[’‘]/g,"'")}
 let communityItems=new Map(),communityAcquisition=new Map(),communityLocations=new Map(),communityMeta={};
@@ -801,7 +801,7 @@ async function loadPublicCatalog(){
 }
 $('communityfiles').onchange=async e=>{const files=[...e.target.files||[]];if(!files.length)return;try{const parsed=[];for(const f of files){if(f.size>50000000)throw Error(f.name+' exceeds 50 MB limit');parsed.push({name:f.name,data:JSON.parse(await f.text())})}for(const f of parsed)normalizeCommunityData(f.data,f.name);finishCommunityIndexes();await saveCommunity();message('Community database indexed: '+fmt(communityItems.size)+' items. Check individual wiki sources before crafting.','success')}catch(err){message('Community import error: '+err.message,'error')}finally{e.target.value=''}};
 $('clearcommunity').onclick=async()=>{if(!confirm('Clear the community item catalog? Your account snapshots and project lists will not be changed.'))return;communityItems.clear();communityAcquisition.clear();communityLocations.clear();communityMeta={};await saveCommunity();finishCommunityIndexes();message('Community catalog cleared. Personal inventory and projects were preserved.','success')};
-function getRecipe(name){name=canonicalItemName(name);if(isBlodProject(name))return {...blodRecipe,name};
+function getRecipe(name){name=canonicalItemName(name);const dependency=window.AQWCDependencies?.recipe(name);if(dependency)return dependency;if(isBlodProject(name))return {...blodRecipe,name};
  const reviewed=window.AQWCRecipeIntegrity?.getRecipe(name)||window.AQWCRecipeIntegrity?.guidanceRecipe(name);if(reviewed)return reviewed;
  const reference=acquisitionFor(name);
  // An explicitly listed merge takes precedence over a separate quest reward route.
@@ -863,7 +863,7 @@ const acquisitionCatalog = [
 {name:'Corrupt Spirit Orb',type:'Item',wiki:'https://aqwwiki.wikidot.com/vayle-s-quests',methods:[{type:'Quest Reward',title:'Pinpoint the Pieces with Necrotic Bow',join:'/join necropolis',npc:'Vayle',details:'25 Corrupt Spirit Orbs and 50 Dark Spirit Orbs per quest; requires Necrotic Bow of the Shadow and completed DoomKnight Weapon Kit.',url:'https://aqwwiki.wikidot.com/vayle-s-quests'}]},
 {name:'Experimental Dark Item',type:'Item',wiki:'https://aqwwiki.wikidot.com/vayle-s-quests',methods:[{type:'Quest Reward',title:"Sepulchure's Armor",join:'/join necropolis',npc:'Vayle',details:'Quest reward; check required DoomKnight Hood and Dark Spirit Orbs in the wiki.',url:'https://aqwwiki.wikidot.com/vayle-s-quests'}]}
 ];
-function acquisitionFor(name){if(isBlodProject(name))return blodAcquisition;return window.AQWCRecipeIntegrity?.guidanceAcquisition(name)||window.AQWCRecipeIntegrity?.getAcquisition(name)||acquisitionCatalog.find(x=>normalizedName(x.name)===normalizedName(name))||communityAcquisition.get(communityKey(name))||null}
+function acquisitionFor(name){const dependency=window.AQWCDependencies?.acquisition(name);if(dependency)return dependency;if(isBlodProject(name))return blodAcquisition;return window.AQWCRecipeIntegrity?.guidanceAcquisition(name)||window.AQWCRecipeIntegrity?.getAcquisition(name)||acquisitionCatalog.find(x=>normalizedName(x.name)===normalizedName(name))||communityAcquisition.get(communityKey(name))||null}
 function catalogToProject(entry){return {name:entry.name,type:entry.type||'Other',steps:(entry.ingredients||[]).map(([item,target])=>({label:`${item} ×${target}`,kind:target===1?'owned':'material',item,target}))}}
 // AQWWiki uses category suffixes like "(Sword)" and an alternate apostrophe in
 // "Elders' Blood". A player's exported inventory need not use those labels.
@@ -883,6 +883,7 @@ function canonicalWishlistType(name,type){
 function newProject(p){return{id:crypto.randomUUID(),name:p.name,type:canonicalWishlistType(p.name,p.type),createdAt:new Date().toISOString(),steps:(p.steps||[]).map(freshStep)}}
 
 function upgradeLegacyRecipes(){let changed=false;for(const p of unlocks){
+ if(window.AQWCDependencies?.upgrade(p,freshStep))changed=true;
  if(upgradeBlodProject(p,freshStep))changed=true;
  // Fix pre-existing saved Wishlist categories (e.g. Necrotic Sword of the Abyss
  // once displayed as Misc despite the reviewed recipe saying Weapon).
@@ -926,7 +927,32 @@ function projectProgress(project){
  return{materialPct,checkpointsPct,trackedTotal,complete,trackedPct:trackedTotal?complete/trackedTotal*100:0};
 }
 
+function appendDependencyStages(card,project){
+ const api=window.AQWCDependencies,states=api.status(project),stages=api.evaluate(api.stages,states,current?stock:null);
+ const panel=node('div',undefined,'wishlist-acquisition dependency-panel');
+ panel.append(node('strong','Questline · Source reviewed'),node('p','Eight sequential quests at A Mysterious Stranger. Level and Evil reputation are manual checks. Mark quests complete only after turn-in; missing materials do not reverse a completed quest.','tiny'),makeCopyJoin('/join terminatemple'));
+ const next=stages.find(s=>s.state!=='done');
+ for(const [i,stage] of stages.entries()){
+  const details=node('details',undefined,'dependency-stage');details.dataset.stage=stage.id;details.open=stage===next;
+  const summary=node('summary');summary.append(node('strong',(i+1)+'. '+stage.name),node('span',stage.state==='done'?'✓ Completed':stage.state==='blocked'?'Previous quest unconfirmed':'Quest not confirmed','tiny'));details.append(summary);
+  if(stage.level||stage.reputation)details.append(node('p',[stage.level?'Level '+stage.level:null,stage.reputation].filter(Boolean).join(' · ')+' · Confirm in game','muted tiny'));
+  if(stage.state==='done')details.append(node('p','Marked completed manually. Turn-in stock is no longer counted.','muted tiny'));
+  else{
+   if(stage.blocked.length)details.append(node('p','Requires: '+stage.blocked.map(id=>api.stages.find(s=>s.id===id)?.name||id).join(', '),'muted tiny'));
+   for(const r of stage.rows){
+    const line=node('div',undefined,'dependency-material');const name=node('button',r.item+' ×'+fmt(r.count),'itemlink');name.type='button';name.onclick=()=>openItemDetails(r.item,project.id);
+    const label=r.have===null?'Stock unknown':fmt(r.have)+' / '+fmt(r.count)+' · '+fmt(r.missing)+' remaining';
+    const meta=node('div',undefined,'dependency-material-meta');meta.append(name,node('small',label,'muted tiny'));line.append(meta);if(r.join)line.append(makeCopyJoin(r.join));details.append(line);
+   }
+   if(stage.note)details.append(node('p',stage.note,'muted tiny'));
+   if(stage.alternative)details.append(makeCopyJoin(stage.alternative.join));
+  }
+  panel.append(details);
+ }
+ const links=node('div',undefined,'methodbuttons');for(const [label,url] of [['Quest source ↗',api.wiki],['Class shop ↗',api.shop]]){const a=node('a',label,'tiny');a.href=url;a.target='_blank';a.rel='noopener noreferrer';links.append(a)}panel.append(links);card.append(panel);
+}
 function appendWishlistGuidance(card,project){
+ if(window.AQWCDependencies?.matches(project.name)){appendDependencyStages(card,project);return}
  if(isBlodProject(project.name)){
   const panel=node('details',undefined,'wishlist-acquisition');
   panel.append(node('summary','Recommended farm route · Mace → Bow → Blade'));
@@ -963,7 +989,7 @@ function observeWishlistCards(list){
 
 const WISHLIST_ART=Object.freeze([{"name":"Necrotic Sword of Doom","type":"Weapon","source":"https://aqwwiki.wikidot.com/necrotic-sword-of-doom-sword","image":"https://i.imgur.com/9OzLTIJ.png","credit":"crook, rickyb20 and Shiraiy"},{"name":"Void Highlord","type":"Class","source":"https://aqwwiki.wikidot.com/void-highlord-class","image":"https://i.imgur.com/yMNewwX.png","credit":"Apus and Frozen"},{"name":"Legion Revenant","type":"Class","source":"https://aqwwiki.wikidot.com/legion-revenant-class","image":"https://i.imgur.com/dF9m16T.png","credit":"Menace, Qloudy, Taryth and Tris"},{"name":"Chaos Avenger","type":"Class","source":"https://aqwwiki.wikidot.com/chaos-avenger","image":"https://i.imgur.com/vnp2Qf7.png","credit":"Apus"},{"name":"Blinding Light of Destiny","type":"Weapon","source":"https://aqwwiki.wikidot.com/blinding-light-of-destiny-axe","image":"https://i.imgur.com/RanNxu8.png","credit":"Locke Lionheart and L0re"},{"name":"ArchMage","type":"Class","source":"https://aqwwiki.wikidot.com/archmage-class","image":"https://i.imgur.com/dwzd3rd.png","credit":"Apus"},{"name":"Sin of the Abyss","type":"Weapon","source":"https://aqwwiki.wikidot.com/sin-of-the-abyss","image":"https://i.imgur.com/CRgXcD9.png","credit":"Menace"},{"name":"Dragon of Time","type":"Class","source":"https://aqwwiki.wikidot.com/dragon-of-time-class","image":"https://i.imgur.com/GIz1bra.png","credit":"Apus"},{"name":"Verus DoomKnight","type":"Class","source":"https://aqwwiki.wikidot.com/verus-doomknight-class","image":"https://i.imgur.com/bVigqoz.png","credit":"Apus"},{"name":"Drakath the Eternal","type":"Armor","source":"https://aqwwiki.wikidot.com/drakath-the-eternal","image":"https://i.imgur.com/nTcdDDp.png","credit":"Bad"},{"name":"Necrotic Sword of the Abyss","type":"Weapon","source":"https://aqwwiki.wikidot.com/necrotic-sword-of-the-abyss","image":"https://i.imgur.com/YxJiOyp.png","credit":"Bad"},{"name":"Infernal Flame Pyromancer","type":"Armor","source":"https://aqwwiki.wikidot.com/infernal-flame-pyromancer","image":"https://i.imgur.com/vgeZFTW.png","credit":"Darkfirekiller"},{"name":"Sepulchure's DoomKnight Armor","type":"Armor","source":"https://aqwwiki.wikidot.com/sepulchure-s-doomknight-armor","image":"https://i.imgur.com/G8Wl8DT.png","credit":"Locke Lionheart and Skyandee"},{"name":"Malgor's ShadowFlame Blade","type":"Weapon","source":"https://aqwwiki.wikidot.com/malgor-s-shadowflame-blade","image":"https://i.imgur.com/4fknVeI.png","credit":"Apus"},{"name":"Lich","type":"Class","source":"https://aqwwiki.wikidot.com/lich-class","image":"https://i.imgur.com/wE2U5kE.png","credit":"Apus"},{"name":"Necrotic Blade of the Underworld","type":"Weapon","source":"https://aqwwiki.wikidot.com/necrotic-blade-of-the-underworld","image":"https://i.imgur.com/OFIZBff.png","credit":"Bad"},{"name":"Exalted Apotheosis","type":"Weapon","source":"https://aqwwiki.wikidot.com/exalted-apotheosis","image":"https://i.imgur.com/rRfCTkM.png","credit":"Darkfirekiller"},{"name":"King's Echo","type":"Class","source":"https://aqwwiki.wikidot.com/king-s-echo","image":"https://i.imgur.com/zpLhEl4.png","credit":"Apus"},{"name":"Arcana Invoker","type":"Class","source":"https://aqwwiki.wikidot.com/arcana-invoker","image":"https://i.imgur.com/JWGdbUP.png","credit":"Apus"},{"name":"SoulForge Hammer","type":"Weapon","source":"https://aqwwiki.wikidot.com/soulforge-hammer","image":"https://i.imgur.com/izb9fAT.png","credit":"ErickMorgado and rickyb20"},{"name":"Eternity Blade","type":"Weapon","source":"https://aqwwiki.wikidot.com/eternity-blade","image":"https://i.imgur.com/MgorPvv.png","credit":"Luminitos"},{"name":"Drakath's Sword (Free Player)","type":"Weapon","source":"https://aqwwiki.wikidot.com/drakath-s-sword-free-player","image":"https://i.imgur.com/l35CrlW.png","credit":"Counterswitch and Xia"},{"name":"Drakath Armor (Permanent)","type":"Armor","source":"https://aqwwiki.wikidot.com/drakath-armor-permanent","image":"https://i.imgur.com/COqOdkV.png","credit":"Apus, Matheew, Tendou no Mazo and Xia"},{"name":"StoneCrusher (Merge)","type":"Class","source":"https://aqwwiki.wikidot.com/stonecrusher-merge","image":"https://i.imgur.com/PWbgpDM.png","credit":"Apus"}]);
 function wishlistArtFor(name,type){
- const key=normalizedName(name),group=itemTypeGroup(type);
+ const key=normalizedName(canonicalItemName(name)),group=itemTypeGroup(type);
  return WISHLIST_ART.find(a=>normalizedName(a.name)===key&&a.type===group)||null;
 }
 function wishlistItemArt(project){
