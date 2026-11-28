@@ -110,7 +110,7 @@ console.log("Stack Alerts: exact wiki caps, bank separation, no inferred limits,
 
 assert.ok(html.includes('<section id="alerts" class="view"><div class="card stack-alerts-card">'));
 assert.ok(html.includes("$('homestacks')?.addEventListener('click',()=>selectTab('alerts'))"));
-assert.ok(html.includes('id="homeinventorydelta" class="home-delta"></div><div class="home-stack-card hidden" id="home-stack-card">'));
+assert.ok(html.includes('id="home-alert-grid"><section id="home-wishlist-achievements" class="home-wishlist-wins hidden" aria-label="Wishlist achievements"></section><div class="home-stack-card hidden" id="home-stack-card">'));
 
 assert.ok(html.includes("wishlist-completion-remove"));
 assert.ok(html.includes("Congratulations, Hero!"));
