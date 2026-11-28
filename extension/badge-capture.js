@@ -1,10 +1,12 @@
 'use strict';
 // Explicit activeTab capture. Only public badge image references, never credentials.
-function captureCharacterBadges(doc=document,href=location.href){
+function captureCharacterBadges(doc=document,href=location.href,autoExpand=false){
+ doc=doc??document;href=href??location.href;
  const u=new URL(href);
  if(u.origin!=='https://account.aq.com'||!/^\/(?:AQW\/)?CharPage\/?$/i.test(u.pathname))throw Error('Open the official public Character Page first.');
  const character=(u.searchParams.get('id')||'').trim();
  if(!character||character.length>80||/[\u0000-\u001f\u007f]/.test(character))throw Error('Character name missing from the page URL.');
+ function readBadges(){
  const badges=[],seen=new Set();
  for(const img of doc.querySelectorAll('img')){
   for(const raw of [img.getAttribute('src'),img.getAttribute('data-src'),img.currentSrc]){
@@ -20,6 +22,26 @@ function captureCharacterBadges(doc=document,href=location.href){
  if(!badges.length)throw Error('No recognized badge images found. Open the full badge list and try again.');
  if(badges.length>2000)throw Error('Unexpected badge count.');
  return {character,capturedAt:new Date().toISOString(),badges};
+ }
+ if(!autoExpand)return readBadges();
+ // The Character Page can defer loading its badge list until the user opens it.
+ // Click only a clearly identified collapsed badge control, never a generic page action.
+ return (async()=>{
+  const clicked=new Set();let lastError;
+  for(let attempt=0;attempt<50;attempt++){
+   const controls=doc.querySelectorAll('button,a,summary,[role="button"],[onclick],[data-toggle],[data-bs-toggle]');
+   const toggle=[...controls].find(el=>{
+    if(clicked.has(el)||el.disabled||el.getAttribute('aria-disabled')==='true'||el.getAttribute('aria-expanded')==='true')return false;
+    const label=String(el.textContent||'').replace(/\s+/g,' ').trim();
+    const aria=String(el.getAttribute('aria-label')||'').trim();
+    return /^(?:\+\s*(?:achievement\s+)?badges|(?:show|expand|view)\s+(?:achievement\s+)?badges)$/i.test(label)||/^(?:show|expand)\s+(?:achievement\s+)?badges$/i.test(aria)||el.getAttribute('aria-expanded')==='false'&&/^(?:badges|achievements|achievement badges)$/i.test(label);
+   });
+   if(toggle){clicked.add(toggle);toggle.click();}
+   else{try{return readBadges()}catch(e){lastError=e}}
+   await new Promise(resolve=>setTimeout(resolve,500));
+  }
+  throw Error('Badge list did not load. Open your Character Page, expand + Badges and retry. '+String(lastError?.message||''));
+ })();
 }
 if(typeof module==='object'&&module.exports)module.exports=captureCharacterBadges;
 else if(typeof document!=='undefined'){
@@ -29,7 +51,7 @@ else if(typeof document!=='undefined'){
  capture.addEventListener('click',async e=>{if(!e.isTrusted)return;capture.disabled=true;try{
  const [tab]=await chrome.tabs.query({active:true,currentWindow:true});
  const url=new URL(tab?.url||'');if(url.origin!=='https://account.aq.com'||!/^\/(?:AQW\/)?CharPage\/?$/i.test(url.pathname)||!tab.id)throw Error('Open the official public Character Page first.');
- const result=await chrome.scripting.executeScript({target:{tabId:tab.id},func:captureCharacterBadges,args:[]});
+ const result=await chrome.scripting.executeScript({target:{tabId:tab.id},func:captureCharacterBadges,args:[null,null,true]});
  const snapshot=result?.[0]?.result;if(!snapshot?.badges?.length)throw Error('No badge capture returned.');
  await chrome.storage.local.set({[KEY]:snapshot});await summary();
  }catch(err){show('Capture failed: '+String(err?.message||err)+' Previous capture preserved.')}finally{capture.disabled=false}});
