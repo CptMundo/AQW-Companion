@@ -6,9 +6,9 @@ Created by **CptMundo**. Unofficial AdventureQuest Worlds fan project, not affil
 
 ## Features
 
-AQW Companion is a browser-based collection and planning tool with Home, Wishlist, Daily / Weekly Tracker, Ultras, Builds & Forge, Story, Explore and Inventory. Inventory contains Inventory & Bank, Account Statistics, Compare Exports and History. Home deliberately has **no** secondary tabs.
+AQW Companion is a browser-based collection and planning tool with Home, Wishlist, Quest Tracker, Ultras & Bosses, Builds & Forge, Story, Badge Hunter, Explore and Inventory. Inventory includes Inventory & Bank, Account Statistics, Milestones, Compare Exports and History. Home deliberately has **no** secondary tabs.
 
-Players import their own Account Management JSON exports, then track inventory, Wishlist goals, farming materials, manually completed quests, Ultra strategies and Forge unlocks. Class Builds is available again with source-reviewed activity examples; recommendations remain under community review and are not definitive rankings. Account Statistics uses saved snapshots and does not fabricate game achievements or acquisition dates.
+Players import their own Account Manager JSON exports or use the optional Chrome extension's user-initiated sync, then track inventory, Wishlist goals, farming materials, manually completed quests, Ultra strategies and Forge unlocks. The extension can capture public Character Page inventory/badges and official account progress using the browser's existing session. Public inventory is separate and incomplete; tracker checkmarks remain manual. Class Builds is available again with source-reviewed activity examples; recommendations remain under community review and are not definitive rankings. Account Statistics uses saved snapshots and does not fabricate game achievements or acquisition dates.
 
 ## Current files
 
@@ -29,7 +29,7 @@ Players import their own Account Management JSON exports, then track inventory, 
 
 Imported inventory JSON, selected snapshots, Wishlist, Forge progress and user settings stay in the player's browser (IndexedDB with localStorage recovery). **Never upload personal inventory exports, backups, tokens, cookies, credentials or account data to this public repository.** Umami Cloud measures cookie-free page visits only, respects prior analytics declines and browser privacy signals, and does not send game inventory. Read [privacy.html](privacy.html).
 
-The public catalog is community-derived and can be incomplete or outdated; `data/build_report.json` and `data/source_manifest.json` describe a 15 November 2026 build, not a guarantee that all recipes are verified. No automatic authenticated Artix sync is enabled; see `docs/inventory-sync-reconciliation.md`.
+The public catalog is community-derived and can be incomplete or outdated; `data/build_report.json` and `data/source_manifest.json` describe a 15 November 2026 build, not a guarantee that all recipes are verified. User-initiated Full Sync uses optional Account Manager access and commits locally after confirmation; no background account polling or Companion backend is introduced. Artix authorization for the integration is not established by this README. See `docs/inventory-sync-reconciliation.md` for source boundaries and `docs/ROADMAP_015.md` for the approved staged development plan. The v0.9.3-format backup covers snapshots, goals, Wishlist, quest checks and story statuses, not every browser/extension preference or captured badge, Forge and loyalty record. Keep original exports.
 
 ## Develop and verify
 
