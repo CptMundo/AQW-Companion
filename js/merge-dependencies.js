@@ -122,7 +122,7 @@ function combine(routes,stock=null){
    if(stage.blocked.length)return {...base,rank:2,state:'Verify previous quest',detail:stage.name+' — previous quest not confirmed.'};
    if(stage.rows.some(r=>r.missing===null))return {...base,rank:2,state:'Stock unknown',detail:stage.name+' — import a full inventory to check requirements.'};
    const missing=stage.rows.filter(r=>r.missing>0);
-   if(missing.length){const r=missing[0];return {...base,rank:1,state:'Materials missing',detail:stage.name+' — '+r.missing.toLocaleString('en-US')+' '+r.item+' remaining.',item:r.item,join:r.join,missingTypes:missing.length}}
+   if(missing.length){const r=missing[0];return {...base,rank:1,state:'Materials missing',detail:stage.name+' — '+r.missing.toLocaleString('en-US')+' '+r.item+' remaining.',item:r.item,join:r.join,missingTypes:missing.length,needs:missing.map(({item,missing})=>({item,missing}))}}
    return {...base,rank:0,state:'Turn-in stock available',detail:stage.name+' — listed materials available; verify and turn in manually.',join:'/join terminatemple'};
   }
   if(!integrity)return pending;
@@ -133,15 +133,47 @@ function combine(routes,stock=null){
   if(rows.some(r=>r.missing===null))return {...base,rank:2,state:'Stock unknown',detail:'Import a full inventory to check direct requirements.'};
   if(rows.some(r=>r.overlap||r.outputConflict))return {...base,rank:2,state:'Verify requirement order',detail:'A possession gate or goal output overlaps with consumed stock.'};
   const gate=result.possession.find(r=>r.missing>0);
-  if(gate)return {...base,rank:1,state:'Possession gate missing',detail:'Obtain '+gate.item+' ('+gate.missing.toLocaleString('en-US')+' remaining).',item:gate.item};
+  if(gate)return {...base,rank:1,state:'Possession gate missing',detail:'Obtain '+gate.item+' ('+gate.missing.toLocaleString('en-US')+' remaining).',item:gate.item,needs:result.rows.filter(r=>r.missing>0).map(({item,missing})=>({item,missing}))};
   const missing=result.rows.filter(r=>r.missing>0);
-  if(missing.length){const r=missing[0];return {...base,rank:1,state:'Materials missing',detail:r.missing.toLocaleString('en-US')+' '+r.item+' remaining.',item:r.item,missingTypes:missing.length}}
+  if(missing.length){const r=missing[0];return {...base,rank:1,state:'Materials missing',detail:r.missing.toLocaleString('en-US')+' '+r.item+' remaining.',item:r.item,missingTypes:missing.length,needs:missing.map(({item,missing})=>({item,missing}))}}
   return {...base,rank:0,state:'Direct stock available',detail:route.kind==='quest'?'Check the documented quest and confirm its gates in game.':'Check the documented merge shop and confirm eligibility in game.'};
  }
  function rankRecommendations(rows){
   return [...rows].sort((a,b)=>a.recommendation.rank-b.recommendation.rank||String(a.project.name).localeCompare(String(b.project.name))||String(a.project.id||'').localeCompare(String(b.project.id||'')));
  }
 
-const api={key,describe,direct,selectedRoute,plan,combine,stockIndex,recommend,rankRecommendations};
+
+// Opportunities match only explicitly quantified catalog rewards to known
+// shortages. No substring matching, guessed rewards, or assumed eligibility.
+function recurringOpportunities(rows,tasks,{isRecurring=()=>false,isDone=()=>false,isBlocked=()=>false,isPinned=()=>false,canonicalId=id=>id}={}){
+ const needs=new Map();
+ for(const {project,recommendation} of rows||[]){
+  for(const n of recommendation?.needs||[]){
+   if(!Number.isSafeInteger(n.missing)||n.missing<=0||!key(n.item))continue;
+   const k=key(n.item),goals=needs.get(k)||new Map();
+   goals.set(key(project.name),{name:project.name,item:n.item,missing:n.missing});needs.set(k,goals);
+  }
+ }
+ const found=new Map();
+ for(const t of tasks||[]){
+  if(!t?.id||!['daily','weekly'].includes(t.freq)||t.kind==='activity'||!isRecurring(t)||isDone(t)||isBlocked(t))continue;
+  if(typeof t.wiki!=='string'||!/^https:\/\/aqwwiki\.wikidot\.com\/[a-z0-9-]+$/i.test(t.wiki))continue;
+  const matches=new Map();
+  for(const reward of t.rewards||[]){
+   const match=String(reward).match(/^(.+?)\s+×([1-9][0-9,]*)$/);
+   if(!match)continue;
+   const k=key(match[1]),goals=needs.get(k);
+   if(!goals||!Number.isSafeInteger(Number(match[2].replace(/,/g,''))))continue;
+   matches.set(k,{reward,goals:[...goals.values()]});
+  }
+  if(!matches.size)continue;
+  const id=canonicalId(t.id),k=t.freq+'|'+id;
+  if(!found.has(k))found.set(k,{task:t,id,matches:[...matches.values()],pinned:!!isPinned(id)});
+ }
+ // Keep alternative tasks visible individually, but do not imply both can
+ // be completed. The UI explicitly labels exclusive groups.
+ return [...found.values()].sort((a,b)=>Number(b.task.freq==='daily')-Number(a.task.freq==='daily')||Number(a.pinned)-Number(b.pinned)||a.task.name.localeCompare(b.task.name)||a.id.localeCompare(b.id));
+}
+const api={key,describe,direct,selectedRoute,plan,combine,stockIndex,recommend,rankRecommendations,recurringOpportunities};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.AQWCMergeDependencies=api;
 })(typeof globalThis==='object'?globalThis:this);

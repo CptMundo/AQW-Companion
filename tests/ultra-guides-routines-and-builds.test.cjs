@@ -810,3 +810,17 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.equal(api.rankRecommendations([{project:vdk,recommendation:rec(vdk,()=>0)},{project:vhl,recommendation:rec(vhl,read)}])[0].project.id,'v');
  assert.equal(rec({name:'Drakath the Eternal'},()=>0).state,'Possession gate missing');
  console.log("What's Next: reviewed routes, stock coverage, manual quest stages, gates, unknowns and ranking passed.");}
+
+
+// Recurring opportunities require exact quantified catalog rewards and known missing stock.
+{const api=require('../js/merge-dependencies.js'),integrity=require('../js/recipe-integrity.js');
+ const project={name:'Sin of the Abyss',steps:[]},recommendation=api.recommend(project,{integrity,stock:()=>0});
+ const rows=[{project,recommendation},{project:{name:'Other'},recommendation:{needs:[{item:'Nulgath Insignia',missing:2}]}}];
+ const task=(id,reward,extra={})=>({id,name:id,freq:'weekly',wiki:'https://aqwwiki.wikidot.com/nulgath-s-quests',rewards:[reward],...extra});
+ const options={isRecurring:t=>t.id!=='retired',isDone:t=>t.id==='done',isBlocked:t=>t.id==='conflict',isPinned:id=>id==='weekly',canonicalId:id=>id==='alias'?'weekly':id};
+ const candidates=[task('weekly','Nulgath Insignia ×5'),task('alias','Nulgath Insignia ×5'),task('daily','Tainted Gem ×1',{freq:'daily'}),task('done','Nulgath Insignia ×5'),task('conflict','Nulgath Insignia ×5'),task('retired','Nulgath Insignia ×5'),task('wrong','Nulgath Insignia Fragment ×5'),task('random','Nulgath Insignia ×5 (random)'),task('bare','Nulgath Insignia'),task('activity','Nulgath Insignia ×5',{kind:'activity'}),task('unsourced','Nulgath Insignia ×5',{wiki:''})];
+ const result=api.recurringOpportunities(rows,candidates,options);
+ assert.deepEqual(result.map(r=>r.id),['daily','weekly']);assert.equal(result[1].matches[0].goals.length,2);assert.equal(result[1].pinned,true);
+ assert.equal(api.recurringOpportunities([{project,recommendation:api.recommend(project,{integrity,stock:null})}],candidates,options).length,0);
+ assert.equal(api.recurringOpportunities([],candidates,options).length,0);
+ console.log("What's Next routines: exact rewards, known shortages, aliases, completed/conflicting quests and source guard passed.");}

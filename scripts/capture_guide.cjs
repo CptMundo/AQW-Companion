@@ -294,10 +294,16 @@ async function main(){
   await shared.locator('input[data-goal="void highlord"]').uncheck();assert.ok(await crystals.getByText('Void Crystal A ×1',{exact:true}).isVisible());
   await page.setViewportSize({width:390,height:844});assert.ok(await shared.evaluate(e=>e.scrollWidth<=e.clientWidth+1));await page.setViewportSize({width:1360,height:1100});
   await shared.getByRole('button',{name:'Clear selection',exact:true}).click();assert.equal(await shared.locator('.shared-plan-row').count(),0);
+  // Add a reviewed recipe whose existing catalog includes a quantified weekly reward.
+  await page.evaluate(()=>{const k='aqw-companion-unlocks',all=JSON.parse(localStorage.getItem(k)||'[]');if(!all.some(p=>p.name==='Sin of the Abyss'))all.push({id:'next-routine-sin',name:'Sin of the Abyss',type:'Weapon',steps:[]});localStorage.setItem(k,JSON.stringify(all))});
+  await page.reload({waitUntil:'domcontentloaded'});await page.locator('#dashboard').waitFor({state:'visible'});
   // What's Next uses the same Home card and reviewed stage evidence.
   await go('home','overview');
   const next=page.locator('#homeprojectslist');assert.ok(await page.getByRole('heading',{name:"🎯 What's Next?",exact:true}).isVisible());
   assert.ok(await next.locator('.home-next-project').count()>0);
+  const routine=next.locator('.home-next-routines');assert.ok(await routine.isVisible());
+  assert.ok(await routine.locator('.home-next-routine').count()<=3);
+  assert.ok(await routine.getByRole('link',{name:'Quest source ↗'}).first().isVisible());
   assert.ok(await next.getByText('Based on the selected full inventory & bank snapshot.',{exact:false}).isVisible());
   await page.setViewportSize({width:390,height:844});assert.ok(await next.evaluate(e=>e.scrollWidth<=e.clientWidth+1));await page.setViewportSize({width:1360,height:1100});
   await next.locator('.home-next-project').first().getByRole('button',{name:'View goal ↗'}).click();assert.ok(await page.locator('#unlocks').isVisible());assert.equal(await page.locator('#unlocksearch').inputValue(),'');assert.ok(await page.locator('.unlockcard:focus').count());assert.ok(await page.locator('.unlockcard').count()>1);
