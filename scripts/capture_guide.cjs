@@ -306,10 +306,10 @@ async function main(){
   assert.ok(await routine.getByRole('link',{name:'Quest source ↗'}).first().isVisible());
   assert.equal(await next.locator('.home-next-metric').count(),4);
   assert.ok(await next.locator('.home-next-status').first().isVisible());
-  const questId=await routine.locator('.home-next-routine').first().getAttribute('data-quest-id');
+  const nextQuestId=await routine.locator('.home-next-routine').first().getAttribute('data-quest-id');
   await routine.locator('.home-next-routine').first().getByRole('button',{name:'View quest ↗'}).click();
   assert.ok(await page.locator('#planner-discover').isVisible());
-  assert.equal(await page.locator('#planner-suggestions .planner-quest-card:focus').getAttribute('data-quest-id'),questId);
+  assert.equal(await page.locator('#planner-suggestions .planner-quest-card:focus').getAttribute('data-quest-id'),nextQuestId);
   await page.locator('#plannersearch').fill('');
   await go('home','overview');
   assert.ok(await next.getByText('Based on the selected full inventory & bank snapshot.',{exact:false}).isVisible());
