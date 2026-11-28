@@ -14,7 +14,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="AQW Companion | AQWorlds Inventory & Farming Tracker">
 <meta name="twitter:description" content="A free unofficial AdventureQuest Worlds companion with inventory, Wishlist, farming and Forge tracking."><link rel="icon" type="image/png" href="assets/brand-favicon.png">
-<link rel="stylesheet" href="css/site.css?v=152"><link rel="stylesheet" href="css/boost-finder.css?v=3">
+<link rel="stylesheet" href="css/site.css?v=153"><link rel="stylesheet" href="css/boost-finder.css?v=3">
 
 
 <link rel="stylesheet" href="css/item-icons.css">
@@ -6266,7 +6266,7 @@ function homeQuestTile(task,done){
  const credit=node('a','↗','home-quest-credit');credit.href=art.source;credit.target='_blank';credit.rel='noopener noreferrer';credit.title='Image source: AQWorlds Wiki / Artix';credit.setAttribute('aria-label',credit.title);visual.append(credit)}
  if(done)visual.append(node('span','✓','home-quest-done-mark'));
  tile.append(visual);
- const name=node('strong',plannerTitle(task),'home-quest-name');name.title=plannerTitle(task);tile.append(name);
+ const name=node('strong',plannerTitle(task),'home-quest-name');name.title=plannerTitle(task);const info=node('div',undefined,'home-quest-info');info.append(name);
  const routes=new Map(),add=(join,label)=>{if(typeof join==='string'&&/^\/join [a-z0-9-]+$/i.test(join.trim())){const value=join.trim();if(!routes.has(value.toLowerCase()))routes.set(value.toLowerCase(),{join:value,label})}};
  for(const target of taskRoutes[task.id]?.targets||[])add(target[2],target[0]);
  add(task.farmJoin,'Farm / boss');add(task.join,'Location');add(task.acceptJoin,'Accept quest');
@@ -6274,7 +6274,7 @@ function homeQuestTile(task,done){
  if(joins.length){const main=makeCopyJoin(joins[0].join);main.title='Copy '+joins[0].join+' · '+joins[0].label;joinBox.append(main);
  if(joins.length>1){const details=node('details',undefined,'home-quest-extra-joins');details.append(node('summary','+'+(joins.length-1)+' more locations'));for(const route of joins.slice(1)){const row=node('div',undefined,'home-quest-extra-route');row.append(node('small',route.label),makeCopyJoin(route.join));details.append(row)}joinBox.append(details)}}
  else joinBox.append(node('small','Map not verified','muted tiny'));
- tile.append(joinBox);
+ info.append(joinBox);tile.append(info);
  const action=node('button',conflict?'Alternative done':done?'✓ Completed · Undo':'✓ Mark complete','smallbutton home-quest-action');
  action.type='button';action.disabled=!!conflict;action.setAttribute('aria-pressed',String(done));action.setAttribute('aria-label',(done?'Undo completion of ':'Mark complete: ')+task.name);action.title=conflict?'Alternative already completed: '+conflict.name:done?'Undo completion':'Mark complete';
  action.onclick=()=>{toggleTask(task,!done);const next=[...$('homeactivities').querySelectorAll('.home-quest-tile')].find(e=>e.dataset.questId===task.id);next?.querySelector('.home-quest-action')?.focus({preventScroll:true})};tile.append(action);
