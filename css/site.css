@@ -1553,7 +1553,7 @@ html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-i
 /* Home Daily / Weekly quest gallery — shares the Planner artwork and completion ledger. */
 #overview #homeactivities .home-quest-group-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:5px;margin:5px 0 2px;color:var(--cyan);font-size:12px}
 #overview #homeactivities .home-quest-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch}
-#overview #homeactivities .home-quest-tile{display:grid;grid-template-rows:clamp(62px,7vw,94px) minmax(2.5em,auto) 1fr auto;gap:6px;padding:7px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);min-width:0;text-align:center;align-items:start}
+#overview #homeactivities .home-quest-tile{display:grid;grid-template-rows:clamp(80px,8.2vw,110px) 1fr auto;gap:5px;padding:7px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);min-width:0;text-align:center;align-items:start}
 #overview #homeactivities .home-quest-visual{position:relative;display:grid;place-items:center;overflow:hidden;height:100%;min-width:0;border-radius:6px;background:var(--panel)}
 #overview #homeactivities .home-quest-visual img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
 #overview #homeactivities .home-quest-visual img[hidden],#overview #homeactivities .home-quest-fallback[hidden]{display:none}
@@ -1561,7 +1561,8 @@ html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-i
 #overview #homeactivities .home-quest-credit,#overview #homeactivities .home-quest-done-mark{position:absolute;top:4px;border-radius:5px;background:var(--panel);padding:2px 5px;font-size:11px}
 #overview #homeactivities .home-quest-credit{right:4px;color:var(--cyan)}
 #overview #homeactivities .home-quest-done-mark{left:4px;color:var(--aqwc-success-text);background:var(--aqwc-success-bg)}
-#overview #homeactivities .home-quest-name{font-size:12px;line-height:1.25;overflow-wrap:anywhere;align-self:center}
+#overview #homeactivities .home-quest-info{display:grid;align-content:start;gap:3px;min-width:0}
+#overview #homeactivities .home-quest-name{font-size:12px;line-height:1.25;overflow-wrap:anywhere;align-self:start;margin:0}
 #overview #homeactivities .home-quest-joins{display:grid;gap:4px;justify-items:center;min-width:0}
 #overview #homeactivities .home-quest-joins .ultra-copy-join{width:100%!important;justify-content:space-between!important;padding:5px 6px!important;gap:4px;font-size:10px}
 #overview #homeactivities .home-quest-extra-joins{width:100%;min-width:0;font-size:10px;text-align:left}
