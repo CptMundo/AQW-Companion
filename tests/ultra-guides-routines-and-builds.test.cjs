@@ -789,3 +789,24 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  const shared=api.combine([a,b],()=>2);assert.equal(shared.possession[0].count,2);assert.equal(shared.possession[0].overlap,true);assert.equal(shared.rows.find(r=>r.item==='B').outputConflict,true);
  assert.equal(api.combine([],()=>0).rows.length,0);assert.throws(()=>api.combine([null],()=>0),/Unreviewed/);
  console.log('Shared Wishlist: combined demand, single stock deduction, separate gates, conflicts and unknown stock passed.');}
+
+ 
+// What's Next: reviewed routes, selected stock, unknown gates and manual stage evidence.
+{const api=require('../js/merge-dependencies.js'),quest=require('../js/quest-dependencies.js'),integrity=require('../js/recipe-integrity.js');
+ const vhl={id:'v',name:'Void Highlord',steps:[]},vdk={id:'d',name:'Verus DoomKnight',steps:[]};
+ const rec=(p,stock)=>api.recommend(p,{quest,integrity,stock});
+ const read=api.stockIndex([{Name:'Void Crystal A',Count:1},{Name:'Void Crystal A',Count:2},{Name:'Roentgenium of Nulgath',Count:15},{Name:'Void Crystal B',Count:1}]);
+ assert.equal(read('Void Crystal A'),3);assert.equal(rec(vhl,read).state,'Direct stock available');
+ assert.equal(rec(vhl,null).state,'Stock unknown');assert.equal(rec(vhl,()=>0).item,'Roentgenium of Nulgath');
+ assert.equal(rec(vdk,()=>0).join,'/join underrealm');assert.ok(rec(vdk,()=>0).detail.includes('Body, Soul'));
+ assert.equal(rec(vdk,()=>1000000).state,'Turn-in stock available');
+ assert.ok(rec(vdk,()=>1000000).note.includes('Confirm quest access'));
+ const completed={...vdk,steps:quest.labels.map(label=>({kind:'manual',label,status:'done'}))};
+ assert.equal(rec(completed,()=>0).state,'Verify claim');
+ const firstDone={...vdk,steps:[{kind:'manual',label:quest.labels[0],status:'done'}]};assert.ok(rec(firstDone,()=>0).detail.includes('Of the Same Cloak'));
+ assert.equal(rec({name:'Not a reviewed route'},()=>0).state,'Pending review');
+ assert.equal(api.stockIndex([{Name:'Bad',Count:'bad'}])('Bad'),null);
+ assert.equal(api.stockIndex([{Name:'Bad',Count:null}])('Bad'),null);
+ assert.equal(api.rankRecommendations([{project:vdk,recommendation:rec(vdk,()=>0)},{project:vhl,recommendation:rec(vhl,read)}])[0].project.id,'v');
+ assert.equal(rec({name:'Drakath the Eternal'},()=>0).state,'Possession gate missing');
+ console.log("What's Next: reviewed routes, stock coverage, manual quest stages, gates, unknowns and ranking passed.");}
