@@ -764,3 +764,16 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  let evaluated=dep.evaluate(dep.stages,{},()=>0);assert.equal(evaluated[0].state,'unknown');assert.equal(evaluated[1].state,'blocked');assert.equal(evaluated[0].rows[0].missing,13);assert.equal(dep.evaluate(dep.stages,{},null)[0].rows[0].missing,null);
  evaluated=dep.evaluate(dep.stages,{body:'done'},()=>0);assert.equal(evaluated[0].rows.length,0);assert.equal(evaluated[1].state,'unknown');assert.equal(dep.evaluate(dep.stages,{},()=>1000000)[0].state,'unknown');assert.throws(()=>dep.validateGraph([{id:'a',requires:['b']}]),/Unknown dependency/);assert.throws(()=>dep.validateGraph([{id:'a',requires:['b']},{id:'b',requires:['a']}]),/Cyclic/);
  console.log('VDK dependency graph, alias, migration and turn-in evidence passed.');}
+
+// Typed recipe requirements and allocation over shared acyclic branches.
+{const api=require('../js/merge-dependencies.js'),integrity=require('../js/recipe-integrity.js');
+ const vhl=api.describe('Void Highlord (Class)',integrity);assert.ok(vhl);assert.equal(vhl.rows.length,3);assert.ok(vhl.rows.every(r=>r.kind==='consume'));assert.equal(vhl.rows[1].count,1);
+ const drakath=api.describe('Drakath the Eternal',integrity);assert.equal(drakath.rows.filter(r=>r.kind==='possess').length,2);assert.equal(drakath.rows.filter(r=>r.kind==='consume').length,5);assert.equal(api.direct(vhl,null)[0].missing,null);assert.equal(api.describe('unknown item',integrity),null);
+ const route=api.selectedRoute(vhl,integrity);const stock=n=>api.key(n)==='void crystal a'?1:0;
+ const p=api.plan(vhl,route,stock);assert.equal(p.outputs.find(r=>r.item==='Void Crystal A').batches,0);assert.equal(p.outputs.find(r=>r.item==='Void Crystal B').batches,1);assert.ok(!p.leaves.some(r=>r.item==='Unidentified 10'));assert.equal(p.leaves.find(r=>r.item==='Elder\'s Blood').missing,2);
+ const row=(item,count,kind='consume')=>({item,count,kind}),r={name:'target',kind:'merge',rows:[row('A',1),row('B',1)]};
+ const recipes={a:{name:'A',yield:1,rows:[row('C',2)]},b:{name:'B',yield:1,rows:[row('C',3)]},c:{name:'C',yield:2,rows:[row('Ore',5),row('Tool',1,'possess')]}};
+ const shared=api.plan(r,recipes,n=>api.key(n)==='c'?1:0);assert.equal(shared.outputs.find(x=>x.item==='C').batches,2);assert.equal(shared.leaves.find(x=>x.item==='Ore').count,10);assert.equal(shared.possession[0].count,1);
+ const overlap=api.plan({name:'target',rows:[row('Tool',1),row('Tool',1,'possess')]},{},()=>1);assert.equal(overlap.possession[0].overlap,true);
+ assert.throws(()=>api.plan(r,{a:{name:'A',yield:1,rows:[row('A',1)]}},()=>0),/Cyclic/);assert.throws(()=>api.plan(r,{a:{name:'A',rows:[row('C',1)]}},()=>0),/Unknown recipe yield/);assert.equal(api.plan(r,recipes,null),null);
+ console.log('Merge dependencies: consumption, gates, owned intermediate stock, shared branches, yield and cycle checks passed.');}

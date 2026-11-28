@@ -45,3 +45,7 @@ Compatible optional progressV1 covers seven explicitly allowed local sections. T
 ### 0.14 A1 — Dependency foundations (VDK pilot)
 
 Ordered quest graph, validated prerequisite links, explicit manual quest state and separate turn-in stock. First supported route is Verus DoomKnight, including wiki class suffix aliases, eight steps and source-reviewed quantities. Existing player checks/custom steps retained. Completed quests do not require reacquiring turned-in stock. Unconfirmed prerequisites remain unknown; no automatic eligibility from item stock. No global recipe graph or Smart Farming Route yet. See docs/DEPENDENCY_VDK.md.
+
+### 0.14 A2 — Typed merge dependencies
+
+Classify existing source-reviewed merge ingredient rows as consumed at all quantities, and Eternal Drakath Set possession gates separately. Add read-only direct shortages and an optional Void Crystal A/B crafting route using shared-stock allocation, explicit yield and topological aggregation. Do not combine alternative routes or treat unknown stock as zero. Other recipes remain direct-only; cross-project allocation and What's Next are not implemented yet. Preserve saved checklist schema. Stack on A1 until all three PRs are ready.
