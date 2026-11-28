@@ -1536,3 +1536,16 @@ html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-i
 #account-progress-summary .account-progress-status-positive{color:var(--aqwc-success-text);border-color:var(--aqwc-success-border);background:var(--aqwc-success-bg)}
 #account-progress-summary .account-progress-status-review{color:var(--gold)}
 @media(max-width:850px){#account-progress-summary .account-progress-status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Home highlights: center card content without changing visibility or the equal-width grid. */
+#overview .home-inventory-changes .home-alert-grid>.home-wishlist-wins,
+#overview .home-inventory-changes .home-alert-grid>.home-stack-card{align-content:center;text-align:center;justify-items:center}
+#overview .home-alert-grid .home-delta-highlight-head,
+#overview .home-alert-grid .homehead{justify-content:center;width:100%}
+#overview .home-alert-grid .home-highlight-metric{justify-content:center}
+#overview .home-alert-grid .home-wishlist-win{justify-content:center;max-width:100%}
+#overview .home-alert-grid .home-wishlist-win-details{flex:0 1 auto;min-width:0;text-align:center}
+#overview .home-alert-grid #home-stack-summary{justify-content:center;max-width:100%}
+#overview .home-quantity-changes{border:1px solid var(--line);border-radius:9px;background:var(--panel2);padding:8px 10px}
+#overview .home-quantity-changes .home-delta-highlight-head{margin-bottom:3px}
+@media(max-width:420px){#overview .home-quantity-changes{padding:6px 7px}}
