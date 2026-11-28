@@ -277,7 +277,28 @@ async function main(){
   },version);
   await popup.goto(origin+'/extension/popup.html',{waitUntil:'domcontentloaded'});await popup.locator('#one-click-inventory').waitFor({state:'visible'});await popup.waitForTimeout(300);await shot(popup,'popup-home');
   await popup.locator('[data-view=settings]').click();await popup.locator('#appearance-background').waitFor({state:'visible'});await shot(popup,'popup-settings');
-  await context.close();
+  // Actual download -> fresh isolated profile -> restore, with synthetic progress only.
+  const expectedProgress=await page.evaluate(stamp=>{
+   const badge=window.AQWCBadgeCatalog.find(b=>!b.placeholder&&b.image).id;
+   const progress={forge:['weapon:forge'],badges:{[badge]:'tracked'},badgeCapture:{character:'Demo Hero',capturedAt:stamp,ids:[badge],storyGroups:[],ambiguous:0,unknown:0,discovery:{newIds:null,latestIds:[],latestAt:null}},accountProgress:{summary:{section:'summary',capturedAt:stamp,created:'2021-01-01',months:12,purchased:20000,bonus:5000,total:25000},sagas:{section:'sagas',capturedAt:stamp,rows:[{name:'Prologue',state:'colored'},{name:'Shadowfall',state:'unknown'}]},membership:{section:'membership',capturedAt:stamp,rows:[{name:'1 Month',state:'colored',evidence:'threshold'}]},ac:{section:'ac',capturedAt:stamp,rows:[{name:'500 ACs',state:'colored',evidence:'threshold'}]},playtime:{section:'playtime',capturedAt:stamp,rows:[{name:'1 Week',state:'colored',evidence:'threshold'}]}},stackCaps:{'void aura':800},publicInventory:{source:'character-page',character:'Demo Hero',capturedAt:stamp,reportedTotal:1,items:[{name:'ArchPaladin',type:'Class',quantity:null,rank:10}]},theme:'dark'};
+   window.AQWCPortableProgress.apply(localStorage,progress);return progress;
+  },stamp);
+  await page.locator('#backup').evaluate(b=>{b.closest('details').open=true;b.closest('.inventory-advanced').open=true});
+  const downloadPromise=page.waitForEvent('download');await page.locator('#backup').click();const download=await downloadPromise;const bytes=fs.readFileSync(await download.path()),portableBackup=JSON.parse(bytes.toString());
+  assert.deepEqual(portableBackup.progressV1,expectedProgress);assert.ok(portableBackup.activeSnapshotUid);
+  const restored=await browser.newContext({viewport:{width:1360,height:1100}});await restored.route('**/*',r=>r.request().url().startsWith(origin+'/')?r.continue():r.abort());
+  const fresh=await restored.newPage();await fresh.goto(origin+'/',{waitUntil:'domcontentloaded'});
+  await fresh.waitForFunction(()=>window.AQWCBadgeHunter&&window.AQWCAccountProgress&&!document.querySelector('#overview').hasAttribute('data-inventory-booting'));
+  await fresh.evaluate(()=>localStorage.setItem('fixture-private-consent','keep'));
+  const cancel=fresh.waitForEvent('dialog').then(d=>d.dismiss());await fresh.locator('#file').setInputFiles({name:'Portable.json',mimeType:'application/json',buffer:bytes});await cancel;
+  await fresh.waitForFunction(()=>document.querySelector('#alert')?.textContent.includes('cancelled'));assert.equal(await fresh.locator('#historylist .historyitem').count(),0);
+  const accept=fresh.waitForEvent('dialog').then(d=>d.accept());await fresh.locator('#file').setInputFiles({name:'Portable.json',mimeType:'application/json',buffer:bytes});await accept;
+  await fresh.waitForFunction(()=>document.querySelector('#alert')?.textContent.includes('Imported 1 file(s)'));
+  await fresh.reload({waitUntil:'domcontentloaded'});await fresh.locator('#dashboard').waitFor({state:'visible'});
+  const roundTrip=await fresh.evaluate(()=>Object.fromEntries(Object.entries(window.AQWCPortableProgress.keys).map(([field,key])=>[field,field==='theme'?localStorage.getItem(key):JSON.parse(localStorage.getItem(key))])));
+  assert.deepEqual(roundTrip,expectedProgress);assert.equal(await fresh.evaluate(()=>localStorage.getItem('fixture-private-consent')),'keep');assert.equal(await fresh.locator('#historylist .historyitem').count(),2);
+  console.log('PORTABLE_BACKUP_ROUNDTRIP: download, cancel, confirmed restore, reload and seven progress sections passed');
+  await restored.close();await context.close();
   // The production Wiki assistant is loaded against an explicit fictional Wiki fixture.
   const wc=await browser.newContext({viewport:{width:1300,height:1050}});const wiki=await wc.newPage();await wiki.route('**/*',r=>r.request().isNavigationRequest()?r.fulfill({contentType:'text/html',body:'<!doctype html><html><body></body></html>'}):r.abort());
   await wiki.goto('https://aqwwiki.wikidot.com/example-sword');await wiki.setContent('<div id="page-title">Example Sword</div><div id="breadcrumbs"><a href="/items">Items</a> <a href="/swords">Swords</a></div><div id="page-content"><p><strong>Location:</strong> <a href="/museum">Museum</a><br><strong>Price:</strong> 300 AC<br><strong>Sellback:</strong> 75 AC<br><strong>Rarity:</strong> Awesome Rarity<br><strong>Description:</strong> Fictional demonstration item.</p><ul><li>Also see:<ul><li><a href="/related-sword">Related Sword</a></li></ul></li></ul></div>');
