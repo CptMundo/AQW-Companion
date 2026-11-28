@@ -1,13 +1,13 @@
 # AQW Companion — Architecture & continuity
 
-Updated 2026-11-23. Base commit: `e8d19a910b8f6e0cc3cf35958d80a8f938d03f8d` (after PR #83).
+Updated 2026-11-28 for the 0.13.x consolidation; baseline: `506fcf07558155dae7bdd89438ee2ddb60813159` (PR #238). Earlier extraction notes below are historical, not a complete current file inventory.
 
 ## Principles
 
 1. Static client-side app on GitHub Pages; no Companion account backend.
-2. Privacy-first local data: manually imported Account Management JSON is stored in the player's browser, with IndexedDB and a localStorage recovery path. Never commit player exports to the public repo.
-3. Stable UX: **Home has no subtabs.** Top tabs: Home → Wishlist → Daily / Weekly Tracker → Ultras → Class Builds → Story → Explore → Inventory.
-4. Inventory subtabs: Inventory & Bank → Account Statistics → Compare Exports → History. Class Builds subtabs: Class Builds → Forge Tracker.
+2. Privacy-first local data: manually imported or explicitly synchronized Account Manager inventory is stored in the player's browser, with IndexedDB and a localStorage recovery path. Never commit player exports to the public repo.
+3. Stable UX: **Home has no subtabs.** Top tabs: Home → Wishlist → Quest Tracker → Ultras & Bosses → Builds & Forge → Story → Badge Hunter → Explore → Inventory.
+4. Inventory subtabs: Inventory & Bank → Account Statistics → Milestones → Compare Exports → History. Class Builds subtabs: Class Builds → Forge Tracker.
 5. Do not make up combat damage, acquisition dates, official achievements, account progress or inventory ownership. Community data is reference only.
 6. Separate PRs, regression tests, explicit owner approval for merges, and **one portable handoff Markdown file for every PR**.
 
@@ -24,7 +24,7 @@ Updated 2026-11-23. Base commit: `e8d19a910b8f6e0cc3cf35958d80a8f938d03f8d` (aft
 | `assets/brand-logo.png`, `assets/brand-favicon.png` | Exact existing images moved from Base64 into local assets. |
 | `data/companion_database.json` | Community-derived static public catalog, not the user's inventory. |
 | `data/aqw-calendar.json` | Curated event calendar. |
-| `docs/inventory-sync-reconciliation.md` | Proposed source reconciliation, NOT enabled Character Page sync. |
+| `docs/inventory-sync-reconciliation.md` | Historical reconciliation design; current user-initiated full/public sync boundaries are documented there. |
 | `tests/` | Node-based regression suite; static assertions alone cannot verify browser behavior. |
 
 ### Critical CSS cascade order
@@ -42,11 +42,13 @@ This sequence reproduces the original inline style order **without changing CSS 
 ## Runtime data flow
 
 ```
-Player imports JSON manually
+Player imports JSON or explicitly starts Full Sync
   → browser snapshot storage (IndexedDB + localStorage recovery)
   → Inventory, Compare Exports, History
   → Wishlist goals and Account Statistics
 Public community catalog → Explore and item/quest references
+Public Character Page → separate partial inventory / badge evidence
+Account Manager Progress Badges → separate local progress snapshots
 Manual checkmarks → Forge, Ultras, Daily/Weekly, Story
 Umami Analytics → sanitized page visit metadata, not imported JSON
 ```
@@ -93,3 +95,7 @@ This file is a context handoff, not a replacement for current GitHub source and 
 - The CSS/JS load sequence includes `js/wishlist-finds.js` between the Ultra modules and Account Statistics. Current CSS retains `css/recipe-coverage.css` for accessible icon-only delete controls.
 - In Wishlist, recipe notices only appear for actionable discrepancies against a reviewed source; routine provenance warnings are deliberately kept out of the cards. Details remain accessible on demand in **How to obtain**.
 - Distinguish merge ingredient requirements from separate quest prerequisites; reject self-dependent quest data as an item creation recipe.
+
+## 10. Consolidation and staged roadmap
+
+See [ROADMAP_015.md](ROADMAP_015.md) and [CONSOLIDATION_BASELINE.md](CONSOLIDATION_BASELINE.md). Preserve local storage keys and recovery behavior, explicit user initiation of account access, optional origin permission, separate public observations, and the existing quest-period ledger. Do not replace the application wholesale. The guide browser workflow now records synthetic startup/import/reload measurements in CI logs; timings are not field telemetry. A malformed backup snapshot is rejected before any snapshot writes; disk/quota failures during a valid restore remain a separate risk. The existing backup is not a complete export of every feature.
