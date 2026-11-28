@@ -6524,7 +6524,7 @@ function renderNextProjects(){
   const actions=node('div',undefined,'methodbuttons');
   const open=node('button','View goal ↗','smallbutton');open.type='button';open.onclick=()=>{selectTab('unlocks');$('unlockfilter').value='all';$('unlocksearch').value=p.name;renderUnlocks()};actions.append(open);
   if(r.item){const material=node('button','How to get ↗','smallbutton');material.type='button';material.onclick=()=>openItemDetails(r.item,p.id);actions.append(material)}
-  if(r.join&&/^\\/join [a-z0-9-]+$/i.test(r.join))actions.append(makeCopyJoin(r.join));
+  if(r.join&&/^\/join [a-z0-9-]+$/i.test(r.join))actions.append(makeCopyJoin(r.join));
   if(r.source){const source=node('a','Source ↗','tiny');source.href=r.source;source.target='_blank';source.rel='noopener noreferrer';actions.append(source)}
   left.append(actions);line.append(left);root.append(line);
  }
