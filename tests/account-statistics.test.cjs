@@ -228,3 +228,14 @@ assert.ok(data.milestones.every(m=>m.group&&m.percent>=0&&m.percent<=100));
 assert.ok(data.milestones.find(m=>m.id==="forge-all").goal===21);
 
 {const full=api.analyze({current:{items:[]},snapshots:[],forgeTotal:21});const artworks=full.milestones.map(m=>api.milestoneArtwork(m));assert.equal(new Set(artworks).size,full.milestones.length);assert.ok(artworks.every(a=>a.startsWith('data:image/svg+xml;charset=utf-8,')&&decodeURIComponent(a).includes('<svg')));console.log('Distinct local vector artwork for '+artworks.length+' milestones checked.');}
+
+// Local quest ledger: duplicate aliases, alternative quests, undo/recheck, reset periods, invalid and unknown records.
+{const catalog=[{id:'a',freq:'daily'},{id:'b',freq:'weekly',group:'Ultra Boss'},{id:'x',freq:'weekly',exclusiveGroup:'choice'},{id:'y',freq:'weekly',exclusiveGroup:'choice'}],aliases={old:'a'};
+ const checks={'d:2026-11-26|a':true,'d:2026-11-26|old':true,'d:2026-11-27|a':true,'w:2026-11-27|b':true,'w:2026-11-27|x':true,'w:2026-11-27|y':true,'w:2026-11-26|b':true,'d:2026-11-27|missing':true,'d:2026-02-30|a':true};
+ assert.deepEqual(api.routineTotals(checks,catalog,aliases),{daily:2,weekly:2,ultra:1});
+ checks['d:2026-11-27|a']=false;assert.equal(api.routineTotals(checks,catalog,aliases).daily,1);
+ checks['d:2026-11-27|a']=true;assert.equal(api.routineTotals(checks,catalog,aliases).daily,2);
+ const m=api.analyze({current:{items:[]},progress:{badges:50,sagas:5,age:10,maxed:5,routines:{daily:100,weekly:25,ultra:10},forge:{Weapon:{total:10,done:10},Cape:{total:6,done:6},Helm:{total:6,done:0}}}});
+ assert.ok(m.milestones.find(x=>x.id==='daily100').unlocked);assert.ok(m.milestones.find(x=>x.id==='badge50').unlocked);assert.ok(m.milestones.find(x=>x.id==='saga5').unlocked);assert.ok(m.milestones.find(x=>x.id==='forgew10').unlocked);
+ assert.equal(new Set(m.milestones.map(x=>api.milestoneArtwork(x))).size,m.milestones.length);
+ console.log('Quest history idempotency and new milestones verified.');}

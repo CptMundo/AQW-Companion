@@ -58,6 +58,24 @@
       };
     });
   }
+  // Derive totals from the saved completion ledger, not click events.
+  // Aliases and mutually exclusive alternatives represent one completion per period.
+  function routineTotals(checks,catalog,aliases={}){
+    const byId=new Map((catalog||[]).map(t=>[t.id,t])),seen={daily:new Set(),weekly:new Set(),ultra:new Set()};
+    for(const [entry,done] of Object.entries(checks||{})){
+      if(done!==true)continue;
+      const match=/^([dw]):(\d{4}-\d{2}-\d{2})\|(.+)$/.exec(entry);
+      if(!match)continue;
+      const [,prefix,date,raw]=match,stamp=Date.parse(date+'T00:00:00Z');
+      if(!Number.isFinite(stamp)||new Date(stamp).toISOString().slice(0,10)!==date)continue;
+      const freq=prefix==='d'?'daily':'weekly',id=Object.hasOwn(aliases,raw)?aliases[raw]:raw,t=byId.get(id);
+      if(!t||t.freq!==freq||(freq==='weekly'&&new Date(stamp).getUTCDay()!==5))continue;
+      const identity=prefix+':'+date+'|'+(t.exclusiveGroup?'group:'+t.exclusiveGroup:'quest:'+id);
+      seen[freq].add(identity);
+      if(!t.exclusiveGroup&&(t.group==='Ultra Boss'||t.categories?.includes('Ultras')))seen.ultra.add(identity);
+    }
+    return {daily:seen.daily.size,weekly:seen.weekly.size,ultra:seen.ultra.size};
+  }
   function analyze(input){
     input=input||{};
     const current=Array.isArray(input.current?.items)?input.current:null;
@@ -129,6 +147,26 @@
       addTier('forge','Forge',forgeUnlocked,[[1,'First Forging'],[10,'Forge Adept'],[20,'Forge Master']].filter(([n])=>n<=forgeTotal),n=>fmt(n)+' manually confirmed Forge unlocks','🔨');
       milestoneList.push({id:'forge-all',name:'Master of the Forge',group:'Forge',value:forgeUnlocked,goal:forgeTotal,detail:'All currently tracked Forge unlocks confirmed',icon:'🔨'});
     }
+    const progress=input.progress||{};
+    const nonnegative=n=>Math.max(0,Math.floor(Number(n)||0));
+    addTier('wishlist','Wishlist',new Set(projects.filter(p=>p.owned===true).map(p=>key(p.name))).size,[[10,'Wish Hunter'],[25,'Dream Collector'],[50,'Wish Master'],[100,'Wish Legend']],n=>fmt(n)+' distinct currently tracked Wishlist targets owned','🎯');
+    if(Number.isFinite(progress.badges))addTier('badge','Badge Hunter',nonnegative(progress.badges),[[25,'Badge Hunter'],[50,'Badge Veteran'],[100,'Badge Master'],[200,'Badge Archivist'],[300,'Badge Legend']],n=>fmt(n)+' distinct official Character Page badges detected','🏆');
+    if(Number.isFinite(progress.sagas))addTier('saga','Story',nonnegative(progress.sagas),[[5,'Saga Explorer'],[10,'Saga Veteran'],[15,'Saga Champion']],n=>fmt(n)+' official Saga Progress entries detected as unlocked (not manual checks)','📖');
+    const endgame=['Necrotic Sword of Doom','Blinding Light of Destiny','Legion Revenant','Void Highlord','Radiant Goddess of War'];
+    const names=new Set(unique.filter(x=>Number(x.Count??1)>0).map(x=>key(x.Name)));
+    const endgameCount=endgame.filter(n=>names.has(key(n))).length;
+    addTier('endgame','Endgame collection',endgameCount,[[1,'Endgame Initiate'],[3,'Endgame Collector'],[5,'Endgame Champion']],n=>fmt(n)+' of NSoD, BLoD, Legion Revenant, Void Highlord and Radiant Goddess of War owned in selected export','⚔️');
+    for(const [slot,prefix,title] of [['Weapon','forgew','Weapon Forge'],['Cape','forgec','Cape Forge'],['Helm','forgeh','Helm Forge']]){
+      const v=progress.forge?.[slot];
+      if(v?.total>0)addTier(prefix,'Forge',Math.min(nonnegative(v.done),nonnegative(v.total)),[[v.total,title+' Master']],n=>'All '+fmt(n)+' '+slot.toLowerCase()+' Forge unlocks manually confirmed','🔨');
+    }
+    for(const [prefix,group,label,tiers,icon] of [
+      ['daily','Daily Tracker','daily quest completions recorded',[[10,'Daily Starter'],[50,'Daily Regular'],[100,'Daily Veteran'],[250,'Daily Master'],[500,'Daily Legend']],'☀️'],
+      ['weekly','Weekly Tracker','weekly quest completions recorded',[[5,'Weekly Starter'],[25,'Weekly Regular'],[50,'Weekly Veteran'],[100,'Weekly Master'],[250,'Weekly Legend']],'📅'],
+      ['ultra','Ultra Tracker','Ultra quest completions recorded',[[10,'Ultra Challenger'],[25,'Ultra Veteran'],[50,'Ultra Master'],[100,'Ultra Legend']],'⚡']
+    ])if(Number.isFinite(progress.routines?.[prefix]))addTier(prefix,group,nonnegative(progress.routines[prefix]),tiers,n=>fmt(n)+' '+label+' in local Tracker history (manual)','✓');
+    if(Number.isFinite(progress.maxed))addTier('stack','Material stacks',nonnegative(progress.maxed),[[1,'Full Stack'],[5,'Stockpile Keeper'],[10,'Stockpile Legend'],[25,'Material Vault']],n=>fmt(n)+' distinct stacks at known limits in selected export','📦');
+    if(Number.isFinite(progress.age))addTier('age','Account age',nonnegative(progress.age),[[1,'First Anniversary'],[5,'Longtime Adventurer'],[10,'Veteran Adventurer'],[15,'Living Legend']],n=>fmt(n)+' years since imported official character creation date','⌛');
     const groups={import:'Companion journey',class25:'Classes',class50:'Classes',items1000:'Collection',items2000:'Collection',wishlist5:'Wishlist',forge5:'Forge'};
     for(const m of milestoneList)if(!m.group)m.group=groups[m.id]||'Collection';
     return {
@@ -378,7 +416,7 @@
   // Original Companion achievement artwork: category-specific vector emblems and tier numerals.
   function milestoneArtwork(m){
     const id=String(m?.id||'');
-    const kind=id.match(/^(class|items|weapon|armor|helm|cape|misc|rare|seasonal|ac|legend|pseudo|snapshots|forge|wishlist|import)/)?.[1]||'import';
+    const kind=id.match(/^(forgew|forgec|forgeh|badge|saga|endgame|daily|weekly|ultra|stack|age|class|items|weapon|armor|helm|cape|misc|rare|seasonal|ac|legend|pseudo|snapshots|forge|wishlist|import)/)?.[1]||'import';
     const designs={
       class:['#60dbf4','M32 13L47 19V33Q47 43 32 49Q17 43 17 33V19Z M32 23V39M24 31H40'],
       items:['#6bd9b0','M16 26L24 17H40L48 26L32 47Z M16 26H48M24 17L32 47L40 17'],
@@ -395,6 +433,17 @@
       snapshots:['#94c9f2','M13 19Q25 17 32 24Q39 17 51 19V44Q39 42 32 49Q25 42 13 44Z M32 24V49M19 28L26 30M38 30L45 28'],
       forge:['#efae75','M16 38H48L42 45H22Z M32 38V29M22 17L39 25L34 35L17 27Z M36 31L47 20'],
       wishlist:['#f3a4b0','M32 46L18 33Q11 21 22 19Q29 18 32 26Q35 18 42 19Q53 21 46 33Z'],
+      forgew:['#f1bb74','M17 46L43 20L49 15L48 26L23 51M20 35L29 44'],
+      forgec:['#af91ef','M24 17H40L47 45Q32 51 17 45Z M24 17L32 26L40 17'],
+      forgeh:['#e9a775','M17 32Q17 16 32 16Q47 16 47 32V46L32 49L17 46Z M21 30H43'],
+      badge:['#f7c96e','M22 15H42V28Q42 40 32 40Q22 40 22 28Z M22 20H15V27L22 32M42 20H49V27L42 32M32 40V48M23 48H41'],
+      saga:['#9ed9ff','M13 19Q25 17 32 24Q39 17 51 19V44Q39 42 32 49Q25 42 13 44Z M32 24V49'],
+      endgame:['#f27e91','M17 19L47 45M47 19L17 45M14 23L23 14M41 14L50 23M13 38L26 51M38 51L51 38'],
+      daily:['#f7cd70','M32 12V19M32 45V52M12 32H19M45 32H52 M23 23A13 13 0 1 0 41 41A13 13 0 1 0 23 23'],
+      weekly:['#86b9fa','M16 19H48V48H16Z M16 28H48M23 15V23M41 15V23M24 38L30 43L41 33'],
+      ultra:['#e69af8','M34 12L16 35H30L28 52L48 27H34Z'],
+      stack:['#8ee0b6','M16 22L32 14L48 22V34L32 42L16 34Z M16 34V44L32 52L48 44V34M16 22L32 30L48 22M32 30V52'],
+      age:['#a6b6ef','M20 15H44M20 49H44M23 15V23L32 32L41 23V15M23 49V41L32 32L41 41V49'],
       import:['#78d8ed','M17 18H41L47 24V46H17Z M41 18V24H47M32 25V40M25 33L32 40L39 33']
     };
     const [accent,motif]=designs[kind],goal=Math.max(0,Math.floor(Number(m?.goal)||0));
@@ -440,5 +489,5 @@
     }
     root.append(element('p','aqwm-footnote','Personal Companion milestones based on your selected inventory and tracker data. These are not official AQWorlds badges.'));
   }
-  return {analyze,timeline,uniqueItems,category,render,renderMilestones,homeMilestoneHighlights,milestoneArtwork,milestoneImage};
+  return {analyze,timeline,uniqueItems,category,render,renderMilestones,homeMilestoneHighlights,milestoneArtwork,milestoneImage,routineTotals};
 });

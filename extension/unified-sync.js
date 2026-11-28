@@ -98,17 +98,23 @@ if(typeof document==='undefined'){
       n=await inspect(tabId,section);Object.assign(links,n.links);
      }
      if(n.section!==section)throw Error('Unexpected progress page.');
-     let snapshot;
-     for(let attempt=0;attempt<8;attempt++){
+     let snapshot,bestSaga=null;
+     for(let attempt=0;attempt<(section==='sagas'?20:8);attempt++){
       try{
        const v=await chrome.scripting.executeScript({target:{tabId},func:captureAccountProgress,args:[summary]});
        snapshot=v?.[0]?.result;
        const expected={sagas:15,playtime:20,membership:20,ac:16}[section];
-       if(snapshot?.section===section&&(!expected||snapshot.rows?.length===expected))break;
+       if(snapshot?.section===section&&(!expected||snapshot.rows?.length===expected)){
+        if(section!=='sagas')break;
+        const known=v=>v.rows.filter(r=>r.state==='colored'||r.state==='gray').length;
+        if(!bestSaga||known(snapshot)>=known(bestSaga))bestSaga=snapshot;
+        if(!snapshot.rows.some(r=>r.state==='unknown'))break;
+       }
        snapshot=null;
       }catch{snapshot=null}
       await sleep(400);
      }
+     if(!snapshot&&section==='sagas')snapshot=bestSaga;
      if(!snapshot)throw Error('Incomplete progress capture.');
      if(section==='summary')summary=snapshot;
      const id=crypto.randomUUID(),reply=await chrome.tabs.sendMessage(target.id,{type:'one-click-apply',id,kind:'progress',snapshot},{frameId:0});

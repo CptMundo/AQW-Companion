@@ -1262,9 +1262,9 @@ html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-i
 #account-progress-summary .account-progress-dashboard{margin-bottom:14px;padding:18px;display:grid;gap:12px}
 #account-progress-summary .account-progress-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
 #account-progress-summary .account-progress-heading h3,#account-progress-summary .account-progress-heading p{margin:0 0 5px}
-#account-progress-summary .account-progress-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+#account-progress-summary .account-progress-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);padding:10px}
 #account-progress-summary :is(.account-progress-metric,.account-progress-section){border:1px solid var(--line);border-radius:10px;background:var(--panel2);padding:12px;min-width:0}
-#account-progress-summary .account-progress-metric{display:flex;flex-direction:column;gap:5px}
+#account-progress-summary .account-progress-metric{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:5px;background:transparent;border:0;padding:10px 5px}
 #account-progress-summary .account-progress-metric strong{font-size:clamp(16px,1.8vw,23px);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 #account-progress-summary .account-progress-icon{font-size:20px;flex:none}
 #account-progress-summary .account-progress-sections{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
@@ -1527,3 +1527,12 @@ html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-i
 #overview .home-delta-new-item{padding:6px 7px;border-color:color-mix(in srgb,var(--line) 65%,transparent)}
 #overview .home-delta-footnote{margin-top:7px}
 @media(max-width:420px){#overview .home-main-grid>.home-inventory-changes{padding:12px;gap:7px}#overview .home-achievement-grid>section,#overview .home-inventory-changes .home-alert-grid>.home-wishlist-wins,#overview .home-inventory-changes .home-alert-grid>.home-stack-card{padding:6px}#overview .home-badge-discovery-art{width:32px;height:32px;flex-basis:32px}#overview .home-milestone-art{width:30px;height:35px;flex-basis:30px}#overview .home-delta-metrics-v2 .home-delta-metric strong{font-size:18px}#overview .home-delta-metrics-v2 .home-delta-metric small{font-size:10px}}
+
+/* Account progress counters use the same rectangular visual language as summary cards. */
+#account-progress-summary .account-progress-status-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+#account-progress-summary .account-progress-status-tile{display:grid;align-content:center;justify-items:center;gap:4px;min-width:0;min-height:72px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--panel);text-align:center}
+#account-progress-summary .account-progress-status-tile strong{font-size:21px;font-variant-numeric:tabular-nums;line-height:1.15}
+#account-progress-summary .account-progress-status-tile small{font-size:11px;line-height:1.25;overflow-wrap:anywhere}
+#account-progress-summary .account-progress-status-positive{color:var(--aqwc-success-text);border-color:var(--aqwc-success-border);background:var(--aqwc-success-bg)}
+#account-progress-summary .account-progress-status-review{color:var(--gold)}
+@media(max-width:850px){#account-progress-summary .account-progress-status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}

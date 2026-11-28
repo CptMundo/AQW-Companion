@@ -24,11 +24,11 @@ function captureAccountProgress(summary=null){
  const evidence=(img,card)=>{
   let state='unknown';
   try{
-   const statuses=new Set();let otherFilter=false;
+   const statuses=new Set();let otherFilter=false,withinCard=true;
    for(let el=img;el;el=el.parentElement){
     const filter=getComputedStyle(el).filter||'none';
     const gray=filter.match(/grayscale\(\s*(1(?:\.0+)?|100%)\s*\)/i);if(gray)statuses.add('gray');else if(filter!=='none'&&filter!=='grayscale(0)')otherFilter=true;
-    if(el===img||el===card){for(const token of String(el.getAttribute('class')||'').toLowerCase().split(/\s+/)){if(['locked','unearned','not-earned','not-unlocked','badge-locked','disabled-badge','grayscale','greyed-out','grayed-out'].includes(token))statuses.add('gray');if(['unlocked','earned','badge-unlocked','badge-earned','achievement-earned'].includes(token))statuses.add('colored')}for(const attr of ['data-earned','data-unlocked']){const val=el.getAttribute(attr);if(val==='true'||val==='1')statuses.add('colored');if(val==='false'||val==='0')statuses.add('gray')}}
+    if(withinCard){for(const token of String(el.getAttribute('class')||'').toLowerCase().split(/\s+/)){if(['locked','unearned','not-earned','not-unlocked','badge-locked','disabled-badge','grayscale','greyed-out','grayed-out','badge-incomplete','not-completed'].includes(token))statuses.add('gray');if(['unlocked','earned','badge-unlocked','badge-earned','achievement-earned','badge-completed','saga-completed'].includes(token))statuses.add('colored')}for(const attr of ['data-earned','data-unlocked','data-completed']){const val=el.getAttribute(attr);if(val==='true'||val==='1')statuses.add('colored');if(val==='false'||val==='0')statuses.add('gray')}for(const attr of ['data-status','data-state']){const val=normalize(el.getAttribute(attr)).toLowerCase();if(['earned','unlocked','completed'].includes(val))statuses.add('colored');if(['locked','unearned','incomplete','not completed'].includes(val))statuses.add('gray')}if(el===card)withinCard=false}
    }
    if(statuses.size>1)return 'unknown';
    if(statuses.size===1)return [...statuses][0];
@@ -53,9 +53,9 @@ function captureAccountProgress(summary=null){
   // Exact accessible image names support cards with decorative sibling images.
   const imageNames=[...new Set(['alt','title','aria-label'].map(k=>normalize(img.getAttribute(k))).filter(x=>names.includes(x)))];
   if(imageNames.length>1||(name&&imageNames.length===1&&imageNames[0]!==name))continue;
-  if(!name&&imageNames.length===1){name=imageNames[0];card=img}
+  if(!name&&imageNames.length===1){name=imageNames[0];card=img;for(let el=img.parentElement,depth=0;el&&depth<6;el=el.parentElement,depth++){const labels=[...new Set(String(el.innerText||'').split(/\n/).map(normalize).filter(x=>names.includes(x)))];if(labels.length>1||labels.length===1&&labels[0]!==name)break;if(labels.length===1){card=el;break}if(el.querySelectorAll('img').length>1)break}}
   if(!name)continue;
-  const art=allowedArt(img.currentSrc||img.src),state=evidence(img,card);
+  const art=allowedArt(img.currentSrc||img.src||img.getAttribute('data-src')),state=evidence(img,card);
   const existing=rows.find(r=>r.name===name);
   if(existing){if(existing.state!==state){existing.state='unknown';delete existing.art}continue}
   rows.push({name,state,...(art?{art}:{})});
