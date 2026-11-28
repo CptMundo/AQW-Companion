@@ -14,7 +14,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="AQW Companion | AQWorlds Inventory & Farming Tracker">
 <meta name="twitter:description" content="A free unofficial AdventureQuest Worlds companion with inventory, Wishlist, farming and Forge tracking."><link rel="icon" type="image/png" href="assets/brand-favicon.png">
-<link rel="stylesheet" href="css/site.css?v=153"><link rel="stylesheet" href="css/boost-finder.css?v=3">
+<link rel="stylesheet" href="css/site.css?v=154"><link rel="stylesheet" href="css/boost-finder.css?v=3">
 
 
 <link rel="stylesheet" href="css/item-icons.css">
@@ -6271,8 +6271,14 @@ function homeQuestTile(task,done){
  for(const target of taskRoutes[task.id]?.targets||[])add(target[2],target[0]);
  add(task.farmJoin,'Farm / boss');add(task.join,'Location');add(task.acceptJoin,'Accept quest');
  const joins=[...routes.values()],joinBox=node('div',undefined,'home-quest-joins');
- if(joins.length){const main=makeCopyJoin(joins[0].join);main.title='Copy '+joins[0].join+' · '+joins[0].label;joinBox.append(main);
- if(joins.length>1){const details=node('details',undefined,'home-quest-extra-joins');details.append(node('summary','+'+(joins.length-1)+' more locations'));for(const route of joins.slice(1)){const row=node('div',undefined,'home-quest-extra-route');row.append(node('small',route.label),makeCopyJoin(route.join));details.append(row)}joinBox.append(details)}}
+ if(joins.length){
+  joinBox.classList.toggle('has-multiple',joins.length>1);
+  for(const route of joins){
+   const button=makeCopyJoin(route.join);button.title='Copy '+route.join+' · '+route.label;
+   if(joins.length>1)button.querySelector('.ultra-copy-command').textContent=route.join.slice(6);
+   joinBox.append(button);
+  }
+ }
  else joinBox.append(node('small','Map not verified','muted tiny'));
  info.append(joinBox);tile.append(info);
  const action=node('button',conflict?'Alternative done':done?'✓ Completed · Undo':'✓ Mark complete','smallbutton home-quest-action');
