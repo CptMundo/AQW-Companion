@@ -13,16 +13,44 @@ function inventoryIndex(inventory){
  for(const row of inventory){if(!(Number(row.Count)>0))continue;const name=norm(row.Name);for(const [cat,b] of index){if(!typed(row,cat))continue;if(!b.exact.has(name))b.exact.set(name,[]);b.exact.get(name).push(row);b.families.add(family(name))}}
  return index
 }
+function exactInventoryRows(r,index){
+ const c=candidate(r),b=index.get(r.category);if(!b)return [];
+ const exact=[...(b.exact.get(norm(r.name))||[]),...(b.exact.get(norm(c.name))||[])];
+ // If a Wiki name explicitly declares a weapon subtype, do not match
+ // a differently typed export row; generic Weapon exports remain unknown.
+ const subtype=r.category==='weapons'&&r.name.match(suffix)?.[1];
+ if(subtype&&norm(subtype)!=='weapon')return [...new Set(exact)].filter(x=>norm(x.Type)===norm(subtype));
+ return [...new Set(exact)];
+}
 function ownership(r,inventory,loaded,duplicate=false,index=null){
  if(!loaded)return 'unknown';if(duplicate)return 'ambiguous';
- const c=candidate(r),name=norm(c.name),b=(index||inventoryIndex(inventory)).get(r.category);if(!b)return 'unknown';
- const exact=[...(b.exact.get(norm(r.name))||[]),...(b.exact.get(name)||[])];
- if(exact.length)return new Set(exact.map(x=>String(x.ID))).size===1?'owned':'ambiguous';
+ const c=candidate(r),name=norm(c.name),idx=index||inventoryIndex(inventory),b=idx.get(r.category);if(!b)return 'unknown';
+ const exact=exactInventoryRows(r,idx);
+ if(exact.length)return exact.every(x=>x.ID!=null&&String(x.ID).trim())&&new Set(exact.map(x=>String(x.ID))).size===1?'owned':'ambiguous';
  if(b.families.has(family(name))||c.variant)return 'ambiguous';
  return 'not-found'
 }
 function artworkUrl(src){try{const u=new URL(src);return u.protocol==='https:'&&!u.username&&!u.password&&(!u.port||u.port==='443')&&['aqwwiki.wikidot.com','aqwwiki.wdfiles.com','i.imgur.com','static.wikidot.com'].includes(u.hostname)&&!/\/image-tags\//i.test(u.pathname)&&/\.(?:png|jpe?g|webp)$/i.test(u.pathname)?u.href:null}catch{return null}}
-globalThis.AQWCBoostFinderHelpers=Object.freeze({candidate,ownership,typed,artworkUrl});
+// Individual equipment candidates, never a simulated or combined loadout.
+function ownedGearBySlot(rows,inventory,loaded,boost){
+ const duplicates=new Map(),index=inventoryIndex(inventory||[]);
+ for(const r of rows){const k=r.category+'|'+norm(candidate(r).name);duplicates.set(k,(duplicates.get(k)||0)+1)}
+ const slots=Object.keys(types).map(category=>({category,owned:[],ambiguous:0}));
+ if(!loaded)return slots;
+ for(const r of rows){
+  const value=r.boost?.[boost];if(!Number.isFinite(value)||value<=0)continue;
+  const slot=slots.find(s=>s.category===r.category);if(!slot)continue;
+  const state=ownership(r,inventory,true,duplicates.get(r.category+'|'+norm(candidate(r).name))>1,index);
+  if(state==='ambiguous'){slot.ambiguous++;continue}
+  if(state!=='owned')continue;
+  const matches=exactInventoryRows(r,index);
+  const locations=[...new Set(matches.map(x=>Number(x.Bank)===1?'Bank':Number(x.Bank)===0&&x.Bank!=null&&x.Bank!==''?'Bag':'Location unknown'))].sort();
+  slot.owned.push({name:r.name,slug:r.slug,value,flags:r.flags||[],locations});
+ }
+ for(const slot of slots)slot.owned.sort((a,b)=>b.value-a.value||a.name.localeCompare(b.name)||a.slug.localeCompare(b.slug));
+ return slots;
+}
+globalThis.AQWCBoostFinderHelpers=Object.freeze({candidate,ownership,typed,artworkUrl,ownedGearBySlot});
 if(typeof document==='undefined'||!core)return;
 let state=null,add=null,data=null,loading=null,root=null,page=0,selected=new Set(),controls=null,artwork={};
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n};
@@ -32,6 +60,11 @@ function button(label,fn,cls){const b=el('button',label,cls);b.type='button';b.a
 function init(){
  root=document.getElementById('boost-finder-content');if(!root)return false;
  const group=el('div',undefined,'bf-groups'),bar=el('div',undefined,'toolbar'),status=el('p','','muted tiny'),results=el('div',undefined,'bf-results'),pager=el('div',undefined,'pagination');status.setAttribute('role','status');
+ const gear=el('section',undefined,'bf-owned-gear'),gearHeader=el('div',undefined,'bf-gear-header'),gearTitle=el('div');
+ gearTitle.append(el('h3','Your boosted gear'),el('p','Highest listed individual boost in each equipment category; not a combined loadout.','muted tiny'));
+ const gearBoost=select(Object.entries(core.labels),'Compare owned gear by boost');gearBoost.value='all';
+ gearHeader.append(gearTitle,gearBoost);
+ const gearBody=el('div',undefined,'bf-gear-slots');gear.append(gearHeader,gearBody);
  const btns={},progress=['cp','gold','rep','xp'];
  for(const [name,keys] of [['Damage boosts',Object.keys(core.labels).filter(k=>!progress.includes(k))],['Progression boosts',progress]]){
   const section=el('div',undefined,'bf-group');section.append(el('strong',name));const buttons=el('div',undefined,'bf-types');
@@ -46,8 +79,8 @@ function init(){
  const clear=button('Reset',()=>{selected.clear();q.value=cat.value=avail.value=own.value='';min.value='0';order.value='highest';resetPage()});
  const ml=el('label','Min %','bf-min-label');ml.append(min);
  bar.append(q,cat,ml,avail,own,order,clear);
- root.replaceChildren(group,bar,status,results,pager);
- controls={q,cat,min,avail,own,order,btns,status,results,pager};return true
+ root.replaceChildren(gear,group,bar,status,results,pager);
+ controls={q,cat,min,avail,own,order,btns,status,results,pager,gearBoost,gearBody};return true
 }
 function validRows(rows){return rows.filter(r=>r&&typeof r.name==='string'&&r.name.length<=350&&core.slug('/'+r.slug)===r.slug&&Object.hasOwn(types,r.category)&&Array.isArray(r.flags)&&r.boost&&Object.entries(r.boost).every(([k,v])=>Object.hasOwn(core.labels,k)&&Number.isFinite(v)&&v>0&&v<=1000))}
 async function load(){
@@ -55,10 +88,31 @@ async function load(){
  controls.status.textContent='Loading local boost index…';
  loading=(async()=>{try{const r=await fetch('extension/boost-index.json',{credentials:'same-origin'});if(!r.ok)throw Error('Catalog unavailable');const d=await r.json();if(!Array.isArray(d.rows)||d.rows.length>10000)throw Error('Invalid catalog');data={rows:validRows(d.rows),updatedAt:String(d.updatedAt||'')};fetch('data/boost-artwork.json?v=2',{credentials:'same-origin',cache:'no-cache'}).then(r=>r.ok?r.json():null).then(x=>{if(x?.images&&typeof x.images==='object'){artwork=x.images;draw()}}).catch(()=>{});if(!data.rows.length)throw Error('Empty catalog');draw()}catch(err){data=null;controls.status.textContent='Could not load the boost catalog. Reopen Boost Finder to retry.'}finally{loading=null}})();return loading
 }
+function drawOwnedGear(st){
+ const {gearBoost,gearBody,q,cat,min,avail,own,order}=controls;
+ gearBody.replaceChildren();gearBoost.disabled=!st.loaded;
+ if(!st.loaded){gearBody.append(el('p','Import a full Inventory & Bank snapshot to compare your owned gear.','muted tiny'));return}
+ if(!data)return;
+ for(const slot of ownedGearBySlot(data.rows,st.items||[],true,gearBoost.value)){
+  const card=el('div',undefined,'bf-gear-slot');card.dataset.slot=slot.category;
+  const top=el('div',undefined,'bf-gear-slot-head');top.append(el('strong',types[slot.category]),el('small',slot.owned.length+' matched','muted tiny'));card.append(top);
+  if(!slot.owned.length)card.append(el('p','No unambiguous owned match for this boost in the catalog.','muted tiny'));
+  for(const r of slot.owned.slice(0,3)){
+   const row=el('div',undefined,'bf-gear-candidate'),name=el('a',r.name),value=el('strong','+'+r.value+'%','bf-gear-value');
+   name.href='https://aqwwiki.wikidot.com/'+r.slug;name.target='_blank';name.rel='noopener noreferrer';
+   const main=el('div',undefined,'bf-gear-candidate-head');main.append(name,value);row.append(main,el('small',[...r.locations,...r.flags].join(' · '),'muted tiny'));card.append(row);
+  }
+  if(slot.ambiguous)card.append(el('small',slot.ambiguous+' ambiguous catalog match(es) excluded.','muted tiny'));
+  if(slot.owned.length){const view=button('View '+slot.owned.length+' owned match(es)',()=>{selected.clear();selected.add(gearBoost.value);q.value=avail.value='';cat.value=slot.category;own.value='owned';min.value='0';order.value='highest';resetPage();controls.status.scrollIntoView({block:'start'})},'smallbutton');card.append(view)}
+  gearBody.append(card);
+ }
+ const note=el('p','Snapshot + bundled Wiki index only. Not equipped status, ownership entitlement, membership eligibility or current availability. Check that gear can be equipped in game. Percentages are individual, not added or multiplied.','muted tiny bf-gear-note');gearBody.append(note);
+}
 function draw(){
  if(!controls)return;
  const {q,cat,min,avail,own,order,btns,status,results,pager}=controls;for(const [k,b] of Object.entries(btns))b.setAttribute('aria-pressed',String(selected.has(k)));
  const st=state?.()||{items:[],loaded:false,tracked:[]};own.disabled=!st.loaded;if(!st.loaded)own.value='';
+ drawOwnedGear(st);
  if(!data)return;
  const duplicates=new Map();for(const r of data.rows){const key=r.category+'|'+norm(candidate(r).name);duplicates.set(key,(duplicates.get(key)||0)+1)}
  const inv=inventoryIndex(st.items||[]),owned={};for(const r of data.rows)owned[r.slug]=ownership(r,st.items||[],st.loaded,(duplicates.get(r.category+'|'+norm(candidate(r).name))||0)>1,inv);
