@@ -306,8 +306,7 @@ async function main(){
   assert.ok(await routine.getByRole('link',{name:'Quest source ↗'}).first().isVisible());
   assert.ok(await next.getByText('Based on the selected full inventory & bank snapshot.',{exact:false}).isVisible());
   await page.setViewportSize({width:390,height:844});assert.ok(await next.evaluate(e=>e.scrollWidth<=e.clientWidth+1));await page.setViewportSize({width:1360,height:1100});
-  await next.locator('.home-next-project').first().getByRole('button',{name:'View goal ↗'}).click();assert.ok(await page.locator('#unlocks').isVisible());assert.ok(await page.locator('#unlocksearch').inputValue());
-  await page.locator('#unlocksearch').fill('');
+  await next.locator('.home-next-project').first().getByRole('button',{name:'View goal ↗'}).click();assert.ok(await page.locator('#unlocks').isVisible());assert.equal(await page.locator('#unlocksearch').inputValue(),'');assert.ok(await page.locator('.unlockcard:focus').count());assert.ok(await page.locator('.unlockcard').count()>1);
   // Actual download -> fresh isolated profile -> restore, with synthetic progress only.
   const expectedProgress=await page.evaluate(stamp=>{
    const badge=window.AQWCBadgeCatalog.find(b=>!b.placeholder&&b.image).id;
