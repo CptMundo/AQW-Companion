@@ -6803,7 +6803,7 @@ function activateTab(tab){const b=document.querySelector('[data-tab="'+tab+'"]')
  if(tab==='planner-pinned')renderWikiQuestPins();
  if(tab==='badge-hunter')window.AQWCBadgeHunter?.render?.();
  if(tab==='boost-finder')renderBoostFinder();
- if(tab==='overview'&&current)renderNextProjects();
+ if(tab==='overview'&&typeof renderNextProjects==='function')renderNextProjects();
 }
 document.querySelectorAll('[data-group]').forEach(b=>b.addEventListener('click',()=>activateTab(b.dataset.group==='planner'?'planner':lastTabByGroup[b.dataset.group]||groupDefaults[b.dataset.group])));
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>activateTab(b.dataset.tab)));
