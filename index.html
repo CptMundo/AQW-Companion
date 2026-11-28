@@ -14,7 +14,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="AQW Companion | AQWorlds Inventory & Farming Tracker">
 <meta name="twitter:description" content="A free unofficial AdventureQuest Worlds companion with inventory, Wishlist, farming and Forge tracking."><link rel="icon" type="image/png" href="assets/brand-favicon.png">
-<link rel="stylesheet" href="css/site.css?v=158"><link rel="stylesheet" href="css/boost-finder.css?v=3">
+<link rel="stylesheet" href="css/site.css?v=159"><link rel="stylesheet" href="css/boost-finder.css?v=3">
 
 
 <link rel="stylesheet" href="css/item-icons.css">
@@ -87,7 +87,7 @@
 </section><section id="planner-history" class="view"><div class="card"><div class="planner-my-toolbar"><h3 class="sectiontitle">Task History</h3><button id="plannerbackfromhistory" class="smallbutton" type="button">← Daily / Weekly</button></div><div id="planner-task-history"></div></div></section><section id="compare" class="view"><div class="card"><h3 class="sectiontitle">Compare two snapshots</h3><p class="muted" style="font-size:13px">Import both snapshots into the same browser. Comparison uses <b>ID</b> and quantity; moving items between inventory and bank does not count as a new item.</p><div class="comparecontrols"><label>Older <select id="oldselect"></select></label><label>Newer <select id="newselect"></select></label><button id="comparebtn" class="primary">Compare</button></div><div id="compareresult" class="muted">Import at least two snapshots to get started.</div></div></section>
 <section id="history" class="view"><div class="card"><h3 class="sectiontitle">Local import history</h3><div id="historylist"></div><p class="muted" style="font-size:12px">Each imported file is validated and saved in your browser's IndexedDB. The Backup button downloads a JSON file you can import later to restore your data. Clear data removes snapshots, farming goals and unlock projects.</p></div></section><div class="foot">Created by <strong>CptMundo</strong> for the AQWorlds community · Unofficial fan project · Not affiliated with Artix Entertainment · v0.13.10 Beta</div></div>
 <div id="itemdetails" class="detailoverlay hidden" role="dialog" aria-modal="true" aria-label="Item acquisition details"><div class="detailpanel"><div class="detailhead"><div><small style="color:#7da5d1;font-weight:700">AQW COMPANION · ACQUISITION EXPLORER</small><h2 id="detailname"></h2></div><button type="button" class="smallbutton" id="closedetails" aria-label="Close details">✕ Close</button></div><div id="detailcontent"></div></div></div><aside id="aqwc-tour" class="aqwc-tour" role="region" aria-labelledby="aqwc-tour-title" hidden><div class="aqwc-tour-top"><span>QUICK TOUR <span id="aqwc-tour-count">1 / 6</span></span><button id="aqwc-tour-close" type="button" aria-label="Close quick tour">×</button></div><progress id="aqwc-tour-progress" aria-label="Tour progress" max="6" value="1"></progress><div class="aqwc-tour-content" aria-live="polite"><span id="aqwc-tour-icon" aria-hidden="true">📊</span><div><h3 id="aqwc-tour-title" tabindex="-1">Your adventure starts here</h3><p id="aqwc-tour-body"></p></div></div><div class="aqwc-tour-actions"><button id="aqwc-tour-skip" type="button">Skip tour</button><div><button id="aqwc-tour-back" type="button">Back</button><button id="aqwc-tour-next" type="button">Next →</button></div></div><a href="extension/quick-start.html" class="aqwc-tour-guide">Full visual guide ↗</a></aside><script src="js/meta-class-builds.js"></script>
-<script src="js/recipe-integrity.js"></script><script src="js/quest-dependencies.js?v=1"></script><script src="js/merge-dependencies.js?v=5"></script>
+<script src="js/recipe-integrity.js"></script><script src="js/quest-dependencies.js?v=1"></script><script src="js/merge-dependencies.js?v=6"></script>
 <script src="extension/wishlist-link.js?v=126"></script>
 <script src="extension/wiki-boosts.js?v=51"></script>
 <script src="js/boost-finder.js?v=3"></script>
@@ -1049,6 +1049,7 @@ function sharedWishlistStock(name){
 function renderSharedWishlist(){
  const panel=$('shared-wishlist-plan'),body=$('shared-wishlist-body'),api=window.AQWCMergeDependencies;
  if(!panel||!body||!api)return;
+ const routeExpanded=!!body.querySelector('.shared-farm-route[open]');
  const eligible=new Map(),excluded=new Map();let completed=0;
  for(const p of unlocks){
   if(current&&sharedWishlistStock(p.name)>0){completed++;continue}
@@ -1082,7 +1083,7 @@ function renderSharedWishlist(){
  if(!current)body.append(node('p','Import a full inventory to calculate missing quantities. Requirements are shown; stock is unknown.','muted tiny'));
  const selected=[...eligible].filter(([k])=>sharedWishlistSelection.has(k)).map(([,r])=>r);
  try{
-  const result=api.combine(selected,current?sharedWishlistStock:null);
+  const result=api.combine(selected,current?api.stockIndex(items):null);
   const renderRows=(rows,title)=>{
    if(!rows.length)return;body.append(node('strong',title));
    for(const r of [...rows].sort((a,b)=>(b.missing??b.count)-(a.missing??a.count)||a.item.localeCompare(b.item))){
@@ -1095,8 +1096,36 @@ function renderSharedWishlist(){
   };
   renderRows(result.rows,'Combined direct ingredients');
   renderRows(result.possession,'Possession requirements · not summed as consumables');
+  appendSharedFarmRoute(body,result,routeExpanded);
   body.append(node('p','Only selected reviewed direct recipes are included. Intermediate items are not expanded here. Custom steps, other routes, eligibility and extra copies of selected outputs are outside these totals.','muted tiny'));
  }catch(error){body.append(node('p','Combined requirements unavailable: '+error.message,'muted tiny'))}
+}
+function appendSharedFarmRoute(body,result,expanded){
+ const api=window.AQWCMergeDependencies,integrity=window.AQWCRecipeIntegrity;
+ if(!api?.farmingDestinations||!integrity)return;
+ const route=api.farmingDestinations(result,integrity);
+ const panel=node('details',undefined,'dependency-panel shared-farm-route');panel.open=expanded;
+ panel.append(node('summary','Smart Farming Route · '+route.groups.length+' reviewed destination(s)'));
+ panel.append(node('p','Selected goals only. Locations are grouped alphabetically, not a fastest route or a travel order. Merge / quest locations are not drop maps. Confirm access, availability, caps and prerequisites in game.','muted tiny'));
+ for(const group of route.groups){
+  const box=node('section',undefined,'shared-farm-stop');box.dataset.join=group.join;
+  const header=node('div',undefined,'shared-farm-head');header.append(node('strong',group.join.slice(6)),makeCopyJoin(group.join));box.append(header);
+  for(const entry of group.entries){
+   const line=node('div',undefined,'shared-farm-entry');line.dataset.item=api.key(entry.item);line.dataset.kind=entry.type;
+   const label=entry.type==='goal'?entry.item:entry.item+' ×'+fmt(entry.count);
+   const button=node('button',label,'itemlink');button.type='button';button.onclick=()=>openItemDetails(entry.item);
+   line.append(button,node('small',entry.role+' · '+(entry.type==='goal'?entry.state:'Missing '+(entry.kind==='possess'?'possession requirement':'ingredient')+' · '+entry.goals.join(' / ')),'muted tiny'));
+   const source=node('a','Source ↗','tiny');source.href=entry.source;source.target='_blank';source.rel='noopener noreferrer';line.append(source);box.append(line);
+  }
+  panel.append(box);
+ }
+ if(route.unmapped.length){
+  const unknown=node('div',undefined,'shared-farm-unmapped');unknown.append(node('strong','Missing items without a reviewed destination'));
+  for(const r of route.unmapped){const line=node('div',undefined,'shared-farm-entry');const item=node('button',r.item+' ×'+fmt(r.count),'itemlink');item.type='button';item.onclick=()=>openItemDetails(r.item);line.append(item,node('small',r.goals.join(' / ')+' · '+(r.kind==='possess'?'Possession gate':'Ingredient')+' · Check acquisition separately','muted tiny'));unknown.append(line)}
+  panel.append(unknown);
+ }
+ if(route.deferred.length){const deferred=node('div',undefined,'shared-farm-unmapped');deferred.append(node('strong','Verify before planning'));for(const r of route.deferred)deferred.append(node('small',r.item+' · '+r.reason,'muted tiny'));panel.append(deferred)}
+ panel.append(node('p','No extra recipes expanded or new items reserved. The combined totals above deduct stock once. Quest reward routes and multi-stage farms are not covered in this first version.','muted tiny'));body.append(panel);
 }
 function renderUnlocks(){renderSharedWishlist();const list=$('unlocklist');wishlistMasonryObserver?.disconnect();list.classList.remove('wishlist-masonry');list.replaceChildren();const columnCount=1;const columns=columnCount>1?Array.from({length:columnCount},()=>node('div',undefined,'unlock-column')):[];if(columns.length)list.append(...columns);const q=$('unlocksearch').value.toLowerCase().trim(),filter=$('unlockfilter').value;let projects=unlocks.filter(u=>u.name.toLowerCase().includes(q)).filter(u=>filter==='all'||(filter==='owned')===owned(u.name));if(!projects.length){let p=node('div',undefined,'placeholder');p.append(node('h2',unlocks.length?'No matching projects':'Start your first unlock project'),node('p','Click “Add starter projects” or create your own class, weapon or saga.'));list.append(p);return}for(const [projectIndex,project] of projects.entries()){const card=node('div',undefined,'unlockcard'),top=node('div',undefined,'unlockhead'),title=node('div');card.dataset.projectId=String(project.id);const heading=node('h3');heading.append(itemTypeNode(canonicalWishlistType(project.name,project.type)),document.createTextNode(' '+project.name));title.append(heading,node('small',itemTypeLabel(canonicalWishlistType(project.name,project.type)),'muted'));const rm=node('button','×','smallbutton wishlist-dismiss');rm.type='button';rm.title='Remove '+project.name+' from Wishlist';rm.setAttribute('aria-label','Remove '+project.name+' from Wishlist');rm.onclick=()=>{if(confirm('Remove this unlock project?')){unlocks=unlocks.filter(u=>u.id!==project.id);saveUnlocks();renderUnlocks()}};const identity=node('div',undefined,'wishlist-item-identity');identity.append(title,wishlistItemArt(project));top.append(identity,rm);card.append(top);
  if(owned(project.name)){
