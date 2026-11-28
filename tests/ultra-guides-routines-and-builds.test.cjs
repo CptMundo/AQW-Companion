@@ -913,5 +913,25 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.ok(api.ownedGearBySlot(rows,inventory,false,'all').every(s=>!s.owned.length));
  assert.ok(api.ownedGearBySlot(rows,inventory,true,'xp').every(s=>!s.owned.length));
  assert.equal(api.ownership(rows[3],inventory,true),'ambiguous');
- assert.ok(html.includes('css/boost-finder.css?v=4'));
+ assert.ok(html.includes('css/boost-finder.css?v=5'));
  console.log('Owned boosted gear: typed identity, independent category ranking, bank location, unknown/ambiguous exclusions passed.');}
+
+
+// A2: same-type maxima, two distinct slots, dual-type item, no tagged multiplier.
+{const api=globalThis.AQWCBoostFinderHelpers;
+ const row=(slug,name,category,boost)=>({slug,name,category,boost,flags:[]});
+ const rows=[row('all-sword','All Sword','weapons',{all:51}),row('race-sword','Race Sword','weapons',{dragon:75}),row('all-armor','All Armor','armors',{all:35}),row('race-armor','Race Armor','armors',{tagged:50,dragon:50}),row('race-pet','Race Pet','pets',{tagged:30,dragon:30}),row('xp-cape','XP Cape','capes-back-items',{xp:25}),row('xp-helm','XP Helm','helmets-hoods',{xp:15})];
+ const inventory=rows.map((r,i)=>({Name:r.name,Type:({weapons:'Sword',armors:'Armor',pets:'Pet','capes-back-items':'Cape','helmets-hoods':'Helm'})[r.category],Count:1,ID:'gear-'+i,Bank:i%2}));
+ const best=api.bestOwnedLoadout(rows,inventory,true,'dragon');
+ assert.equal(best.primary,35);assert.equal(best.racial,75);assert.ok(Math.abs(best.multiplier-2.3625)<1e-10);assert.deepEqual(best.pieces.map(p=>p.slug),['all-armor','race-sword']);
+ assert.equal(api.bestOwnedLoadout(rows,inventory,true,'all').multiplier,1.51);
+ assert.equal(api.bestOwnedLoadout(rows,inventory,true,'xp').multiplier,1.25);
+ assert.equal(api.bestOwnedLoadout(rows,inventory,true,'orc').racial,0);
+ assert.equal(api.bestOwnedLoadout(rows,inventory,true,'tagged').state,'choose-race');
+ assert.equal(api.bestOwnedLoadout(rows,inventory,false,'dragon').state,'unknown');
+ assert.equal(api.bestOwnedLoadout(rows,[],true,'dragon').state,'no-match');
+ const dual=row('dual','Dual','armors',{all:25,dragon:50}),dualInv=[{Name:'Dual',Type:'Armor',Count:1,ID:'dual',Bank:0}];
+ const one=api.bestOwnedLoadout([dual],dualInv,true,'dragon');assert.equal(one.pieces.length,1);assert.equal(one.multiplier,1.875);
+ const sameSlot=api.bestOwnedLoadout(rows.slice(0,2),inventory,true,'dragon');assert.equal(sameSlot.pieces.length,1);assert.equal(sameSlot.multiplier,1.75);
+ const malformed=inventory.map(x=>({...x,ID:'same'}));assert.equal(api.bestOwnedLoadout(rows,malformed,true,'dragon').state,'no-match');
+ console.log('Smart gear loadouts: same-type max, multiplicative distinct kinds, slot conflicts, dual item, unknown and tagged guard passed.');}

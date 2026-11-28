@@ -45,12 +45,51 @@ function ownedGearBySlot(rows,inventory,loaded,boost){
   if(state!=='owned')continue;
   const matches=exactInventoryRows(r,index);
   const locations=[...new Set(matches.map(x=>Number(x.Bank)===1?'Bank':Number(x.Bank)===0&&x.Bank!=null&&x.Bank!==''?'Bag':'Location unknown'))].sort();
-  slot.owned.push({name:r.name,slug:r.slug,value,flags:r.flags||[],locations});
+  slot.owned.push({name:r.name,slug:r.slug,value,flags:r.flags||[],locations,itemId:String(matches[0].ID)});
  }
  for(const slot of slots)slot.owned.sort((a,b)=>b.value-a.value||a.name.localeCompare(b.name)||a.slug.localeCompare(b.slug));
  return slots;
 }
-globalThis.AQWCBoostFinderHelpers=Object.freeze({candidate,ownership,typed,artworkUrl,ownedGearBySlot});
+// Sources reviewed 2026-11-28: official AQWorlds Boost Guide, Multiple Boosts
+// and AQWWiki Boosted Items Sorted By Boost, notes 1 and 3.1–3.3.
+// Only all-damage + ONE explicit target kind, or one progression category.
+// No generic "all tagged" multiplier, class/stat/DoT math, consumables or events.
+const raceKeys=new Set(['chaos','dragon','elemental','human','undead','drakath','orc']);
+const progressionKeys=new Set(['cp','gold','rep','xp']);
+function bestOwnedLoadout(rows,inventory,loaded,target){
+ if(!loaded)return {state:'unknown',pieces:[]};
+ if(target==='tagged')return {state:'choose-race',pieces:[]};
+ if(target!=='all'&&!raceKeys.has(target)&&!progressionKeys.has(target))return {state:'unsupported',pieces:[]};
+ const race=raceKeys.has(target),primary=race?'all':target;
+ const a=ownedGearBySlot(rows,inventory,true,primary),b=race?ownedGearBySlot(rows,inventory,true,target):[];
+ const map=new Map(),ids=new Map();
+ for(const [slots,part] of [[a,'primary'],[b,'racial']])for(const slot of slots)for(const r of slot.owned){
+  const k=slot.category+'|'+r.slug,old=map.get(k)||{...r,category:slot.category,primary:0,racial:0};old[part]=r.value;map.set(k,old);
+  if(!ids.has(r.itemId))ids.set(r.itemId,new Set());ids.get(r.itemId).add(slot.category);
+ }
+ // A malformed snapshot using one identity across categories is not proof of
+ // multiple equipable items. Exclude all such identities from loadout math.
+ const candidates=[...map.values()].filter(r=>ids.get(r.itemId).size===1);
+ if(!candidates.length)return {state:'no-match',pieces:[]};
+ const identity=p=>p.category+'|'+p.slug;
+ let best=null;
+ function consider(pieces){
+  const first=Math.max(0,...pieces.map(p=>p.primary)),second=Math.max(0,...pieces.map(p=>p.racial));
+  const multiplier=(1+first/100)*(1+second/100);
+  const sorted=[...pieces].sort((x,y)=>identity(x).localeCompare(identity(y))),signature=sorted.map(identity).join('|');
+  if(!best||multiplier>best.multiplier+1e-10||(Math.abs(multiplier-best.multiplier)<=1e-10&&(pieces.length<best.pieces.length||(pieces.length===best.pieces.length&&signature<best.signature))))best={state:'ready',target,primary:first,racial:second,multiplier,pieces:sorted,signature};
+ }
+ for(const p of candidates)consider([p]);
+ // At most two different slots can supply the two maxima. Compare the highest
+ // of each component per slot; single dual-boost items are evaluated above.
+ if(race){
+  const top=(category,field)=>candidates.filter(p=>p.category===category&&p[field]>0).sort((x,y)=>y[field]-x[field]||identity(x).localeCompare(identity(y)))[0];
+  const all=Object.keys(types).map(k=>top(k,'primary')).filter(Boolean),racial=Object.keys(types).map(k=>top(k,'racial')).filter(Boolean);
+  for(const x of all)for(const y of racial)if(x.category!==y.category&&x.itemId!==y.itemId)consider([x,y]);
+ }
+ return best;
+}
+globalThis.AQWCBoostFinderHelpers=Object.freeze({candidate,ownership,typed,artworkUrl,ownedGearBySlot,bestOwnedLoadout});
 if(typeof document==='undefined'||!core)return;
 let state=null,add=null,data=null,loading=null,root=null,page=0,selected=new Set(),controls=null,artwork={};
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n};
@@ -64,7 +103,7 @@ function init(){
  gearTitle.append(el('h3','Your boosted gear'),el('p','Highest listed individual boost in each equipment category; not a combined loadout.','muted tiny'));
  const gearBoost=select(Object.entries(core.labels),'Compare owned gear by boost');gearBoost.value='all';
  gearHeader.append(gearTitle,gearBoost);
- const gearBody=el('div',undefined,'bf-gear-slots');gear.append(gearHeader,gearBody);
+ const loadout=el('section',undefined,'bf-loadout'),gearBody=el('div',undefined,'bf-gear-slots');gear.append(gearHeader,loadout,gearBody);
  const btns={},progress=['cp','gold','rep','xp'];
  for(const [name,keys] of [['Damage boosts',Object.keys(core.labels).filter(k=>!progress.includes(k))],['Progression boosts',progress]]){
   const section=el('div',undefined,'bf-group');section.append(el('strong',name));const buttons=el('div',undefined,'bf-types');
@@ -80,7 +119,7 @@ function init(){
  const ml=el('label','Min %','bf-min-label');ml.append(min);
  bar.append(q,cat,ml,avail,own,order,clear);
  root.replaceChildren(gear,group,bar,status,results,pager);
- controls={q,cat,min,avail,own,order,btns,status,results,pager,gearBoost,gearBody};return true
+ controls={q,cat,min,avail,own,order,btns,status,results,pager,gearBoost,gearBody,loadout};return true
 }
 function validRows(rows){return rows.filter(r=>r&&typeof r.name==='string'&&r.name.length<=350&&core.slug('/'+r.slug)===r.slug&&Object.hasOwn(types,r.category)&&Array.isArray(r.flags)&&r.boost&&Object.entries(r.boost).every(([k,v])=>Object.hasOwn(core.labels,k)&&Number.isFinite(v)&&v>0&&v<=1000))}
 async function load(){
@@ -88,9 +127,35 @@ async function load(){
  controls.status.textContent='Loading local boost index…';
  loading=(async()=>{try{const r=await fetch('extension/boost-index.json',{credentials:'same-origin'});if(!r.ok)throw Error('Catalog unavailable');const d=await r.json();if(!Array.isArray(d.rows)||d.rows.length>10000)throw Error('Invalid catalog');data={rows:validRows(d.rows),updatedAt:String(d.updatedAt||'')};fetch('data/boost-artwork.json?v=2',{credentials:'same-origin',cache:'no-cache'}).then(r=>r.ok?r.json():null).then(x=>{if(x?.images&&typeof x.images==='object'){artwork=x.images;draw()}}).catch(()=>{});if(!data.rows.length)throw Error('Empty catalog');draw()}catch(err){data=null;controls.status.textContent='Could not load the boost catalog. Reopen Boost Finder to retry.'}finally{loading=null}})();return loading
 }
+function drawLoadout(st){
+ const {loadout,gearBoost}=controls;loadout.replaceChildren();
+ const title=el('strong','Smart equipment loadout');loadout.append(title);
+ if(!st.loaded||!data){loadout.append(el('p',st.loaded?'Loading boost catalog…':'Import a full snapshot to calculate a gear-only combination.','muted tiny'));return}
+ const target=gearBoost.value,result=bestOwnedLoadout(data.rows,st.items||[],true,target);
+ if(result.state!=='ready'){
+  loadout.append(el('p',result.state==='choose-race'?'All Tagged is a group of five kinds, not an extra damage multiplier. Select a specific monster kind to compare combinations.':'No unambiguous owned candidates for this target in the bundled catalog.','muted tiny'));
+ }else{
+  const value=n=>Number(n.toFixed(4)).toLocaleString('en-US',{maximumFractionDigits:4});
+  const bonus=el('div',undefined,'bf-loadout-result');bonus.append(el('strong','+'+value((result.multiplier-1)*100)+'%','bf-loadout-value'),el('span',value(result.multiplier)+'× base · '+core.labels[target]+' · gear only','muted tiny'));
+  loadout.append(bonus);
+  if(raceKeys.has(target))loadout.append(el('p','(1 + '+value(result.primary/100)+') × (1 + '+value(result.racial/100)+') = '+value(result.multiplier)+'×','muted tiny'));
+  const pieces=el('div',undefined,'bf-loadout-pieces');
+  for(const p of result.pieces){
+   const row=el('div',undefined,'bf-loadout-piece');row.dataset.slot=p.category;
+   const name=el('a',p.name);name.href='https://aqwwiki.wikidot.com/'+p.slug;name.target='_blank';name.rel='noopener noreferrer';
+   row.append(el('small',types[p.category],'muted tiny'),name,el('small',[...p.locations,...p.flags].join(' · '),'muted tiny'));
+   const parts=[p.primary>0?'+'+p.primary+'% '+core.labels[raceKeys.has(target)?'all':target]:null,p.racial>0?'+'+p.racial+'% '+core.labels[target]:null].filter(Boolean);
+   row.append(el('small',parts.join(' · '),'bf-gear-value'));pieces.append(row);
+  }
+  loadout.append(pieces);
+ }
+ const note=el('p','Best listed gear boost for this target among unambiguous owned catalog matches, using at most one item per slot. Other slots are free for this calculation. Verify equip restrictions, actual target kind and boosts in game; this is not a class build or DPS prediction. Timed/server boosts and damage-over-time effects are not calculated.','muted tiny');
+ const sources=el('div',undefined,'bf-loadout-sources');for(const [label,url] of [['Official AQW boost guide ↗','https://www.aq.com/Lore/Guides/AQWBoosts'],['AQWWiki stacking rules ↗','https://aqwwiki.wikidot.com/boosted-items-sorted-by-boost']]){const a=el('a',label,'tiny');a.href=url;a.target='_blank';a.rel='noopener noreferrer';sources.append(a)}
+ loadout.append(note,sources);
+}
 function drawOwnedGear(st){
  const {gearBoost,gearBody,q,cat,min,avail,own,order}=controls;
- gearBody.replaceChildren();gearBoost.disabled=!st.loaded;
+ gearBody.replaceChildren();gearBoost.disabled=!st.loaded;drawLoadout(st);
  if(!st.loaded){gearBody.append(el('p','Import a full Inventory & Bank snapshot to compare your owned gear.','muted tiny'));return}
  if(!data)return;
  for(const slot of ownedGearBySlot(data.rows,st.items||[],true,gearBoost.value)){
