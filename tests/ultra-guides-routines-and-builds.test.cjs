@@ -569,8 +569,10 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.ok(homeTile.includes('action.disabled=!!conflict'));
  assert.ok(homeTile.includes('plannerArt(task)'));
  assert.ok(homeTile.includes('info.append(joinBox);tile.append(info)'),'Name and join remain in the same compact content group');
- assert.ok(homeTile.includes('makeCopyJoin(joins[0].join)'));
- assert.ok(html.includes('css/site.css?v=153'),'Invalidate previously cached stylesheet');
+ assert.ok(homeTile.includes('makeCopyJoin(route.join)'));
+ assert.ok(homeTile.includes("joinBox.classList.toggle('has-multiple',joins.length>1)"));
+ assert.ok(!homeTile.includes('home-quest-extra-joins'));
+ assert.ok(html.includes('css/site.css?v=155'),'Invalidate previously cached stylesheet');
  assert.ok(html.includes("grid.dataset.frequency=freq"));
  console.log('Home quest gallery: shared artwork, copyable joins, accessible reversible completion and conflict guard verified.');
 }
