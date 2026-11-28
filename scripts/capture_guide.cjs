@@ -231,7 +231,7 @@ async function main(){
   await page.setViewportSize({width:390,height:844});const mobile=await page.locator('.home-inventory-changes').evaluate(e=>({width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height,content:e.scrollHeight,visible:e.clientHeight,overflow:getComputedStyle(e.querySelector('.home-changes-content')).overflowY}));assert.ok(mobile.width<=390&&mobile.content<=mobile.visible+1&&mobile.overflow==='visible','Mobile compact Home: '+JSON.stringify(mobile));await page.setViewportSize({width:1360,height:1100});
   await shot(page,'home',page.locator('#dashboard'));
   for(const [group,tab,name] of [['projects','unlocks','wishlist'],['planner','planner','quests'],['ultras','ultras','ultras'],['builds','forge','builds'],['story','story','story'],['badges','badge-hunter','badges'],['explore','discover','explore'],['inventory','inventory','inventory'],['inventory','account-stats','stats'],['inventory','milestones','milestones']]){
-   await go(group,tab);if(tab==='milestones'){const art=page.locator('#milestones .aqwm-art');assert.ok(await art.count()>=50);await art.first().evaluate(img=>img.decode())}await page.waitForTimeout(200);await shot(page,name,page.locator('#'+tab));
+   await go(group,tab);if(tab==='milestones'){const art=page.locator('#milestones .aqwm-art');assert.ok(await art.count()>=50);await art.first().evaluate(img=>img.decode());continue}await page.waitForTimeout(200);await shot(page,name,page.locator('#'+tab));
   }
   const popup=await context.newPage();await popup.setViewportSize({width:440,height:760});
   await popup.addInitScript(version=>{
