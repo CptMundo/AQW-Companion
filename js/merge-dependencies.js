@@ -95,6 +95,53 @@ function combine(routes,stock=null){
  const possession=[...gates.values()].map(r=>{const have=read(r.item),used=consumed.get(key(r.item))?.count||0;return {...r,have,missing:have===null?null:Math.max(0,r.count-have),overlap:used>0&&(have===null||have-Math.min(have,used)<r.count),outputConflict:goals.has(key(r.item))}});
  return {goals:[...goals.values()].map(r=>({name:r.name,source:r.source,kind:r.kind})),rows,possession};
 }
-const api={key,describe,direct,selectedRoute,plan,combine};
+
+ // Read-only recommendation for one goal. Stock coverage is not game eligibility,
+ // time-to-complete, or simultaneous allocation across goals.
+ function stockIndex(items){
+  const map=new Map();
+  for(const item of items||[]){
+   const k=key(item?.Name);if(!k)continue;
+   const n=Number(item.Count),prior=map.has(k)?map.get(k):0;
+   const total=prior===null||item.Count===null||item.Count===''||!Number.isSafeInteger(n)||n<0?null:prior+n;
+   map.set(k,Number.isSafeInteger(total)&&total>=0?total:null);
+  }
+  return name=>map.has(key(name))?map.get(key(name)):0;
+ }
+ function recommend(project,{quest,integrity,stock=null}={}){
+  const pending={rank:3,state:'Pending review',detail:'Review the acquisition requirements in Wishlist.',coverage:'No reviewed route available'};
+  if(!project?.name)return pending;
+  if(quest?.matches(project.name)){
+   const stages=quest.evaluate(quest.stages,quest.status(project),stock);
+   const stage=stages.find(s=>s.state!=='done');
+   if(!stage)return {rank:0,state:'Verify claim',detail:'All eight quests are manually marked complete. Check the class shop in game.',coverage:'Source-reviewed questline · manual completion',join:'/join terminatemple',source:quest.shop};
+   const coverage='Source-reviewed questline · '+stages.filter(s=>s.state==='done').length+'/'+stages.length+' quests marked complete';
+   const gate=[stage.level?'Level '+stage.level:null,stage.reputation].filter(Boolean).join(' · ');
+   const note=(gate?gate+' · ':'')+'Confirm quest access and eligibility in game.';
+   const base={coverage,source:quest.wiki,note};
+   if(stage.blocked.length)return {...base,rank:2,state:'Verify previous quest',detail:stage.name+' — previous quest not confirmed.'};
+   if(stage.rows.some(r=>r.missing===null))return {...base,rank:2,state:'Stock unknown',detail:stage.name+' — import a full inventory to check requirements.'};
+   const missing=stage.rows.filter(r=>r.missing>0);
+   if(missing.length){const r=missing[0];return {...base,rank:1,state:'Materials missing',detail:stage.name+' — '+r.missing.toLocaleString('en-US')+' '+r.item+' remaining.',item:r.item,join:r.join,missingTypes:missing.length}}
+   return {...base,rank:0,state:'Turn-in stock available',detail:stage.name+' — listed materials available; verify and turn in manually.',join:'/join terminatemple'};
+  }
+  if(!integrity)return pending;
+  const route=describe(project.name,integrity);if(!route)return pending;
+  const result=combine([route],stock),rows=[...result.rows,...result.possession];
+  const base={source:route.source,coverage:'Source-reviewed direct requirements',note:'Verify access, availability and other requirements in game.'};
+  if(!rows.length)return pending;
+  if(rows.some(r=>r.missing===null))return {...base,rank:2,state:'Stock unknown',detail:'Import a full inventory to check direct requirements.'};
+  if(rows.some(r=>r.overlap||r.outputConflict))return {...base,rank:2,state:'Verify requirement order',detail:'A possession gate or goal output overlaps with consumed stock.'};
+  const gate=result.possession.find(r=>r.missing>0);
+  if(gate)return {...base,rank:1,state:'Possession gate missing',detail:'Obtain '+gate.item+' ('+gate.missing.toLocaleString('en-US')+' remaining).',item:gate.item};
+  const missing=result.rows.filter(r=>r.missing>0);
+  if(missing.length){const r=missing[0];return {...base,rank:1,state:'Materials missing',detail:r.missing.toLocaleString('en-US')+' '+r.item+' remaining.',item:r.item,missingTypes:missing.length}}
+  return {...base,rank:0,state:'Direct stock available',detail:route.kind==='quest'?'Check the documented quest and confirm its gates in game.':'Check the documented merge shop and confirm eligibility in game.'};
+ }
+ function rankRecommendations(rows){
+  return [...rows].sort((a,b)=>a.recommendation.rank-b.recommendation.rank||String(a.project.name).localeCompare(String(b.project.name))||String(a.project.id||'').localeCompare(String(b.project.id||'')));
+ }
+
+const api={key,describe,direct,selectedRoute,plan,combine,stockIndex,recommend,rankRecommendations};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.AQWCMergeDependencies=api;
 })(typeof globalThis==='object'?globalThis:this);
