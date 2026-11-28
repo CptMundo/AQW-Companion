@@ -93,7 +93,7 @@ function combine(routes,stock=null){
  const read=item=>{const k=key(item);if(!cache.has(k)){const n=typeof stock==='function'?stock(item):null;cache.set(k,Number.isSafeInteger(n)&&n>=0?n:null)}return cache.get(k)};
  const rows=[...consumed.values()].map(r=>{const have=read(r.item);return {...r,have,missing:have===null?null:Math.max(0,r.count-have),outputConflict:goals.has(key(r.item))}});
  const possession=[...gates.values()].map(r=>{const have=read(r.item),used=consumed.get(key(r.item))?.count||0;return {...r,have,missing:have===null?null:Math.max(0,r.count-have),overlap:used>0&&(have===null||have-Math.min(have,used)<r.count),outputConflict:goals.has(key(r.item))}});
- return {goals:[...goals.values()].map(r=>({name:r.name,source:r.source,kind:r.kind})),rows,possession};
+ return {goals:[...goals.values()].map(r=>({name:r.name,source:r.source,kind:r.kind,...(r.stage?{stage:r.stage}:{})})),rows,possession};
 }
 
  // Read-only recommendation for one goal. Stock coverage is not game eligibility,
@@ -181,12 +181,34 @@ function recurringOpportunities(rows,tasks,{isRecurring=()=>false,isDone=()=>fal
  return [...found.values()].sort((a,b)=>Number(b.task.freq==='daily')-Number(a.task.freq==='daily')||Number(a.pinned)-Number(b.pinned)||a.task.name.localeCompare(b.task.name)||a.id.localeCompare(b.id));
 }
 
+// Only the first unconfirmed reviewed stage contributes to the shared plan.
+// Later stages and optional alternative recipes are never summed into it.
+function stagedGoal(project,quest){
+ if(!quest?.matches(project?.name))return null;
+ const stages=quest.evaluate(quest.stages,quest.status(project),null);
+ const index=stages.findIndex(s=>s.state!=='done'),name=quest.recipe(project.name).name;
+ const acquisition=quest.acquisition(project.name),methods=acquisition?.methods||[];
+ const claim=index<0,source=claim?quest.shop:quest.wiki;
+ const method=methods.find(m=>m.url===source);
+ if(!method||!/^\/join [a-z0-9-]+$/i.test(method.join||'')||!/^https:\/\/aqwwiki\.wikidot\.com\/[a-z0-9-]+$/i.test(source||''))return null;
+ const s=claim?null:stages[index],blocked=!!s?.blocked.length;
+ const stage={id:s?.id||'claim',name:s?.name||'Claim class',index:claim?stages.length:index+1,total:stages.length,checked:stages.filter(x=>x.state==='done').length,claim,blocked,level:s?.level||null,reputation:s?.reputation||null,note:s?.note||null,alternative:s?.alternative||null,join:method.join,source,rows:blocked||claim?[]:s.rows.map(r=>({item:r.item,count:r.count,join:r.join,kind:'consume'}))};
+ return {name,kind:'quest',source,rows:stage.rows.map(({item,count,kind})=>({item,count,kind})),stage};
+}
+
 // A destination is a reviewed acquisition/turn-in location, NOT necessarily
 // the map where ingredients drop. No extra recipe expansion or stock allocation.
 function farmingDestinations(combined,integrity){
  const groups=new Map(),unmapped=[],deferred=[];
  const all=[...combined.rows,...combined.possession];
  const conflicts=new Set(all.filter(r=>r.overlap||r.outputConflict).map(r=>key(r.item)));
+ const stageMaps=new Map();
+ for(const goal of combined.goals)for(const r of goal.stage?.rows||[]){
+  if(!/^\/join [a-z0-9-]+$/i.test(r.join||''))continue;
+  const k=key(r.item),list=stageMaps.get(k)||[];
+  if(!list.some(x=>x.join===r.join&&x.goal===goal.name))list.push({join:r.join,source:goal.stage.source,role:'Stage farm / acquisition',goal:goal.name,title:goal.stage.name});
+  stageMaps.set(k,list);
+ }
  function destination(name){
   const route=describe(name,integrity);if(!route)return null;
   const acquisition=route.kind==='merge'?integrity.getAcquisition(name):integrity.guidanceAcquisition(name);
@@ -207,14 +229,18 @@ function farmingDestinations(combined,integrity){
   if(!row.missing)continue;
   const dest=destination(row.item);
   const entry={item:row.item,kind:row.kind,count:row.missing,goals:row.goals.map(g=>g.name)};
-  if(dest)add(dest,{...entry,type:'material'});
+  const stageDestinations=stageMaps.get(key(row.item))||[];
+  if(row.kind==='consume'&&stageDestinations.length){
+   for(const stageDest of stageDestinations)add(stageDest,{...entry,type:'material',stageFarm:true});
+  }else if(dest)add(dest,{...entry,type:'material'});
   else unmapped.push(entry);
  }
  for(const goal of combined.goals){
-  const dest=destination(goal.name);
+  const stage=goal.stage;
+  const dest=stage?{join:stage.join,source:stage.source,role:stage.claim?'Class shop':'Accept / turn in stage',title:stage.name}:destination(goal.name);
   const relevant=all.filter(r=>r.goals.some(g=>key(g.name)===key(goal.name)));
   const state=relevant.some(r=>r.missing===null||conflicts.has(key(r.item)))?'Verify allocation / stock':relevant.some(r=>r.missing>0)?'Ingredients or gates missing':'Check access and turn in';
-  if(dest)add(dest,{item:goal.name,type:'goal',state});
+  if(dest)add(dest,{item:goal.name,type:'goal',state:stage?.blocked?'Verify previous quest':stage?.claim?'All stages manually checked — verify claim in game':state,...(stage?{stageName:stage.name}:{})});
   else deferred.push({item:goal.name,kind:'goal',reason:'Destination not reviewed'});
  }
  return {groups:[...groups.values()].sort((a,b)=>a.join.localeCompare(b.join)),unmapped,deferred};
@@ -263,6 +289,6 @@ function farmingRoutineRoutes(combined,tasks,options={}){
  }
  return {quests,groups:[...groups.values()].sort((a,b)=>a.join.localeCompare(b.join)),unmapped};
 }
-const api={key,describe,direct,selectedRoute,plan,combine,stockIndex,recommend,rankRecommendations,recommendationCounts,recurringOpportunities,farmingDestinations,farmingRoutineRoutes};
+const api={key,describe,direct,selectedRoute,plan,combine,stockIndex,recommend,rankRecommendations,recommendationCounts,recurringOpportunities,farmingDestinations,farmingRoutineRoutes,stagedGoal};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.AQWCMergeDependencies=api;
 })(typeof globalThis==='object'?globalThis:this);
