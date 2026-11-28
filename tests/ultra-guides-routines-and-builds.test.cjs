@@ -900,3 +900,18 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  project.steps.forEach(s=>s.status='done');stage=api.stagedGoal(project,quest);assert.equal(stage.stage.claim,true);assert.equal(stage.rows.length,0);assert.equal(api.farmingDestinations(api.combine([stage],()=>0),integrity).groups[0].entries[0].role,'Class shop');
  assert.equal(api.stagedGoal({name:'Unknown questline'},quest),null);
  console.log('Smart Farming Route C3: current stage, combined shortage, manual advancement and optional route isolation passed.');}
+
+
+// Collections & Gear A1: independent owned gear by category, strict identity.
+{require('../js/boost-finder.js');const api=globalThis.AQWCBoostFinderHelpers;
+ const item=(slug,name,category,value)=>({slug,name,category,boost:{all:value},flags:[]});
+ const rows=[item('blade','Blade','weapons',15),item('strong','Strong Blade','weapons',30),item('cape','Cape','capes-back-items',25),item('axe','Specific (Axe)','weapons',50),item('same-a','Same (Sword)','weapons',99),item('same-b','Same (Axe)','weapons',99),item('missing-id','Unknown ID','weapons',80),item('wrong','Wrong Type','weapons',100)];
+ const inventory=[{Name:'Blade',Type:'Sword',Count:1,ID:'1',Bank:0},{Name:'Strong Blade',Type:'Sword',Count:1,ID:'2',Bank:1},{Name:'Cape',Type:'Cape',Count:1,ID:'3',Bank:0},{Name:'Specific',Type:'Sword',Count:1,ID:'4',Bank:0},{Name:'Same',Type:'Sword',Count:1,ID:'5',Bank:0},{Name:'Unknown ID',Type:'Sword',Count:1,Bank:0},{Name:'Wrong Type',Type:'Armor',Count:1,ID:'6',Bank:0}];
+ const slots=api.ownedGearBySlot(rows,inventory,true,'all'),weapons=slots.find(s=>s.category==='weapons');
+ assert.equal(slots.length,5);assert.deepEqual(weapons.owned.map(r=>r.slug),['strong','blade']);assert.deepEqual(weapons.owned[0].locations,['Bank']);assert.equal(weapons.ambiguous,4);
+ assert.equal(slots.find(s=>s.category==='capes-back-items').owned[0].value,25);
+ assert.ok(api.ownedGearBySlot(rows,inventory,false,'all').every(s=>!s.owned.length));
+ assert.ok(api.ownedGearBySlot(rows,inventory,true,'xp').every(s=>!s.owned.length));
+ assert.equal(api.ownership(rows[3],inventory,true),'ambiguous');
+ assert.ok(html.includes('css/boost-finder.css?v=4'));
+ console.log('Owned boosted gear: typed identity, independent category ranking, bank location, unknown/ambiguous exclusions passed.');}

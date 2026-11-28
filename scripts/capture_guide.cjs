@@ -307,6 +307,24 @@ async function main(){
   assert.ok(await stageRoute.locator('[data-join="/join terminatemple"]').getByText('Accept / turn in stage',{exact:false}).isVisible());
   await page.setViewportSize({width:390,height:844});assert.ok(await stageRoute.evaluate(e=>e.scrollWidth<=e.clientWidth+1));await page.setViewportSize({width:1360,height:1100});
   await shared.getByRole('button',{name:'Clear selection',exact:true}).click();
+  // Owned gear: isolated synthetic state via the actual finder renderer.
+  await go('explore','boost-finder');
+  const ownedGear=page.locator('.bf-owned-gear');await ownedGear.locator('.bf-gear-slot').first().waitFor({state:'visible'});
+  assert.equal(await ownedGear.locator('.bf-gear-slot').count(),5);
+  await page.evaluate(()=>window.AQWCBoostFinder.render(()=>({loaded:true,tracked:[],items:[{ID:'boost-demo1',Name:'Burning Blade',Type:'Sword',Count:1,Bank:1},{ID:'boost-demo2',Name:'Cape of Awe',Type:'Cape',Count:1,Bank:0}]}),null));
+  const gearWeapon=ownedGear.locator('[data-slot="weapons"]');
+  assert.ok(await gearWeapon.getByRole('link',{name:'Burning Blade',exact:true}).isVisible());
+  assert.ok(await gearWeapon.getByText('+15%',{exact:true}).isVisible());
+  assert.ok(await gearWeapon.getByText('Bank',{exact:true}).isVisible());
+  await ownedGear.getByRole('combobox',{name:'Compare owned gear by boost'}).selectOption('xp');
+  const gearCape=ownedGear.locator('[data-slot="capes-back-items"]');
+  assert.ok(await gearCape.getByRole('link',{name:'Cape of Awe',exact:true}).isVisible());
+  assert.ok(await gearCape.getByText('+25%',{exact:true}).isVisible());
+  await gearCape.getByRole('button',{name:'View 1 owned match(es)',exact:true}).click();
+  assert.ok(await page.locator('.bf-results').getByRole('link',{name:'Cape of Awe',exact:true}).isVisible());
+  assert.ok(await ownedGear.getByText('Percentages are individual',{exact:false}).isVisible());
+  await page.setViewportSize({width:390,height:844});assert.ok(await ownedGear.evaluate(e=>e.scrollWidth<=e.clientWidth+1));await page.setViewportSize({width:1360,height:1100});
+  await go('projects','unlocks');await go('explore','boost-finder'); // restore actual demo snapshot provider
   // Add a reviewed recipe whose existing catalog includes a quantified weekly reward.
   await page.evaluate(()=>{const k='aqw-companion-unlocks',all=JSON.parse(localStorage.getItem(k)||'[]');if(!all.some(p=>p.name==='Sin of the Abyss'))all.push({id:'next-routine-sin',name:'Sin of the Abyss',type:'Weapon',steps:[]});localStorage.setItem(k,JSON.stringify(all))});
   await page.reload({waitUntil:'domcontentloaded'});await page.locator('#dashboard').waitFor({state:'visible'});
