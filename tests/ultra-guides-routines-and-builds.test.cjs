@@ -858,5 +858,8 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  const drakath=api.farmingDestinations(api.combine([api.describe('Drakath the Eternal',integrity)],()=>0),integrity);
  assert.ok(drakath.groups.some(g=>g.join==='/join eternalchaos'&&g.entries.some(e=>e.role==='Quest turn-in')));
  assert.equal(drakath.unmapped.find(e=>e.item==="Drakath's Sword (Free Player)").kind,'possess');
+ const overlap=api.farmingDestinations(api.combine([{name:'Synthetic consume',kind:'merge',rows:[{item:'Void Crystal A',kind:'consume',count:2}]},{name:'Synthetic gate',kind:'quest',rows:[{item:'Void Crystal A',kind:'possess',count:1}]}],()=>1),integrity);
+ assert.equal(overlap.deferred.filter(e=>e.item==='Void Crystal A').length,2);
+ assert.ok(!overlap.groups.flatMap(g=>g.entries).some(e=>e.item==='Void Crystal A'));
  assert.deepEqual(api.farmingDestinations(api.combine([],()=>0),integrity),{groups:[],unmapped:[],deferred:[]});
  console.log("Smart Farming Route C1: grouped reviewed destinations, shared shortage, no expansion, unknown stock, conflicts and gates passed.");}
