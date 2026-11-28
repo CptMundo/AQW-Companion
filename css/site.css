@@ -1615,3 +1615,6 @@ html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-i
 
 /* Recurring route roles use the existing shared map groups. */
 .shared-farm-quest{padding:10px 0}.shared-farm-role{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 9px}.shared-farm-quest .methodbuttons{margin-top:5px}.shared-farm-quest strong{overflow-wrap:anywhere}
+
+/* Smart Farming Route: compact overview and current sequential stage. */
+.shared-farm-overview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:10px 0}.shared-farm-metric,.shared-farm-stage{border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:9px;min-width:0;overflow-wrap:anywhere}.shared-farm-metric strong{display:block;font-size:20px;font-variant-numeric:tabular-nums}.shared-farm-metric small,.shared-farm-stage small{display:block;color:var(--muted)}.shared-farm-stage{margin:8px 0}.shared-farm-alt{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin:7px 0;padding:8px;border:1px solid var(--line);border-radius:6px}.shared-farm-alt strong{font-size:12px}.shared-farm-stage a{display:inline-block;margin-top:5px}@media(max-width:620px){.shared-farm-overview{grid-template-columns:repeat(2,minmax(0,1fr))}}
