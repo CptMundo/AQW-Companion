@@ -739,3 +739,21 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
   let fetches=0;const env={location:{protocol:'https:'},communityItems:new Map([['x',{}]]),communityMeta:{__sourceType:'compiled-local'},fetch:async()=>{fetches++;return {ok:false}}};const load=new Function('env','with(env){'+body+';return loadPublicCatalog;}')(env);await load();assert.equal(fetches,0);env.communityMeta.__sourceType='hosted';await load();assert.equal(fetches,1);env.communityItems.clear();env.communityMeta.__sourceType='compiled-local';await load();assert.equal(fetches,2);
   console.log('Consolidation: backup preflight, deduplication, selected snapshot, batch failure, and local catalog guard passed.');
  };run().catch(e=>{console.error(e);process.exitCode=1});}
+
+// Portable progress is typed, limited to public/local feature data, and does not touch unrelated keys.
+{const api=require('../js/portable-progress.js'),account=require('../js/account-progress.js'),badge=require('../js/badge-hunter.js'),stack=require('../js/stack-alerts.js');
+ const catalog=[{id:'b1'},{id:'b2'}],stamp='2026-01-01T00:00:00Z';
+ const deps={badgeCatalog:catalog,badgeClean:badge.clean,accountClean:account.clean,normalize:stack.normalize,validCap:stack.validCap,forgeIds:['weapon:forge'],publicClean:v=>{if(v.source!=='character-page')throw Error('bad public');return v}};
+ const sample={forge:['weapon:forge'],badges:{b1:'owned'},badgeCapture:{character:'Demo',capturedAt:stamp,ids:['b1'],storyGroups:[],ambiguous:0,unknown:0,discovery:{newIds:null,latestIds:[],latestAt:null}},accountProgress:{sagas:{section:'sagas',capturedAt:stamp,rows:[{name:'Prologue',state:'colored'}]}},stackCaps:{'void aura':800},publicInventory:{character:'Demo',source:'character-page'},theme:'dark'};
+ const store=new Map([['unrelated-consent','keep']]);const storage={getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)};
+ const clean=api.clean(sample,deps);api.apply(storage,clean);assert.deepEqual(api.collect(storage,deps),clean);assert.equal(store.get('unrelated-consent'),'keep');
+ assert.throws(()=>api.clean({...sample,credentials:'no'},deps),/Invalid backup progress/);
+ assert.throws(()=>api.clean({...sample,forge:['unknown']},deps),/Invalid backup progress/);
+ assert.throws(()=>api.clean({...sample,badges:{b3:'owned'}},deps),/Invalid backup progress/);
+ assert.throws(()=>api.clean({...sample,badgeCapture:{...sample.badgeCapture,ids:['b2'],discovery:{newIds:['b1'],latestIds:[],latestAt:null}}},deps),/Invalid backup progress/);
+ assert.throws(()=>api.clean({...sample,publicInventory:{...sample.publicInventory,character:'Other'}},deps),/different captured characters/);
+ assert.throws(()=>api.clean({...sample,accountProgress:{sagas:{section:'sagas',capturedAt:stamp,rows:[{name:'Prologue',state:'invented'}]}}},deps),/Invalid/);
+ api.apply(storage,api.clean({theme:'light'},deps));assert.equal(store.get(api.keys.theme),'light');assert.equal(store.get(api.keys.forge),'["weapon:forge"]');
+ const before=new Map(store);const badStorage={...storage,setItem:(k,v)=>{if(k===api.keys.theme)throw Error('quota');storage.setItem(k,v)}};
+ assert.throws(()=>api.apply(badStorage,api.clean({forge:[],theme:'dark'},deps)),/rolled back/);assert.deepEqual(store,before);
+ console.log('Portable progress: validation, explicit keys, partial restore and rollback passed.');}
