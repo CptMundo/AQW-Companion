@@ -14,7 +14,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="AQW Companion | AQWorlds Inventory & Farming Tracker">
 <meta name="twitter:description" content="A free unofficial AdventureQuest Worlds companion with inventory, Wishlist, farming and Forge tracking."><link rel="icon" type="image/png" href="assets/brand-favicon.png">
-<link rel="stylesheet" href="css/site.css?v=154"><link rel="stylesheet" href="css/boost-finder.css?v=3">
+<link rel="stylesheet" href="css/site.css?v=155"><link rel="stylesheet" href="css/boost-finder.css?v=3">
 
 
 <link rel="stylesheet" href="css/item-icons.css">
@@ -6273,6 +6273,7 @@ function homeQuestTile(task,done){
  const joins=[...routes.values()],joinBox=node('div',undefined,'home-quest-joins');
  if(joins.length){
   joinBox.classList.toggle('has-multiple',joins.length>1);
+  joinBox.classList.toggle('has-many',joins.length>2);
   for(const route of joins){
    const button=makeCopyJoin(route.join);button.title='Copy '+route.join+' · '+route.label;
    if(joins.length>1)button.querySelector('.ultra-copy-command').textContent=route.join.slice(6);
