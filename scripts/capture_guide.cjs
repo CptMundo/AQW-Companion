@@ -304,6 +304,14 @@ async function main(){
   const routine=next.locator('.home-next-routines');assert.ok(await routine.isVisible());
   assert.ok(await routine.locator('.home-next-routine').count()<=3);
   assert.ok(await routine.getByRole('link',{name:'Quest source ↗'}).first().isVisible());
+  assert.equal(await next.locator('.home-next-metric').count(),4);
+  assert.ok(await next.locator('.home-next-status').first().isVisible());
+  const questId=await routine.locator('.home-next-routine').first().getAttribute('data-quest-id');
+  await routine.locator('.home-next-routine').first().getByRole('button',{name:'View quest ↗'}).click();
+  assert.ok(await page.locator('#planner-discover').isVisible());
+  assert.equal(await page.locator('#planner-suggestions .planner-quest-card:focus').getAttribute('data-quest-id'),questId);
+  await page.locator('#plannersearch').fill('');
+  await go('home','overview');
   assert.ok(await next.getByText('Based on the selected full inventory & bank snapshot.',{exact:false}).isVisible());
   await page.setViewportSize({width:390,height:844});assert.ok(await next.evaluate(e=>e.scrollWidth<=e.clientWidth+1));await page.setViewportSize({width:1360,height:1100});
   await next.locator('.home-next-project').first().getByRole('button',{name:'View goal ↗'}).click();assert.ok(await page.locator('#unlocks').isVisible());assert.equal(await page.locator('#unlocksearch').inputValue(),'');assert.ok(await page.locator('.unlockcard:focus').count());assert.ok(await page.locator('.unlockcard').count()>1);
