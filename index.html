@@ -14,7 +14,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="AQW Companion | AQWorlds Inventory & Farming Tracker">
 <meta name="twitter:description" content="A free unofficial AdventureQuest Worlds companion with inventory, Wishlist, farming and Forge tracking."><link rel="icon" type="image/png" href="assets/brand-favicon.png">
-<link rel="stylesheet" href="css/site.css?v=157"><link rel="stylesheet" href="css/boost-finder.css?v=3">
+<link rel="stylesheet" href="css/site.css?v=158"><link rel="stylesheet" href="css/boost-finder.css?v=3">
 
 
 <link rel="stylesheet" href="css/item-icons.css">
@@ -87,7 +87,7 @@
 </section><section id="planner-history" class="view"><div class="card"><div class="planner-my-toolbar"><h3 class="sectiontitle">Task History</h3><button id="plannerbackfromhistory" class="smallbutton" type="button">← Daily / Weekly</button></div><div id="planner-task-history"></div></div></section><section id="compare" class="view"><div class="card"><h3 class="sectiontitle">Compare two snapshots</h3><p class="muted" style="font-size:13px">Import both snapshots into the same browser. Comparison uses <b>ID</b> and quantity; moving items between inventory and bank does not count as a new item.</p><div class="comparecontrols"><label>Older <select id="oldselect"></select></label><label>Newer <select id="newselect"></select></label><button id="comparebtn" class="primary">Compare</button></div><div id="compareresult" class="muted">Import at least two snapshots to get started.</div></div></section>
 <section id="history" class="view"><div class="card"><h3 class="sectiontitle">Local import history</h3><div id="historylist"></div><p class="muted" style="font-size:12px">Each imported file is validated and saved in your browser's IndexedDB. The Backup button downloads a JSON file you can import later to restore your data. Clear data removes snapshots, farming goals and unlock projects.</p></div></section><div class="foot">Created by <strong>CptMundo</strong> for the AQWorlds community · Unofficial fan project · Not affiliated with Artix Entertainment · v0.13.10 Beta</div></div>
 <div id="itemdetails" class="detailoverlay hidden" role="dialog" aria-modal="true" aria-label="Item acquisition details"><div class="detailpanel"><div class="detailhead"><div><small style="color:#7da5d1;font-weight:700">AQW COMPANION · ACQUISITION EXPLORER</small><h2 id="detailname"></h2></div><button type="button" class="smallbutton" id="closedetails" aria-label="Close details">✕ Close</button></div><div id="detailcontent"></div></div></div><aside id="aqwc-tour" class="aqwc-tour" role="region" aria-labelledby="aqwc-tour-title" hidden><div class="aqwc-tour-top"><span>QUICK TOUR <span id="aqwc-tour-count">1 / 6</span></span><button id="aqwc-tour-close" type="button" aria-label="Close quick tour">×</button></div><progress id="aqwc-tour-progress" aria-label="Tour progress" max="6" value="1"></progress><div class="aqwc-tour-content" aria-live="polite"><span id="aqwc-tour-icon" aria-hidden="true">📊</span><div><h3 id="aqwc-tour-title" tabindex="-1">Your adventure starts here</h3><p id="aqwc-tour-body"></p></div></div><div class="aqwc-tour-actions"><button id="aqwc-tour-skip" type="button">Skip tour</button><div><button id="aqwc-tour-back" type="button">Back</button><button id="aqwc-tour-next" type="button">Next →</button></div></div><a href="extension/quick-start.html" class="aqwc-tour-guide">Full visual guide ↗</a></aside><script src="js/meta-class-builds.js"></script>
-<script src="js/recipe-integrity.js"></script><script src="js/quest-dependencies.js?v=1"></script><script src="js/merge-dependencies.js?v=4"></script>
+<script src="js/recipe-integrity.js"></script><script src="js/quest-dependencies.js?v=1"></script><script src="js/merge-dependencies.js?v=5"></script>
 <script src="extension/wishlist-link.js?v=126"></script>
 <script src="extension/wiki-boosts.js?v=51"></script>
 <script src="js/boost-finder.js?v=3"></script>
@@ -6501,6 +6501,7 @@ function renderHomeInsights(){
 }
 function renderNextProjects(){
  const root=$('homeprojectslist'),api=window.AQWCMergeDependencies;if(!root)return;
+ const expanded=!!root.querySelector('.home-next-more[open]'),scroll=root.scrollTop;
  root.replaceChildren();
  if(!current){root.append(node('p','Import a full inventory to get personal recommendations.','muted tiny'));return}
  if(!api?.recommend){root.append(node('p','Recommendations unavailable. Open Wishlist to review your goals.','muted tiny'));return}
@@ -6514,10 +6515,20 @@ function renderNextProjects(){
  }
  if(!rows.length){root.append(node('p','Add an incomplete Wishlist goal to see your next steps.','muted tiny'));return}
  root.append(node('p','Based on the selected full inventory & bank snapshot. Suggestions are independent, not a shared stock allocation or a fastest-farm ranking.','muted tiny'));
- for(const {project:p,recommendation:r} of api.rankRecommendations(rows).slice(0,5)){
+ const ranked=api.rankRecommendations(rows),counts=api.recommendationCounts(ranked);
+ const summary=node('div',undefined,'home-next-summary');
+ for(const [rank,label] of [[0,'Check in game'],[1,'Materials / gates'],[2,'Verify first'],[3,'Pending review']]){
+  const metric=node('div',undefined,'home-next-metric');metric.dataset.rank=rank;
+  metric.append(node('strong',String(counts[rank])),node('small',label));summary.append(metric);
+ }
+ root.append(summary);
+ appendNextRoutineOpportunities(root,ranked);
+ const renderGoal=({project:p,recommendation:r})=>{
   const line=node('div',undefined,'homeentry home-next-project');line.dataset.goal=api.key(p.name);line.dataset.state=r.state;
   const left=node('div'),name=node('strong',p.name);
-  left.append(name,node('small',r.coverage,'muted tiny'),node('small',r.state+' · '+r.detail,'muted tiny'));
+  left.className='home-next-content';
+  const head=node('div',undefined,'home-next-head'),status=node('span',r.state,'home-next-status');status.dataset.rank=r.rank;
+  head.append(name,status);left.append(head,node('small',r.detail,'home-next-action-detail'),node('small',r.coverage,'muted tiny'));
   if(r.missingTypes>1)left.append(node('small',r.missingTypes+' material types still missing in this route or stage.','muted tiny'));
   if(r.note)left.append(node('small',r.note,'muted tiny'));
   const stats=projectProgress(p);if(stats.trackedTotal)left.append(node('small',stats.complete+'/'+stats.trackedTotal+' saved checklist steps complete (not total farm progress).','muted tiny'));
@@ -6526,10 +6537,16 @@ function renderNextProjects(){
   if(r.item){const material=node('button','How to get ↗','smallbutton');material.type='button';material.onclick=()=>openItemDetails(r.item,p.id);actions.append(material)}
   if(r.join&&/^\/join [a-z0-9-]+$/i.test(r.join))actions.append(makeCopyJoin(r.join));
   if(r.source){const source=node('a','Source ↗','tiny');source.href=r.source;source.target='_blank';source.rel='noopener noreferrer';actions.append(source)}
-  left.append(actions);line.append(left);root.append(line);
+  left.append(actions);line.append(left);return line;
+ };
+ const goals=node('div',undefined,'home-next-goals');goals.append(node('strong','Your next goals'));
+ for(const row of ranked.slice(0,5))goals.append(renderGoal(row));
+ if(ranked.length>5){
+  const more=node('details',undefined,'home-next-more');more.open=expanded;
+  more.append(node('summary','Show '+(ranked.length-5)+' more Wishlist goals'));
+  const extra=node('div',undefined,'home-next-extra');for(const row of ranked.slice(5))extra.append(renderGoal(row));more.append(extra);goals.append(more);
  }
- if(rows.length>5)root.append(node('p','Showing 5 of '+rows.length+' incomplete goals. Open Wishlist for the rest.','muted tiny'));
- appendNextRoutineOpportunities(root,rows);
+ root.append(goals);root.scrollTop=scroll;
 }
 
 function appendNextRoutineOpportunities(root,rows){
@@ -6539,21 +6556,27 @@ function appendNextRoutineOpportunities(root,rows){
   isPinned:id=>pinnedTasks.some(t=>routineCanonicalId(t.id)===id),canonicalId:routineCanonicalId
  });
  if(!opportunities.length)return;
- const section=node('div',undefined,'homeentry home-next-routines'),content=node('div');
+ const section=node('div',undefined,'homeentry home-next-routines'),content=node('div',undefined,'home-next-content');
  content.append(node('strong','Daily & weekly opportunities'),node('small','Catalog rewards match missing materials from reviewed requirements. Check access and actual rewards in game. Completion is your local Tracker check.','muted tiny'));
  for(const {task:t,id,matches,pinned} of opportunities.slice(0,3)){
   const entry=node('div',undefined,'home-next-routine');entry.dataset.questId=id;
   entry.append(node('strong',t.name),node('small',(t.freq==='daily'?'Daily':'Weekly')+' · '+(pinned?'Already pinned':'Not marked complete in this period')+(t.exclusiveGroup?' · Alternative quest; choose one':''),'muted tiny'));
   for(const match of matches)entry.append(node('small',match.reward+' · '+match.goals.map(g=>g.name+' ('+fmt(g.missing)+' missing)').join(' / '),'muted tiny'));
   const actions=node('div',undefined,'methodbuttons');
-  if(!pinned){const pin=node('button','Pin quest','smallbutton');pin.type='button';pin.disabled=pinnedTasks.length>=250;pin.onclick=()=>pinTask(t);actions.append(pin)}
-  const open=node('button','Quest Tracker ↗','smallbutton');open.type='button';open.onclick=()=>selectTab('planner');actions.append(open);
+  if(!pinned){const pin=node('button','Pin quest','smallbutton');pin.type='button';pin.disabled=pinnedTasks.length>=250;pin.onclick=()=>{pinTask(t);const refreshed=[...root.querySelectorAll('.home-next-routine')].find(e=>e.dataset.questId===id);(refreshed?.querySelector('.home-next-view-quest')||root.querySelector('.home-next-view-quest')||$('homeprojects'))?.focus({preventScroll:true})};actions.append(pin)}
+  const open=node('button','View quest ↗','smallbutton home-next-view-quest');open.type='button';open.onclick=()=>openNextRoutine(t);actions.append(open);
   const join=t.acceptJoin||t.join;if(typeof join==='string'&&/^\/join [a-z0-9-]+$/i.test(join))actions.append(makeCopyJoin(join));
   const source=node('a','Quest source ↗','tiny');source.href=t.wiki;source.target='_blank';source.rel='noopener noreferrer';actions.append(source);
   entry.append(actions);content.append(entry);
  }
  if(opportunities.length>3)content.append(node('small','Showing 3 of '+opportunities.length+' matching quests.','muted tiny'));
  section.append(content);root.append(section);
+}
+function openNextRoutine(t){
+ openPlannerLibrary(t.freq,'all');
+ $('plannersearch').value=t.name;renderPlanner();
+ const target=[...$('planner-suggestions').querySelectorAll('.planner-quest-card')].find(e=>e.dataset.questId===t.id);
+ if(target){target.tabIndex=-1;target.focus({preventScroll:true});target.scrollIntoView({block:'start'})}
 }
 function aqwServerDay(now=new Date()){const shifted=new Date(now.getTime()-5*60*60*1000);return shifted.toISOString().slice(0,10)}
 function taskPeriod(freq,now=new Date()){const day=aqwServerDay(freq==='weekly'?new Date(now.getTime()-60000):now);if(freq==='daily')return 'd:'+day;const d=new Date(day+'T12:00:00Z');const since=(d.getUTCDay()+2)%7;d.setUTCDate(d.getUTCDate()-since);return 'w:'+d.toISOString().slice(0,10)}
@@ -6698,7 +6721,7 @@ function plannerObjectiveMapHints(target,lookup){
  return results.slice(0,4);
 }
 function taskCard(t,pinned){const done=taskDone(t),conflict=routineConflict(t);
- const card=node('article',undefined,'task-card planner-quest-card'+(done?' done':''));
+ const card=node('article',undefined,'task-card planner-quest-card'+(done?' done':''));card.dataset.questId=t.id;
  const category=plannerCategory(t),art=plannerArt(t);
  const visual=node('div',undefined,'planner-quest-art');
  const fallback=node('span',({'Ultras':'⚔️','Legion':'☠️','Nulgath':'◆','Materials':'⛏️','Reputation':'★','Factions':'⚑','Custom':'✦','Friendships':'🎁','Activities':'🎡','Other':'📜'})[category]||'📜','planner-quest-art-fallback');
