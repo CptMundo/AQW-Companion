@@ -573,7 +573,7 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.ok(homeTile.includes('makeCopyJoin(route.join)'));
  assert.ok(homeTile.includes("joinBox.classList.toggle('has-multiple',joins.length>1)"));
  assert.ok(!homeTile.includes('home-quest-extra-joins'));
- assert.ok(html.includes('css/site.css?v=160'),'Invalidate previously cached stylesheet');
+ assert.ok(html.includes('css/site.css?v=161'),'Invalidate previously cached stylesheet');
  assert.ok(html.includes("grid.dataset.frequency=freq"));
  console.log('Home quest gallery: shared artwork, copyable joins, accessible reversible completion and conflict guard verified.');
 }
@@ -881,3 +881,22 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
  assert.equal(JSON.stringify(combined),before);
  assert.equal(api.farmingRoutineRoutes(api.combine([api.describe('Sin of the Abyss',integrity)],null),tasks,opts).quests.length,0);
  console.log('Smart Farming Route C2: exact combined reward matching, aliases, map roles, local checks, alternatives and caps passed.');}
+
+
+// C3: first unconfirmed questline stage only; no later materials or alternatives.
+{const api=require('../js/merge-dependencies.js'),quest=require('../js/quest-dependencies.js'),integrity=require('../js/recipe-integrity.js');
+ const project={name:'Verus DoomKnight (Class)',steps:quest.labels.map(label=>({kind:'manual',label,status:'unknown'}))};
+ let stage=api.stagedGoal(project,quest);assert.equal(stage.stage.id,'body');assert.equal(stage.rows.length,4);assert.equal(stage.rows[0].count,13);
+ const direct={name:'Synthetic goal',kind:'merge',rows:[{item:"Fear's Bones",count:5,kind:'consume'}]};
+ const combined=api.combine([stage,direct],n=>api.key(n)==="fear's bones"?10:0);
+ const plan=api.farmingDestinations(combined,integrity);
+ assert.equal(combined.rows.find(r=>r.item==="Fear's Bones").missing,8);
+ assert.equal(plan.groups.find(g=>g.join==='/join underrealm').entries[0].count,8);
+ assert.ok(plan.groups.find(g=>g.join==='/join terminatemple').entries.some(e=>e.role==='Accept / turn in stage'));
+ assert.ok(!plan.groups.some(g=>g.join==='/join necrodungeon'));
+ project.steps[0].status='done';stage=api.stagedGoal(project,quest);assert.equal(stage.stage.id,'cloak');assert.ok(!stage.rows.some(r=>r.item==="Fear's Bones"));
+ project.steps.slice(0,5).forEach(s=>s.status='done');stage=api.stagedGoal(project,quest);assert.equal(stage.stage.id,'spikes');assert.equal(stage.stage.alternative.join,'/join thevoid');assert.ok(!stage.rows.some(r=>r.item==='Void Energy'));
+ const alt=api.farmingDestinations(api.combine([stage],()=>0),integrity);assert.ok(!alt.groups.some(g=>g.join==='/join thevoid'));
+ project.steps.forEach(s=>s.status='done');stage=api.stagedGoal(project,quest);assert.equal(stage.stage.claim,true);assert.equal(stage.rows.length,0);assert.equal(api.farmingDestinations(api.combine([stage],()=>0),integrity).groups[0].entries[0].role,'Class shop');
+ assert.equal(api.stagedGoal({name:'Unknown questline'},quest),null);
+ console.log('Smart Farming Route C3: current stage, combined shortage, manual advancement and optional route isolation passed.');}

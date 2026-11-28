@@ -14,7 +14,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="AQW Companion | AQWorlds Inventory & Farming Tracker">
 <meta name="twitter:description" content="A free unofficial AdventureQuest Worlds companion with inventory, Wishlist, farming and Forge tracking."><link rel="icon" type="image/png" href="assets/brand-favicon.png">
-<link rel="stylesheet" href="css/site.css?v=160"><link rel="stylesheet" href="css/boost-finder.css?v=3">
+<link rel="stylesheet" href="css/site.css?v=161"><link rel="stylesheet" href="css/boost-finder.css?v=3">
 
 
 <link rel="stylesheet" href="css/item-icons.css">
@@ -87,7 +87,7 @@
 </section><section id="planner-history" class="view"><div class="card"><div class="planner-my-toolbar"><h3 class="sectiontitle">Task History</h3><button id="plannerbackfromhistory" class="smallbutton" type="button">← Daily / Weekly</button></div><div id="planner-task-history"></div></div></section><section id="compare" class="view"><div class="card"><h3 class="sectiontitle">Compare two snapshots</h3><p class="muted" style="font-size:13px">Import both snapshots into the same browser. Comparison uses <b>ID</b> and quantity; moving items between inventory and bank does not count as a new item.</p><div class="comparecontrols"><label>Older <select id="oldselect"></select></label><label>Newer <select id="newselect"></select></label><button id="comparebtn" class="primary">Compare</button></div><div id="compareresult" class="muted">Import at least two snapshots to get started.</div></div></section>
 <section id="history" class="view"><div class="card"><h3 class="sectiontitle">Local import history</h3><div id="historylist"></div><p class="muted" style="font-size:12px">Each imported file is validated and saved in your browser's IndexedDB. The Backup button downloads a JSON file you can import later to restore your data. Clear data removes snapshots, farming goals and unlock projects.</p></div></section><div class="foot">Created by <strong>CptMundo</strong> for the AQWorlds community · Unofficial fan project · Not affiliated with Artix Entertainment · v0.13.10 Beta</div></div>
 <div id="itemdetails" class="detailoverlay hidden" role="dialog" aria-modal="true" aria-label="Item acquisition details"><div class="detailpanel"><div class="detailhead"><div><small style="color:#7da5d1;font-weight:700">AQW COMPANION · ACQUISITION EXPLORER</small><h2 id="detailname"></h2></div><button type="button" class="smallbutton" id="closedetails" aria-label="Close details">✕ Close</button></div><div id="detailcontent"></div></div></div><aside id="aqwc-tour" class="aqwc-tour" role="region" aria-labelledby="aqwc-tour-title" hidden><div class="aqwc-tour-top"><span>QUICK TOUR <span id="aqwc-tour-count">1 / 6</span></span><button id="aqwc-tour-close" type="button" aria-label="Close quick tour">×</button></div><progress id="aqwc-tour-progress" aria-label="Tour progress" max="6" value="1"></progress><div class="aqwc-tour-content" aria-live="polite"><span id="aqwc-tour-icon" aria-hidden="true">📊</span><div><h3 id="aqwc-tour-title" tabindex="-1">Your adventure starts here</h3><p id="aqwc-tour-body"></p></div></div><div class="aqwc-tour-actions"><button id="aqwc-tour-skip" type="button">Skip tour</button><div><button id="aqwc-tour-back" type="button">Back</button><button id="aqwc-tour-next" type="button">Next →</button></div></div><a href="extension/quick-start.html" class="aqwc-tour-guide">Full visual guide ↗</a></aside><script src="js/meta-class-builds.js"></script>
-<script src="js/recipe-integrity.js"></script><script src="js/quest-dependencies.js?v=1"></script><script src="js/merge-dependencies.js?v=7"></script>
+<script src="js/recipe-integrity.js"></script><script src="js/quest-dependencies.js?v=1"></script><script src="js/merge-dependencies.js?v=8"></script>
 <script src="extension/wishlist-link.js?v=126"></script>
 <script src="extension/wiki-boosts.js?v=51"></script>
 <script src="js/boost-finder.js?v=3"></script>
@@ -1053,13 +1053,13 @@ function renderSharedWishlist(){
  const eligible=new Map(),excluded=new Map(),read=api.stockIndex(items);let completed=0;
  for(const p of unlocks){
   if(current&&read(p.name)>0){completed++;continue}
-  const route=reviewedDependencyRoute(p.name),k=api.key(route?.name||p.name);
+  const route=reviewedDependencyRoute(p.name)||api.stagedGoal(p,window.AQWCDependencies),k=api.key(route?.name||p.name);
   if(route)eligible.set(k,route);else excluded.set(k,p.name);
  }
  for(const k of sharedWishlistSelection)if(!eligible.has(k))sharedWishlistSelection.delete(k);
  $('shared-wishlist-count').textContent='· '+sharedWishlistSelection.size+' selected';
  body.replaceChildren();
- body.append(node('p','Select reviewed goals to combine their direct ingredients. Inventory stock is deducted once. This is not a complete farming route or a reservation of items.','muted tiny'));
+ body.append(node('p','Select reviewed goals to combine direct ingredients and the current unconfirmed questline stage. Inventory stock is deducted once. This is not a complete farming route or a reservation of items.','muted tiny'));
  const actions=node('div',undefined,'shared-plan-actions');
  for(const [label,all] of [['Select reviewed goals',true],['Clear selection',false]]){
   const button=node('button',label,'smallbutton');button.type='button';button.disabled=all?!eligible.size:!sharedWishlistSelection.size;
@@ -1070,12 +1070,12 @@ function renderSharedWishlist(){
  for(const [k,route] of eligible){
   const label=node('label',undefined,'shared-plan-choice'),input=document.createElement('input');input.type='checkbox';input.checked=sharedWishlistSelection.has(k);input.dataset.goal=k;
   input.onchange=()=>{if(input.checked)sharedWishlistSelection.add(k);else sharedWishlistSelection.delete(k);renderSharedWishlist();body.querySelectorAll('input[data-goal]').forEach(e=>{if(e.dataset.goal===k)e.focus()})};
-  label.append(input,node('span',route.name));choices.append(label);
+  label.append(input,node('span',route.name+(route.stage?' · '+route.stage.name:'')));choices.append(label);
  }
- if(eligible.size)body.append(choices);else body.append(node('p','No incomplete goals with reviewed direct requirements.','muted tiny'));
+ if(eligible.size)body.append(choices);else body.append(node('p','No incomplete goals with reviewed requirements.','muted tiny'));
  if(excluded.size||completed){
   const coverage=node('details',undefined,'shared-plan-coverage');coverage.append(node('summary',excluded.size+' unsupported goal(s) · '+completed+' owned project(s) skipped'));
-  if(excluded.size)coverage.append(node('p','Not included: '+[...excluded.values()].join(', ')+'. Quest chains (including VDK) and unreviewed recipes are not combined.','muted tiny'));
+  if(excluded.size)coverage.append(node('p','Not included: '+[...excluded.values()].join(', ')+'. Unsupported quest chains and unreviewed recipes are not combined.','muted tiny'));
   if(completed)coverage.append(node('p','Owned goals are excluded using the current full snapshot.','muted tiny'));
   body.append(coverage);
  }
@@ -1094,10 +1094,10 @@ function renderSharedWishlist(){
     line.append(meta);body.append(line);
    }
   };
-  renderRows(result.rows,'Combined direct ingredients');
+  renderRows(result.rows,result.goals.some(g=>g.stage)?'Combined direct & current-stage ingredients':'Combined direct ingredients');
   renderRows(result.possession,'Possession requirements · not summed as consumables');
   appendSharedFarmRoute(body,result,routeExpanded);
-  body.append(node('p','Only selected reviewed direct recipes are included. Intermediate items are not expanded here. Custom steps, other routes, eligibility and extra copies of selected outputs are outside these totals.','muted tiny'));
+  body.append(node('p','Only selected reviewed direct recipes and current unconfirmed stages are included. Later stages, intermediate recipes, custom steps, alternatives, eligibility and extra copies of selected outputs are outside these totals.','muted tiny'));
  }catch(error){body.append(node('p','Combined requirements unavailable: '+error.message,'muted tiny'))}
 }
 function appendSharedFarmRoute(body,result,expanded){
@@ -1114,7 +1114,21 @@ function appendSharedFarmRoute(body,result,expanded){
  const groups=[...stops.values()].sort((a,b)=>a.join.localeCompare(b.join));
  const panel=node('details',undefined,'dependency-panel shared-farm-route');panel.open=expanded;
  panel.append(node('summary','Smart Farming Route · '+groups.length+' destination(s) · '+routines.quests.length+' quest(s)'));
- panel.append(node('p','Selected goals only. Locations are grouped alphabetically, not a fastest route or a travel order. Merge / quest locations are not drop maps. Confirm access, availability, caps and prerequisites in game.','muted tiny'));
+ panel.append(node('p','Selected goals only. Locations are grouped by map, not a fastest route or a travel order. Accept the relevant quest before farming; confirm access, availability, caps and prerequisites in game.','muted tiny'));
+ const stages=result.goals.filter(g=>g.stage);
+ const overview=node('div',undefined,'shared-farm-overview');
+ for(const [value,label] of [[result.goals.length,'Selected goals'],[groups.length,'Map groups'],[routines.quests.length,'Recurring quests'],[route.deferred.length,'Checks needed']]){
+  const metric=node('div',undefined,'shared-farm-metric');metric.append(node('strong',String(value)),node('small',label,'muted tiny'));overview.append(metric);
+ }
+ panel.append(overview);
+ for(const goal of stages){
+  const s=goal.stage,box=node('section',undefined,'shared-farm-stage');box.dataset.stage=s.id;
+  box.append(node('strong',goal.name+' · '+s.name),node('small',s.checked+' / '+s.total+' quests manually checked'+(s.claim?' · Verify class claim':s.blocked?' · Verify earlier quest':' · Current stage '+s.index),'muted tiny'));
+  if(s.level||s.reputation)box.append(node('p',[s.level?'Level '+s.level:null,s.reputation].filter(Boolean).join(' · ')+' — confirm in game.','muted tiny'));
+  if(s.note)box.append(node('p',s.note,'muted tiny'));
+  if(s.alternative){const alt=node('div',undefined,'shared-farm-alt');alt.append(node('strong','Optional alternative — not included in totals'),makeCopyJoin(s.alternative.join));const link=node('a','Alternative source ↗','tiny');link.href=s.alternative.source;link.target='_blank';link.rel='noopener noreferrer';alt.append(link);box.append(alt)}
+  const link=node('a',s.claim?'Class shop ↗':'Quest source ↗','tiny');link.href=s.source;link.target='_blank';link.rel='noopener noreferrer';box.append(link);panel.append(box);
+ }
  if(routines.quests.length)panel.append(node('p','Recurring opportunities: '+routines.quests.length+' distinct quests across these maps. A quest listed at several stops is still one completion per tracking period. Rewards are not deducted until imported. Check eligibility and alternatives in game.','muted tiny'));
  for(const group of groups){
   const box=node('section',undefined,'shared-farm-stop');box.dataset.join=group.join;
@@ -1123,7 +1137,8 @@ function appendSharedFarmRoute(body,result,expanded){
    const line=node('div',undefined,'shared-farm-entry');line.dataset.item=api.key(entry.item);line.dataset.kind=entry.type;
    const label=entry.type==='goal'?entry.item:entry.item+' ×'+fmt(entry.count);
    const button=node('button',label,'itemlink');button.type='button';button.onclick=()=>openItemDetails(entry.item);
-   line.append(button,node('small',entry.role+' · '+(entry.type==='goal'?entry.state:'Missing '+(entry.kind==='possess'?'possession requirement':'ingredient')+' · '+entry.goals.join(' / ')),'muted tiny'));
+   line.append(button,node('small',entry.role+' · '+(entry.type==='goal'?(entry.stageName?entry.stageName+' · ':'')+entry.state:'Missing '+(entry.kind==='possess'?'possession requirement':'ingredient')+' · '+entry.goals.join(' / ')),'muted tiny'));
+   if(entry.stageFarm)line.append(node('small','Current stage: '+entry.title+' · '+entry.goal+'. Combined shortage is not a drop guarantee; confirm quest acceptance and limits.','muted tiny'));
    const source=node('a','Source ↗','tiny');source.href=entry.source;source.target='_blank';source.rel='noopener noreferrer';line.append(source);box.append(line);
   }
   for(const quest of group.routines)appendSharedFarmQuest(box,quest);
@@ -1136,7 +1151,7 @@ function appendSharedFarmRoute(body,result,expanded){
   panel.append(unknown);
  }
  if(route.deferred.length){const deferred=node('div',undefined,'shared-farm-unmapped');deferred.append(node('strong','Verify before planning'));for(const r of route.deferred)deferred.append(node('small',r.item+' · '+r.reason,'muted tiny'));panel.append(deferred)}
- panel.append(node('p','No extra recipes expanded or new items reserved. The combined totals above deduct stock once. Only exact quantified recurring rewards are included; conditional rewards and multi-stage farms are outside these totals.','muted tiny'));body.append(panel);
+ panel.append(node('p','No extra recipes expanded or new items reserved. The combined totals above deduct stock once. Only exact quantified recurring rewards and the current reviewed questline stage are included. Later stages and optional alternatives are not summed.','muted tiny'));body.append(panel);
 }
 function sharedFarmCap(name){
  const api=window.AQWCStackAlerts;if(!api)return null;

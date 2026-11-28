@@ -299,6 +299,14 @@ async function main(){
   await shared.locator('input[data-goal="void highlord"]').uncheck();assert.equal(await farmStop.locator('[data-kind="goal"]').count(),1);assert.ok(await farmRoute.evaluate(e=>e.open));assert.ok(await crystals.getByText('Void Crystal A ×1',{exact:true}).isVisible());
   await page.setViewportSize({width:390,height:844});assert.ok(await shared.evaluate(e=>e.scrollWidth<=e.clientWidth+1));await page.setViewportSize({width:1360,height:1100});
   await shared.getByRole('button',{name:'Clear selection',exact:true}).click();assert.equal(await shared.locator('.shared-plan-row').count(),0);
+  await shared.locator('input[data-goal="verus doomknight"]').check();const stageRoute=shared.locator('.shared-farm-route');if(!await stageRoute.evaluate(e=>e.open))await stageRoute.locator(':scope > summary').click();
+  assert.ok(await stageRoute.locator('.shared-farm-stage[data-stage="body"]').isVisible());
+  assert.equal(await stageRoute.locator('.shared-farm-metric').count(),4);
+  assert.ok(await stageRoute.locator('[data-join="/join titanattack"]').getByText('Titanic Spine',{exact:false}).first().isVisible());
+  assert.equal(await stageRoute.locator('[data-join="/join necrodungeon"]').count(),0);
+  assert.ok(await stageRoute.locator('[data-join="/join terminatemple"]').getByText('Accept / turn in stage',{exact:false}).isVisible());
+  await page.setViewportSize({width:390,height:844});assert.ok(await stageRoute.evaluate(e=>e.scrollWidth<=e.clientWidth+1));await page.setViewportSize({width:1360,height:1100});
+  await shared.getByRole('button',{name:'Clear selection',exact:true}).click();
   // Add a reviewed recipe whose existing catalog includes a quantified weekly reward.
   await page.evaluate(()=>{const k='aqw-companion-unlocks',all=JSON.parse(localStorage.getItem(k)||'[]');if(!all.some(p=>p.name==='Sin of the Abyss'))all.push({id:'next-routine-sin',name:'Sin of the Abyss',type:'Weapon',steps:[]});localStorage.setItem(k,JSON.stringify(all))});
   await page.reload({waitUntil:'domcontentloaded'});await page.locator('#dashboard').waitFor({state:'visible'});
