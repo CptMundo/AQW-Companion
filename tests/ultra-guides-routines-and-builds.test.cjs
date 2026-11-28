@@ -561,16 +561,17 @@ console.log('Community feedback: all four Deadmoor dailies and single shared Mog
 }
 
 {
- const homeCheck=html.match(/const check=node\('button','✓','smallbutton home-complete-action'\);[\s\S]*?row\.append\(left,check\);/);
- assert.ok(homeCheck,'Home activity uses the compact check action');
- assert.ok(homeCheck[0].includes("check.title='Mark complete'"));
- assert.ok(homeCheck[0].includes("check.setAttribute('aria-label','Mark '+task.name+' completed')"));
- assert.ok(homeCheck[0].includes('check.onclick=()=>toggleTask(task,true)'),'Same completion handler');
- assert.ok(html.includes('css/planner-routines.css?v=185'),'Invalidate previously cached stylesheet');
- const rule=plannerCSS.match(/#overview #homeactivities \.home-active-task>button\.home-complete-action\{([^}]+)\}/);
- assert.ok(rule);
- for(const declaration of ['width:32px!important','height:32px!important','font-size:22px!important','border:1px solid #488b70!important','background:transparent!important','color:#75e3a4!important'])assert.ok(rule[1].includes(declaration),declaration);
- console.log('Home green check: shared palette, accessible label and completion action verified.');
+ const homeTile=html.slice(html.indexOf('function homeQuestTile('),html.indexOf('function renderHomeInsights()'));
+ assert.ok(homeTile.includes('smallbutton home-quest-action'),'Home gallery uses a dedicated completion control');
+ assert.ok(homeTile.includes("action.setAttribute('aria-pressed',String(done))"));
+ assert.ok(homeTile.includes("action.setAttribute('aria-label',(done?'Undo completion of ':'Mark complete: ')+task.name)"));
+ assert.ok(homeTile.includes('toggleTask(task,!done)'),'Same completion handler for complete and undo');
+ assert.ok(homeTile.includes('action.disabled=!!conflict'));
+ assert.ok(homeTile.includes('plannerArt(task)'));
+ assert.ok(homeTile.includes('makeCopyJoin(joins[0].join)'));
+ assert.ok(html.includes('css/site.css?v=152'),'Invalidate previously cached stylesheet');
+ assert.ok(html.includes("grid.dataset.frequency=freq"));
+ console.log('Home quest gallery: shared artwork, copyable joins, accessible reversible completion and conflict guard verified.');
 }
 
 {
