@@ -14,7 +14,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="AQW Companion | AQWorlds Inventory & Farming Tracker">
 <meta name="twitter:description" content="A free unofficial AdventureQuest Worlds companion with inventory, Wishlist, farming and Forge tracking."><link rel="icon" type="image/png" href="assets/brand-favicon.png">
-<link rel="stylesheet" href="css/site.css?v=151"><link rel="stylesheet" href="css/boost-finder.css?v=3">
+<link rel="stylesheet" href="css/site.css?v=152"><link rel="stylesheet" href="css/boost-finder.css?v=3">
 
 
 <link rel="stylesheet" href="css/item-icons.css">
@@ -6255,39 +6255,46 @@ function renderAccountStatistics(){
   root.replaceChildren(node('div','Could not render Account Statistics. Your saved snapshots and goals were not changed.','aqws-empty'));
  }
 }
+function homeQuestTile(task,done){
+ const conflict=routineConflict(task),tile=node('article',undefined,'home-quest-tile'+(done?' is-complete':'')+(conflict?' is-alternative':''));
+ tile.dataset.questId=task.id;
+ const art=plannerArt(task),category=plannerCategory(task);
+ const visual=node('div',undefined,'home-quest-visual');
+ const fallback=node('span',({'Ultras':'⚔️','Legion':'☠️','Nulgath':'◆','Materials':'⛏️','Reputation':'★','Factions':'⚑','Custom':'✦','Friendships':'🎁','Activities':'🎡'})[category]||'📜','home-quest-fallback');
+ fallback.setAttribute('aria-hidden','true');visual.append(fallback);
+ if(art){const img=node('img');img.alt='';img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';img.onload=()=>{fallback.hidden=true};img.onerror=()=>{img.hidden=true;fallback.hidden=false};img.src=art.url;visual.append(img);
+ const credit=node('a','↗','home-quest-credit');credit.href=art.source;credit.target='_blank';credit.rel='noopener noreferrer';credit.title='Image source: AQWorlds Wiki / Artix';credit.setAttribute('aria-label',credit.title);visual.append(credit)}
+ if(done)visual.append(node('span','✓','home-quest-done-mark'));
+ tile.append(visual);
+ const name=node('strong',plannerTitle(task),'home-quest-name');name.title=plannerTitle(task);tile.append(name);
+ const routes=new Map(),add=(join,label)=>{if(typeof join==='string'&&/^\/join [a-z0-9-]+$/i.test(join.trim())){const value=join.trim();if(!routes.has(value.toLowerCase()))routes.set(value.toLowerCase(),{join:value,label})}};
+ for(const target of taskRoutes[task.id]?.targets||[])add(target[2],target[0]);
+ add(task.farmJoin,'Farm / boss');add(task.join,'Location');add(task.acceptJoin,'Accept quest');
+ const joins=[...routes.values()],joinBox=node('div',undefined,'home-quest-joins');
+ if(joins.length){const main=makeCopyJoin(joins[0].join);main.title='Copy '+joins[0].join+' · '+joins[0].label;joinBox.append(main);
+ if(joins.length>1){const details=node('details',undefined,'home-quest-extra-joins');details.append(node('summary','+'+(joins.length-1)+' more locations'));for(const route of joins.slice(1)){const row=node('div',undefined,'home-quest-extra-route');row.append(node('small',route.label),makeCopyJoin(route.join));details.append(row)}joinBox.append(details)}}
+ else joinBox.append(node('small','Map not verified','muted tiny'));
+ tile.append(joinBox);
+ const action=node('button',conflict?'Alternative done':done?'✓ Completed · Undo':'✓ Mark complete','smallbutton home-quest-action');
+ action.type='button';action.disabled=!!conflict;action.setAttribute('aria-pressed',String(done));action.setAttribute('aria-label',(done?'Undo completion of ':'Mark complete: ')+task.name);action.title=conflict?'Alternative already completed: '+conflict.name:done?'Undo completion':'Mark complete';
+ action.onclick=()=>{toggleTask(task,!done);const next=[...$('homeactivities').querySelectorAll('.home-quest-tile')].find(e=>e.dataset.questId===task.id);next?.querySelector('.home-quest-action')?.focus({preventScroll:true})};tile.append(action);
+ return tile;
+}
 function renderHomeInsights(){
  const activity=$('homeactivities'),projectList=$('homeprojectslist');if(!activity||!projectList)return;
- activity.replaceChildren();projectList.replaceChildren();renderHomeMilestones();
+ const scroll=activity.scrollTop;activity.replaceChildren();projectList.replaceChildren();renderHomeMilestones();
  const records=pinnedTasks.filter(routineIsRecurring).map(t=>({task:t,done:taskDone(t)}));
- const daily=records.filter(x=>x.task.freq==='daily'),weekly=records.filter(x=>x.task.freq==='weekly');
- const pending=records.filter(x=>!x.done&&!routineConflict(x.task));
- const dp=routineProgress(daily.map(x=>x.task)),wp=routineProgress(weekly.map(x=>x.task));
- activity.append(node('div',
-   `Today: ${dp.done}/${dp.total} dailies · This tracking week: ${wp.done}/${wp.total} weeklies`,
-   'muted tiny'));
  if(!records.length)activity.append(node('p','No active tasks yet. Open Quest Tracker to pin your daily and weekly tasks.','muted tiny'));
  for(const freq of ['daily','weekly']){
-   const group=pending.filter(x=>x.task.freq===freq);
-   if(!group.length)continue;
-   activity.append(node('div',freq==='daily'?'☀️ Active dailies':'📆 Active weeklies','home-task-heading'));
-   for(const {task} of group.slice(0,6)){
-     const row=node('div',undefined,'homeentry home-active-task'),left=node('div');
-     left.append(node('strong',task.name));const targets=node('div',undefined,'home-targets');const route=taskRoutes[task.id];if(route&&Array.isArray(route.targets)&&route.targets.length){for(const target of route.targets){const chip=node('span',undefined,'home-target');chip.append(node('span',target[0]));if(target[2])chip.append(makeCopyJoin(target[2]));targets.append(chip)}}else if(task.join&&/^\/join [a-z0-9-]+$/i.test(task.join.trim())){targets.append(makeCopyJoin(task.join.trim()))}left.append(targets);
-     const check=node('button','✓','smallbutton home-complete-action');
-     check.type='button';check.title='Mark complete';check.setAttribute('aria-label','Mark '+task.name+' completed');
-     check.onclick=()=>toggleTask(task,true);
-     row.append(left,check);activity.append(row);
-   }
-   if(group.length>6)activity.append(node('div',`+${group.length-6} more ${freq} tasks in Planner`,'muted tiny'));
+  const group=records.filter(x=>x.task.freq===freq);if(!group.length)continue;
+  const progress=routineProgress(group.map(x=>x.task));
+  const header=node('div',undefined,'home-quest-group-head');
+  header.append(node('strong',freq==='daily'?'☀️ Daily quests':'📅 Weekly quests'),node('span',progress.done+' / '+progress.total+' completed','muted tiny'));activity.append(header);
+  const grid=node('div',undefined,'home-quest-grid');grid.dataset.frequency=freq;
+  for(const {task,done} of group)grid.append(homeQuestTile(task,done));
+  activity.append(grid);
  }
- const recent=records.filter(x=>x.done).slice(0,3);
- if(recent.length){
-   activity.append(node('div','Recently completed','home-task-heading'));
-   for(const {task} of recent){
-     const row=node('div',undefined,'homeentry home-complete-task');
-     row.append(node('span','✓ '+task.name));activity.append(row);
-   }
- }
+ activity.scrollTop=scroll;
  const projects=unlocks.filter(p=>!owned(p.name)).map(p=>({p,stats:projectProgress(p)})).filter(x=>x.stats.trackedTotal).sort((a,b)=>b.stats.trackedPct-a.stats.trackedPct).slice(0,5);
  if(!projects.length)projectList.append(node('p','Add a project to start tracking your progress.','muted tiny'));
  for(const {p,stats} of projects){
@@ -6315,8 +6322,8 @@ function resetUltraChecks(freq){
 }
 
 function toggleTask(t,done){if(!routineIsRecurring(t))return;const conflict=done&&routineConflict(t);if(conflict){message('Only one of these quests can be completed this week. Undo '+conflict.name+' first.');renderPlanner();return}taskChecks[taskKey(t)]=done;savePlanner();renderPlanner();renderHomeInsights()}
-function pinTask(t){if(!routineIsRecurring(t)||pinnedTasks.some(x=>x.id===t.id))return;pinnedTasks.push({...t});savePlanner();renderPlanner();renderCleanupAlerts()}
-function unpinTask(t){pinnedTasks=pinnedTasks.filter(x=>x.id!==t.id);savePlanner();renderPlanner();renderCleanupAlerts()}
+function pinTask(t){if(!routineIsRecurring(t)||pinnedTasks.some(x=>x.id===t.id))return;pinnedTasks.push({...t});savePlanner();renderPlanner();renderHomeInsights();renderCleanupAlerts()}
+function unpinTask(t){pinnedTasks=pinnedTasks.filter(x=>x.id!==t.id);savePlanner();renderPlanner();renderHomeInsights();renderCleanupAlerts()}
 function copyJoin(txt){if(!txt)return;if(navigator.clipboard?.writeText)navigator.clipboard.writeText(txt).then(()=>message(txt+' copied')).catch(()=>message('Copy '+txt));else message('Copy '+txt)}
 // Static public boss illustrations from the linked AQWorlds Wiki monster pages.
 // Only use a verified encounter name/map association; never guess an image.
