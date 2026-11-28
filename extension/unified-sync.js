@@ -40,7 +40,9 @@ if(typeof document==='undefined'){
    const current=await chrome.tabs.get(tab.id);
    if(current.status==='complete'){
     if(sourceKind(current.url)!==(kind==='public'?'badges':kind)){await chrome.tabs.update(tab.id,{active:true});throw Error('Sign in or open the correct source page, then try Sync again.')}
-    const probe=await chrome.scripting.executeScript({target:{tabId:tab.id},func:k=>k==='inventory'?performance.getEntriesByType('resource').some(r=>{try{const u=new URL(r.name);return u.origin===location.origin&&/(?:^|\/)InventoryData\/?$/i.test(u.pathname)}catch{return false}}):k==='public'?!!document.querySelector('#inventoryRendered a.item'):[...document.images].some(img=>/\/badges\/[^/]+\.(png|jpe?g|gif|webp)(?:[?#]|$)/i.test(img.currentSrc||img.src||'')),args:[kind]}).catch(()=>null);
+    // Badge capture owns its own bounded expand/load wait, using the same parser as manual capture.
+    if(kind==='badges')return;
+    const probe=await chrome.scripting.executeScript({target:{tabId:tab.id},func:k=>k==='inventory'?performance.getEntriesByType('resource').some(r=>{try{const u=new URL(r.name);return u.origin===location.origin&&/(?:^|\/)InventoryData\/?$/i.test(u.pathname)}catch{return false}}):!!document.querySelector('#inventoryRendered a.item'),args:[kind]}).catch(()=>null);
     if(probe?.[0]?.result)return;
    }
    await sleep(500);
@@ -137,7 +139,7 @@ if(typeof document==='undefined'){
    const source=await sourceTab(kind,tabId);job.sourceId=source.id;
    await waitSource(source,kind);
    await progress('reading',kind==='inventory'?'Reading Inventory & Bank…':kind==='public'?'Reading public inventory…':kind==='progress'?'Reading visible Progress Badges…':'Reading Character Page badges…');
-   const result=await chrome.scripting.executeScript({target:{tabId:source.id},func:kind==='inventory'?captureAccountInventory:kind==='public'?capturePublicInventory:kind==='progress'?captureAccountProgress:captureCharacterBadges,args:kind==='inventory'?[null,job.id]:[]});
+   const result=await chrome.scripting.executeScript({target:{tabId:source.id},func:kind==='inventory'?captureAccountInventory:kind==='public'?capturePublicInventory:kind==='progress'?captureAccountProgress:captureCharacterBadges,args:kind==='inventory'?[null,job.id]:kind==='badges'?[null,null,true]:[]});
    let snapshot=result?.[0]?.result,stageId;
    if(kind==='inventory'){
     if(typeof snapshot?.captureError==='string')throw Error('Inventory capture: '+snapshot.captureError.slice(0,240));
