@@ -139,7 +139,13 @@ function combine(routes,stock=null){
   return {...base,rank:0,state:'Direct stock available',detail:route.kind==='quest'?'Check the documented quest and confirm its gates in game.':'Check the documented merge shop and confirm eligibility in game.'};
  }
  function rankRecommendations(rows){
-  return [...rows].sort((a,b)=>a.recommendation.rank-b.recommendation.rank||String(a.project.name).localeCompare(String(b.project.name))||String(a.project.id||'').localeCompare(String(b.project.id||'')));
+  // Same action category: fewer distinct missing ingredient types first.
+  // This is a simple checklist heuristic, never a time estimate.
+  const count=r=>Number.isSafeInteger(r.recommendation.missingTypes)?r.recommendation.missingTypes:Infinity;
+  return [...rows].sort((a,b)=>a.recommendation.rank-b.recommendation.rank||(a.recommendation.rank===1&&b.recommendation.rank===1?count(a)-count(b):0)||String(a.project.name).localeCompare(String(b.project.name))||String(a.project.id||'').localeCompare(String(b.project.id||'')));
+ }
+ function recommendationCounts(rows){
+  const counts=[0,0,0,0];for(const {recommendation:r} of rows||[]){if(Number.isInteger(r?.rank)&&r.rank>=0&&r.rank<4)counts[r.rank]++}return counts;
  }
 
 
@@ -174,6 +180,6 @@ function recurringOpportunities(rows,tasks,{isRecurring=()=>false,isDone=()=>fal
  // be completed. The UI explicitly labels exclusive groups.
  return [...found.values()].sort((a,b)=>Number(b.task.freq==='daily')-Number(a.task.freq==='daily')||Number(a.pinned)-Number(b.pinned)||a.task.name.localeCompare(b.task.name)||a.id.localeCompare(b.id));
 }
-const api={key,describe,direct,selectedRoute,plan,combine,stockIndex,recommend,rankRecommendations,recurringOpportunities};
+const api={key,describe,direct,selectedRoute,plan,combine,stockIndex,recommend,rankRecommendations,recommendationCounts,recurringOpportunities};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.AQWCMergeDependencies=api;
 })(typeof globalThis==='object'?globalThis:this);
