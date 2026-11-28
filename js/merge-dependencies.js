@@ -186,6 +186,7 @@ function recurringOpportunities(rows,tasks,{isRecurring=()=>false,isDone=()=>fal
 function farmingDestinations(combined,integrity){
  const groups=new Map(),unmapped=[],deferred=[];
  const all=[...combined.rows,...combined.possession];
+ const conflicts=new Set(all.filter(r=>r.overlap||r.outputConflict).map(r=>key(r.item)));
  function destination(name){
   const route=describe(name,integrity);if(!route)return null;
   const acquisition=route.kind==='merge'?integrity.getAcquisition(name):integrity.guidanceAcquisition(name);
@@ -200,8 +201,8 @@ function farmingDestinations(combined,integrity){
   groups.get(dest.join).entries.push({...entry,...dest});
  }
  for(const row of all){
-  if(row.missing===null||row.overlap||row.outputConflict){
-   deferred.push({item:row.item,kind:row.kind,reason:row.overlap||row.outputConflict?'Verify stock allocation / ordering':'Stock unknown'});continue;
+  if(row.missing===null||conflicts.has(key(row.item))){
+   deferred.push({item:row.item,kind:row.kind,reason:conflicts.has(key(row.item))?'Verify stock allocation / ordering':'Stock unknown'});continue;
   }
   if(!row.missing)continue;
   const dest=destination(row.item);
@@ -212,7 +213,7 @@ function farmingDestinations(combined,integrity){
  for(const goal of combined.goals){
   const dest=destination(goal.name);
   const relevant=all.filter(r=>r.goals.some(g=>key(g.name)===key(goal.name)));
-  const state=relevant.some(r=>r.missing===null||r.outputConflict||r.overlap)?'Verify allocation / stock':relevant.some(r=>r.missing>0)?'Ingredients or gates missing':'Check access and turn in';
+  const state=relevant.some(r=>r.missing===null||conflicts.has(key(r.item)))?'Verify allocation / stock':relevant.some(r=>r.missing>0)?'Ingredients or gates missing':'Check access and turn in';
   if(dest)add(dest,{item:goal.name,type:'goal',state});
   else deferred.push({item:goal.name,kind:'goal',reason:'Destination not reviewed'});
  }
