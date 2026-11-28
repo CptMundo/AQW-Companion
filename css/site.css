@@ -1612,3 +1612,6 @@ html[data-aqwc-background] #unlocks .wishlist-step-complete .wishlist-material-i
 .shared-farm-entry .itemlink{justify-self:start;text-align:left;white-space:normal;overflow-wrap:anywhere;max-width:100%}
 .shared-farm-entry small,.shared-farm-unmapped small{display:block;color:var(--muted)}
 .shared-farm-entry a{justify-self:start}
+
+/* Recurring route roles use the existing shared map groups. */
+.shared-farm-quest{padding:10px 0}.shared-farm-role{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 9px}.shared-farm-quest .methodbuttons{margin-top:5px}.shared-farm-quest strong{overflow-wrap:anywhere}
