@@ -37,3 +37,7 @@ Owner-approved ordering from the 28 November product discussion and the attached
 ### Consolidation B1: history safety
 
 PR stacked on Consolidation A while it awaits owner approval. Restore snapshot history in a single IndexedDB transaction, deduplicate only identical dated/name-matched normalized observations, preserve explicit selected snapshot in new compatible exports, and compact JSON. Multi-snapshot recovery-only mode is rejected rather than pretending all records persisted. This does not yet make localStorage sections transactional or add omitted capture data. Oversized exports still require a later compatible format; warn and preserve all data. Next B2: complete validated portable progress coverage and a lossless large-backup format, then source-quality/dependency stages.
+
+### Consolidation B2: portable progress
+
+Compatible optional progressV1 covers seven explicitly allowed local sections. Test real download/restore into an isolated profile, cancellation, reload and source validation. Excludes extension-only preferences, consent/permissions, trust decisions, and custom community catalog; no credential data. Legacy backups remain supported. Keep large-backup compression/splitting and full cross-storage atomicity as a separate follow-up; no silent removal or history trimming. Three dependent PRs is the cap: validate/merge in order before new feature work.
