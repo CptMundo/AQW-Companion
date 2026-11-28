@@ -312,7 +312,7 @@ async function main(){
   const ownedGear=page.locator('.bf-owned-gear');await ownedGear.locator('.bf-gear-slot').first().waitFor({state:'visible'});
   assert.equal(await ownedGear.locator('.bf-gear-slot').count(),5);
   await page.evaluate(()=>window.AQWCBoostFinder.render(()=>({loaded:true,tracked:[],items:[{ID:'boost-demo1',Name:'Burning Blade',Type:'Sword',Count:1,Bank:1},{ID:'boost-demo2',Name:'Cape of Awe',Type:'Cape',Count:1,Bank:0},{ID:'boost-demo3',Name:'Radiant Goddess of War',Type:'Armor',Count:1,Bank:1}]}),null));
-  const gearWeapon=ownedGear.locator('[data-slot="weapons"]');
+  const gearWeapon=ownedGear.locator('.bf-gear-slot[data-slot="weapons"]');
   assert.ok(await gearWeapon.getByRole('link',{name:'Burning Blade',exact:true}).isVisible());
   assert.ok(await gearWeapon.getByText('+15%',{exact:true}).isVisible());
   assert.ok(await gearWeapon.getByText('Bank',{exact:true}).isVisible());
@@ -325,7 +325,7 @@ async function main(){
   assert.ok(await gearLoadout.getByText('All Tagged is a group',{exact:false}).isVisible());
   await ownedGear.getByRole('combobox',{name:'Compare owned gear by boost'}).selectOption('xp');
   assert.ok(await gearLoadout.getByText('+25%',{exact:true}).first().isVisible());
-  const gearCape=ownedGear.locator('[data-slot="capes-back-items"]');
+  const gearCape=ownedGear.locator('.bf-gear-slot[data-slot="capes-back-items"]');
   assert.ok(await gearCape.getByRole('link',{name:'Cape of Awe',exact:true}).isVisible());
   assert.ok(await gearCape.getByText('+25%',{exact:true}).isVisible());
   await gearCape.getByRole('button',{name:'View 1 owned match(es)',exact:true}).click();
