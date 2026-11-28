@@ -27,17 +27,17 @@ function captureCharacterBadges(doc=document,href=location.href,autoExpand=false
  // The Character Page can defer loading its badge list until the user opens it.
  // Click only a clearly identified collapsed badge control, never a generic page action.
  return (async()=>{
-  const clicked=new Set();let lastError;
+  const clicked=new Set();let lastError,lastSignature='',stable=0;
   for(let attempt=0;attempt<50;attempt++){
-   const controls=doc.querySelectorAll('button,a,summary,[role="button"],[onclick],[data-toggle],[data-bs-toggle]');
+   const controls=doc.querySelectorAll('button,a,summary,[role="button"],[onclick],[data-toggle],[data-bs-toggle],span,div');
    const toggle=[...controls].find(el=>{
-    if(clicked.has(el)||el.disabled||el.getAttribute('aria-disabled')==='true'||el.getAttribute('aria-expanded')==='true')return false;
+    if(clicked.has(el)||el.disabled||el.getAttribute('aria-disabled')==='true'||el.getAttribute('aria-expanded')==='true'||(el.getClientRects&&el.getClientRects().length===0))return false;
     const label=String(el.textContent||'').replace(/\s+/g,' ').trim();
     const aria=String(el.getAttribute('aria-label')||'').trim();
     return /^(?:\+\s*(?:achievement\s+)?badges|(?:show|expand|view)\s+(?:achievement\s+)?badges)$/i.test(label)||/^(?:show|expand)\s+(?:achievement\s+)?badges$/i.test(aria)||el.getAttribute('aria-expanded')==='false'&&/^(?:badges|achievements|achievement badges)$/i.test(label);
    });
-   if(toggle){clicked.add(toggle);toggle.click();}
-   else{try{return readBadges()}catch(e){lastError=e}}
+   if(toggle){clicked.add(toggle);toggle.click();stable=0;lastSignature='';}
+   else{try{const result=readBadges(),signature=JSON.stringify(result.badges);stable=signature===lastSignature?stable+1:0;lastSignature=signature;if(stable>=2)return result}catch(e){lastError=e;stable=0;lastSignature=''}}
    await new Promise(resolve=>setTimeout(resolve,500));
   }
   throw Error('Badge list did not load. Open your Character Page, expand + Badges and retry. '+String(lastError?.message||''));
